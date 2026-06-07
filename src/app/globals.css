@@ -46,12 +46,240 @@
       nav shrinks too — giving the hero more vertical room.
   */
   --nav-height: clamp(60px, min(5.34vw, 7.84vh), 77px);
+
+  /*
+    Shared horizontal section padding — single source of truth so EVERY
+    section's content-left aligns to the same gutter on every screen.
+    48px is the design (Figma) gutter; height-aware so very short/narrow
+    viewports tighten it consistently everywhere.
+  */
+  --section-px: clamp(20px, min(3.33vw, 4.89vh), 48px);
+
+  /*
+    WIDE gutter — used by sections that should align to the same inset as the
+    "How We Show Up" (WhatFoundersGet) heading, whose content caps at a
+    centred 1280px box. A 1280 box inside the 1440 container = (1440-1280)/2
+    = 80px side inset, so an 80px-capped gutter makes those sections' inner
+    content land exactly on that 1280 column at EVERY width.
+
+    Math: WhatFoundersGet's heading sits at the left edge of a centred 1280px
+    box → its inset from the screen edge is (100vw - 1280)/2. Feeding the SAME
+    expression here (on a max-w-1440 container) makes the inner content edge
+    land on the identical column, because (100vw-1440)/2 + inset == (100vw-1280)/2.
+    Width-based only (WhatFoundersGet is not height-aware), capped at 80px so
+    on screens ≥1440 it settles to the design inset and never overgrows.
+  */
+  --section-px-wide: clamp(24px, calc((100vw - 1280px) / 2), 80px);
+
+  /*
+    Shared heading scale — THE single heading size for the whole site.
+    0.9× the original (FoundersTestimonial) reference: caps at 57.6px
+    (was 64), floors at 21.6px (was 24), height-aware so it never overflows
+    above the fold on short laptops. Used by EVERY homepage section heading
+    (Hero / BackedBefore / WhatFoundersGet / WhatWeBelieve / ImpactAtGlance /
+    FeaturedFounderStory / FoundersTestimonial) so they are all identical and
+    scale together from this one value.
+  */
+  --heading-xl: clamp(21.6px, min(4vw, 5.87vh), 57.6px);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* ============================================
+   HERO SECTION — Single scale-factor system
+   Reference: MacBook Pro 14" → 1728 × 1117 CSS px
+   --s is set inline on the section element.
+   ============================================ */
+
+.hero-section {
+  position: relative;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #FBF7F0;
+}
+
+.hero-inner {
+  position: relative;
+  display: flex;
+  width: 100%;
+  max-width: 1440px;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Heading ── */
+.hero-heading {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  font-family: "Libre Baskerville", serif;
+  font-weight: 400;
+  line-height: 110%;
+  color: #000;
+}
+
+.hero-heading-italic {
+  display: block;
+  font-weight: 600;
+  font-style: italic;
+  line-height: 120%;
+  color: #001A4D;
+}
+
+/* ── Subtext ── */
+.hero-subtext {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  font-family: "Poppins", sans-serif;
+  font-weight: 400;
+  line-height: 150%;
+  color: #323232;
+}
+
+/* ── Buttons ── */
+.hero-buttons {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 10px;
+  font-family: "Libre Baskerville", serif;
+  font-weight: 600;
+  line-height: 107%;
+  color: #001A4D;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.hero-btn-secondary:hover {
+  opacity: 0.6;
+}
+
+.hero-btn-primary {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: 10px;
+  overflow: hidden;
+  background: #001A4D;
+  padding: 10px;
+  font-family: "Libre Baskerville", serif;
+  font-weight: 600;
+  line-height: 107%;
+  color: #F5F0E8;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+/* ── Cards Row ── */
+.hero-cards-overlap {
+  position: relative;
+  z-index: 0;
+  width: 100%;
+}
+
+.hero-cards-row {
+  margin: 0 auto;
+  display: flex;
+  width: 100%;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.hero-card-perspective {
+  flex-shrink: 0;
+}
+
+.hero-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: #fff;
+  box-shadow: 0 4px 14.8px 0 rgba(101, 101, 101, 0.25);
+}
+
+.hero-card-img {
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.hero-card-text {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+}
+
+.hero-card-name {
+  width: 100%;
+  margin: 0;
+  font-family: "Libre Baskerville", serif;
+  font-weight: 700;
+  line-height: 119%;
+  color: #000;
+}
+
+.hero-card-role {
+  width: 100%;
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  font-weight: 300;
+  line-height: 119%;
+  color: #000;
+}
+
+/* ── Short viewports (≤400px tall, e.g. the 932×187 strip) ──
+   No room for the founder cards: hide them, drop the full-height
+   requirement, compact the padding, and shrink the heading.
+   NOTE: the heading uses inline font-size (calc on --heading-xl), and
+   Tailwind v4's Lightning CSS bundler strips per-breakpoint custom-property
+   redefs — so we override font-size DIRECTLY with !important here (plain
+   properties survive the bundler and beat the inline style). */
+@media (max-height: 400px) {
+  .hero-cards-overlap { display: none; }
+  .hero-section {
+    min-height: auto !important;
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+  }
+  .hero-section h1      { font-size: clamp(21px, 7vh, 35px) !important; }
+  .hero-section h1 span { font-size: clamp(24px, 8vh, 40px) !important; }
+}
+
+/* ── Ultra-short strips (≤300px tall) — headline only, no subtext ── */
+@media (max-height: 300px) {
+  .hero-sub             { display: none !important; }
+  .hero-section h1      { font-size: clamp(19px, 9.5vh, 28px) !important; }
+  .hero-section h1 span { font-size: clamp(22px, 11vh, 32px) !important; }
+}
+
+/* ── Short viewports (≤600px tall) — reduce upward card overlap ── */
+@media (max-height: 600px) {
+  .hero-cards-overlap { margin-top: -20px !important; }
 }
 
 

@@ -52,13 +52,15 @@ export default function IndicornsSpotlight() {
         minHeight:     "clamp(250px, min(27.85vw, 40.84vh), 401px)",
         paddingTop:    "clamp(24px, min(3.47vw, 5.09vh), 50px)",
         paddingBottom: "clamp(24px, min(3.47vw, 5.09vh), 50px)",
-        paddingLeft:   "clamp(24px, min(4.375vw, 6.42vh), 63px)",
-        paddingRight:  "clamp(24px, min(4.375vw, 6.42vh), 63px)",
+        paddingLeft:   "var(--section-px-wide)",
+        paddingRight:  "var(--section-px-wide)",
       }}
     >
-      {/* Centered bounding wrapper — items-start so both columns align to top */}
+      {/* Centered bounding wrapper — capped at the shared 1280 content column
+          (same as WhatFoundersGet) so the left text aligns to the exact same
+          gutter as every other section. items-start aligns both columns to top. */}
       <div
-        className="relative mx-auto flex w-full max-w-[1440px] items-start"
+        className="relative mx-auto flex w-full max-w-[1280px] items-start"
         style={{ gap: "clamp(24px, min(3.33vw, 4.89vh), 48px)" }}
       >
 
@@ -117,8 +119,22 @@ export default function IndicornsSpotlight() {
               padding:   "clamp(6px, 0.69vw, 10px)",
               marginTop: "clamp(4px, min(0.69vw, 1.02vh), 10px)",
             }}
+            onMouseMove={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const y = e.clientY - rect.top;
+              e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
+              e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
+            }}
           >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_50%,#D6E4FF_0%,#FFFFFF_55%)] opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100" />
+            {/* The Dynamic Spotlight Layer (Soft blue glow for white button) */}
+            <div 
+              className="pointer-events-none absolute inset-0 z-0 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100" 
+              style={{ 
+                background: 'radial-gradient(circle 70px at var(--mouse-x, 50%) var(--mouse-y, 50%), #D6E4FF 0%, transparent 100%)' 
+              }} 
+            />
+            
             <span className="relative z-10 text-center">Meet the Indicorns</span>
           </button>
 
@@ -209,7 +225,7 @@ export default function IndicornsSpotlight() {
             className="m-0 font-['Poppins',_sans-serif] font-normal tracking-wide text-white/80"
             style={{ fontSize: "clamp(10px, min(1.11vw, 1.63vh), 16px)" }}
           >
-            - Titan Capital
+            - Kunal Bahl
           </p>
         </div>
 

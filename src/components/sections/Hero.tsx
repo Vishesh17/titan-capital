@@ -27,6 +27,14 @@ const founderSlots = [
   { size: "large", pool: [{ name: "Ghazal Alagh", role: "Co-Founder, Mamaearth", image: "/images/hero_founders_images/ghazal-alagh.png" }, { name: "Shashank Kumar", role: "Co-Founder, Razorpay", image: "/images/hero_founders_images/shashank-kumar.png" }] },
 ];
 
+/*
+  cs(n) → calc(var(--lw) * n/278)
+  Expresses any card sub-dimension as a fraction of the large-card width
+  (--lw), so the entire card cluster scales from ONE base. Design ref: the
+  large card is 278px wide, so 278 → 1.0, 240 → 0.863, 14 → 0.050, etc.
+*/
+const cs = (n: number) => `calc(var(--lw) * ${(n / 278).toFixed(5)})`;
+
 export default function Hero() {
   const [currentIndices, setCurrentIndices] = useState([0, 0, 0, 0, 0]);
 
@@ -43,47 +51,62 @@ export default function Hero() {
 
   return (
     <section
-      className="relative flex w-full flex-col items-center justify-center overflow-hidden bg-[#FBF7F0]"
+      className="hero-section relative flex w-full flex-col items-center justify-center overflow-hidden bg-[#FBF7F0]"
       style={{
         marginTop: "var(--nav-height)",
         minHeight: "calc(100svh - var(--nav-height))",
-        paddingTop: "clamp(20px, 5vh, 64px)",
-        paddingBottom: "clamp(20px, 5vh, 64px)",
-        paddingLeft: "clamp(16px, 3vw, 48px)",
-        paddingRight: "clamp(16px, 3vw, 48px)",
+        paddingTop: "clamp(16px, 3.5vh, 44px)",
+        paddingBottom: "clamp(16px, 3vh, 40px)",
+        paddingLeft: "var(--section-px)",
+        paddingRight: "var(--section-px)",
       }}
     >
       <div className="relative flex w-full max-w-[1440px] flex-col items-center">
 
-        {/* HEADING — h1 caps at 48 / 64, shrinks on either narrow OR short screens */}
-        <h1 className="relative z-10 mx-auto w-full max-w-[541px] text-center font-['Libre_Baskerville',_serif] font-normal leading-[110%] text-black text-[clamp(28px,min(3.33vw,4.89vh),48px)]">
+        {/* HEADING — both lines sized to match every other section's heading.
+            L1 (normal) = --heading-xl × 56/64, L2 (italic emphasis) = --heading-xl (64 cap),
+            so "Founders" is the SAME size as the italic headings in WhatWeBelieve /
+            BackedBefore / FoundersTestimonial. */}
+        <h1
+          className="relative z-10 mx-auto w-full text-center font-['Libre_Baskerville',_serif] font-normal leading-[110%] text-black"
+          style={{
+            maxWidth: "640px",
+            fontSize: "calc(var(--heading-xl) * 0.875)", // 56/64
+          }}
+        >
           300+ bets. All on
-          <span className="block font-semibold italic leading-[120%] text-[#001A4D] text-[clamp(36px,min(4.44vw,6.52vh),64px)]">
+          <span
+            className="block font-semibold italic leading-[120%] text-[#001A4D]"
+            style={{ fontSize: "var(--heading-xl)" }}
+          >
             Founders
           </span>
         </h1>
 
-        {/* SUBHEAD */}
+        {/* SUBHEAD — bigger (caps at 20px / Figma), wider box (726px Figma) */}
         <p
-          className="relative z-10 mx-auto w-full max-w-[593px] text-center font-['Poppins',_sans-serif] font-normal leading-[150%] text-[#323232] text-[clamp(13px,min(1.11vw,1.63vh),16px)]"
+          className="hero-sub relative z-10 mx-auto w-full text-center font-['Poppins',_sans-serif] font-normal leading-[150%] text-[#323232]"
           style={{
-            marginTop: "clamp(6px, min(0.6vw, 0.92vh), 9px)",
+            maxWidth: "726px",
+            fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)",
+            marginTop: "clamp(8px, min(0.9vw, 1.32vh), 13px)",
             marginBottom: "clamp(16px, min(2.7vw, 3.97vh), 39px)",
           }}
         >
           We partner with founders from day one. We invest conviction, not
           just capital, and stay by their side through every stage of the
-          journey
+          journey.
         </p>
 
-        {/* BUTTONS */}
-        <div
+       {/* BUTTONS */}
+       <div
           className="relative z-20 flex flex-row items-center justify-center"
           style={{
             gap: "clamp(12px, min(1.66vw, 2.44vh), 24px)",
             marginBottom: "clamp(16px, min(2.9vw, 4.28vh), 42px)",
           }}
         >
+          {/* SECONDARY BUTTON */}
           <Link
             href="/portfolio"
             className="flex shrink-0 items-center justify-center p-[10px] font-['Libre_Baskerville',_serif] font-semibold leading-[107%] text-[#001A4D] transition-opacity hover:opacity-60 h-[clamp(40px,min(3.75vw,5.5vh),54px)] w-[clamp(140px,min(12.85vw,18.84vh),185px)] text-[clamp(13px,min(1.11vw,1.63vh),16px)]"
@@ -91,23 +114,59 @@ export default function Hero() {
             View Portfolio
           </Link>
 
+          {/* PRIMARY BUTTON WITH CURSOR SPOTLIGHT */}
           <Link
             href="/get-investment"
             className="group relative m-0 flex shrink-0 items-center justify-center gap-[10px] overflow-hidden rounded-[clamp(7px,0.625vw,9px)] bg-[#001A4D] p-[10px] font-['Libre_Baskerville',_serif] font-semibold leading-[107%] text-[#F5F0E8] transition-all h-[clamp(40px,min(3.75vw,5.5vh),54px)] w-[clamp(140px,min(12.85vw,18.84vh),185px)] text-[clamp(13px,min(1.11vw,1.63vh),16px)]"
+            onMouseMove={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const y = e.clientY - rect.top;
+              e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
+              e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
+            }}
           >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_40%,#003CB3_0%,#012469_50%,#001A4D_100%)] opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100" />
+            {/* The Spotlight Gradient Layer */}
+            <div 
+              className="absolute inset-0 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100 z-0" 
+              style={{ 
+                background: 'radial-gradient(circle 80px at var(--mouse-x, 50%) var(--mouse-y, 50%), #003CB3 0%, transparent 100%)' 
+              }} 
+            />
+            
             <span className="relative z-10">Get Investment</span>
           </Link>
         </div>
 
-        {/* CARDS ROW — overlap less on short screens (max picks the less-negative value) */}
+        {/* CARDS ROW — overlap less on short screens (max picks the less-negative value)
+
+           SINGLE-BASE SCALING (fixes the card-inconsistency bug):
+           --lw = the LARGE card width. Every card dimension (small width,
+           padding, gap, fonts, radii) is derived from --lw via cs(), so the
+           large:small ratio is ALWAYS 278:240 and the text always scales WITH
+           the card — no clamp-segment drift, identical at every zoom level.
+           At MacBook 14" --lw caps at 278px → pixel-identical to the approved
+           design. */}
         <div
-          className="relative z-0 w-full"
-          style={{ marginTop: "clamp(-72px, max(-6.67vw, -9.78vh), -24px)" }}
+          className="hero-cards-overlap relative z-0 w-full"
+          style={{
+            marginTop: "clamp(-72px, max(-6.67vw, -9.78vh), -24px)",
+            // single source of truth for the whole card cluster.
+            // Goal: ~1.1× the original design size (large card 278→306) so the
+            // cluster is wider and the left/right whitespace shrinks — WITHOUT
+            // ever overflowing the viewport (hero must stay fully visible).
+            //   • cap 306  = 1.1 × 278   → full 1.1× on large screens
+            //   • 31.14vh  = 1.1 × 28.31 → full 1.1× height on most laptops
+            //   • 19.86vw  = WIDTH SAFETY. The 5-card cluster ≈ --lw × 4.83, so
+            //     19.86vw keeps it ≤ ~96vw — the squarest screens (≈3:2) settle
+            //     a touch under 1.1× rather than spilling past the edges. min()
+            //     picks whichever binds first; 1.1× fits everywhere.
+            ["--lw" as string]: "clamp(165px, min(19.86vw, 31.14vh), 306px)",
+          }}
         >
           <div
             className="mx-auto flex w-full items-end justify-center"
-            style={{ gap: "clamp(6px, min(1.18vw, 1.73vh), 17px)" }}
+            style={{ gap: cs(17) }}
           >
             {founderSlots.map((slot, i) => {
               const currentFounder = slot.pool[currentIndices[i]];
@@ -122,16 +181,25 @@ export default function Hero() {
                       animate={{ rotateY: 0, opacity: 1, scale: 1 }}
                       exit={{ rotateY: 90, opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.5, ease: "easeInOut" }}
-                      style={{ transformStyle: "preserve-3d" }}
-                      className={`flex flex-col items-start bg-white shadow-[0_4px_14.8px_0_rgba(101,101,101,0.25)] rounded-[clamp(8px,0.83vw,12px)] ${
-                        isLarge
-                          ? "aspect-[278/386] w-[clamp(150px,min(19.3vw,28.31vh),278px)] gap-[clamp(6px,min(0.69vw,1.02vh),10px)] p-[clamp(10px,min(0.97vw,1.43vh),14px)]"
-                          : "aspect-[240/294] w-[clamp(130px,min(16.67vw,24.44vh),240px)] gap-[clamp(2px,min(0.27vw,0.41vh),4px)] p-[clamp(10px,min(0.97vw,1.43vh),14px)_clamp(12px,min(1.25vw,1.83vh),18px)]"
+                      className={`flex flex-col items-start bg-white shadow-[0_4px_14.8px_0_rgba(101,101,101,0.25)] ${
+                        isLarge ? "aspect-[278/386]" : "aspect-[240/294]"
                       }`}
+                      style={{
+                        transformStyle: "preserve-3d",
+                        width:        isLarge ? cs(278) : cs(240),
+                        gap:          isLarge ? cs(10)  : cs(4),
+                        borderRadius: cs(12),
+                        padding:      isLarge
+                          ? `${cs(14)}`
+                          : `${cs(14)} ${cs(18)}`,
+                      }}
                     >
-                      <div className={`relative shrink-0 w-full overflow-hidden rounded-[clamp(3px,0.34vw,5px)] ${
-                        isLarge ? "aspect-[251/291]" : "aspect-[211/223]"
-                      }`}>
+                      <div
+                        className={`relative shrink-0 w-full overflow-hidden ${
+                          isLarge ? "aspect-[251/291]" : "aspect-[211/223]"
+                        }`}
+                        style={{ borderRadius: cs(5) }}
+                      >
                         <Image
                           src={currentFounder.image}
                           alt={currentFounder.name}
@@ -141,15 +209,16 @@ export default function Hero() {
                         />
                       </div>
 
-                      <div className="flex w-full flex-col" style={{ paddingTop: "clamp(3px, 0.34vw, 5px)" }}>
-                        <p className={`w-full font-['Libre_Baskerville',_serif] font-bold leading-[119%] text-black ${
-                          isLarge ? "text-[clamp(14px,min(1.38vw,2.04vh),20px)]" : "text-[clamp(12px,min(1.11vw,1.63vh),16px)]"
-                        }`}>
+                      <div className="flex w-full flex-col" style={{ paddingTop: cs(5) }}>
+                        <p
+                          className="w-full font-['Libre_Baskerville',_serif] font-bold leading-[119%] text-black"
+                          style={{ fontSize: isLarge ? cs(20) : cs(16) }}
+                        >
                           {currentFounder.name}
                         </p>
                         <p
-                          className="w-full font-['Poppins',_sans-serif] font-light leading-[119%] text-black text-[clamp(10px,min(0.83vw,1.22vh),12px)]"
-                          style={{ marginTop: "clamp(2px, 0.27vw, 4px)" }}
+                          className="w-full font-['Poppins',_sans-serif] font-light leading-[119%] text-black"
+                          style={{ fontSize: cs(12), marginTop: cs(4) }}
                         >
                           {currentFounder.role}
                         </p>

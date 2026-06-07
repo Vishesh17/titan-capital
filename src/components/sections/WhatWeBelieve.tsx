@@ -12,12 +12,12 @@ const beliefs = [
   {
     title: "Conviction Over Consensus",
     description:
-      "We don’t follow the herd. We invest where we see long-term asymmetric potential, often before the market agrees. Our best bets have always looked early and unusual.",
+      "The best companies look obvious only in hindsight. We make decisions on first principles, not on what is already crowded or consensus-driven.",
   },
   {
     title: "Built for Endurance",
     description:
-      "We don’t just write a cheque and move on. We partner beyond capital, through hiring, pivots, fundraising, and the moments that don’t make it to the press release.",
+      "We are not chasing the next round. We are building partnerships that compound over a decade, through every market, every cycle.",
   },
 ];
 
@@ -82,7 +82,7 @@ export default function WhatWeBelieve() {
         
         {/* "What" - Normal font, Clamped to 64px */}
         <motion.span 
-          className="m-0 font-['Libre_Baskerville',_serif] text-[clamp(40px,5vw,64px)] font-semibold not-italic leading-[120%] text-[var(--Primary-Color,#001A4D)]" 
+          className="m-0 font-['Libre_Baskerville',_serif] text-[length:var(--heading-xl)] font-semibold not-italic leading-[120%] text-[var(--Primary-Color,#001A4D)]" 
           variants={{
             hidden: { opacity: 0, y: 40 },
             visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
@@ -109,12 +109,12 @@ export default function WhatWeBelieve() {
             }}
           />
           
-          <span className="relative z-10 font-['Libre_Baskerville',_serif] text-[clamp(40px,5vw,64px)] font-semibold italic leading-[120%] text-[var(--Primary-Color,#001A4D)]">
+          <span className="relative z-10 font-['Libre_Baskerville',_serif] text-[length:var(--heading-xl)] font-semibold italic leading-[120%] text-[var(--Primary-Color,#001A4D)]">
             We believe
           </span>
         </motion.div>
       </motion.div>
-      
+
       {/* =========================================
           ANIMATED CARDS FAN-OUT SEQUENCE
           ========================================= */}
@@ -132,7 +132,7 @@ export default function WhatWeBelieve() {
             variants={getCardVariants(i)}
           >
             <Image
-              src="/images/misc/borderedcard.svg"
+              src="/images/misc/borderedcard.png"
               alt="Card Border"
               fill
               className="pointer-events-none object-contain"

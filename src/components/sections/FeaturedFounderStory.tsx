@@ -21,7 +21,7 @@ const slides = [
     role: "Co-Founder and CEO, OfBusiness",
     image: "/images/misc/5.webp",
     logo: "/images/logos/Ofbusiness.webp",
-    text: `"We left our careers, put everything into a baby care brand nobody asked for, and built it into India's first D2C IPO"`,
+    text: `"I like businesses that are under the radar. I make products that are far away from the limelight, because that is where a business is to be made."`,
   },
   {
     name: "Abhishek Bansal",
@@ -68,8 +68,8 @@ export default function FeaturedFounderStory() {
         gap:           "clamp(10px, min(1.66vw, 2.44vh), 24px)",
         paddingTop:    "clamp(24px, min(3.33vw, 4.89vh), 48px)",
         paddingBottom: "clamp(24px, min(3.33vw, 4.89vh), 48px)",
-        paddingLeft:   "clamp(16px, 3vw, 48px)",
-        paddingRight:  "clamp(16px, 3vw, 48px)",
+        paddingLeft:   "var(--section-px)",
+        paddingRight:  "var(--section-px)",
       }}
     >
 
@@ -82,7 +82,7 @@ export default function FeaturedFounderStory() {
       >
         <motion.h2
           className="m-0 text-center font-['Libre_Baskerville',_serif] font-bold italic leading-[1.2] text-[#001A4D]"
-          style={{ fontSize: "clamp(20px, min(3.33vw, 4.89vh), 48px)" }}
+          style={{ fontSize: "var(--heading-xl)" }}
           variants={h1v}
         >
           <span className="relative inline-block overflow-hidden px-2.5" style={{ background: "transparent" }}>
@@ -93,16 +93,21 @@ export default function FeaturedFounderStory() {
 
         <motion.h2
           className="m-0 mt-1 text-center font-['Libre_Baskerville',_serif] font-semibold leading-[1.2] text-[#001A4D]"
-          style={{ fontSize: "clamp(20px, min(3.33vw, 4.89vh), 48px)" }}
+          style={{ fontSize: "var(--heading-xl)" }}
           variants={h2v}
         >
           our credentials
         </motion.h2>
       </motion.div>
 
-      {/* ── 2. TV wrapper ── */}
+      {/* ── 2. TWO-COLUMN ROW: TV (left) · quote + button (right) ──
+          Stacks vertically on mobile (TV on top); side-by-side from lg up,
+          TV pinned left and the text column pinned right (justify-between). */}
+      <div className="mx-auto flex w-full max-w-[1280px] flex-col items-center justify-center gap-[clamp(28px,min(4.8vw,7vh),68px)] lg:flex-row lg:items-center lg:justify-center">
+
+      {/* ── 2a. TV wrapper ── */}
       <div
-        className="relative w-full overflow-hidden"
+        className="relative w-full shrink-0 overflow-hidden"
         style={{ maxWidth: "clamp(280px, min(45.13vw, 66.19vh), 650px)" }}
       >
 
@@ -233,33 +238,58 @@ export default function FeaturedFounderStory() {
 
       </div>
 
-      {/* ── 3. Quote text ── */}
-      <AnimatePresence mode="wait">
-        <motion.p
-          key={current}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.3 }}
-          className="m-0 mx-auto w-full max-w-[600px] text-center font-['Poppins',sans-serif] font-normal leading-[1.5] text-black"
-          style={{ fontSize: "clamp(11px, min(1.11vw, 1.63vh), 16px)" }}
-        >
-          {slide.text}
-        </motion.p>
-      </AnimatePresence>
-
-      {/* ── 4. CTA button ── */}
-      <button
-        className="flex shrink-0 cursor-pointer items-center justify-center gap-[10px] rounded-[9px] border-none bg-[#001A4D] font-['Libre_Baskerville',_serif] font-semibold text-white transition-all duration-300 ease-in-out hover:opacity-90"
+      {/* ── 2b. RIGHT COLUMN: quote + button (description size matches the
+              hero subtext: clamp(14px, min(1.6vw, 2.35vh), 20px)) ── */}
+      <div
+        className="flex w-full flex-col items-center text-center"
         style={{
-          height:   "clamp(38px, min(3.75vw, 5.5vh),  54px)",
-          width:    "clamp(120px, min(11.6vw, 17.02vh), 167px)",
-          fontSize: "clamp(11px, min(1.04vw, 1.53vh),  15px)",
-          padding:  "clamp(6px, 0.69vw, 10px)",
+          maxWidth: "clamp(280px, min(33vw, 48.4vh), 475px)",
+          gap:      "clamp(20px, min(2.6vw, 3.81vh), 36px)",
         }}
       >
-        Read full story
-      </button>
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={current}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="m-0 w-full text-center font-['Poppins',sans-serif] font-normal leading-[1.5] text-black"
+            style={{ fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)" }}
+          >
+            {slide.text}
+          </motion.p>
+        </AnimatePresence>
+
+        <button
+          className="group relative flex shrink-0 cursor-pointer items-center justify-center gap-[10px] overflow-hidden rounded-[9px] border-none bg-[#001A4D] font-['Libre_Baskerville',_serif] font-semibold text-white transition-all duration-300 ease-in-out"
+          style={{
+            height:   "clamp(38px, min(3.75vw, 5.5vh),  54px)",
+            width:    "clamp(130px, min(12.6vw, 18.5vh), 181px)",
+            fontSize: "clamp(11px, min(1.04vw, 1.53vh),  15px)",
+            padding:  "clamp(6px, 0.69vw, 10px)",
+          }}
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
+            e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
+          }}
+        >
+          {/* The Dynamic Spotlight Layer (Bright blue glow for dark button) */}
+          <div 
+            className="pointer-events-none absolute inset-0 z-0 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100" 
+            style={{ 
+              background: 'radial-gradient(circle 80px at var(--mouse-x, 50%) var(--mouse-y, 50%), #003CB3 0%, transparent 100%)' 
+            }} 
+          />
+          
+          <span className="relative z-10 text-center">Read Full Story</span>
+        </button>
+      </div>
+
+      </div>
 
       {/* ── 5. Pagination dots ── */}
       <div className="flex items-center gap-3">

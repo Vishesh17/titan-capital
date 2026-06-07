@@ -29,8 +29,8 @@ export default function Footer() {
       <div
         className="relative z-10 flex w-full max-w-[1440px] flex-col"
         style={{
-          paddingLeft:  "clamp(20px, min(3.33vw, 4.89vh), 48px)",
-          paddingRight: "clamp(20px, min(3.33vw, 4.89vh), 48px)",
+          paddingLeft:  "var(--section-px)",
+          paddingRight: "var(--section-px)",
         }}
       >
 

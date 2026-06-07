@@ -156,8 +156,8 @@ export default function FounderTestimonial() {
       <div
         className="mx-auto flex w-full max-w-[1440px] flex-col items-start justify-between gap-6 md:flex-row md:items-end"
         style={{
-          paddingLeft:   "clamp(20px, min(2.77vw, 4.07vh), 40px)",
-          paddingRight:  "clamp(20px, min(2.77vw, 4.07vh), 40px)",
+          paddingLeft:   "var(--section-px-wide)",
+          paddingRight:  "var(--section-px-wide)",
           marginBottom:  "clamp(24px, min(4.44vw, 6.52vh), 64px)",
         }}
       >
@@ -176,7 +176,7 @@ export default function FounderTestimonial() {
           <motion.h2
             className="m-0 font-['Libre_Baskerville',_serif] text-[#001A4D]"
             style={{
-              fontSize:   "clamp(24px, min(4.44vw, 6.52vh), 64px)",
+              fontSize:   "var(--heading-xl)",
               fontWeight: 600,
               fontStyle:  "normal",
               lineHeight: "120%",
@@ -190,7 +190,7 @@ export default function FounderTestimonial() {
           <motion.h2
             className="m-0 font-['Libre_Baskerville',_serif] text-[#001A4D]"
             style={{
-              fontSize:   "clamp(24px, min(4.44vw, 6.52vh), 64px)",
+              fontSize:   "var(--heading-xl)",
               fontWeight: 700,
               fontStyle:  "italic",
               lineHeight: "120%",
@@ -210,36 +210,67 @@ export default function FounderTestimonial() {
 
         {/* Arrow buttons — 77px at design, fluid */}
         <div className="flex items-center" style={{ gap: "clamp(12px, min(1.11vw, 1.63vh), 16px)", marginBottom: "clamp(8px, min(0.97vw, 1.43vh), 14px)" }}>
+          
+          {/* PREV BUTTON WITH SPOTLIGHT */}
           <button
             onClick={prevSlide}
             disabled={isAtStart}
-            className={`flex shrink-0 items-center justify-center rounded-full border-none transition ${
-              isAtStart ? "bg-[#E5EEFF] opacity-50 cursor-not-allowed" : "bg-[#D3E2FF] cursor-pointer hover:opacity-80"
+            className={`group relative flex shrink-0 items-center justify-center overflow-hidden rounded-full border-none transition ${
+              isAtStart ? "bg-[#E5EEFF] opacity-50 cursor-not-allowed" : "bg-[#D3E2FF] cursor-pointer"
             }`}
             style={{
               width:  "clamp(48px, min(5.35vw, 7.84vh), 77px)",
               height: "clamp(48px, min(5.35vw, 7.84vh), 77px)",
             }}
             aria-label="Previous slide"
+            onMouseMove={(e) => {
+              if (isAtStart) return;
+              const rect = e.currentTarget.getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const y = e.clientY - rect.top;
+              e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
+              e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
+            }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" style={{ width: "60%", height: "60%" }} viewBox="0 0 59 59" fill="none">
+            <div 
+              className="pointer-events-none absolute inset-0 z-0 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100" 
+              style={{ 
+                background: 'radial-gradient(circle 40px at var(--mouse-x, 50%) var(--mouse-y, 50%), #FFFFFF 0%, transparent 100%)' 
+              }} 
+            />
+            <svg className="relative z-10" xmlns="http://www.w3.org/2000/svg" style={{ width: "60%", height: "60%" }} viewBox="0 0 59 59" fill="none">
               <path d="M27.1151 20.9695C27.2962 20.8007 27.4415 20.5972 27.5423 20.371C27.6431 20.1448 27.6973 19.9007 27.7016 19.6531C27.706 19.4056 27.6605 19.1597 27.5677 18.9301C27.475 18.7005 27.337 18.492 27.1619 18.3169C26.9868 18.1418 26.7783 18.0038 26.5487 17.911C26.3191 17.8183 26.0732 17.7728 25.8256 17.7771C25.5781 17.7815 25.3339 17.8357 25.1078 17.9365C24.8816 18.0372 24.6781 18.1825 24.5093 18.3637L14.6759 28.197C14.3307 28.5427 14.1367 29.0113 14.1367 29.4999C14.1367 29.9885 14.3307 30.4571 14.6759 30.8028L24.5093 40.6362C24.6781 40.8173 24.8816 40.9626 25.1078 41.0634C25.3339 41.1642 25.5781 41.2183 25.8256 41.2227C26.0732 41.2271 26.3191 41.1815 26.5487 41.0888C26.7783 40.9961 26.9868 40.8581 27.1619 40.683C27.337 40.5079 27.475 40.2994 27.5677 40.0698C27.6605 39.8402 27.706 39.5943 27.7016 39.3467C27.6973 39.0992 27.6431 38.855 27.5423 38.6289C27.4415 38.4027 27.2962 38.1991 27.1151 38.0303L20.4284 31.3437H44.2497C44.7387 31.3437 45.2076 31.1494 45.5534 30.8037C45.8992 30.4579 46.0934 29.9889 46.0934 29.4999C46.0934 29.0109 45.8992 28.542 45.5534 28.1962C45.2076 27.8504 44.7387 27.6562 44.2497 27.6562H20.4284L27.1151 20.9695Z" fill="black"/>
             </svg>
           </button>
 
+          {/* NEXT BUTTON WITH SPOTLIGHT */}
           <button
             onClick={nextSlide}
             disabled={isAtEnd}
-            className={`flex shrink-0 items-center justify-center rounded-full border-none transition ${
-              isAtEnd ? "bg-[#E5EEFF] opacity-50 cursor-not-allowed" : "bg-[#D3E2FF] cursor-pointer hover:opacity-80"
+            className={`group relative flex shrink-0 items-center justify-center overflow-hidden rounded-full border-none transition ${
+              isAtEnd ? "bg-[#E5EEFF] opacity-50 cursor-not-allowed" : "bg-[#D3E2FF] cursor-pointer"
             }`}
             style={{
               width:  "clamp(48px, min(5.35vw, 7.84vh), 77px)",
               height: "clamp(48px, min(5.35vw, 7.84vh), 77px)",
             }}
             aria-label="Next slide"
+            onMouseMove={(e) => {
+              if (isAtEnd) return;
+              const rect = e.currentTarget.getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const y = e.clientY - rect.top;
+              e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
+              e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
+            }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" style={{ width: "60%", height: "60%", transform: "rotate(180deg)" }} viewBox="0 0 59 59" fill="none">
+            <div 
+              className="pointer-events-none absolute inset-0 z-0 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100" 
+              style={{ 
+                background: 'radial-gradient(circle 40px at var(--mouse-x, 50%) var(--mouse-y, 50%), #FFFFFF 0%, transparent 100%)' 
+              }} 
+            />
+            <svg className="relative z-10" xmlns="http://www.w3.org/2000/svg" style={{ width: "60%", height: "60%", transform: "rotate(180deg)" }} viewBox="0 0 59 59" fill="none">
               <path d="M27.1151 20.9695C27.2962 20.8007 27.4415 20.5972 27.5423 20.371C27.6431 20.1448 27.6973 19.9007 27.7016 19.6531C27.706 19.4056 27.6605 19.1597 27.5677 18.9301C27.475 18.7005 27.337 18.492 27.1619 18.3169C26.9868 18.1418 26.7783 18.0038 26.5487 17.911C26.3191 17.8183 26.0732 17.7728 25.8256 17.7771C25.5781 17.7815 25.3339 17.8357 25.1078 17.9365C24.8816 18.0372 24.6781 18.1825 24.5093 18.3637L14.6759 28.197C14.3307 28.5427 14.1367 29.0113 14.1367 29.4999C14.1367 29.9885 14.3307 30.4571 14.6759 30.8028L24.5093 40.6362C24.6781 40.8173 24.8816 40.9626 25.1078 41.0634C25.3339 41.1642 25.5781 41.2183 25.8256 41.2227C26.0732 41.2271 26.3191 41.1815 26.5487 41.0888C26.7783 40.9961 26.9868 40.8581 27.1619 40.683C27.337 40.5079 27.475 40.2994 27.5677 40.0698C27.6605 39.8402 27.706 39.5943 27.7016 39.3467C27.6973 39.0992 27.6431 38.855 27.5423 38.6289C27.4415 38.4027 27.2962 38.1991 27.1151 38.0303L20.4284 31.3437H44.2497C44.7387 31.3437 45.2076 31.1494 45.5534 30.8037C45.8992 30.4579 46.0934 29.9889 46.0934 29.4999C46.0934 29.0109 45.8992 28.542 45.5534 28.1962C45.2076 27.8504 44.7387 27.6562 44.2497 27.6562H20.4284L27.1151 20.9695Z" fill="black"/>
             </svg>
           </button>
@@ -251,8 +282,8 @@ export default function FounderTestimonial() {
         ref={containerRef}
         className="mx-auto w-full max-w-[1440px] overflow-visible"
         style={{
-          paddingLeft:   "clamp(20px, min(2.77vw, 4.07vh), 40px)",
-          paddingRight:  "clamp(20px, min(2.77vw, 4.07vh), 40px)",
+          paddingLeft:   "var(--section-px-wide)",
+          paddingRight:  "var(--section-px-wide)",
           paddingBottom: "clamp(24px, min(2.77vw, 4.07vh), 40px)",
         }}
       >
@@ -381,8 +412,8 @@ export default function FounderTestimonial() {
           ].join(", "),
           backgroundSize:     "40px 40px",
           backgroundPosition: "0 0, 0 0, 1px 1px, 1px 1px",
-          paddingLeft:     "clamp(20px, min(2.77vw, 4.07vh), 40px)",
-          paddingRight:    "clamp(20px, min(2.77vw, 4.07vh), 40px)",
+          paddingLeft:     "var(--section-px-wide)",
+          paddingRight:    "var(--section-px-wide)",
           paddingTop:      "clamp(40px, min(6.66vw, 9.77vh), 96px)",
           paddingBottom:   "clamp(40px, min(6.66vw, 9.77vh), 96px)",
         }}
@@ -395,7 +426,7 @@ export default function FounderTestimonial() {
         >
           <motion.h2
             className="m-0 text-center font-['Libre_Baskerville',_serif] font-bold italic leading-[1.19] text-[#001A4D]"
-            style={{ fontSize: "clamp(24px, min(4.44vw, 6.52vh), 64px)" }}
+            style={{ fontSize: "var(--heading-xl)" }}
             variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } } }}
           >
             <span className="relative inline-block overflow-hidden px-2" style={{ background: "transparent" }}>
@@ -411,7 +442,7 @@ export default function FounderTestimonial() {
           <motion.h2
             className="m-0 mt-2 w-full text-center font-['Libre_Baskerville',_serif] font-bold leading-[1.19] text-[#001A4D]"
             style={{
-              fontSize: "clamp(24px, min(4.44vw, 6.52vh), 64px)",
+              fontSize: "var(--heading-xl)",
               maxWidth: "clamp(350px, min(48.54vw, 71.18vh), 699px)",
             }}
             variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut", delay: 1.1 } } }}
@@ -420,6 +451,7 @@ export default function FounderTestimonial() {
           </motion.h2>
         </motion.div>
 
+        {/* CTA BUTTON WITH SPOTLIGHT */}
         <Link
           href="/get-investment"
           className="group relative m-0 flex shrink-0 items-center justify-center gap-[10px] overflow-hidden bg-[#001A4D] font-['Libre_Baskerville',_serif] font-semibold leading-[107%] text-[#F5F0E8] transition-all"
@@ -430,8 +462,21 @@ export default function FounderTestimonial() {
             borderRadius: "clamp(7px, min(0.625vw, 0.92vh), 9px)",
             padding:      "clamp(6px, 0.69vw, 10px)",
           }}
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
+            e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
+          }}
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_40%,#003CB3_0%,#012469_50%,#001A4D_100%)] opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100" />
+          {/* Dynamic Spotlight Layer */}
+          <div 
+            className="pointer-events-none absolute inset-0 z-0 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100" 
+            style={{ 
+              background: 'radial-gradient(circle 80px at var(--mouse-x, 50%) var(--mouse-y, 50%), #003CB3 0%, transparent 100%)' 
+            }} 
+          />
           <span className="relative z-10">Get Investment</span>
         </Link>
       </div>
