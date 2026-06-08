@@ -102,7 +102,7 @@ export default function Footer() {
               >
                 <h3
                   className="font-poppins font-medium text-[#001A4D]"
-                  style={{ fontSize: "clamp(13px, min(1.39vw, 2.04vh), 20px)" }}
+                  style={{ fontSize: "clamp(13px, min(1.67vw, 2.44vh), 24px)" }}
                 >
                   {section.title}
                 </h3>
@@ -116,7 +116,7 @@ export default function Footer() {
                         <Link
                           href="#"
                           className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] transition-all duration-300 hover:scale-105 hover:text-[#001A4D]"
-                          style={{ fontSize: "clamp(10px, min(0.97vw, 1.43vh), 14px)" }}
+                          style={{ fontSize: "clamp(10px, min(1.18vw, 1.73vh), 17px)" }}
                         >
                           {link}
                         </Link>

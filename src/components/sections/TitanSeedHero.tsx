@@ -111,7 +111,7 @@ export default function TitanSeedHero() {
         <div className="relative flex w-full justify-center lg:w-[45%] lg:justify-end">
           <div className="relative aspect-[4/3] w-full max-w-[clamp(280px,40vw,650px)] lg:aspect-square">
             <Image
-              src="/images/titanseedfund/pawn.png"
+              src="/images/titanseedfund/pawn.webp"
               alt="Titan Seed First Believer"
               fill
               priority

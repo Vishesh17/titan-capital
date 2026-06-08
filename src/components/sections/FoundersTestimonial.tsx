@@ -11,14 +11,15 @@ const testimonials = [
     name: "Abhiraj Bahl",
     role: "Cofounder, Urban Company",
     image: "/images/hero_founders_images/abhiraj_bahl.png",
-    text: "“Kunal and Rohit were the first investors to believe in Urban Company, even before we launched the platform or decided on the name. Their unwavering support has been a constant throughout our journey, guiding us through ups and downs. As Founders, we deeply value their mentorship and friendship. An early-stage company couldn’t ask for better partners than Titan Capital.”",
+    text: "”Kunal and Rohit were the first investors to believe in Urban Company, even before we launched the platform or decided on the name. Their unwavering support has been a constant throughout our journey, guiding us through ups and downs. As Founders, we deeply value their mentorship and friendship. An early-stage company couldn’t ask for better partners than Titan Capital.”",
   },
   {
     id: 2,
     name: "Disha Singh",
     role: "Cofounder, Zouk",
     image: "/images/Testimonials/disha-singh.avif",
-    text: "“Titan Capital has been an invaluable partner in our journey to build Zouk. Kunal and Rohit have consistently provided invaluable guidance on cultivating a long-lasting business with strong brand loyalty. Their counsel has been instrumental in guiding our focus on critical areas such as efficient working capital management, deep category penetration, and developing a sustainable competitive advantage.”",
+    text: "”Titan Capital has been an invaluable partner in our journey to build Zouk. Kunal and Rohit have consistently provided invaluable guidance on cultivating a long-lasting business with strong brand loyalty. Their counsel has been instrumental in guiding our focus on critical areas such as efficient working capital management, deep category penetration, and developing a sustainable competitive advantage.”",
+    longText: true,
   },
   {
     id: 3,
@@ -26,6 +27,7 @@ const testimonials = [
     role: "Cofounder, Credgenics",
     image: "/images/Testimonials/Rishabh.jpeg",
     text: "“Titan Capital has been more than just an investor for Credgenics - they’ve been our first partner in this journey. Our early conversations made it clear that they weren’t your typical investors. Despite us venturing into a relatively complex and niche segment of debt collections, they backed us with insights and shared perspectives that reshaped how we approached the key challenges.”",
+    longText: true,
   },
   {
     id: 4,
@@ -112,7 +114,7 @@ function TestimonialCard({ item }: { item: typeof testimonials[0] }) {
             {/* FIXED: Reduced Mobile Role Font to 9px */}
             <p
               className="m-0 mt-1 font-['Poppins',_sans-serif] font-light text-white max-md:!text-[7px]"
-              style={{ fontSize: "clamp(10px, min(0.9vw, 1.32vh), 13px)" }}
+              style={{ fontSize: "clamp(10px, min(0.89vw, 1.22vh), 13px)" }}
             >
               {item.role}
             </p>
@@ -132,8 +134,8 @@ function TestimonialCard({ item }: { item: typeof testimonials[0] }) {
         >
           {/* FIXED: Reduced Mobile Quote Font to 10px and tightened line height */}
           <p
-            className="m-0 font-['Inter',_sans-serif] font-medium leading-[1.6] text-[#001A4D] max-md:!text-[8px] max-md:!leading-[1.4]"
-            style={{ fontSize: "clamp(7px, min(0.83vw, 1.22vh), 12px)" }}
+            className={`m-0 font-['Inter',_sans-serif] font-medium leading-[1.6] text-[#001A4D] max-md:!leading-[1.4] ${item.longText ? "max-md:!text-[9px]" : "max-md:!text-[11px]"}`}
+            style={{ fontSize: item.longText ? "clamp(9px, min(0.89vw, 1.35vh), 12px)" : "clamp(10px, min(1vw, 1.5vh), 14px)" }}
           >
             {item.text}
           </p>
@@ -361,7 +363,7 @@ export default function FounderTestimonial() {
       >
         <motion.div
           ref={trackRef}
-          className="flex w-max max-md:!grid max-md:!grid-rows-2 max-md:!grid-flow-col max-md:!w-full max-md:!overflow-x-auto max-md:!snap-x max-md:!snap-mandatory max-md:!transform-none max-md:!px-[var(--section-px-wide)] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          className="flex w-max max-md:!grid max-md:!grid-rows-1 max-md:!grid-flow-col max-md:!w-full max-md:!overflow-x-auto max-md:!snap-x max-md:!snap-mandatory max-md:!transform-none max-md:!px-[var(--section-px-wide)] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
           style={{ gap: "clamp(16px, min(1.66vw, 2.44vh), 24px)" }}
           animate={{ x: -translateX }}
           transition={{ type: "spring", stiffness: 180, damping: 28 }}

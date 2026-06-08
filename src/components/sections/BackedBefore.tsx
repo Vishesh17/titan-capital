@@ -101,6 +101,7 @@ export default function BackedBefore() {
               key={`row1-${company.name}-${i}`}
               className="relative flex shrink-0 items-center justify-center h-[36px] w-[108px] md:h-[53px] md:w-[164px] select-none cursor-pointer"
               whileHover={{ scale: 1.15, filter: "brightness(1.08)" }}
+              whileTap={{ scale: 1.25 }}
               transition={{ type: "spring", stiffness: 400, damping: 18 }}
             >
               <div className={`relative w-full h-full ${company.scaleClass}`}>
@@ -128,6 +129,7 @@ export default function BackedBefore() {
               key={`row2-${company.name}-${i}`}
               className="relative flex shrink-0 items-center justify-center h-[36px] w-[108px] md:h-[53px] md:w-[164px] select-none cursor-pointer"
               whileHover={{ scale: 1.15, filter: "brightness(1.08)" }}
+              whileTap={{ scale: 1.25 }}
               transition={{ type: "spring", stiffness: 400, damping: 18 }}
             >
               <div className={`relative w-full h-full ${company.scaleClass}`}>
