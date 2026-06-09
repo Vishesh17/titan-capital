@@ -60,10 +60,10 @@ export default function WhyTitanSeed() {
     },
     spread: (i: number) => {
       const positions = [
-        { x: "-169%", y: "0%" }, 
-        { x: "-59%",  y: "0%" }, 
-        { x: "179%", y: "0%" },  
-        { x: "59%",  y: "0%" },  
+        { x: "-69%", y: "-68%" }, 
+        { x: "69%",  y: "-63%" }, 
+        { x: "-79%", y: "43%" },  
+        { x: "59%",  y: "48%" },  
       ];
       return {
         x: positions[i].x,
@@ -80,15 +80,15 @@ export default function WhyTitanSeed() {
       className="relative flex w-full flex-col items-center justify-start overflow-hidden bg-white"
       style={{
         minHeight: "calc(100svh - var(--nav-height))",
-        paddingTop: "clamp(20px, min(3.5vw, 5vh), 50px)",
-        paddingBottom: "clamp(-30px, min(-1.5vw, -2vh), -20px)",
+        paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
+        paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
         paddingLeft: "var(--section-px-wide)",
         paddingRight: "var(--section-px-wide)",
       }}
     >
       {/* ── HEADING ── */}
       {/* FIXED: Reduced base mb for mobile (mb-[20px]), shifted previous clamp to md: and kept lg: intact */}
-      <div className="mx-auto mb-[-150] flex w-full max-w-[1440px] shrink-0 flex-col">
+      <div className="mx-auto mb-[20px] md:mb-[clamp(60px,10vh,120px)] lg:mb-[clamp(140px,15vh,200px)] flex w-full max-w-[1440px] shrink-0 flex-col">
         <motion.div
           className="flex w-full flex-row items-center max-lg:justify-center lg:justify-start"
           initial="hidden"
