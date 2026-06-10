@@ -4,66 +4,73 @@ import { useState } from "react";
 import Image from "next/image";
 import { motion, Variants } from "framer-motion";
 
+/*
+  Per-logo bounding box (logoW × logoH as % of card).
+  Tuned by eye so every logo occupies the same visual weight:
+  – Wide thin wordmarks get more width, less height
+  – Square icons with solid backgrounds get constrained smaller
+  – Logos with built-in filled backgrounds appear "heavier" per pixel, so they display smaller
+*/
 const portfolioCompanies = [
   {
     name: "Boba Bhai",
     logo: "/images/logos/bobabhai-logo.webp",
     category: "QSR & cloud kitchens",
-    logoScale: 0.7,
+    logoW: "52%", logoH: "18%",   // 4.3:1  wide pill with purple bg — heavy, constrain
   },
   {
     name: "Zouk",
     logo: "/images/logos/zouk_new_logo.webp",
     category: "Vegan leather goods",
-    logoScale: 0.8,
+    logoW: "40%", logoH: "15%",   // 3:1    clean serif wordmark
   },
   {
     name: "BECO",
     logo: "/images/logos/BECO.webp",
     category: "Sustainable home products",
-    logoScale: 1,
+    logoW: "48%", logoH: "80%",   // 2.7:1  bold blocky letters
   },
   {
     name: "Simplismart",
     logo: "/images/logos/Simplismart.webp",
     category: "AI infrastructure",
-    logoScale: 1,
+    logoW: "68%", logoH: "28%",   // 6.7:1  extremely wide+thin, needs max width
   },
   {
     name: "Supertails",
-    logo: "/images/logos/Supertails.png",
+    logo: "/images/logos/supertails black.png",
     category: "Pet products marketplace",
-    logoScale: 1,
+    logoW: "60%", logoH: "26%",   // 3.7:1  dog icon + text
   },
   {
     name: "HomeRun",
-    logo: "/images/logos/homerun1.webp",
+    logo: "/images/logos/homerun.png",
     category: "B2B quick commerce",
-    logoScale: 1,
-  }, 
+    logoW: "70%", logoH: "40%",   // 1.9:1  icon with solid yellow bg — heavy
+  },
   {
     name: "Anveshan",
     logo: "/images/logos/anveshan.webp",
     category: "Pure & natural foods",
-    logoScale: 0.8,
+    logoW: "70%", logoH: "20%",   // 4.9:1  wide serif wordmark, thin
   },
   {
     name: "Mitigata",
     logo: "/images/logos/mitigata-logo.webp",
     category: "Full-stack cyber security",
-    logoScale: 1,
+    logoW: "54%", logoH: "21%",   // 2.65:1 text + tagline, two lines
   },
   {
     name: "Park+",
     logo: "/images/logos/Park+.webp",
     category: "Automobile platform",
-    logoScale: 1,
+    logoW: "33%", logoH: "33%",   // 1:1    square icon with solid purple bg — heaviest
   },
   {
     name: "MEKR",
     logo: "/images/logos/mekr-logo.webp",
-    category: "Appliance Manufacturing ·",
-    logoScale: 1,
+    category: "Appliance Manufacturing",
+    logoW: "40%", logoH: "26%",   // 2.26:1 icon+text with dark bg
   },
 ];
 
@@ -122,13 +129,15 @@ function PortfolioCard({
         {company.category}
       </p>
 
-      {/* Logo — grayscale by default, full colour on hover */}
-      <div className="relative z-10 flex flex-1 w-full items-center justify-center px-[15%]">
+      {/* Logo — grayscale by default, full colour on hover.
+           Per-logo bounding box (logoW × logoH) tuned so every logo
+           looks the same visual size regardless of aspect ratio. */}
+      <div className="relative z-10 flex flex-1 w-full items-center justify-center">
         <div
-          className={`relative w-full transition-[filter] duration-500 ease-out ${isActive ? "grayscale-0" : "grayscale"}`}
+          className={`relative transition-[filter] duration-500 ease-out ${isActive ? "grayscale-0" : "grayscale"}`}
           style={{
-            height: "clamp(36px, min(4.5vw, 6.5vh), 64px)",
-            transform: `scale(${company.logoScale})`,
+            width: company.logoW,
+            height: company.logoH,
           }}
         >
           <Image
