@@ -15,7 +15,8 @@ export default function AboutTheFund() {
       }}
     >
       <div
-        className="mx-auto flex w-full max-w-[1440px] flex-col items-center gap-[clamp(32px,5vw,60px)] md:flex-row md:items-center md:gap-[clamp(32px,4vw,80px)]"
+        // FIXED: Gap reduced even further to pull the columns tightly together
+        className="mx-auto flex w-full max-w-[1440px] flex-col items-center gap-[clamp(24px,4vw,32px)] md:flex-row md:items-center md:gap-[clamp(12px,1.5vw,24px)]"
       >
 
         {/* ── LEFT: Heading + Description ── */}
@@ -70,12 +71,13 @@ export default function AboutTheFund() {
           </div>
 
           {/* Description */}
-          <motion.p
-            className="mt-[clamp(20px,min(2.5vw,3.5vh),40px)] font-['Poppins',_sans-serif] font-normal text-[#323232] max-md:!text-[15px] max-md:!leading-[1.6]"
+          <motion.div
+            className="mt-[clamp(20px,min(2.5vw,3.5vh),40px)] flex flex-col gap-[clamp(16px,1.5vw,24px)] font-['Poppins',_sans-serif] font-normal text-[#323232] max-md:!text-[15px] max-md:!leading-[1.6]"
             style={{
               fontSize: "clamp(15px, min(1.67vw, 2.44vh), 24px)",
               lineHeight: "167%",
-              maxWidth: "clamp(320px, min(42.36vw, 62.12vh), 610px)",
+              // FIXED: Increased max-width from 610px to 680px so the text reaches further right toward the image
+              maxWidth: "clamp(320px, 45vw, 680px)",
             }}
             variants={{
               hidden: { opacity: 0, y: 30 },
@@ -86,13 +88,18 @@ export default function AboutTheFund() {
               },
             }}
           >
-            We invest in Titan portfolio companies that have demonstrated strong
-            momentum and growth. Having partnered with founders since day one, we
-            continue to support them with capital, strategic guidance, experience,
-            and access to our network. This long-term relationship helps us better
-            understand their needs and provide the right support to accelerate
-            their journey toward lasting success
-          </motion.p>
+            <p className="m-0">
+              We&apos;ve been with these founders since the beginning, through the early decisions, the difficult pivots, and the milestones that quietly signalled something bigger was being built.
+            </p>
+
+            <p className="m-0">
+              The Winners Fund is our commitment to seeing it through. When a portfolio company demonstrates exceptional momentum and a credible path to category leadership, we return with greater capital and deeper conviction. Not as a new investor discovering an opportunity, but as a long-standing partner who understands the business, the team, and the vision from the inside.
+            </p>
+
+            <p className="m-0">
+              Continuity of belief is a form of value in itself, and that is what the Winners Fund represents.
+            </p>
+          </motion.div>
         </motion.div>
 
         {/* ── RIGHT: Image ── */}

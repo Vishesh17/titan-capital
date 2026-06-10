@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
    Constants
    ═══════════════════════════════════════════════════════ */
 
-const ITEMS_PER_PAGE = 30;
+const ITEMS_PER_PAGE = 300;
 
 /* ═══════════════════════════════════════════════════════
    Types
@@ -49,7 +49,6 @@ const FILTER_CONFIG = [
   { key: "fundType" as const, label: "Fund Type" },
   { key: "stage" as const, label: "Stage" },
   { key: "sector" as const, label: "Sector" },
-  { key: "year" as const, label: "Year of investment" },
   { key: "status" as const, label: "Status" },
 ];
 
@@ -100,7 +99,7 @@ function MobileFilterPanel({
         aria-label="Filters"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M21.25 11.9999H8.895M4.534 11.9999H2.75M4.534 11.9999C4.534 11.4217 4.76368 10.8672 5.17251 10.4584C5.58134 10.0496 6.13583 9.81989 6.714 9.81989C7.29217 9.81989 7.84666 10.0496 8.25549 10.4584C8.66432 10.8672 8.894 11.4217 8.894 11.9999C8.894 12.5781 8.66432 13.1326 8.25549 13.5414C7.84666 13.9502 7.29217 14.1799 6.714 14.1799C6.13583 14.1799 5.58134 13.9502 5.17251 13.5414C4.76368 13.1326 4.534 12.5781 4.534 11.9999ZM21.25 18.6069H15.502M15.502 18.6069C15.502 19.1852 15.2718 19.7403 14.8628 20.1492C14.4539 20.5582 13.8993 20.7879 13.321 20.7879C12.7428 20.7879 12.1883 20.5572 11.7795 20.1484C11.3707 19.7396 11.141 19.1851 11.141 18.6069M15.502 18.6069C15.502 18.0286 15.2718 17.4745 14.8628 17.0655C14.4539 16.6566 13.8993 16.4269 13.321 16.4269C12.7428 16.4269 12.1883 16.6566 11.7795 17.0654C11.3707 17.4742 11.141 18.0287 11.141 18.6069M11.141 18.6069H2.75M21.25 5.39289H18.145M13.784 5.39289H2.75M13.784 5.39289C13.784 4.81472 14.0137 4.26023 14.4225 3.8514C14.8313 3.44257 15.3858 3.21289 15.964 3.21289C16.2503 3.21289 16.5338 3.26928 16.7983 3.37883C17.0627 3.48839 17.3031 3.64897 17.5055 3.8514C17.7079 4.05383 17.8685 4.29415 17.9781 4.55864C18.0876 4.82313 18.144 5.10661 18.144 5.39289C18.144 5.67917 18.0876 5.96265 17.9781 6.22714C17.8685 6.49163 17.7079 6.73195 17.5055 6.93438C17.3031 7.13681 17.0627 7.29739 16.7983 7.40695C16.5338 7.5165 16.2503 7.57289 15.964 7.57289C15.3858 7.57289 14.8313 7.34321 14.4225 6.93438C14.0137 6.52555 13.784 5.97106 13.784 5.39289Z" stroke="black" strokeMiterlimit="10" strokeLinecap="round"/>
+          <path d="M21.25 11.9999H8.895M4.534 11.9999H2.75M4.534 11.9999C4.534 11.4217 4.76368 10.8672 5.17251 10.4584C5.58134 10.0496 6.13583 9.81989 6.714 9.81989C7.29217 9.81989 7.84666 10.0496 8.25549 10.4584C8.66432 10.8672 8.894 11.4217 8.894 11.9999C8.894 12.5781 8.66432 13.1326 8.25549 13.5414C7.84666 13.9502 7.29217 14.1799 6.714 14.1799C6.13583 14.1799 5.58134 13.9502 5.17251 13.5414C4.76368 13.1326 4.534 12.5781 4.534 11.9999ZM21.25 18.6069H15.502M15.502 18.6069C15.502 19.1852 15.2718 19.7403 14.8628 20.1492C14.4539 20.5582 13.8993 20.7879 13.321 20.7879C12.7428 20.7879 12.1883 20.5572 11.7795 20.1484C11.3707 19.7396 11.141 19.1851 11.141 18.6069M15.502 18.6069H2.75M21.25 5.39289H18.145M13.784 5.39289H2.75M13.784 5.39289C13.784 4.81472 14.0137 4.26023 14.4225 3.8514C14.8313 3.44257 15.3858 3.21289 15.964 3.21289C16.2503 3.21289 16.5338 3.26928 16.7983 3.37883C17.0627 3.48839 17.3031 3.64897 17.5055 3.8514C17.7079 4.05383 17.8685 4.29415 17.9781 4.55864C18.0876 4.82313 18.144 5.10661 18.144 5.39289C18.144 5.67917 18.0876 5.96265 17.9781 6.22714C17.8685 6.49163 17.7079 6.73195 17.5055 6.93438C17.3031 7.13681 17.0627 7.29739 16.7983 7.40695C16.5338 7.5165 16.2503 7.57289 15.964 7.57289C15.3858 7.57289 14.8313 7.34321 14.4225 6.93438C14.0137 6.52555 13.784 5.97106 13.784 5.39289Z" stroke="black" strokeMiterlimit="10" strokeLinecap="round"/>
         </svg>
         {/* Active count badge */}
         {totalActive > 0 && (
@@ -197,7 +196,7 @@ function MobileFilterPanel({
 }
 
 /* ═══════════════════════════════════════════════════════
-   Dropdown Component (Updated to remove count badge)
+   Dropdown Component
    ═══════════════════════════════════════════════════════ */
 
 function FilterDropdown({
@@ -253,7 +252,6 @@ function FilterDropdown({
           fontFamily: "'Poppins', sans-serif",
         }}
       >
-        {/* Count badge removed, only label is shown */}
         <span className="flex items-center gap-[4px] truncate">
           {label}
         </span>
@@ -349,66 +347,66 @@ function FilterDropdown({
     </div>
   );
 }
-
 /* ═══════════════════════════════════════════════════════
    Company Card
    ═══════════════════════════════════════════════════════ */
 
-function CompanyCard({ company }: { company: Company }) {
-  return (
-    <div
-      className="group relative flex items-center justify-center overflow-hidden rounded-[clamp(8px,0.83vw,12px)] border border-[#F0F0F0] bg-white transition-shadow duration-300 hover:shadow-[0_2px_16px_rgba(0,0,0,0.08)]"
-      style={{ aspectRatio: "1 / 1" }}
-    >
-      {company.isRecent && (
-        <div
-          className="absolute left-0 z-10 flex items-center text-white"
-          style={{
-            top: "clamp(10px, min(1.2vw, 1.8vh), 18px)",
-            width: "clamp(100px, min(9.65vw, 14.2vh), 139px)",
-            height: "clamp(24px, min(2.29vw, 3.36vh), 33px)",
-            padding: "clamp(6px, min(0.7vw, 1vh), 10px)",
-            gap: "10px",
-            borderRadius: "0 70px 70px 0",
-            background:
-              "linear-gradient(92deg, #001A4D 4.1%, #002A7C 42.17%, #001A4D 86.92%)",
-            boxShadow: "0 4px 18.6px 0 #A8C6FF",
-            fontSize: "clamp(8px, min(0.83vw, 1.22vh), 12px)",
-            fontFamily: "'Poppins', sans-serif",
-            fontWeight: 500,
-            lineHeight: "150%",
-            whiteSpace: "nowrap",
-          }}
-        >
-          Recent investment
-        </div>
-      )}
-
-      {company.logo ? (
-        <div
-          className="relative flex items-center justify-center transition-transform duration-300 group-hover:scale-105"
-          style={{ width: "60%", height: "40%" }}
-        >
-          <Image
-            src={company.logo}
-            alt={company.brandName}
-            fill
-            sizes="(max-width: 640px) 40vw, (max-width: 1024px) 25vw, 16vw"
-            className="object-contain"
-          />
-        </div>
-      ) : (
-        <span
-          className="font-['Poppins',_sans-serif] font-semibold text-[#001A4D]"
-          style={{ fontSize: "clamp(14px, min(1.4vw, 2vh), 20px)" }}
-        >
-          {company.brandName}
-        </span>
-      )}
-    </div>
-  );
-}
-
+   function CompanyCard({ company }: { company: Company }) {
+    return (
+      <div
+        className="group relative flex items-center justify-center overflow-hidden rounded-[clamp(8px,0.83vw,12px)] border border-[#F0F0F0] bg-white transition-shadow duration-300 hover:shadow-[0_2px_16px_rgba(0,0,0,0.08)]"
+        style={{ aspectRatio: "1 / 1" }}
+      >
+        {company.isRecent && (
+          <div
+            className="absolute left-0 z-10 flex items-center text-white"
+            style={{
+              top: "clamp(10px, min(1.2vw, 1.8vh), 18px)",
+              width: "clamp(100px, min(9.65vw, 14.2vh), 139px)",
+              height: "clamp(24px, min(2.29vw, 3.36vh), 33px)",
+              padding: "clamp(6px, min(0.7vw, 1vh), 10px)",
+              gap: "10px",
+              borderRadius: "0 70px 70px 0",
+              background:
+                "linear-gradient(92deg, #001A4D 4.1%, #002A7C 42.17%, #001A4D 86.92%)",
+              boxShadow: "0 4px 18.6px 0 #A8C6FF",
+              fontSize: "clamp(8px, min(0.83vw, 1.22vh), 12px)",
+              fontFamily: "'Poppins', sans-serif",
+              fontWeight: 500,
+              lineHeight: "150%",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Recent investment
+          </div>
+        )}
+  
+        {company.logo ? (
+          <div
+            className="relative flex items-center justify-center transition-transform duration-300 group-hover:scale-105"
+            // FIXED: Changed to a uniform 55x55% square bounding box.
+            // All logos will now be constrained to the exact same maximum dimensions.
+            style={{ width: "55%", height: "55%" }}
+          >
+            <Image
+              src={company.logo}
+              alt={company.brandName}
+              fill
+              sizes="(max-width: 640px) 40vw, (max-width: 1024px) 25vw, 16vw"
+              className="object-contain"
+            />
+          </div>
+        ) : (
+          <span
+            className="font-['Poppins',_sans-serif] font-semibold text-[#001A4D] px-4 text-center"
+            style={{ fontSize: "clamp(14px, min(1.4vw, 2vh), 20px)" }}
+          >
+            {company.brandName}
+          </span>
+        )}
+      </div>
+    );
+  }
 /* ═══════════════════════════════════════════════════════
    Skeleton Loader
    ═══════════════════════════════════════════════════════ */
@@ -426,188 +424,6 @@ function SkeletonGrid() {
     </div>
   );
 }
-/* ═══════════════════════════════════════════════════════
-   Pagination Component (Updated Styling)
-   ═══════════════════════════════════════════════════════ */
-
-   function Pagination({
-    currentPage,
-    totalPages,
-    onPageChange,
-  }: {
-    currentPage: number;
-    totalPages: number;
-    onPageChange: (page: number) => void;
-  }) {
-    if (totalPages <= 1) return null;
-  
-    /* Build page numbers to show: always first, last, current ±1, with ellipsis gaps. */
-    const pages: (number | "ellipsis")[] = [];
-    for (let i = 1; i <= totalPages; i++) {
-      if (
-        i === 1 ||
-        i === totalPages ||
-        (i >= currentPage - 1 && i <= currentPage + 1)
-      ) {
-        pages.push(i);
-      } else if (
-        pages.length > 0 &&
-        pages[pages.length - 1] !== "ellipsis"
-      ) {
-        pages.push("ellipsis");
-      }
-    }
-  
-    // Base styling for all interactive pagination buttons (arrows and numbers)
-    const interactiveBtnBase =
-      "group relative flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border-none font-['Poppins',_sans-serif] font-medium transition-all duration-300 ease-in-out";
-  
-    // Disabled styling
-    const disabledBtnClasses = "opacity-40 cursor-not-allowed pointer-events-none";
-  
-    return (
-      <div
-        className="mt-[clamp(24px,min(3vw,4.5vh),40px)] flex items-center justify-center"
-        style={{ gap: "clamp(8px, min(1vw, 1.5vh), 16px)" }}
-      >
-        {/* ── Prev Arrow ── */}
-        <button
-          type="button"
-          disabled={currentPage === 1}
-          onClick={() => onPageChange(currentPage - 1)}
-          className={`${interactiveBtnBase} bg-[#D3E2FF] text-[#001A4D] ${
-            currentPage === 1 ? disabledBtnClasses : ""
-          }`}
-          style={{
-            width: "clamp(32px, min(3.5vw, 5vh), 48px)",
-            height: "clamp(32px, min(3.5vw, 5vh), 48px)",
-          }}
-          aria-label="Previous page"
-          onMouseMove={(e) => {
-            if (currentPage === 1) return; // Prevent spotlight on disabled
-            const rect = e.currentTarget.getBoundingClientRect();
-            e.currentTarget.style.setProperty("--mouse-x", `${e.clientX - rect.left}px`);
-            e.currentTarget.style.setProperty("--mouse-y", `${e.clientY - rect.top}px`);
-          }}
-        >
-          {/* Spotlight hover effect */}
-          <div
-            className="pointer-events-none absolute inset-0 z-0 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100"
-            style={{
-              background:
-                "radial-gradient(circle 30px at var(--mouse-x, 50%) var(--mouse-y, 50%), #FFFFFF 0%, transparent 100%)",
-            }}
-          />
-          <svg
-            className="relative z-10"
-            width="40%"
-            height="40%"
-            viewBox="0 0 14 14"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M8.75 3.5L5.25 7L8.75 10.5" />
-          </svg>
-        </button>
-  
-        {/* ── Page Numbers ── */}
-        {pages.map((p, idx) =>
-          p === "ellipsis" ? (
-            <span
-              key={`ellipsis-${idx}`}
-              className="flex items-center justify-center font-['Poppins',_sans-serif] text-[#667085]"
-              style={{
-                width: "clamp(24px, min(2.5vw, 3.5vh), 32px)",
-                fontSize: "clamp(12px, min(1.2vw, 1.6vh), 16px)",
-              }}
-            >
-              ...
-            </span>
-          ) : (
-            <button
-              key={p}
-              type="button"
-              onClick={() => onPageChange(p)}
-              className={`${interactiveBtnBase} ${
-                p === currentPage
-                  ? "bg-[#001A4D] text-white" // Active page styling
-                  : "bg-[#D3E2FF] text-[#001A4D]" // Inactive page styling
-              }`}
-              style={{
-                width: "clamp(32px, min(3.5vw, 5vh), 48px)",
-                height: "clamp(32px, min(3.5vw, 5vh), 48px)",
-                fontSize: "clamp(12px, min(1.2vw, 1.6vh), 16px)",
-              }}
-              onMouseMove={(e) => {
-                if (p === currentPage) return; // Prevent light spotlight on dark active button
-                const rect = e.currentTarget.getBoundingClientRect();
-                e.currentTarget.style.setProperty("--mouse-x", `${e.clientX - rect.left}px`);
-                e.currentTarget.style.setProperty("--mouse-y", `${e.clientY - rect.top}px`);
-              }}
-            >
-              {/* Spotlight hover effect (Only for inactive buttons) */}
-              {p !== currentPage && (
-                <div
-                  className="pointer-events-none absolute inset-0 z-0 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100"
-                  style={{
-                    background:
-                      "radial-gradient(circle 30px at var(--mouse-x, 50%) var(--mouse-y, 50%), #FFFFFF 0%, transparent 100%)",
-                  }}
-                />
-              )}
-              <span className="relative z-10">{p}</span>
-            </button>
-          )
-        )}
-  
-        {/* ── Next Arrow ── */}
-        <button
-          type="button"
-          disabled={currentPage === totalPages}
-          onClick={() => onPageChange(currentPage + 1)}
-          className={`${interactiveBtnBase} bg-[#D3E2FF] text-[#001A4D] ${
-            currentPage === totalPages ? disabledBtnClasses : ""
-          }`}
-          style={{
-            width: "clamp(32px, min(3.5vw, 5vh), 48px)",
-            height: "clamp(32px, min(3.5vw, 5vh), 48px)",
-          }}
-          aria-label="Next page"
-          onMouseMove={(e) => {
-            if (currentPage === totalPages) return; // Prevent spotlight on disabled
-            const rect = e.currentTarget.getBoundingClientRect();
-            e.currentTarget.style.setProperty("--mouse-x", `${e.clientX - rect.left}px`);
-            e.currentTarget.style.setProperty("--mouse-y", `${e.clientY - rect.top}px`);
-          }}
-        >
-           {/* Spotlight hover effect */}
-           <div
-            className="pointer-events-none absolute inset-0 z-0 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100"
-            style={{
-              background:
-                "radial-gradient(circle 30px at var(--mouse-x, 50%) var(--mouse-y, 50%), #FFFFFF 0%, transparent 100%)",
-            }}
-          />
-          <svg
-            className="relative z-10"
-            width="40%"
-            height="40%"
-            viewBox="0 0 14 14"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M5.25 3.5L8.75 7L5.25 10.5" />
-          </svg>
-        </button>
-      </div>
-    );
-  }
 
 /* ═══════════════════════════════════════════════════════
    Main Component
@@ -711,10 +527,11 @@ export default function PortfolioGrid() {
     return chips;
   }, [activeFilters]);
 
+  /* ── FILTER AND SORT ALPHABETICALLY ── */
   const filteredCompanies = useMemo(() => {
     if (!data) return [];
 
-    return data.companies.filter((c) => {
+    const filtered = data.companies.filter((c) => {
       if (searchQuery.trim()) {
         const q = searchQuery.trim().toLowerCase();
         if (!c.brandName.toLowerCase().includes(q)) return false;
@@ -728,6 +545,14 @@ export default function PortfolioGrid() {
 
       return true;
     });
+
+    // UPDATED: Alphabetical natural sort (A-Z) handling character strings and numeric digits accurately
+    return filtered.sort((a, b) =>
+      a.brandName.localeCompare(b.brandName, undefined, {
+        sensitivity: "base",
+        numeric: true,
+      })
+    );
   }, [data, searchQuery, activeFilters]);
 
   const totalPages = Math.ceil(filteredCompanies.length / ITEMS_PER_PAGE);
@@ -753,7 +578,6 @@ export default function PortfolioGrid() {
         background: "#FBF7F0",
         paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
         paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
-        /* Inherits your global padding variables */
         paddingLeft: "var(--section-px-wide)",
         paddingRight: "var(--section-px-wide)",
       }}
@@ -770,12 +594,10 @@ export default function PortfolioGrid() {
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="mb-6 flex w-full flex-col items-center lg:hidden"
         >
-          {/* Compact search bar with filter icon */}
           <div
             className="relative flex w-full items-center gap-[10px] rounded-[8px] bg-white"
             style={{ height: 44, padding: "10px" }}
           >
-            {/* Search icon */}
             <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className="shrink-0 text-[#667085]">
               <path d="M17.5 17.5L13.875 13.875M15.833 9.167a6.667 6.667 0 11-13.333 0 6.667 6.667 0 0113.333 0z" stroke="currentColor" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -788,7 +610,6 @@ export default function PortfolioGrid() {
               className="min-w-0 flex-1 bg-transparent font-['Poppins',_sans-serif] text-[13px] text-[#101828] outline-none placeholder:text-[#98A2B3]"
             />
 
-            {/* Filter icon */}
             <MobileFilterPanel
               filterOptions={filterOptions}
               activeFilters={activeFilters}
@@ -1037,13 +858,6 @@ export default function PortfolioGrid() {
                 <CompanyCard key={company.brandName} company={company} />
               ))}
             </div>
-
-            {/* Pagination */}
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
           </>
         )}
       </div>

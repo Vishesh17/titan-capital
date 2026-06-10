@@ -7,6 +7,8 @@ import Image from "next/image";
 /* Map specific sub-items to custom routes */
 const subItemHrefs: Record<string, string> = {
   "Titan Winner Fund": "/winnerFund",
+  "Titan Seed Funding": "/titanseedfund",
+  "Portfolio": "/portfolio",
 };
 
 // Pre-configured mock data matching the screenshot categories
@@ -276,7 +278,7 @@ export default function Navbar() {
                         onClick={() => setIsMenuOpen(false)}
                         className="group flex items-center rounded-[10px] px-[12px] py-[12px] font-['Poppins',_sans-serif] text-[18px] font-normal leading-[150%] text-[#0E0E0E]/75 transition-all duration-300 ease-out hover:bg-[#001A4D]/[0.06] hover:text-[#001A4D] hover:translate-x-[4px] lg:text-[20px]"
                       >
-                        <span className="mr-[10px] h-[2px] w-0 rounded-full bg-[#001A4D] transition-all duration-300 ease-out group-hover:w-[16px]" />
+                        {/* <span className="mr-[10px] h-[2px] w-0 rounded-full bg-[#001A4D] transition-all duration-300 ease-out group-hover:w-[16px]" /> */}
                         {subItem}
                       </Link>
                     ))}

@@ -90,9 +90,7 @@ export default function Hero() {
             marginBottom: "clamp(16px, min(2.7vw, 3.97vh), 39px)",
           }}
         >
-          We partner with founders from day one. We invest conviction, not
-          just capital, and stay by their side through every stage of the
-          journey.
+          The Titan Capital Winners Fund backs the companies in our portfolio that have already proven themselves, and are ready to own their category.
         </p>
 
        {/* BUTTONS — extra top gap on mobile (subtext is hidden there) */}

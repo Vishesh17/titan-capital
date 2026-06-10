@@ -24,16 +24,17 @@ const cardsData = [
 
 export default function WhyTitanSeed() {
   const [isSpread, setIsSpread] = useState(false);
-  const cardsRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(cardsRef, { once: true, amount: 0.3 });
+  const sectionRef = useRef<HTMLElement>(null);
+  
+  // High threshold threshold (0.8) used strictly to trigger the heavy card spreading layout shift
+  const isSectionFullyVisible = useInView(sectionRef, { once: true, amount: 0.8 });
 
-  // Trigger spread animation when section scrolls into view
   useEffect(() => {
-    if (inView) {
+    if (isSectionFullyVisible) {
       const timer = setTimeout(() => setIsSpread(true), 300);
       return () => clearTimeout(timer);
     }
-  }, [inView]);
+  }, [isSectionFullyVisible]);
 
   const smoothSpring = {
     type: "spring" as const,
@@ -77,6 +78,7 @@ export default function WhyTitanSeed() {
 
   return (
     <section
+      ref={sectionRef}
       className="relative flex w-full flex-col items-center justify-start lg:flex-row lg:items-start lg:justify-center lg:gap-[clamp(20px,3vw,60px)] overflow-hidden bg-white"
       style={{
         minHeight: "calc(100svh - var(--nav-height))",
@@ -87,16 +89,17 @@ export default function WhyTitanSeed() {
       }}
     >
       {/* ── HEADING ── */}
-      {/* FIXED: Reduced base mb for mobile (mb-[20px]), shifted previous clamp to md: and kept lg: intact */}
       <div className="mx-auto mb-[20px] md:mb-[clamp(60px,10vh,120px)] lg:mb-0 lg:shrink-0 lg:w-auto flex w-full max-w-[1440px] shrink-0 flex-col">
         <motion.div
           className="flex w-full flex-row items-center max-lg:justify-center lg:flex-col lg:items-start"
           initial="hidden"
+          // NEW: Changes to native inline viewport with a minimal threshold (0.05).
+          // This fires the animation the absolute second this element slips up underneath the hero section.
           whileInView="visible"
-          viewport={{ once: true, amount: 0.5 }}
+          viewport={{ once: true, amount: 0.05 }} 
         >
           <motion.h2
-            className="m-0 mr-2 mb-2 whitespace-nowrap font-['Libre_Baskerville',_serif] text-[clamp(28px,4vw,var(--heading-xl))] font-semibold not-italic leading-none text-[#001A4D] md:mr-3"
+            className="m-0 mr-2 mb-2 whitespace-nowrap font-['Libre_Baskerville',_serif] text-[clamp(28px,4vw,var(--heading-xl))] font-semibold not-italic leading-[110%] text-[#001A4D] md:mr-3"
             variants={{
               hidden: { opacity: 0, x: -40 },
               visible: { opacity: 1, x: 0, transition: { duration: 0.9, ease: "easeOut" } }
@@ -128,10 +131,7 @@ export default function WhyTitanSeed() {
       </div>
 
       {/* ── DESKTOP: CARDS ── */}
-      <div
-        ref={cardsRef}
-        className="relative hidden w-full max-w-[1100px] flex-1 items-center justify-center lg:flex"
-      >
+      <div className="relative hidden w-full max-w-[1100px] flex-1 items-center justify-center lg:flex">
         {cardsData.map((card, i) => (
           <motion.div
             key={i}
@@ -202,21 +202,20 @@ export default function WhyTitanSeed() {
 
       {/* ── TABLET / MOBILE: RESPONSIVE GRID ── */}
       <motion.div
-        // FIXED: Reduced mobile mt to 10px (keeps md:mt-[20px] for tablet)
         className="mt-[10px] md:mt-[20px] grid w-full max-w-[800px] grid-cols-1 gap-[20px] md:grid-cols-2 md:gap-[32px] lg:hidden"
         initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.15 }}
+        // Controlled globally by the high threshold hook so cards still fade up gracefully only when fully scrolled into
+        animate={isSectionFullyVisible ? "visible" : "hidden"} 
         variants={{
           hidden: {},
-          visible: { transition: { staggerChildren: 0.2, delayChildren: 0.3 } },
+          visible: { transition: { staggerChildren: 0.15, delayChildren: 0.2 } },
         }}
       >
         {cardsData.map((card, i) => (
           <motion.div
             key={i}
             variants={{
-              hidden: { opacity: 0, y: 40, scale: 0.95 },
+              hidden: { opacity: 0, y: 30, scale: 0.96 },
               visible: {
                 opacity: 1,
                 y: 0,
