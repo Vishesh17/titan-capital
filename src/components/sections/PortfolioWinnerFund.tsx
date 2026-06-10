@@ -52,7 +52,7 @@ const portfolioCompanies = [
     name: "Anveshan",
     logo: "/images/logos/anveshan.webp",
     category: "Pure & natural foods",
-    logoW: "70%", logoH: "20%",   // 4.9:1  wide serif wordmark, thin
+    logoW: "65%", logoH: "18%",   // 4.9:1  wide serif wordmark, thin
   },
   {
     name: "Mitigata",
@@ -70,7 +70,7 @@ const portfolioCompanies = [
     name: "MEKR",
     logo: "/images/logos/mekr-logo.webp",
     category: "Appliance Manufacturing",
-    logoW: "40%", logoH: "26%",   // 2.26:1 icon+text with dark bg
+    logoW: "45%", logoH: "30%",   // 2.26:1 icon+text with dark bg
   },
 ];
 
