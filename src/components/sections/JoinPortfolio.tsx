@@ -190,7 +190,7 @@ function SlotMachineBox({
               reverse={colIdx % 2 === 1}
               cellSize={cellSize}
               verticalGap="clamp(12px, 1.5vw, 24px)" // Vertical spacing between logos in the same strip
-              duration={colIdx % 2 === 1 ? 18 : 20}
+              duration={colIdx % 2 === 1 ? 32 : 36}
             />
           </div>
         ))}

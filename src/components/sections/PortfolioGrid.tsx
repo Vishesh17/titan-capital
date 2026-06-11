@@ -19,13 +19,10 @@ interface Company {
   year: string;
   sector: string;
   status: string;
-  investedIn: string;
-  foundingYear: string;
-  oneLiner: string;
-  about: string;
-  website: string;
+  tags: string;
+  investmentStage: string;
+  fundType: string;
   logo: string;
-  founders: { name: string; linkedin: string }[];
   isRecent: boolean;
 }
 
@@ -33,6 +30,9 @@ interface Filters {
   sector: string[];
   year: string[];
   status: string[];
+  tags: string[];
+  investmentStage: string[];
+  fundType: string[];
 }
 
 interface APIResponse {
@@ -40,19 +40,15 @@ interface APIResponse {
   filters: Filters;
 }
 
-/* Static filter options for Fund Type and Stage (not from sheet). */
-const FUND_TYPE_OPTIONS = ["Winner Fund", "Seed Fund"];
-const STAGE_OPTIONS = ["Seed", "Pre-Seed", "Series A", "Series B", "Series C"];
-
 /* Filter config — order matches the design. */
 const FILTER_CONFIG = [
   { key: "fundType" as const, label: "Fund Type" },
-  { key: "stage" as const, label: "Stage" },
+  { key: "investmentStage" as const, label: "Stage" },
   { key: "sector" as const, label: "Sector" },
   { key: "status" as const, label: "Status" },
 ];
 
-type FilterKey = "fundType" | "stage" | "sector" | "year" | "status";
+type FilterKey = "fundType" | "investmentStage" | "sector" | "year" | "status";
 
 /* ═══════════════════════════════════════════════════════
    Mobile Filter Panel — category tabs + checkboxes
@@ -229,15 +225,18 @@ function FilterDropdown({
 
   return (
     <div ref={ref} className="relative">
-      <button
+      <motion.button
         type="button"
         onClick={() => setOpen((p) => !p)}
+        whileHover={{ scale: 1.04, y: -1 }}
+        whileTap={{ scale: 0.97 }}
+        transition={{ type: "spring", stiffness: 400, damping: 20 }}
         className={`
-          flex items-center justify-between whitespace-nowrap transition-colors duration-200
+          flex items-center justify-between whitespace-nowrap transition-all duration-200
           ${
             hasSelection
-              ? "border-[#001A4D] bg-[#001A4D] text-white"
-              : "border-[#9A9A9A] bg-white text-[#344054] hover:border-[#666]"
+              ? "border-[#001A4D] bg-[#001A4D] text-white shadow-[0_2px_8px_rgba(0,26,77,0.25)] hover:shadow-[0_4px_14px_rgba(0,26,77,0.35)]"
+              : "border-[#9A9A9A] bg-white text-[#344054] hover:border-[#001A4D] hover:text-[#001A4D] hover:shadow-[0_2px_10px_rgba(0,26,77,0.10)]"
           }
         `}
         style={{
@@ -255,12 +254,14 @@ function FilterDropdown({
         <span className="flex items-center gap-[4px] truncate">
           {label}
         </span>
-        <svg
+        <motion.svg
           width="12"
           height="12"
           viewBox="0 0 12 12"
           fill="none"
-          className={`shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className="shrink-0"
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.25, ease: "easeInOut" }}
         >
           <path
             d="M3 4.5L6 7.5L9 4.5"
@@ -269,8 +270,8 @@ function FilterDropdown({
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-        </svg>
-      </button>
+        </motion.svg>
+      </motion.button>
 
       {/* Dropdown panel */}
       <AnimatePresence>
@@ -298,13 +299,15 @@ function FilterDropdown({
                 options.map((opt) => {
                   const isActive = selected.has(opt);
                   return (
-                    <button
+                    <motion.button
                       key={opt}
                       type="button"
                       onClick={() => onToggle(opt)}
+                      whileHover={{ x: 3, backgroundColor: isActive ? "rgba(240,244,255,1)" : "rgba(249,250,251,1)" }}
+                      transition={{ duration: 0.15 }}
                       className={`
                         flex w-full items-center gap-[8px] text-left transition-colors duration-150
-                        ${isActive ? "bg-[#F0F4FF] text-[#001A4D]" : "text-[#344054] hover:bg-[#F9FAFB]"}
+                        ${isActive ? "bg-[#F0F4FF] text-[#001A4D]" : "text-[#344054]"}
                       `}
                       style={{
                         padding:
@@ -336,7 +339,7 @@ function FilterDropdown({
                         )}
                       </span>
                       {opt}
-                    </button>
+                    </motion.button>
                   );
                 })
               )}
@@ -357,7 +360,7 @@ function FilterDropdown({
         className="group relative flex items-center justify-center overflow-hidden rounded-[clamp(8px,0.83vw,12px)] border border-[#F0F0F0] bg-white transition-shadow duration-300 hover:shadow-[0_2px_16px_rgba(0,0,0,0.08)]"
         style={{ aspectRatio: "1 / 1" }}
       >
-        {company.isRecent && (
+        {company.tags && company.tags !== "Active" && (
           <div
             className="absolute left-0 z-10 flex items-center text-white"
             style={{
@@ -377,16 +380,17 @@ function FilterDropdown({
               whiteSpace: "nowrap",
             }}
           >
-            Recent investment
+            {company.tags === "Recent Investment" ? "Recent investment" : company.tags}
           </div>
         )}
   
         {company.logo ? (
           <div
             className="relative flex items-center justify-center transition-transform duration-300 group-hover:scale-105"
-            /* Tighter bounding box: 42% wide × 28% tall keeps all logos
-               visually consistent regardless of aspect ratio. */
-            style={{ width: "42%", height: "28%" }}
+            /* Square-ish bounding box: 60% × 50% ensures all logos —
+               wide text marks, square icons, tall emblems — render at
+               a visually consistent size regardless of aspect ratio. */
+            style={{ width: "60%", height: "50%" }}
           >
             <Image
               src={company.logo}
@@ -438,7 +442,7 @@ export default function PortfolioGrid() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<Record<FilterKey, Set<string>>>({
     fundType: new Set(),
-    stage: new Set(),
+    investmentStage: new Set(),
     sector: new Set(),
     year: new Set(),
     status: new Set(),
@@ -500,7 +504,7 @@ export default function PortfolioGrid() {
     setSearchQuery("");
     setActiveFilters({
       fundType: new Set(),
-      stage: new Set(),
+      investmentStage: new Set(),
       sector: new Set(),
       year: new Set(),
       status: new Set(),
@@ -509,8 +513,8 @@ export default function PortfolioGrid() {
 
   const filterOptions = useMemo((): Record<FilterKey, string[]> => {
     return {
-      fundType: FUND_TYPE_OPTIONS,
-      stage: STAGE_OPTIONS,
+      fundType: data?.filters.fundType ?? [],
+      investmentStage: data?.filters.investmentStage ?? [],
       sector: data?.filters.sector ?? [],
       year: data?.filters.year ?? [],
       status: data?.filters.status ?? [],
@@ -536,6 +540,10 @@ export default function PortfolioGrid() {
         const q = searchQuery.trim().toLowerCase();
         if (!c.brandName.toLowerCase().includes(q)) return false;
       }
+      if (activeFilters.fundType.size > 0 && !activeFilters.fundType.has(c.fundType))
+        return false;
+      if (activeFilters.investmentStage.size > 0 && !activeFilters.investmentStage.has(c.investmentStage))
+        return false;
       if (activeFilters.sector.size > 0 && !activeFilters.sector.has(c.sector))
         return false;
       if (activeFilters.year.size > 0 && !activeFilters.year.has(c.year))
@@ -665,13 +673,18 @@ export default function PortfolioGrid() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="mb-[clamp(28px,min(3.5vw,5vh),48px)] hidden w-full flex-col items-center lg:flex"
+          className="mb-[clamp(28px,min(3.5vw,5vh),48px)] hidden w-full flex-col lg:flex"
+          style={{
+            maxWidth: "1393px",
+            borderRadius: "26px",
+            background: "#FFF",
+            padding: "clamp(28px, min(2.78vw, 4.07vh), 40px) clamp(20px, min(3.13vw, 4.58vh), 45px) clamp(28px, min(2.78vw, 4.07vh), 40px) clamp(16px, min(1.6vw, 2.34vh), 23px)",
+          }}
         >
           {/* ── Search bar ── */}
           <div
             className="flex w-full items-center bg-[#F4F4F4] transition-colors focus-within:ring-1 focus-within:ring-[#001A4D]"
             style={{
-              maxWidth: "1023px",
               height: "clamp(50px, min(4.9vw, 7.2vh), 71px)",
               borderRadius: "12px",
               paddingLeft: "clamp(16px, min(2vw, 3vh), 30px)",
@@ -708,24 +721,29 @@ export default function PortfolioGrid() {
               style={{ fontSize: "clamp(13px, min(1.1vw, 1.6vh), 16px)" }}
             />
 
-            <button
+            <motion.button
               type="button"
               onClick={() => {
                 setSearchQuery("");
                 searchInputRef.current?.focus();
               }}
-              className="mr-[clamp(10px,1vw,16px)] font-['Poppins',_sans-serif] text-[#667085] transition-colors hover:text-[#344054]"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="mr-[clamp(10px,1vw,16px)] font-['Poppins',_sans-serif] text-[#667085] transition-colors hover:text-[#001A4D]"
               style={{
                 fontSize: "clamp(12px, min(1vw, 1.4vh), 14px)",
                 fontWeight: 400,
               }}
             >
               Clear
-            </button>
+            </motion.button>
 
-            <button
+            <motion.button
               type="button"
-              className="shrink-0 rounded-[8px] bg-[#001A4D] text-white transition-opacity hover:opacity-90"
+              whileHover={{ scale: 1.05, boxShadow: "0 4px 16px rgba(0,26,77,0.3)" }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+              className="shrink-0 rounded-[8px] bg-[#001A4D] text-white shadow-[0_2px_8px_rgba(0,26,77,0.15)] transition-colors hover:bg-[#002A7C]"
               style={{
                 padding:
                   "clamp(6px, min(0.7vw, 1vh), 10px) clamp(16px, min(1.8vw, 2.5vh), 24px)",
@@ -735,14 +753,14 @@ export default function PortfolioGrid() {
               }}
             >
               Search
-            </button>
+            </motion.button>
           </div>
 
           {/* ── Filter dropdowns row ── */}
           <div
-            className="flex w-full max-w-[1023px] flex-wrap items-center"
+            className="flex w-full flex-wrap items-center"
             style={{
-              marginTop: "clamp(16px, min(1.6vw, 2.4vh), 24px)",
+              marginTop: "clamp(16px, min(1.39vw, 2.03vh), 20px)",
               gap: "clamp(12px, min(1vw, 1.5vh), 16px)",
             }}
           >
@@ -756,21 +774,23 @@ export default function PortfolioGrid() {
               />
             ))}
 
-            <button
+            <motion.button
               type="button"
               onClick={clearAll}
-              className="ml-auto font-['Poppins',_sans-serif] text-[#667085] transition-colors hover:text-[#344054]"
+              whileHover={{ scale: 1.05, x: 2 }}
+              whileTap={{ scale: 0.95 }}
+              className="ml-auto font-['Poppins',_sans-serif] text-[#667085] transition-colors hover:text-[#001A4D]"
               style={{
                 fontSize: "clamp(11px, min(1vw, 1.5vh), 14px)",
                 fontWeight: 400,
               }}
             >
               Clear all
-            </button>
+            </motion.button>
           </div>
 
           {/* ── Active filter chips ── */}
-          <div className="w-full max-w-[1023px]">
+          <div className="w-full">
             <AnimatePresence>
               {activeChips.length > 0 && (
                 <motion.div
@@ -792,9 +812,11 @@ export default function PortfolioGrid() {
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.9 }}
+                      whileHover={{ scale: 1.06, boxShadow: "0 3px 12px rgba(0,26,77,0.3)" }}
+                      whileTap={{ scale: 0.92 }}
                       transition={{ duration: 0.15 }}
                       onClick={() => removeChip(chip.key, chip.value)}
-                      className="flex items-center gap-[clamp(4px,0.4vw,8px)] rounded-full bg-[#001A4D] text-white transition-opacity hover:opacity-90"
+                      className="flex items-center gap-[clamp(4px,0.4vw,8px)] rounded-full bg-[#001A4D] text-white shadow-[0_2px_6px_rgba(0,26,77,0.2)]"
                       style={{
                         padding:
                           "clamp(6px, min(0.6vw, 0.8vh), 9px) clamp(12px, min(1.2vw, 1.7vh), 18px)",
@@ -804,14 +826,18 @@ export default function PortfolioGrid() {
                       }}
                     >
                       {chip.value}
-                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                      <motion.svg
+                        width="10" height="10" viewBox="0 0 10 10" fill="none"
+                        whileHover={{ rotate: 90 }}
+                        transition={{ duration: 0.2 }}
+                      >
                         <path
                           d="M7.5 2.5L2.5 7.5M2.5 2.5L7.5 7.5"
                           stroke="white"
                           strokeWidth="1.5"
                           strokeLinecap="round"
                         />
-                      </svg>
+                      </motion.svg>
                     </motion.button>
                   ))}
                 </motion.div>
@@ -854,8 +880,8 @@ export default function PortfolioGrid() {
               className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5"
               style={{ gap: "clamp(12px, min(1.4vw, 2vh), 20px)" }}
             >
-              {paginatedCompanies.map((company) => (
-                <CompanyCard key={company.brandName} company={company} />
+              {paginatedCompanies.map((company, i) => (
+                <CompanyCard key={`${company.brandName}-${i}`} company={company} />
               ))}
             </div>
           </>

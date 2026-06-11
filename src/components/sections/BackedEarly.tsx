@@ -268,7 +268,7 @@ function CardMarquee() {
       <div className="absolute right-0 top-0 z-10 h-full w-[4%] bg-gradient-to-l from-[#FBF7F0]/60 via-[#FBF7F0]/20 to-transparent pointer-events-none" />
 
       <div
-        className="flex w-max items-center gap-[clamp(12px,1.5vw,20px)] animate-[continuous-marquee_30s_linear_infinite] group-hover:[animation-play-state:paused]"
+        className="flex w-max items-center gap-[clamp(12px,1.5vw,20px)] animate-[continuous-marquee_55s_linear_infinite] group-hover:[animation-play-state:paused]"
         style={{ paddingRight: "clamp(12px,1.5vw,20px)" }}
       >
         {doubled.map((company, i) => (
