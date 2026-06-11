@@ -209,7 +209,7 @@ function CompanyCard({ company, mode = "marquee" }: { company: (typeof companies
 
   return (
     <div
-      className={`group/card relative shrink-0 overflow-hidden ${
+      className={`group/card relative shrink-0 overflow-hidden bg-[#0e1120] ${
         isMarquee
           ? "pointer-events-none"                                       // no hover effects in marquee — drag handled by parent
           : "cursor-pointer transition-all duration-300 ease-out hover:scale-105 hover:shadow-[0_0_20px_10px_rgba(166,166,166,0.3)]"

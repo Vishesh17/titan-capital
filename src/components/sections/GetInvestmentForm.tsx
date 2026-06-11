@@ -182,15 +182,15 @@ function TextInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full rounded-[10px] border-2 border-transparent bg-[#F2F7FF] font-['Poppins',_sans-serif] text-[#1D2939] outline-none placeholder:text-[#98A2B3] focus:border-[#001A4D]/20 focus:bg-[#EEF3FF] focus:shadow-[0_0_0_4px_rgba(0,26,77,0.06)]"
+      className="w-full rounded-[10px] border-2 border-transparent bg-[#F2F7FF] font-['Poppins',_sans-serif] text-[#1D2939] outline-none placeholder:text-[#98A2B3] focus:border-[#001A4D]/30 focus:bg-[#EEF3FF]"
       style={{
         padding: "clamp(14px, min(1.25vw, 1.85vh), 18px) clamp(16px, min(1.4vw, 2vh), 22px)",
         fontSize: "clamp(13px, min(1.1vw, 1.6vh), 16px)",
-        transition: "border-color 0.25s, background-color 0.25s, box-shadow 0.25s",
+        transition: "border-color 0.3s, background-color 0.3s, box-shadow 0.3s",
       }}
-      whileHover={{ y: -1, boxShadow: "0 4px 12px rgba(0,26,77,0.06)" }}
-      whileFocus={{ y: -1, boxShadow: "0 4px 16px rgba(0,26,77,0.08)" }}
-      transition={{ duration: 0.2 }}
+      whileHover={{ y: -3, boxShadow: "0 6px 20px rgba(0,26,77,0.10)", borderColor: "rgba(0,26,77,0.12)" }}
+      whileFocus={{ y: -3, boxShadow: "0 8px 28px rgba(0,26,77,0.12)", borderColor: "rgba(0,26,77,0.25)" }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
     />
   );
 }
@@ -221,15 +221,15 @@ function TextArea({
         }}
         placeholder={placeholder}
         rows={rows}
-        className="w-full resize-none rounded-[10px] border-2 border-transparent bg-[#F2F7FF] font-['Poppins',_sans-serif] text-[#1D2939] outline-none placeholder:text-[#98A2B3] focus:border-[#001A4D]/20 focus:bg-[#EEF3FF] focus:shadow-[0_0_0_4px_rgba(0,26,77,0.06)]"
+        className="w-full resize-none rounded-[10px] border-2 border-transparent bg-[#F2F7FF] font-['Poppins',_sans-serif] text-[#1D2939] outline-none placeholder:text-[#98A2B3] focus:border-[#001A4D]/30 focus:bg-[#EEF3FF]"
         style={{
           padding: "clamp(14px, min(1.25vw, 1.85vh), 18px) clamp(16px, min(1.4vw, 2vh), 22px)",
           fontSize: "clamp(13px, min(1.1vw, 1.6vh), 16px)",
-          transition: "border-color 0.25s, background-color 0.25s, box-shadow 0.25s",
+          transition: "border-color 0.3s, background-color 0.3s, box-shadow 0.3s",
         }}
-        whileHover={{ y: -1, boxShadow: "0 4px 12px rgba(0,26,77,0.06)" }}
-        whileFocus={{ y: -1, boxShadow: "0 4px 16px rgba(0,26,77,0.08)" }}
-        transition={{ duration: 0.2 }}
+        whileHover={{ y: -3, boxShadow: "0 6px 20px rgba(0,26,77,0.10)", borderColor: "rgba(0,26,77,0.12)" }}
+        whileFocus={{ y: -3, boxShadow: "0 8px 28px rgba(0,26,77,0.12)", borderColor: "rgba(0,26,77,0.25)" }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
       />
       <p
         className="mt-[6px] text-right font-['Poppins',_sans-serif] text-[#98A2B3]"
@@ -309,27 +309,38 @@ function PhoneInput({
 
   return (
     <div>
-      <div ref={wrapperRef} className="relative flex w-full">
+      <motion.div
+        ref={wrapperRef}
+        className="relative flex w-full rounded-[10px]"
+        whileHover={{ y: -3, boxShadow: "0 6px 20px rgba(0,26,77,0.10)" }}
+        whileFocus={{ y: -3 }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      >
         {/* Country code button */}
-        <button
+        <motion.button
           type="button"
           onClick={() => { setDropdownOpen((p) => !p); setSearch(""); }}
-          className={`flex shrink-0 items-center gap-[6px] rounded-l-[10px] border-none bg-[#F2F7FF] font-['Poppins',_sans-serif] text-[#1D2939] outline-none transition-all hover:bg-[#DCE4FA] ${ringClass}`}
+          className={`flex shrink-0 items-center gap-[6px] rounded-l-[10px] border-none bg-[#F2F7FF] font-['Poppins',_sans-serif] text-[#1D2939] outline-none transition-colors hover:bg-[#DCE4FA] ${ringClass}`}
           style={{
             padding: "clamp(14px, min(1.25vw, 1.85vh), 18px) clamp(10px, min(1vw, 1.4vh), 14px)",
             fontSize: "clamp(13px, min(1.1vw, 1.6vh), 16px)",
             borderRight: "1px solid #D0D5DD",
           }}
+          whileTap={{ scale: 0.97 }}
         >
           <span>{country.code}</span>
           <span className="text-[#667085]">{country.dial}</span>
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`transition-transform ${dropdownOpen ? "rotate-180" : ""}`}>
+          <motion.svg
+            width="10" height="10" viewBox="0 0 10 10" fill="none"
+            animate={{ rotate: dropdownOpen ? 180 : 0 }}
+            transition={{ duration: 0.25 }}
+          >
             <path d="M2 3.5L5 6.5L8 3.5" stroke="#667085" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
+          </motion.svg>
+        </motion.button>
 
         {/* Phone number input */}
-        <input
+        <motion.input
           type="tel"
           value={phone}
           onChange={(e) => {
@@ -339,11 +350,14 @@ function PhoneInput({
           onFocus={() => setPhoneFocused(true)}
           onBlur={() => setPhoneFocused(false)}
           placeholder={`${"0".repeat(country.min)}`}
-          className={`min-w-0 flex-1 rounded-r-[10px] border-none bg-[#F2F7FF] font-['Poppins',_sans-serif] text-[#1D2939] outline-none transition-all duration-200 placeholder:text-[#98A2B3] ${ringClass}`}
+          className={`min-w-0 flex-1 rounded-r-[10px] border-2 border-transparent bg-[#F2F7FF] font-['Poppins',_sans-serif] text-[#1D2939] outline-none placeholder:text-[#98A2B3] focus:border-[#001A4D]/30 focus:bg-[#EEF3FF] ${ringClass}`}
           style={{
             padding: "clamp(14px, min(1.25vw, 1.85vh), 18px) clamp(16px, min(1.4vw, 2vh), 22px)",
             fontSize: "clamp(13px, min(1.1vw, 1.6vh), 16px)",
+            transition: "border-color 0.3s, background-color 0.3s, box-shadow 0.3s",
           }}
+          whileFocus={{ boxShadow: "0 8px 28px rgba(0,26,77,0.12)", borderColor: "rgba(0,26,77,0.25)" }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
         />
 
         {/* Dropdown */}
@@ -388,7 +402,7 @@ function PhoneInput({
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Live validation hint or submit error */}
       {(liveStatus === "invalid" || error) && (
@@ -471,10 +485,11 @@ function EmailInput({
         style={{
           padding: "clamp(14px, min(1.25vw, 1.85vh), 18px) clamp(16px, min(1.4vw, 2vh), 22px)",
           fontSize: "clamp(13px, min(1.1vw, 1.6vh), 16px)",
-          transition: "border-color 0.25s, background-color 0.25s, box-shadow 0.25s",
+          transition: "border-color 0.3s, background-color 0.3s, box-shadow 0.3s",
         }}
-        whileHover={{ y: -1, boxShadow: "0 4px 12px rgba(0,26,77,0.06)" }}
-        transition={{ duration: 0.2 }}
+        whileHover={{ y: -3, boxShadow: "0 6px 20px rgba(0,26,77,0.10)", borderColor: "rgba(0,26,77,0.12)" }}
+        whileFocus={{ y: -3, boxShadow: "0 8px 28px rgba(0,26,77,0.12)", borderColor: "rgba(0,26,77,0.25)" }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
       />
       {liveStatus === "invalid" && (
         <p
@@ -517,17 +532,17 @@ function UrlInput({
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
         placeholder={placeholder}
-        className={`w-full rounded-[10px] border-2 border-transparent bg-[#F2F7FF] font-['Poppins',_sans-serif] text-[#1D2939] outline-none placeholder:text-[#98A2B3] focus:border-[#001A4D]/20 focus:bg-[#EEF3FF] focus:shadow-[0_0_0_4px_rgba(0,26,77,0.06)] ${
+        className={`w-full rounded-[10px] border-2 border-transparent bg-[#F2F7FF] font-['Poppins',_sans-serif] text-[#1D2939] outline-none placeholder:text-[#98A2B3] focus:border-[#001A4D]/30 focus:bg-[#EEF3FF] ${
           error ? "ring-2 ring-[#C53030]/30" : ""
         }`}
         style={{
           padding: "clamp(14px, min(1.25vw, 1.85vh), 18px) clamp(16px, min(1.4vw, 2vh), 22px)",
           fontSize: "clamp(13px, min(1.1vw, 1.6vh), 16px)",
-          transition: "border-color 0.25s, background-color 0.25s, box-shadow 0.25s",
+          transition: "border-color 0.3s, background-color 0.3s, box-shadow 0.3s",
         }}
-        whileHover={{ y: -1, boxShadow: "0 4px 12px rgba(0,26,77,0.06)" }}
-        whileFocus={{ y: -1, boxShadow: "0 4px 16px rgba(0,26,77,0.08)" }}
-        transition={{ duration: 0.2 }}
+        whileHover={{ y: -3, boxShadow: "0 6px 20px rgba(0,26,77,0.10)", borderColor: "rgba(0,26,77,0.12)" }}
+        whileFocus={{ y: -3, boxShadow: "0 8px 28px rgba(0,26,77,0.12)", borderColor: "rgba(0,26,77,0.25)" }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
       />
       {error && (
         <p
@@ -651,12 +666,12 @@ function FileUpload({
         transition: "border-color 0.3s, background-color 0.3s",
       }}
       whileHover={{
-        y: -2,
-        boxShadow: "0 6px 20px rgba(0,26,77,0.07)",
-        borderColor: "rgba(0,26,77,0.2)",
+        y: -4,
+        boxShadow: "0 8px 28px rgba(0,26,77,0.10)",
+        borderColor: "rgba(0,26,77,0.25)",
       }}
       whileTap={{ scale: 0.985 }}
-      transition={{ duration: 0.25 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
       <input
         ref={inputRef}
