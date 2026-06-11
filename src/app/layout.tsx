@@ -69,7 +69,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Titan Capital" }],
   creator: "Titan Capital",
-  metadataBase: new URL("https://www.titancapital.vc"),
+  metadataBase: new URL("https://titan-capital-puce.vercel.app"),
   robots: {
     index: true,
     follow: true,
@@ -84,7 +84,7 @@ export const metadata: Metadata = {
     title: "Titan Capital",
     description:
       "Titan Capital invests behind world class entrepreneurs looking to create wide-scale positive impact on India and the World.",
-    url: "https://www.titancapital.vc",
+    url: "https://titan-capital-puce.vercel.app",
     images: [
       {
         url: "/og-image.png",
