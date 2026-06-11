@@ -180,10 +180,10 @@ function AnimatedGrid() {
 export default function WinnersHero() {
   return (
     <section
-      className="relative flex w-full items-center justify-center overflow-hidden bg-[#FBF7F0] max-md:h-[50svh]"
+      className="relative flex w-full items-center justify-center overflow-hidden bg-[#FBF7F0] max-md:h-[60svh]"
       style={{
         marginTop: "var(--nav-height)",
-        height: "clamp(320px, 52vh, 520px)",
+        height: "clamp(420px, 75vh, 720px)",
         paddingTop: "clamp(20px, min(3vw, 4vh), 60px)",
         paddingBottom: "clamp(20px, min(3vw, 4vh), 60px)",
         paddingLeft: "var(--section-px-wide)",
