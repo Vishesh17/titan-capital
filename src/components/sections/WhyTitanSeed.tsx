@@ -6,7 +6,7 @@ import { motion, useInView, Variants } from "framer-motion";
 const cardsData = [
   {
     title: "Day One Access",
-    desc: "From the moment we invest, you're in. 650+ founders, strategic partners, and the Titan entrepreneur network, all at your disposal.",
+    desc: "From the moment we invest, you're in 650+ founders, strategic partners, and the Titan entrepreneur network, all at your disposal.",
   },
   {
     title: "Founders Helping Founders",
