@@ -952,7 +952,7 @@ export default function GetInvestmentForm() {
     >
       <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center">
 
-        <motion.div
+        {/* <motion.div
           className="mb-[clamp(36px,min(4.5vw,6.5vh),64px)] flex flex-col items-center text-center"
           initial="hidden"
           whileInView="visible"
@@ -996,7 +996,7 @@ export default function GetInvestmentForm() {
           >
             We back founders at the earliest stage — before the playbook exists. Tell us about what you&apos;re building. Takes about 10 minutes.
           </motion.p>
-        </motion.div>
+        </motion.div> */}
 
         {submitted ? (
           <motion.div
