@@ -10,7 +10,7 @@ interface FundInfo {
   category: string;
   fundManager: string;
   officeAddress: string;
-  bottomLabels: string[];
+  bottomLabels: { heading: string; value: string }[];
 }
 
 const fundsData: { id: string; title: string; info: FundInfo }[] = [
@@ -25,8 +25,8 @@ const fundsData: { id: string; title: string; info: FundInfo }[] = [
       officeAddress:
         "M3M Urbana Business Park, Sector 67, Golf Course Extension Road, Gurugram  122102",
       bottomLabels: [
-        "Catalyst Trusteeship Limited",
-        "TC Sponsor & Services LLP",
+        { heading: "Trustee:", value: "Catalyst Trusteeship Limited" },
+        { heading: "Sponsors:", value: "TC Sponsor & Services LLP" },
       ],
     },
   },
@@ -41,8 +41,8 @@ const fundsData: { id: string; title: string; info: FundInfo }[] = [
       officeAddress:
         "M3M Urbana Business Park, Sector 67, Golf Course Extension Road, Gurugram  122102",
       bottomLabels: [
-        "Catalyst Trusteeship Limited",
-        "TC Sponsor & Services LLP",
+        { heading: "Trustee:", value: "Catalyst Trusteeship Limited" },
+        { heading: "Sponsors:", value: "TC Sponsor & Services LLP" },
       ],
     },
   },
@@ -173,19 +173,32 @@ function FundCard({ info }: { info: FundInfo }) {
 
         {/* Labels row */}
         <div
-          className="flex w-full flex-wrap items-center justify-center gap-x-[clamp(24px,3vw,48px)] gap-y-[8px]"
+          className="flex w-full flex-wrap items-start justify-center gap-x-[clamp(24px,3vw,48px)] gap-y-[clamp(10px,1.2vw,16px)]"
         >
-          {info.bottomLabels.map((label) => (
-            <span
-              key={label}
-              className="font-['Poppins',_sans-serif] italic font-light text-black"
-              style={{
-                fontSize: "clamp(12px, min(1.11vw, 1.63vh), 16px)",
-                lineHeight: "150%",
-              }}
+          {info.bottomLabels.map(({ heading, value }) => (
+            <div
+              key={heading}
+              className="flex flex-row items-baseline gap-[clamp(3px,0.4vw,5px)]"
             >
-              {label}
-            </span>
+              <span
+                className="font-['Poppins',_sans-serif] font-light text-black"
+                style={{
+                  fontSize: "clamp(12px, min(1.11vw, 1.63vh), 16px)",
+                  lineHeight: "150%",
+                }}
+              >
+                {heading}
+              </span>
+              <span
+                className="font-['Poppins',_sans-serif] font-light text-black"
+                style={{
+                  fontSize: "clamp(12px, min(1.11vw, 1.63vh), 16px)",
+                  lineHeight: "150%",
+                }}
+              >
+                {value}
+              </span>
+            </div>
           ))}
         </div>
       </div>

@@ -444,22 +444,29 @@ function FilterDropdown({
                 className="object-cover object-top"
               />
               {company.logo && (
-                <Image
-                  src={company.logo}
-                  alt={`${company.brandName} logo`}
-                  width={120}
-                  height={120}
-                  sizes="(max-width: 640px) 12vw, (max-width: 1024px) 8vw, 5vw"
-                  className="absolute object-contain object-right-top"
+                <div
+                  className="absolute flex items-center justify-start"
                   style={{
-                    top: "clamp(6px, min(0.7vw, 1vh), 12px)",
-                    right: "clamp(6px, min(0.7vw, 1vh), 12px)",
+                    top: "clamp(8px, min(0.9vw, 1.3vh), 14px)",
+                    left: "clamp(8px, min(0.9vw, 1.3vh), 14px)",
                     width: "clamp(48px, min(4.8vw, 7vh), 76px)",
-                    height: "auto",
-                    maxHeight: "clamp(48px, min(4.8vw, 7vh), 76px)",
-                    filter: "brightness(0) invert(1)",
+                    height: "clamp(48px, min(4.8vw, 7vh), 76px)",
                   }}
-                />
+                >
+                  <Image
+                    src={company.logo}
+                    alt={`${company.brandName} logo`}
+                    width={120}
+                    height={120}
+                    sizes="(max-width: 640px) 12vw, (max-width: 1024px) 8vw, 5vw"
+                    className="object-contain object-left-top"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      filter: "brightness(0) invert(1)",
+                    }}
+                  />
+                </div>
               )}
               <div
                 className="absolute flex items-center justify-center rounded-full bg-white text-[#001A4D] transition-transform duration-300 group-hover:translate-x-[2px] group-hover:-translate-y-[2px]"
