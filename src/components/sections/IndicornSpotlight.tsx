@@ -9,10 +9,9 @@ import Image from "next/image";
 */
 
 const indicornLogos: { src: string; alt: string; mode: "transparent" | "opaqueBg" | "white"; scale: number }[] = [
-  { src: "/images/logos/Razorpay.webp",       alt: "Razorpay",   mode: "opaqueBg",    scale: 1.6 },
-  { src: "/images/logos/Shadowfax.svg",       alt: "Shadowfax",  mode: "transparent", scale: 1.0 },
+  { src: "/images/logos/Razorpay.webp",       alt: "Razorpay",   mode: "opaqueBg",    scale: 1.9 },
+  { src: "/images/portfolio_grid/unicommerce-logo.png",       alt: "Unicommerce",  mode: "transparent", scale: 1.8 },
   { src: "/images/logos/ofbusiness_white.svg", alt: "OfBusiness", mode: "white",       scale: 1.0 },
-  { src: "/images/logos/mamaearthpng.webp",   alt: "Mamaearth",  mode: "opaqueBg",    scale: 1.6 },
   { src: "/images/logos/Credgenics.svg",      alt: "Credgenics", mode: "transparent", scale: 1.0 },
 ];
 

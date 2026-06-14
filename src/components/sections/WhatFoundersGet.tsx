@@ -26,7 +26,7 @@ const desktopFeatures = [
   {
     id: "fundraising",
     title: "Fundraising",
-    desc: "Warm intros to growth-stage funds, pitch prep, term sheet guidance, and fundraising support from people who’ve seen hundreds of rounds.",
+    desc: "Warm intros to growth-stage funds, pitch preparation, term sheet guidance, and fundraising support from people who’ve seen hundreds of rounds.",
     top: 330, left:950, width: 370,
   },
   {
