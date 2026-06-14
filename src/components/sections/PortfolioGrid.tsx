@@ -367,99 +367,110 @@ function FilterDropdown({
 
    function CompanyCard({ company }: { company: Company }) {
     const founderImage = company.founderImage;
+    const cardRadius = "clamp(8px,0.83vw,12px)";
 
     return (
       <Link
         href={`/portfolio/${companySlug(company.brandName)}`}
-        className="group relative flex items-center justify-center overflow-hidden rounded-[clamp(8px,0.83vw,12px)] border border-[#F0F0F0] bg-white transition-shadow duration-300 hover:shadow-[0_2px_16px_rgba(0,0,0,0.08)]"
+        className="group relative block rounded-[clamp(8px,0.83vw,12px)] transition-shadow duration-300 hover:shadow-[0_2px_16px_rgba(0,0,0,0.08)] [perspective:1200px]"
         style={{ aspectRatio: "1 / 1" }}
       >
-        {company.tags && company.tags !== "Active" && (
-          <div
-            className={`absolute left-0 z-20 flex items-center text-white transition-opacity duration-300 ${founderImage ? "group-hover:opacity-0" : ""}`}
-            style={{
-              top: "clamp(10px, min(1.2vw, 1.8vh), 18px)",
-              width: "clamp(100px, min(9.65vw, 14.2vh), 139px)",
-              height: "clamp(24px, min(2.29vw, 3.36vh), 33px)",
-              padding: "clamp(6px, min(0.7vw, 1vh), 10px)",
-              gap: "10px",
-              borderRadius: "0 70px 70px 0",
-              background:
-                "linear-gradient(92deg, #001A4D 4.1%, #002A7C 42.17%, #001A4D 86.92%)",
-              boxShadow: "0 4px 18.6px 0 #A8C6FF",
-              fontSize: "clamp(8px, min(0.83vw, 1.22vh), 12px)",
-              fontFamily: "'Poppins', sans-serif",
-              fontWeight: 500,
-              lineHeight: "150%",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {company.tags === "Recent Investment" ? "Recent investment" : company.tags}
-          </div>
-        )}
-
-        {/* ── LOGO (default) — fades out + shrinks slightly on hover (only when a founder image exists) ── */}
-        {company.logo ? (
-          <Image
-            src={company.logo}
-            alt={company.brandName}
-            width={400}
-            height={400}
-            sizes="(max-width: 640px) 40vw, (max-width: 1024px) 25vw, 16vw"
-            className={`object-contain transition-all duration-300 ${founderImage ? "group-hover:scale-90 group-hover:opacity-0" : ""}`}
-            style={{ width: "50%", height: "auto", maxHeight: "50%" }}
-          />
-        ) : (
-          <span
-            className={`font-['Poppins',_sans-serif] font-semibold text-[#001A4D] px-4 text-center transition-opacity duration-300 ${founderImage ? "group-hover:opacity-0" : ""}`}
-            style={{ fontSize: "clamp(14px, min(1.4vw, 2vh), 20px)" }}
-          >
-            {company.brandName}
-          </span>
-        )}
-
-        {/* ── FOUNDER PORTRAIT (hover) — wipes in top→down, logo + arrow reveal with it ── */}
-        {founderImage && (
+        {/* Flipper — rotates Y on hover only when a founder image exists */}
         <div
-          className="pointer-events-none absolute inset-0 z-10 transition-[clip-path] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] [clip-path:inset(0_0_100%_0)] group-hover:[clip-path:inset(0_0_0_0)]"
+          className={`relative h-full w-full transition-transform duration-[700ms] ease-[cubic-bezier(0.22,1,0.36,1)] [transform-style:preserve-3d] ${
+            founderImage ? "group-hover:[transform:rotateY(180deg)]" : ""
+          }`}
         >
-          <Image
-            src={founderImage}
-            alt={`${company.brandName} founder`}
-            fill
-            sizes="(max-width: 640px) 40vw, (max-width: 1024px) 25vw, 16vw"
-            className="object-cover object-top"
-          />
-          {/* White logo pinned top-right over the founder portrait */}
-          {company.logo && (
-            <Image
-              src={company.logo}
-              alt={`${company.brandName} logo`}
-              width={120}
-              height={120}
-              sizes="(max-width: 640px) 12vw, (max-width: 1024px) 8vw, 5vw"
-              className="absolute object-contain object-right-top"
-              style={{
-                top: "clamp(6px, min(0.7vw, 1vh), 12px)",
-                right: "clamp(6px, min(0.7vw, 1vh), 12px)",
-                width: "clamp(48px, min(4.8vw, 7vh), 76px)",
-                height: "auto",
-                maxHeight: "clamp(48px, min(4.8vw, 7vh), 76px)",
-                filter: "brightness(0) invert(1)",
-              }}
-            />
-          )}
-          {/* Bottom-right arrow signalling clickability */}
+          {/* ── FRONT FACE — logo + tag ── */}
           <div
-            className="absolute flex items-center justify-center rounded-full bg-white text-[#001A4D] transition-transform duration-300 group-hover:translate-x-[2px] group-hover:-translate-y-[2px]"
-            style={{
-              right: "clamp(8px, min(0.9vw, 1.3vh), 14px)",
-              bottom: "clamp(8px, min(0.9vw, 1.3vh), 14px)",
-              width: "clamp(26px, min(2.4vw, 3.5vh), 36px)",
-              height: "clamp(26px, min(2.4vw, 3.5vh), 36px)",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
-            }}
+            className="absolute inset-0 flex items-center justify-center overflow-hidden border border-[#F0F0F0] bg-white [backface-visibility:hidden]"
+            style={{ borderRadius: cardRadius }}
           >
+            {company.tags && company.tags !== "Active" && (
+              <div
+                className="absolute left-0 z-20 flex items-center text-white"
+                style={{
+                  top: "clamp(10px, min(1.2vw, 1.8vh), 18px)",
+                  width: "clamp(100px, min(9.65vw, 14.2vh), 139px)",
+                  height: "clamp(24px, min(2.29vw, 3.36vh), 33px)",
+                  padding: "clamp(6px, min(0.7vw, 1vh), 10px)",
+                  gap: "10px",
+                  borderRadius: "0 70px 70px 0",
+                  background:
+                    "linear-gradient(92deg, #001A4D 4.1%, #002A7C 42.17%, #001A4D 86.92%)",
+                  boxShadow: "0 4px 18.6px 0 #A8C6FF",
+                  fontSize: "clamp(8px, min(0.83vw, 1.22vh), 12px)",
+                  fontFamily: "'Poppins', sans-serif",
+                  fontWeight: 500,
+                  lineHeight: "150%",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {company.tags === "Recent Investment" ? "Recent investment" : company.tags}
+              </div>
+            )}
+
+            {company.logo ? (
+              <Image
+                src={company.logo}
+                alt={company.brandName}
+                width={400}
+                height={400}
+                sizes="(max-width: 640px) 40vw, (max-width: 1024px) 25vw, 16vw"
+                className="object-contain"
+                style={{ width: "50%", height: "auto", maxHeight: "50%" }}
+              />
+            ) : (
+              <span
+                className="font-['Poppins',_sans-serif] font-semibold text-[#001A4D] px-4 text-center"
+                style={{ fontSize: "clamp(14px, min(1.4vw, 2vh), 20px)" }}
+              >
+                {company.brandName}
+              </span>
+            )}
+          </div>
+
+          {/* ── BACK FACE — founder portrait + white logo + arrow (only if founderImage exists) ── */}
+          {founderImage && (
+            <div
+              className="absolute inset-0 overflow-hidden border border-[#F0F0F0] [backface-visibility:hidden] [transform:rotateY(180deg)]"
+              style={{ borderRadius: cardRadius }}
+            >
+              <Image
+                src={founderImage}
+                alt={`${company.brandName} founder`}
+                fill
+                sizes="(max-width: 640px) 40vw, (max-width: 1024px) 25vw, 16vw"
+                className="object-cover object-top"
+              />
+              {company.logo && (
+                <Image
+                  src={company.logo}
+                  alt={`${company.brandName} logo`}
+                  width={120}
+                  height={120}
+                  sizes="(max-width: 640px) 12vw, (max-width: 1024px) 8vw, 5vw"
+                  className="absolute object-contain object-right-top"
+                  style={{
+                    top: "clamp(6px, min(0.7vw, 1vh), 12px)",
+                    right: "clamp(6px, min(0.7vw, 1vh), 12px)",
+                    width: "clamp(48px, min(4.8vw, 7vh), 76px)",
+                    height: "auto",
+                    maxHeight: "clamp(48px, min(4.8vw, 7vh), 76px)",
+                    filter: "brightness(0) invert(1)",
+                  }}
+                />
+              )}
+              <div
+                className="absolute flex items-center justify-center rounded-full bg-white text-[#001A4D] transition-transform duration-300 group-hover:translate-x-[2px] group-hover:-translate-y-[2px]"
+                style={{
+                  right: "clamp(8px, min(0.9vw, 1.3vh), 14px)",
+                  bottom: "clamp(8px, min(0.9vw, 1.3vh), 14px)",
+                  width: "clamp(26px, min(2.4vw, 3.5vh), 36px)",
+                  height: "clamp(26px, min(2.4vw, 3.5vh), 36px)",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
+                }}
+              >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path
                 d="M3 11L11 3M11 3H4.5M11 3V9.5"
@@ -472,6 +483,7 @@ function FilterDropdown({
           </div>
         </div>
         )}
+        </div>
       </Link>
     );
   }

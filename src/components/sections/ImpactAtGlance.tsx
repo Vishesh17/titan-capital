@@ -6,7 +6,7 @@ import { motion, AnimatePresence, Variants } from "framer-motion";
 
 /* ── DATA CONFIGURATIONS ── */
 const impactData = [
-  { num: "300+", label: "Startup Backed", caption: "Across seed, pre-Series A and growth stages since 2011" },
+  { num: "300+", label: "Startups Backed", caption: "Across seed, pre-Series A and growth stages since 2011" },
   { num: "650+", label: "Founders Backed", caption: "Operators, builders, and category creators" },
   { num: "250M+", label: "Lives Impacted", caption: "Customers served by portfolio companies" },
   { num: "6", label: "Indicorns", caption: "Direct employment across the portfolio ecosystem" },
