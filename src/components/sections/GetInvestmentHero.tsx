@@ -221,7 +221,7 @@ export default function GetInvestmentHero() {
               }}
             />
             <span className="relative z-10 italic">
-              Invest early
+              Invest Early
             </span>
           </motion.span>
         </motion.h1>

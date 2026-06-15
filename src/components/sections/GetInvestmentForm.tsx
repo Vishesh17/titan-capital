@@ -1082,7 +1082,7 @@ export default function GetInvestmentForm() {
               <EmailInput id="email" placeholder="jane@company.com" value={email} onChange={setEmail} />
             </div>
             <div>
-              <FieldLabel required htmlFor="phone">Phone number</FieldLabel>
+              <FieldLabel required htmlFor="phone">Phone Number</FieldLabel>
               <PhoneInput
                 country={phoneCountry}
                 onCountryChange={(c) => {
