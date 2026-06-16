@@ -780,7 +780,7 @@ export default async function PortfolioCompanyPage({
                 lineHeight: "120%",
               }}
             >
-              About the Company
+              About The Company
             </h2>
 
             <p
