@@ -1,9 +1,12 @@
 import type { SchemaTypeDefinition } from "sanity";
+import { backedBefore } from "./backedBefore";
 import { company } from "./company";
 import { foundersTestimonial } from "./foundersTestimonial";
 import { hero } from "./hero";
 import { impactAtGlance } from "./impactAtGlance";
 import { indicornSpotlight } from "./indicornSpotlight";
+import { whatFoundersGet } from "./whatFoundersGet";
+import { whatWeBelieve } from "./whatWeBelieve";
 
 /**
  * Registry of every document/object type the Studio knows about.
@@ -14,5 +17,8 @@ export const schemaTypes: SchemaTypeDefinition[] = [
   impactAtGlance,
   indicornSpotlight,
   foundersTestimonial,
+  backedBefore,
+  whatWeBelieve,
+  whatFoundersGet,
   company,
 ];

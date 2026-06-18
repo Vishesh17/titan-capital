@@ -44,6 +44,59 @@ export const indicornSpotlightQuery = groq`
 `;
 
 /**
+ * Home — What We Believe section. Singleton: returns the first (only)
+ * whatWeBelieve document. Pure text content — no asset resolution needed.
+ */
+export const whatWeBelieveQuery = groq`
+  *[_type == "whatWeBelieve"][0]{
+    headingFirst,
+    headingSecond,
+    beliefs[]{
+      title,
+      description
+    }
+  }
+`;
+
+/**
+ * Home — How We Show Up (What Founders Get) section.
+ */
+export const whatFoundersGetQuery = groq`
+  *[_type == "whatFoundersGet"][0]{
+    headingFirst,
+    headingSecond,
+    features[]{
+      id,
+      title,
+      desc
+    }
+  }
+`;
+
+/**
+ * Home — Backed Before section. Singleton: returns the first (only)
+ * backedBefore document. Image asset URLs resolved here so the frontend
+ * receives plain strings.
+ */
+export const backedBeforeQuery = groq`
+  *[_type == "backedBefore"][0]{
+    heading1,
+    heading2,
+    marquet1[]{
+      name,
+      scaleClass,
+      "image": image.asset->url
+    },
+    marquet2[]{
+      name,
+      scaleClass,
+      "image": image.asset->url
+    }
+  }
+`;
+
+
+/**
  * Home — Impact & Stories section. Singleton: returns the first (only)
  * impactAtGlance document. Image and logo URLs are resolved in the query
  * so the frontend just receives plain strings.
