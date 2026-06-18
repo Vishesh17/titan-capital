@@ -8,7 +8,6 @@ import IndicornsSpotlight from "@/components/sections/IndicornSpotlight";
 import BackedEarly from "@/components/sections/BackedEarly";
 import FounderTestimonial from "@/components/sections/FoundersTestimonial";
 import Footer from "@/components/sections/Footer";
-
 export default function Home() {
   return (
     <>
