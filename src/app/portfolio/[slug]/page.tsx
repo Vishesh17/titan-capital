@@ -715,10 +715,10 @@ export default async function PortfolioCompanyPage({
       <section
         className="relative flex w-full flex-col bg-[#FBF7F0]"
         style={{
-          // ~115px Navbar on desktop, smaller on mobile — keep the back button
-          // and breadcrumb clearly below it on every viewport.
-          paddingTop: "clamp(96px, min(8.33vw, 12.22vh), 140px)",
-          paddingBottom: "clamp(28px, min(3.5vw, 5.1vh), 56px)",
+          // Mobile navbar is ~65px, desktop ~80px. Top padding must clear
+          // the navbar on every viewport without leaving dead space on phones.
+          paddingTop: "clamp(78px, min(8.33vw, 12.22vh), 140px)",
+          paddingBottom: "clamp(20px, min(3.5vw, 5.1vh), 56px)",
           paddingLeft: "var(--section-px-wide, 5%)",
           paddingRight: "var(--section-px-wide, 5%)",
         }}
@@ -781,13 +781,15 @@ export default async function PortfolioCompanyPage({
           {/* ── Row 2: Brand logo, centered.
                  Slimmer than the original Figma spec — design ref now
                  ~370×75 at 1440 viewport, aspect ratio locked at 153/31
-                 so the logo never distorts on any multiview viewport. ── */}
+                 so the logo never distorts on any multiview viewport.
+                 Mobile minimum drops to 140px so the banner doesn't
+                 dominate small screens. ── */}
           <div
             className="mx-auto"
             style={{
-              width: "clamp(200px, min(25.69vw, 37.68vh), 370px)",
+              width: "clamp(140px, min(25.69vw, 37.68vh), 370px)",
               aspectRatio: "153 / 31",
-              marginTop: "clamp(20px, min(2.5vw, 3.7vh), 40px)",
+              marginTop: "clamp(14px, min(2.5vw, 3.7vh), 40px)",
             }}
           >
             <Image
@@ -852,7 +854,7 @@ export default async function PortfolioCompanyPage({
             style={{ flex: "1 1 0", minWidth: 0 }}
           >
             <h2
-              className="m-0 whitespace-nowrap font-['Libre_Baskerville',_serif] font-semibold text-[#001A4D]"
+              className="m-0 font-['Libre_Baskerville',_serif] font-semibold text-[#001A4D] lg:whitespace-nowrap"
               style={{
                 fontSize: "clamp(28px, min(3.33vw, 4.89vh), 48px)",
                 lineHeight: "120%",

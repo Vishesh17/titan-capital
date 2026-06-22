@@ -890,10 +890,9 @@ export default function GetInvestmentForm({
       !raisingAmount.trim() ||
       raisedBefore.size === 0 ||
       !pitchDeck ||
-      !hearAbout.trim() ||
-      !anythingElse.trim()
+      !hearAbout.trim()
     ) {
-      setSubmitError("Please fill out all fields. Every field is mandatory.");
+      setSubmitError("Please fill out all required fields.");
       return;
     }
 
@@ -1266,7 +1265,7 @@ export default function GetInvestmentForm({
           </motion.div>
 
           <motion.div style={{ marginBottom: "clamp(32px, min(3.5vw, 5vh), 48px)" }} variants={fieldSlideUp}>
-            <FieldLabel required htmlFor="anythingElse">Anything else you want us to know?</FieldLabel>
+            <FieldLabel htmlFor="anythingElse">Anything else you want us to know?</FieldLabel>
             <TextArea
               id="anythingElse"
               placeholder="A contrarian belief about your market, a risk you're thinking hard about, what keeps you up at night — or just something about you as a person."
