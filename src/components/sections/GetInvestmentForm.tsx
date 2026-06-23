@@ -337,7 +337,7 @@ function PhoneInput({
           }}
           onFocus={() => setPhoneFocused(true)}
           onBlur={() => setPhoneFocused(false)}
-          placeholder={`${"0".repeat(country.min)}`}
+          placeholder={`${"X".repeat(country.min)}`}
           className={`min-w-0 flex-1 rounded-r-[10px] border-2 border-transparent bg-[#F2F7FF] font-['Poppins',_sans-serif] text-[#1D2939] outline-none placeholder:text-[#98A2B3] focus:border-[#001A4D]/30 focus:bg-[#EEF3FF] ${ringClass}`}
           style={{
             padding: "clamp(14px, min(1.25vw, 1.85vh), 18px) clamp(16px, min(1.4vw, 2vh), 22px)",
@@ -1085,11 +1085,11 @@ export default function GetInvestmentForm({
           >
             <div>
               <FieldLabel required htmlFor="firstName">First Name</FieldLabel>
-              <TextInput id="firstName" placeholder="Jane" value={firstName} onChange={setFirstName} />
+              <TextInput id="firstName" placeholder="XXXX" value={firstName} onChange={setFirstName} />
             </div>
             <div>
               <FieldLabel required htmlFor="lastName">Last Name</FieldLabel>
-              <TextInput id="lastName" placeholder="Doe" value={lastName} onChange={setLastName} />
+              <TextInput id="lastName" placeholder="XXXX" value={lastName} onChange={setLastName} />
             </div>
           </motion.div>
 
@@ -1103,7 +1103,7 @@ export default function GetInvestmentForm({
           >
             <div>
               <FieldLabel required htmlFor="email">Email</FieldLabel>
-              <EmailInput id="email" placeholder="jane@company.com" value={email} onChange={setEmail} />
+              <EmailInput id="email" placeholder="xxxx@gmail.com" value={email} onChange={setEmail} />
             </div>
             <div>
               <FieldLabel required htmlFor="phone">Phone Number</FieldLabel>
@@ -1132,7 +1132,7 @@ export default function GetInvestmentForm({
             <FieldLabel required htmlFor="linkedin">LinkedIn or Personal Site</FieldLabel>
             <UrlInput
               id="linkedin"
-              placeholder="linkedin.com/in/jane"
+              placeholder="linkedin.com/in/xxxx"
               value={linkedin}
               onChange={setLinkedin}
               error=""
@@ -1163,13 +1163,13 @@ export default function GetInvestmentForm({
           >
             <div>
               <FieldLabel required htmlFor="companyName">Company Name</FieldLabel>
-              <TextInput id="companyName" placeholder="Acme Inc." value={companyName} onChange={setCompanyName} />
+              <TextInput id="companyName" placeholder="XXXX Inc." value={companyName} onChange={setCompanyName} />
             </div>
             <div>
               <FieldLabel required htmlFor="websiteUrl">Website or Product URL</FieldLabel>
               <UrlInput
                 id="websiteUrl"
-                placeholder="https://acme.com"
+                placeholder="https://xxxx.com"
                 value={websiteUrl}
                 onChange={(v) => {
                   setWebsiteUrl(v);

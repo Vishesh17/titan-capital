@@ -23,16 +23,16 @@ export interface PortfolioWinnerFundData {
 const FALLBACK_HEADING_FIRST = "Winners Fund";
 const FALLBACK_HEADING_SECOND = "Portfolio Companies";
 const FALLBACK_COMPANIES: PortfolioCompany[] = [
-  { name: "Anveshan", logo: "/images/logos_backup/anveshan.webp", category: "Pure & natural foods", logoW: "65%", logoH: "18%" },
-  { name: "BECO", logo: "/images/logos_backup/BECO.webp", category: "Sustainable home products", logoW: "48%", logoH: "80%" },
-  { name: "Boba Bhai", logo: "/images/logos_backup/bobabhai-logo.webp", category: "QSR & cloud kitchens", logoW: "52%", logoH: "18%" },
-  { name: "Giva", logo: "/images/logos_backup/GIVA.webp", category: "Jewellery and Fashion Accessories", logoW: "33%", logoH: "33%" },
-  { name: "HomeRun", logo: "/images/logos_backup/homerun.png", category: "B2B quick commerce", logoW: "70%", logoH: "40%" },
-  { name: "MEKR", logo: "/images/logos_backup/mekr-logo.webp", category: "Appliance Manufacturing", logoW: "45%", logoH: "30%" },
-  { name: "Mitigata", logo: "/images/logos_backup/mitigata-logo.webp", category: "Full-stack cyber security", logoW: "54%", logoH: "21%" },
-  { name: "Simplismart", logo: "/images/logos_backup/Simplismart.webp", category: "AI infrastructure", logoW: "68%", logoH: "28%" },
-  { name: "Supertails", logo: "/images/logos_backup/supertails black.png", category: "Pet products marketplace", logoW: "60%", logoH: "26%" },
-  { name: "Zouk", logo: "/images/logos_backup/zouk_new_logo.webp", category: "Vegan leather goods", logoW: "40%", logoH: "15%" },
+  { name: "Anveshan", logo: "/images/logos_backup/anveshan.webp", category: "A traceable, traditional and completely natural food products", logoW: "65%", logoH: "18%" },
+  { name: "BECO", logo: "/images/logos_backup/BECO.webp", category: "Eco-friendly D2C brand offering sustainable alternatives to everyday essentials at an affordable price", logoW: "48%", logoH: "80%" },
+  { name: "Boba Bhai", logo: "/images/logos_backup/bobabhai-logo.webp", category: "A QSR brand for Bubble tea and Korean Burgers", logoW: "52%", logoH: "18%" },
+  { name: "Giva", logo: "/images/logos_backup/GIVA.webp", category: "An enabling e-commerce businesses with higher conversions and RTO reduction", logoW: "33%", logoH: "33%" },
+  { name: "HomeRun", logo: "/images/logos_backup/homerun.png", category: "It is a provider of a goal-based savings platform", logoW: "70%", logoH: "40%" },
+  { name: "MEKR", logo: "/images/logos_backup/mekr-logo.webp", category: "One stop solution for complete electronic product manufacturing at competitive prices and lead time", logoW: "45%", logoH: "30%" },
+  { name: "Mitigata", logo: "/images/logos_backup/mitigata-logo.webp", category: "It is a smart cyber insurance partner", logoW: "54%", logoH: "21%" },
+  { name: "Simplismart", logo: "/images/logos_backup/Simplismart.webp", category: "Build, deploy and observe deep learning models with minimal code", logoW: "68%", logoH: "28%" },
+  { name: "Supertails", logo: "/images/logos_backup/supertails black.png", category: "Digital pet care platform offering products and expert-led healthcare", logoW: "60%", logoH: "26%" },
+  { name: "Zouk", logo: "/images/logos_backup/zouk_new_logo.webp", category: "100% Vegan Indian bags and accessories brand", logoW: "40%", logoH: "15%" },
 ];
 
 /**
@@ -90,27 +90,29 @@ function PortfolioCard({ company, index }: { company: PortfolioCompany; index: n
         transition: "background-color 0.55s ease-in-out",
       }}
     >
-      {/* ── LOGO wrapper — shrinks vertically on hover to make room for
-             the description. 54% (vs original 45%) keeps the logo 1.2×
-             larger when hovered. ── */}
+      {/* ── LOGO wrapper — shrinks vertically on hover to make room
+             for the description. 54% keeps the logo 1.2× larger than
+             the original 45%. ── */}
       <motion.div
         className="relative w-full shrink-0 overflow-hidden"
         animate={{ height: isActive ? "54%" : "100%" }}
         transition={{ duration: 0.55, ease: "easeInOut" }}
       >
-        {/* Logo box — absolutely positioned. Idle: centred via top/left
-            50% + translate(-50%, -50%). Hover: top/left at padding +
-            translate(0,0). Every property is a numeric or unit value so
-            CSS tween is smooth, no snapping. */}
-        <div
-          className="absolute transition-all duration-[550ms] ease-in-out"
-          style={{
-            width: company.logoW,
-            height: company.logoH,
-            top: isActive ? "clamp(14px, 1.8vw, 22px)" : "50%",
-            left: isActive ? "clamp(14px, 1.8vw, 22px)" : "50%",
-            transform: isActive ? "translate(0, 0)" : "translate(-50%, -50%)",
+        {/* Logo box — absolutely positioned, Framer Motion animates
+            BOTH wrapper height AND box position so they stay in sync.
+            Every animated property is a percentage so tweening is
+            smooth with zero snapping. */}
+        <motion.div
+          className="absolute"
+          initial={false}
+          animate={{
+            top: isActive ? "6%" : "50%",
+            left: isActive ? "5%" : "50%",
+            x: isActive ? "0%" : "-50%",
+            y: isActive ? "0%" : "-50%",
           }}
+          transition={{ duration: 0.55, ease: "easeInOut" }}
+          style={{ width: company.logoW, height: company.logoH }}
         >
           {flippedSrc ? (
             /* Brands with a pre-baked flipped variant — cross-fade. */
@@ -155,7 +157,7 @@ function PortfolioCard({ company, index }: { company: PortfolioCompany; index: n
               />
             </div>
           )}
-        </div>
+        </motion.div>
       </motion.div>
 
       {/* ── DESCRIPTION + READ — only on hover ── */}
