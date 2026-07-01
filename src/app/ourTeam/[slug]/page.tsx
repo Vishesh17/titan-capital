@@ -182,8 +182,13 @@ export default async function TeamMemberPage({
                 />
                 {member.image && (
                   <div
-                    className="absolute inset-0"
+                    // Mask container matches the blob img's exact offset
+                    // (top 6 %, left 5 %) and full size, same as the team
+                    // section — so the cutout takes the blob shape.
+                    className="absolute h-full w-full"
                     style={{
+                      top: "6%",
+                      left: "5%",
                       WebkitMaskImage: "url(/images/team/blob-cream.png)",
                       maskImage: "url(/images/team/blob-cream.png)",
                       WebkitMaskSize: "100% 100%",
@@ -192,14 +197,28 @@ export default async function TeamMemberPage({
                       maskRepeat: "no-repeat",
                     }}
                   >
-                    <Image
-                      src={cdnImageSrc(member.image, 1000)}
-                      alt={member.name}
-                      fill
-                      sizes="(max-width: 1024px) 60vw, 517px"
-                      priority
-                      className="object-cover"
-                    />
+                    {/* Inner container is 75 % × 85 %, anchored to the
+                        mask's BOTTOM-left — same as OurTeamClient — so
+                        the photo renders smaller, pushed to the left,
+                        starting from the bottom of the blob. */}
+                    <div
+                      className="absolute"
+                      style={{
+                        bottom: "0",
+                        left: "0",
+                        width: "75%",
+                        height: "85%",
+                      }}
+                    >
+                      <Image
+                        src={cdnImageSrc(member.image, 1000)}
+                        alt={member.name}
+                        fill
+                        sizes="(max-width: 1024px) 60vw, 517px"
+                        priority
+                        className="object-cover object-bottom"
+                      />
+                    </div>
                   </div>
                 )}
               </div>

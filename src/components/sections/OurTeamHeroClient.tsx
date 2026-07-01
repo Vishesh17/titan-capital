@@ -45,26 +45,46 @@ const FALLBACK_TITLE_3 = "Builders";
 const FALLBACK_DESC =
   "We've built companies ourselves. We know the weight of the journey. Now we back the founders building out their dreams.";
 
-// Exactly 12 slots: 5 in Row 1, 4 in Row 2, 3 in Row 3.
-// Alternating front/back so each global flip swaps every cell.
+// Exactly 12 slots with two responsive layouts:
+//
+//   Mobile (4-col grid)                 Desktop lg+ (5-col diamond)
+//     row1: c0  c1  c2  c3               row1: c0 c1 c2 c3 c4
+//     row2: [text] c4  c5                row2:    c5 c6 c7 c8
+//     row3: [text] c6  c7                row3:       c9 c10 c11
+//     row4: [text] c8  c9
+//     row5: c10 c11 —   —
+//
+// The gridClass for each card carries both the mobile position and the
+// lg position; the text block spans cols 1-2 rows 2-4 on mobile and
+// cols 1-2 rows 2-3 on lg. Front/back is alternated so each global
+// flip swaps every cell.
 const GRID_STRUCTURE = [
-  // Row 1 (5 items)
-  { frontIsBox: true,  gridClass: "lg:col-start-1 lg:row-start-1" },
-  { frontIsBox: false, gridClass: "lg:col-start-2 lg:row-start-1" },
-  { frontIsBox: true,  gridClass: "lg:col-start-3 lg:row-start-1" },
-  { frontIsBox: false, gridClass: "lg:col-start-4 lg:row-start-1" },
-  { frontIsBox: true,  gridClass: "lg:col-start-5 lg:row-start-1" },
+  // Card 0 — mobile r1c1 / lg r1c1
+  { frontIsBox: true,  gridClass: "col-start-1 row-start-1 lg:col-start-1 lg:row-start-1" },
+  // Card 1 — mobile r1c2 / lg r1c2
+  { frontIsBox: false, gridClass: "col-start-2 row-start-1 lg:col-start-2 lg:row-start-1" },
+  // Card 2 — mobile r1c3 / lg r1c3
+  { frontIsBox: true,  gridClass: "col-start-3 row-start-1 lg:col-start-3 lg:row-start-1" },
+  // Card 3 — mobile r1c4 / lg r1c4
+  { frontIsBox: false, gridClass: "col-start-4 row-start-1 lg:col-start-4 lg:row-start-1" },
+  // Card 4 — mobile r2c3 / lg r1c5
+  { frontIsBox: true,  gridClass: "col-start-3 row-start-2 lg:col-start-5 lg:row-start-1" },
 
-  // Row 2 (4 items)
-  { frontIsBox: true,  gridClass: "lg:col-start-2 lg:row-start-2" },
-  { frontIsBox: false, gridClass: "lg:col-start-3 lg:row-start-2" },
-  { frontIsBox: true,  gridClass: "lg:col-start-4 lg:row-start-2" },
-  { frontIsBox: false, gridClass: "lg:col-start-5 lg:row-start-2" },
+  // Card 5 — mobile r2c4 / lg r2c2
+  { frontIsBox: true,  gridClass: "col-start-4 row-start-2 lg:col-start-2 lg:row-start-2" },
+  // Card 6 — mobile r3c3 / lg r2c3
+  { frontIsBox: false, gridClass: "col-start-3 row-start-3 lg:col-start-3 lg:row-start-2" },
+  // Card 7 — mobile r3c4 / lg r2c4
+  { frontIsBox: true,  gridClass: "col-start-4 row-start-3 lg:col-start-4 lg:row-start-2" },
+  // Card 8 — mobile r4c3 / lg r2c5
+  { frontIsBox: false, gridClass: "col-start-3 row-start-4 lg:col-start-5 lg:row-start-2" },
 
-  // Row 3 (3 items)
-  { frontIsBox: true,  gridClass: "lg:col-start-3 lg:row-start-3" },
-  { frontIsBox: false, gridClass: "lg:col-start-4 lg:row-start-3" },
-  { frontIsBox: true,  gridClass: "lg:col-start-5 lg:row-start-3" },
+  // Card 9 — mobile r4c4 / lg r3c3
+  { frontIsBox: true,  gridClass: "col-start-4 row-start-4 lg:col-start-3 lg:row-start-3" },
+  // Card 10 — mobile r5c1 / lg r3c4
+  { frontIsBox: false, gridClass: "col-start-1 row-start-5 lg:col-start-4 lg:row-start-3" },
+  // Card 11 — mobile r5c2 / lg r3c5
+  { frontIsBox: true,  gridClass: "col-start-2 row-start-5 lg:col-start-5 lg:row-start-3" },
 ];
 
 const FALLBACK_IMAGES = Array.from(
@@ -116,10 +136,11 @@ function FlipCard({
 }) {
   return (
     <div
-      // No maxHeight cap — aspect-ratio 205/229 is the only height
-      // driver so cards stay as vertical rectangles at every viewport
-      // (with 1fr columns) instead of getting squished into squares.
-      className={`relative w-full aspect-[205/229] [perspective:1200px] ${gridClass}`}
+      // Mobile: aspect-ratio 205/229 (portrait) so 4-col cards read as
+      // proper rectangles at their small size, not tall thin slivers.
+      // Desktop: aspect-auto + height = viewport-derived slice so the
+      // 5-col diamond auto-adapts (portrait/square/landscape per screen).
+      className={`relative w-full aspect-[205/229] lg:aspect-auto lg:h-[var(--card-h)] [perspective:1200px] ${gridClass}`}
     >
       <Dot className="-left-[5px] -top-[5px]" />
       <Dot className="-right-[5px] -top-[5px]" />
@@ -191,7 +212,12 @@ export default function OurTeamHeroClient({
     <section
       className="relative flex w-full flex-col bg-white"
       style={{
-        // Identical to Footer + HeroClient — the site-wide section rhythm.
+        // Matches HeroClient.tsx (Hero.tsx server wrapper delegates
+        // to it). marginTop pushes the section below the fixed navbar,
+        // minHeight makes it fill the remaining viewport, then the
+        // padding tokens are the site-wide section rhythm.
+        marginTop: "var(--nav-height)",
+        minHeight: "calc(100svh - var(--nav-height))",
         paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
         paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
         paddingLeft: "var(--section-px-wide, 5%)",
@@ -207,10 +233,23 @@ export default function OurTeamHeroClient({
           not because the container is narrowed. */}
       <div className="mx-auto flex w-full max-w-[1440px] flex-col">
         <div
-          className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5"
+          // Grid fills the max-w-[1440px] outer wrapper — no inner
+          // max-w cap — so the section's left / right extents line
+          // up with Footer, LedByFounders, and OurTeamClient. Cards
+          // are portrait rectangles via aspect-ratio 205/229; on
+          // shorter viewports the section will overflow slightly
+          // (a small scroll) rather than contract the grid inward.
+          // Mobile: 4-col grid so the top row shows all 4 cards side
+          // by side (per the mobile design). Desktop lg+: 5-col diamond.
+          className="grid w-full grid-cols-4 lg:grid-cols-5"
           style={{
             columnGap: "clamp(14px, min(2vw, 2.5vh), 32px)",
             rowGap: "clamp(18px, min(2.4vw, 3vh), 40px)",
+            // CSS var consumed by each FlipCard at lg+ (aspect-ratio
+            // drives card height on mobile).
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ["--card-h" as any]:
+              "clamp(80px, calc((100svh - 300px) / 3), 400px)",
           }}
         >
           {/* Row 1 (items 0-4) */}
@@ -218,95 +257,82 @@ export default function OurTeamHeroClient({
             <FlipCard key={item.id} {...item} isFlipped={isFlipped} />
           ))}
 
-          {/* TEXT BLOCK — fills the leftmost 2 cells in rows 2-3 on
-              desktop. Mobile/tablet shows it as a full-width band.
-              Heading group and description are siblings here so the
-              cell can use lg:justify-between to push the heading up
-              against row 2 and the description down against row 3.
-              Mobile keeps the natural top-stacked flow. */}
-          <div className="pointer-events-none relative z-10 col-span-2 flex flex-col pt-4 md:col-span-3 lg:col-span-2 lg:col-start-1 lg:row-span-2 lg:row-start-2 lg:justify-between lg:pb-6 lg:pr-6 lg:pt-0">
-            {/* Heading group — top of the cell on desktop */}
-            <motion.div
-              className="pointer-events-auto flex flex-col items-start"
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.4 }}
+          {/* ── TEXT BLOCK ──
+              Mobile: spans cols 1-2 and rows 2-4 (occupying the left
+              half of the 4-col grid while cards 4-9 sit in cols 3-4).
+              Desktop lg+: spans cols 1-2 rows 2-3 with pt-[calc()]
+              pushing the first heading line to the midpoint of row 2. */}
+          <motion.div
+            className="pointer-events-none relative z-10 col-start-1 col-span-2 row-start-2 row-span-3 flex flex-col items-start lg:col-span-2 lg:col-start-1 lg:row-span-2 lg:row-start-2 lg:pt-[calc((100svh-300px)/6)]"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.4 }}
+          >
+            <motion.h1
+              className="pointer-events-auto m-0 font-['Libre_Baskerville',_serif] font-semibold text-[#0E0E0E]"
+              style={{
+                fontSize: "clamp(28px, min(4.4vw, 5.4vh), 56px)",
+                lineHeight: "118%",
+              }}
+              variants={fadeUp(0)}
             >
-              <motion.h1
-                className="m-0 font-['Libre_Baskerville',_serif] font-semibold text-[#0E0E0E]"
+              {titleLine1}
+            </motion.h1>
+
+            <motion.div
+              // inline-flex + padding sizes the cream highlight to fit
+              // "Backing" — no clipping at any viewport.
+              className="pointer-events-auto relative my-1 inline-flex items-center justify-center overflow-hidden"
+              style={{
+                paddingLeft: "clamp(8px, 1vw, 14px)",
+                paddingRight: "clamp(8px, 1vw, 14px)",
+                paddingTop: "2px",
+                paddingBottom: "2px",
+              }}
+              variants={fadeUp(0.15)}
+            >
+              <motion.span
+                className="absolute inset-0 z-0 h-full w-full bg-[#FBF7F0]"
+                style={{ transformOrigin: "left" }}
+                variants={highlightScaleX(0.55)}
+              />
+              <h1
+                className="relative z-10 m-0 font-['Libre_Baskerville',_serif] font-semibold italic text-[#0E0E0E]"
                 style={{
                   fontSize: "clamp(28px, min(4.4vw, 5.4vh), 56px)",
                   lineHeight: "118%",
                 }}
-                variants={fadeUp(0)}
               >
-                {titleLine1}
-              </motion.h1>
-
-              <motion.div
-                // inline-flex + padding (same as LedByFounders) so the
-                // cream highlight sizes to fit the italic "Backing"
-                // text — no fixed width to clip the letters at any
-                // viewport / font scale.
-                className="relative my-1 inline-flex items-center justify-center overflow-hidden"
-                style={{
-                  paddingLeft: "clamp(8px, 1vw, 14px)",
-                  paddingRight: "clamp(8px, 1vw, 14px)",
-                  paddingTop: "2px",
-                  paddingBottom: "2px",
-                }}
-                variants={fadeUp(0.15)}
-              >
-                {/* Cream highlight bg — scales in from the left,
-                    same pattern as OurTeamClient's italic phrase. */}
-                <motion.span
-                  className="absolute inset-0 z-0 h-full w-full bg-[#FBF7F0]"
-                  style={{ transformOrigin: "left" }}
-                  variants={highlightScaleX(0.55)}
-                />
-                <h1
-                  className="relative z-10 m-0 font-['Libre_Baskerville',_serif] font-semibold italic text-[#0E0E0E]"
-                  style={{
-                    fontSize: "clamp(28px, min(4.4vw, 5.4vh), 56px)",
-                    lineHeight: "118%",
-                  }}
-                >
-                  {titleLine2}
-                </h1>
-              </motion.div>
-
-              <motion.h1
-                className="m-0 font-['Libre_Baskerville',_serif] font-semibold text-[#0E0E0E]"
-                style={{
-                  fontSize: "clamp(28px, min(4.4vw, 5.4vh), 56px)",
-                  lineHeight: "118%",
-                }}
-                variants={fadeUp(0.3)}
-              >
-                {titleLine3}
-              </motion.h1>
+                {titleLine2}
+              </h1>
             </motion.div>
 
-            {/* Description — bottom of the cell on desktop, normal flow
-                below the heading on mobile. */}
+            <motion.h1
+              className="pointer-events-auto m-0 font-['Libre_Baskerville',_serif] font-semibold text-[#0E0E0E]"
+              style={{
+                fontSize: "clamp(28px, min(4.4vw, 5.4vh), 56px)",
+                lineHeight: "118%",
+              }}
+              variants={fadeUp(0.3)}
+            >
+              {titleLine3}
+            </motion.h1>
+
             <motion.p
               className="pointer-events-auto m-0 font-['Poppins',_sans-serif] font-normal text-[#000]"
               style={{
-                marginTop: "clamp(12px, min(1.4vw, 1.8vh), 24px)",
+                marginTop: "clamp(8px, min(1vw, 1.4vh), 16px)",
                 maxWidth: "clamp(220px, min(28vw, 100%), 420px)",
                 fontSize: "clamp(13px, min(1.5vw, 1.8vh), 20px)",
                 lineHeight: "150%",
               }}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.4 }}
               variants={fadeUp(0.45)}
             >
               {description}
             </motion.p>
-          </div>
+          </motion.div>
 
-          {/* Rows 2-3 (items 5-11) */}
+          {/* Rows 2-3 cards (items 5-11) */}
           {teamItems.slice(5).map((item) => (
             <FlipCard key={item.id} {...item} isFlipped={isFlipped} />
           ))}

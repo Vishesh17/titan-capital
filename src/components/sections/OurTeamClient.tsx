@@ -216,12 +216,18 @@ function TeamCard({
             }}
           />
 
-          {/* ── PHOTO — masked to the SAME blob shape via the PNG's
-                  alpha channel; monochrome by default with smooth
-                  colour return on hover. ── */}
+          {/* ── PHOTO — outer mask container matches the blob img's
+                  exact offset (top 6 %, left 5 %) and full size so
+                  the cutout takes the blob shape. Inside, the image
+                  container is smaller (75 % × 85 %) and anchored to
+                  the mask's top-left corner, so the photo renders
+                  SMALLER and pushed to the LEFT of the blob, with the
+                  person's head aligned to the blob's head. ── */}
           <div
-            className="absolute inset-0"
+            className="absolute h-full w-full"
             style={{
+              top: "6%",
+              left: "5%",
               WebkitMaskImage: `url(${BLOB_SRC})`,
               maskImage: `url(${BLOB_SRC})`,
               WebkitMaskSize: "100% 100%",
@@ -231,16 +237,21 @@ function TeamCard({
             }}
           >
             {member.image ? (
-              <Image
-                src={cdnImageSrc(member.image, 600)}
-                alt={member.name}
-                fill
-                sizes="(max-width: 640px) 40vw, (max-width: 1024px) 25vw, 254px"
-                className="object-cover transition-[filter] duration-500 ease-out [filter:grayscale(1)] group-hover:[filter:grayscale(0)]"
-              />
+              <div
+                className="absolute"
+                style={{ bottom: "0", left: "0", width: "75%", height: "85%" }}
+              >
+                <Image
+                  src={cdnImageSrc(member.image, 600)}
+                  alt={member.name}
+                  fill
+                  sizes="(max-width: 640px) 40vw, (max-width: 1024px) 25vw, 300px"
+                  className="object-cover object-bottom transition-[filter] duration-500 ease-out [filter:grayscale(1)] group-hover:[filter:grayscale(0)]"
+                />
+              </div>
             ) : (
               <div
-                className="flex h-full w-full items-center justify-center bg-[#E5E5E5] font-['Poppins',_sans-serif] text-[#9A9A9A]"
+                className="flex h-full w-full items-end justify-start bg-[#E5E5E5] font-['Poppins',_sans-serif] text-[#9A9A9A]"
                 style={{ fontSize: "clamp(28px, 4vw, 56px)" }}
               >
                 {member.name
@@ -361,34 +372,26 @@ function TeamGroup({
         {title}
       </motion.h2>
 
-      {/* flex-wrap (not grid) so incomplete trailing rows auto-center
-            instead of clinging to the leftmost grid column. Each card
-            gets a fixed flex-basis so 3 fit per row on desktop, 2 on
-            tablet, 1 on mobile — without any breakpoint switching.
-            Wrapper width matches the section's outer max-w-[1440px]
-            (same as OurTeamHero) so the cards aren't pinched into a
-            narrower 1100 band on wide viewports. */}
+      {/* Mobile: single-column grid so each row has exactly one card
+            (per the mobile design). Desktop md+: 3-col grid where the
+            first card aligns to the left content edge and the third
+            to the right, with the columnGap providing the visible
+            gutter between them. Grid columns handle "third card
+            matches Footer right edge" implicitly — the rightmost
+            column always ends at max-w-[1440px]. */}
       <div
-        className="flex w-full flex-wrap justify-center"
+        className="grid w-full grid-cols-1 md:grid-cols-3"
         style={{
           rowGap: "clamp(36px, min(4vw, 6vh), 72px)",
-          columnGap: "clamp(20px, min(2vw, 3vh), 40px)",
+          columnGap: "clamp(20px, min(3vw, 4.5vh), 96px)",
         }}
       >
         {members.map((member, i) => (
-          <div
+          <TeamCard
             key={`${title}-${i}-${member.name}`}
-            className="flex shrink-0 justify-center"
-            // Slot width: 3 cards × ~31% + 2 × column-gap fills the
-            // 1440 inner wrapper end-to-end, so the team grid lines
-            // up with Footer / Hero / LedByFounders on both edges.
-            style={{ flexBasis: "clamp(260px, 31%, 450px)" }}
-          >
-            <TeamCard
-              member={member}
-              rotateBlob={BLOB_ROTATIONS[i % BLOB_ROTATIONS.length]}
-            />
-          </div>
+            member={member}
+            rotateBlob={BLOB_ROTATIONS[i % BLOB_ROTATIONS.length]}
+          />
         ))}
       </div>
     </div>
