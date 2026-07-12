@@ -1,6 +1,7 @@
 import type { Viewport } from "next";
 import { Geist, Libre_Baskerville, Poppins, Inter, Plus_Jakarta_Sans, Montserrat, DM_Sans } from "next/font/google";
 import Navbar from "@/components/layout/Navbar";
+import LenisProvider from "@/components/layout/LenisProvider";
 import { buildMetadata } from "@/sanity/lib/seo";
 import "./globals.css";
 
@@ -87,9 +88,13 @@ export default function RootLayout({
       className={`${geistSans.variable} ${libreBaskerville.variable} ${poppins.variable} ${inter.variable} ${plusJakartaSans.variable} ${montserrat.variable} ${dmSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col m-0 p-0">
-        <Navbar />
-        {/* FIX: Removed pt-[115px]. The Hero section now handles its own overlap padding to prevent gaps. */}
-        <main className="flex-1 w-full m-0 p-0">{children}</main>
+        {/* Site-wide smooth scrolling (Lenis). Wraps everything so
+            every page inherits the same weighted scroll feel. */}
+        <LenisProvider>
+          <Navbar />
+          {/* FIX: Removed pt-[115px]. The Hero section now handles its own overlap padding to prevent gaps. */}
+          <main className="flex-1 w-full m-0 p-0">{children}</main>
+        </LenisProvider>
       </body>
     </html>
   );

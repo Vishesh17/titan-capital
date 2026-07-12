@@ -29,6 +29,7 @@ export const foundersTestimonialQuery = groq`
 export const indicornSpotlightQuery = groq`
   *[_type == "indicornSpotlight"][0]{
     heading,
+    subheading,
     bullets,
     ctaLabel,
     rotatingLogosLabel,
@@ -341,8 +342,7 @@ export const whatWeLookForQuery = groq`
  */
 export const whatWeBelieveQuery = groq`
   *[_type == "whatWeBelieve"][0]{
-    headingFirst,
-    headingSecond,
+    heading,
     beliefs[]{
       title,
       description
@@ -355,12 +355,15 @@ export const whatWeBelieveQuery = groq`
  */
 export const whatFoundersGetQuery = groq`
   *[_type == "whatFoundersGet"][0]{
-    headingFirst,
-    headingSecond,
-    features[]{
-      id,
+    heading,
+    rows[]{
       title,
-      desc
+      shortHeading,
+      shortDesc,
+      longHeading,
+      longDesc,
+      valueTitle,
+      valueBullets
     }
   }
 `;

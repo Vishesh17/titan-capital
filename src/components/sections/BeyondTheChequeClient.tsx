@@ -115,24 +115,32 @@ const FALLBACK_CATEGORIES: BeyondCategory[] = [
 
 /* ─────────────────────────────────────────────────────────
    Strip sizing per design spec.
-     Closed: 184 × 386
-     Open:   226 × 386
-   Fluid clamps preserve the closed/open ratio across viewports
-   and the 184:386 width-to-height ratio so strips read as the
-   tall vertical tabs the design calls for (not squat boxes).
+     Closed: 185 × 386  →  ratio 185/386 ≈ 0.479
+     Open:   226 × 386  →  ratio 226/386 ≈ 0.585
+   Widths are DERIVED from the height so the aspect ratio is
+   exactly preserved at every viewport — the SVG folder-tab
+   uses preserveAspectRatio="none" and would otherwise stretch
+   if the two clamps hit their mins/vw/vh crossovers separately.
    ───────────────────────────────────────────────────────── */
-const STRIP_CLOSED_WIDTH = "clamp(80px, min(12.78vw, 18.74vh), 184px)";
-const STRIP_OPEN_WIDTH = "clamp(98px, min(15.69vw, 23.0vh), 226px)";
 const STRIP_HEIGHT = "clamp(220px, min(26.8vw, 39.3vh), 386px)";
+const STRIP_CLOSED_WIDTH = `calc(${STRIP_HEIGHT} * 185 / 386)`;
+const STRIP_OPEN_WIDTH = `calc(${STRIP_HEIGHT} * 226 / 386)`;
 
 /* ─────────────────────────────────────────────────────────
    Strip — closed rectangle with dashed L+R borders, OR open
-   curved folder-tab SVG. Both visual layers are always
-   rendered and cross-faded by opacity; the button's width
-   animates via `layout` so when the active strip changes,
-   neighbours slide to their new positions smoothly instead
-   of snapping. Easing + duration tuned to read as a single
-   gentle reflow rather than a jerk.
+   curved folder-tab SVG.
+
+   Layout stays fixed: every button is the CLOSED width in
+   flow, so clicking never shifts neighbours sideways. The
+   open (226-wide) folder-tab SVG renders as an ABSOLUTE
+   overlay centered on the button, extending ± ½ × (226−185)
+   into the two neighbours' visual space — the paper-cream
+   colour matches so the overlap reads as a single sheet.
+
+   Animation is a "page-open" reveal: the overlay fades in
+   while scaling from 94 % height at its bottom edge, so the
+   tab looks like it's unfolding upward from the base of the
+   paper. No horizontal expansion, no reflow.
    ───────────────────────────────────────────────────────── */
 function Strip({
   label,
@@ -148,15 +156,13 @@ function Strip({
   onClick: () => void;
 }) {
   return (
-    <motion.button
+    <button
       type="button"
       onClick={onClick}
-      layout
-      transition={{
-        layout: { duration: 0.6, ease: "easeInOut" },
-      }}
       style={{
-        width: isOpen ? STRIP_OPEN_WIDTH : STRIP_CLOSED_WIDTH,
+        // Fixed width in layout — no `layout` animation, no
+        // horizontal displacement of neighbours.
+        width: STRIP_CLOSED_WIDTH,
         height: STRIP_HEIGHT,
         background: "transparent",
         border: "none",
@@ -164,8 +170,8 @@ function Strip({
         position: "relative",
         cursor: "pointer",
         flexShrink: 0,
-        // Active strip floats on top so its curved tab can extend
-        // beyond its width into neighbouring strips visually.
+        // Active strip floats on top so its wider overlay sits
+        // above adjacent closed strips.
         zIndex: isOpen ? 2 : 1,
       }}
       aria-pressed={isOpen}
@@ -176,7 +182,7 @@ function Strip({
             avoid stray dashes against the paper edges. ── */}
       <motion.div
         animate={{ opacity: isOpen ? 0 : 1 }}
-        transition={{ duration: 0.25, ease: "easeOut" }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
         className="absolute inset-0"
         style={{
           background: "#FBF7F0",
@@ -185,34 +191,60 @@ function Strip({
         }}
       />
 
-      {/* ── OPEN LAYER — curved folder-tab SVG, stretches to the
-            strip's larger width. Cross-fades in when active. ── */}
-      <motion.div
-        animate={{ opacity: isOpen ? 1 : 0 }}
-        transition={{ duration: 0.25, ease: "easeOut" }}
-        className="absolute inset-0"
-        style={{ pointerEvents: "none" }}
+      {/* ── OPEN LAYER — folder-tab SVG. Positioned via an
+            outer wrapper that centers a 226-wide overlay on
+            top of the 185-wide button (translateX(-50%) after
+            left: 50%). An inner motion.div handles the reveal
+            animation — opacity + scaleY from center-bottom so
+            the tab "unfolds" upward from the paper edge. ── */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: "50%",
+          width: STRIP_OPEN_WIDTH,
+          height: "100%",
+          transform: "translateX(-50%)",
+          pointerEvents: "none",
+        }}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 226 386"
-          preserveAspectRatio="none"
-          fill="none"
-          className="absolute inset-0 h-full w-full"
+        <motion.div
+          initial={false}
+          animate={{
+            opacity: isOpen ? 1 : 0,
+            scaleY: isOpen ? 1 : 0.94,
+          }}
+          transition={{
+            opacity: { duration: 0.35, ease: "easeOut" },
+            scaleY: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+          }}
           style={{
-            filter: "drop-shadow(0 6px 12px rgba(103, 103, 103, 0.15))",
+            width: "100%",
+            height: "100%",
+            transformOrigin: "center bottom",
           }}
         >
-          <path
-            d="M0 380.5C34.0536 168 34.0536 40.5 34.0536 27.5V0H225.241C232.923 134.014 179.783 386 179.783 386L0 380.5Z"
-            fill="#FBF7F0"
-          />
-        </svg>
-      </motion.div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 226 386"
+            preserveAspectRatio="none"
+            fill="none"
+            className="absolute inset-0 h-full w-full"
+            style={{
+              filter: "drop-shadow(0 6px 12px rgba(103, 103, 103, 0.15))",
+            }}
+          >
+            <path
+              d="M0 380.5C34.0536 168 34.0536 40.5 34.0536 27.5V0H225.241C232.923 134.014 179.783 386 179.783 386L0 380.5Z"
+              fill="#FBF7F0"
+            />
+          </svg>
+        </motion.div>
+      </div>
 
       {/* ── LABEL — vertical text, always rendered so it never
             flickers during the open/closed cross-fade. ── */}
-      <div className="absolute inset-0 flex items-center justify-center">
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <span
           className="relative font-['Libre_Baskerville',_serif] font-semibold text-black"
           style={{
@@ -226,7 +258,7 @@ function Strip({
           {label}
         </span>
       </div>
-    </motion.button>
+    </button>
   );
 }
 

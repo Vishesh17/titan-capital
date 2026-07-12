@@ -4,11 +4,12 @@ import { defineField, defineType } from "sanity";
  * Home — "What We Believe" section.
  *
  * Singleton document. Mirrors WhatWeBelieveClient.tsx:
- *   - Two-part heading ("What" + italic-highlighted "We Believe")
- *   - 3 belief cards (title + description) rendered on the bordered card art
+ *   • `heading`   — single plain heading, e.g. "What We Believe"
+ *   • `beliefs[]` — exactly 3 cards, each with title + description
  *
- * The bordered card background art (`borderedcard.png`) stays in the code —
- * it's brand decoration, not editorial content.
+ * The crowd background image (`/images/what-we-believe/crowd.png`) and
+ * the scroll-driven image → cards animation stay in the component —
+ * they're design, not editorial content.
  */
 export const whatWeBelieve = defineType({
   name: "whatWeBelieve",
@@ -17,21 +18,16 @@ export const whatWeBelieve = defineType({
 
   fields: [
     defineField({
-      name: "headingFirst",
-      title: "Heading — line 1 (plain)",
-      description: 'e.g. "What"',
-      type: "string",
-    }),
-    defineField({
-      name: "headingSecond",
-      title: "Heading — line 2 (italic + highlighted)",
-      description: 'e.g. "We Believe"',
+      name: "heading",
+      title: "Section heading",
+      description: 'e.g. "What We Believe"',
       type: "string",
     }),
     defineField({
       name: "beliefs",
       title: "Belief cards",
-      description: "Exactly 3 cards is the design — the centre one slides up while side ones fan in. Adding more will overflow the row.",
+      description:
+        "Exactly 3 cards — the scroll animation splits the crowd image into 3 slices that become these cards. Other counts won't render correctly.",
       type: "array",
       of: [
         {
@@ -41,7 +37,7 @@ export const whatWeBelieve = defineType({
             defineField({
               name: "title",
               title: "Card title",
-              description: 'e.g. "Founder-First, Always"',
+              description: 'e.g. "Founder-Centricity"',
               type: "string",
               validation: (r) => r.required(),
             }),
@@ -49,7 +45,7 @@ export const whatWeBelieve = defineType({
               name: "description",
               title: "Card description",
               type: "text",
-              rows: 4,
+              rows: 5,
               validation: (r) => r.required(),
             }),
           ],
@@ -57,7 +53,11 @@ export const whatWeBelieve = defineType({
         },
       ],
       validation: (r) =>
-        r.length(3).warning('Design fits 3 cards — other counts won\'t render correctly.'),
+        r
+          .length(3)
+          .warning(
+            "Design fits exactly 3 cards — the animation splits the image into 3 slices.",
+          ),
     }),
   ],
 

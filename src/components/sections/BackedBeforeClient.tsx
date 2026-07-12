@@ -205,7 +205,7 @@ export default function BackedBeforeClient({
     >
 
       {/* ANIMATED SCROLL HEADING SEQUENCE */}
-      <div className="flex flex-col items-center w-full max-w-[1009px] px-4 mb-4 md:mb-8 mx-auto">
+      {/* <div className="flex flex-col items-center w-full max-w-[1009px] px-4 mb-4 md:mb-8 mx-auto">
         <motion.h2
           className="text-[var(--Primary-Color,#001A4D)] text-center font-['Libre_Baskerville',_serif] text-[clamp(28px,5vw,var(--heading-xl))] italic font-semibold leading-[100%] md:leading-[120%]"
           initial="hidden"
@@ -247,7 +247,7 @@ export default function BackedBeforeClient({
         >
           {heading2}
         </motion.h2>
-      </div>
+      </div> */}
 
       {/* TRACK ONE: Left to Right */}
       <div

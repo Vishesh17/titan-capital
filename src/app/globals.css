@@ -72,6 +72,18 @@
   --section-px-wide: clamp(24px, calc((100vw - 1280px) / 2), 80px);
 
   /*
+    Shared VERTICAL section padding — single source of truth. Target
+    is ~80px @ 1728×1117 Figma ref (min(4.63vw, 7.16vh)), floored at
+    32px for tight mobile / short-strip viewports and capped at 100px
+    so it never bloats on huge external monitors.
+
+    Every section wrapper should use `padding-top / padding-bottom:
+    var(--section-py)` instead of ad-hoc clamps — enforces consistent
+    vertical rhythm across the whole site.
+  */
+  --section-py: clamp(32px, min(4.63vw, 7.16vh), 100px);
+
+  /*
     Shared heading scale — THE single heading size for the whole site.
     0.9× the original (FoundersTestimonial) reference: caps at 57.6px
     (was 64), floors at 21.6px (was 24), height-aware so it never overflows

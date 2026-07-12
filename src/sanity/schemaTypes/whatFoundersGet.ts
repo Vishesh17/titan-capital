@@ -3,15 +3,18 @@ import { defineField, defineType } from "sanity";
 /**
  * Home — "How We Show Up" section (component file: WhatFoundersGet.tsx).
  *
- * Singleton document. Editors control the heading and the 6 feature
- * card texts (title + description). The desktop/mobile coordinate
- * layouts (top/left/width for each card and the surrounding arrows
- * /hub image) stay hardcoded in the client because they're hand-tuned
- * design, not editorial content.
- *
- * The `id` field maps each entry to its position in the hardcoded
- * layout arrays — so editors can reorder cards in the Studio without
- * breaking the visual flowchart.
+ * Singleton document. Editors control the section heading and the 6
+ * accordion rows. Each row has:
+ *   • title           — left column label (e.g. "The Ecosystem")
+ *   • shortHeading    — right column label shown while closed
+ *                       (e.g. "Global Founder Network")
+ *   • shortDesc       — description shown while closed
+ *   • longHeading     — headline shown when the row is expanded
+ *                       (e.g. "The Network is the Moat.")
+ *   • longDesc        — long-form description shown when expanded
+ *   • valueTitle      — sub-heading above the bullets in the expanded
+ *                       state (e.g. "Strategic Value")
+ *   • valueBullets    — bulleted list under the value title
  */
 export const whatFoundersGet = defineType({
   name: "whatFoundersGet",
@@ -20,64 +23,79 @@ export const whatFoundersGet = defineType({
 
   fields: [
     defineField({
-      name: "headingFirst",
-      title: "Heading — line 1 (plain)",
-      description: 'e.g. "How We"',
+      name: "heading",
+      title: "Section heading",
+      description: 'e.g. "How We Show Up"',
       type: "string",
     }),
+
     defineField({
-      name: "headingSecond",
-      title: "Heading — line 2 (italic + highlighted)",
-      description: 'e.g. "Show Up"',
-      type: "string",
-    }),
-    defineField({
-      name: "features",
-      title: "Feature cards",
+      name: "rows",
+      title: "Accordion rows",
       description:
-        "6 entries are wired into the hand-positioned flowchart layout. The `id` is what links the editorial text to its position on screen — don't change it.",
+        "6 rows recommended. Each row expands inline on click and collapses others.",
       type: "array",
       of: [
         {
           type: "object",
-          name: "featureItem",
+          name: "howWeShowUpRow",
           fields: [
             defineField({
-              name: "id",
-              title: "Slot ID (do not change)",
-              description: "Internal key that maps the card to its position on the flowchart.",
-              type: "string",
-              options: {
-                list: [
-                  { title: "Hiring (top-left)", value: "hiring" },
-                  { title: "Network (top-right)", value: "network" },
-                  { title: "Follow-on Capital (mid-left)", value: "capital" },
-                  { title: "Fundraising (mid-right)", value: "fundraising" },
-                  { title: "Firefighting (bottom-mid)", value: "firefighting" },
-                  { title: "Industry Playbook (bottom-right)", value: "playbook" },
-                ],
-                layout: "radio",
-              },
-              validation: (r) => r.required(),
-            }),
-            defineField({
               name: "title",
-              title: "Card title",
+              title: "Row title (left column)",
+              description: 'e.g. "The Ecosystem"',
               type: "string",
               validation: (r) => r.required(),
             }),
             defineField({
-              name: "desc",
-              title: "Card description",
-              type: "text",
-              rows: 4,
+              name: "shortHeading",
+              title: "Short heading (closed state)",
+              description: 'e.g. "Global Founder Network"',
+              type: "string",
               validation: (r) => r.required(),
+            }),
+            defineField({
+              name: "shortDesc",
+              title: "Short description (closed state)",
+              type: "text",
+              rows: 3,
+              validation: (r) => r.required(),
+            }),
+            defineField({
+              name: "longHeading",
+              title: "Long heading (opened state)",
+              description: 'e.g. "The Network is the Moat."',
+              type: "string",
+              validation: (r) => r.required(),
+            }),
+            defineField({
+              name: "longDesc",
+              title: "Long description (opened state)",
+              type: "text",
+              rows: 5,
+              validation: (r) => r.required(),
+            }),
+            defineField({
+              name: "valueTitle",
+              title: "Value section title",
+              description: 'e.g. "Strategic Value"',
+              type: "string",
+              validation: (r) => r.required(),
+            }),
+            defineField({
+              name: "valueBullets",
+              title: "Value bullets",
+              description: "Bulleted list shown under the value title.",
+              type: "array",
+              of: [{ type: "text", rows: 2 }],
+              validation: (r) => r.min(1),
             }),
           ],
-          preview: { select: { title: "title", subtitle: "id" } },
+          preview: {
+            select: { title: "title", subtitle: "shortHeading" },
+          },
         },
       ],
-      validation: (r) => r.length(6).warning("The flowchart has 6 hand-placed positions — other counts won't render correctly."),
     }),
   ],
 

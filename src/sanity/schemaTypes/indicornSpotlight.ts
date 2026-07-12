@@ -17,7 +17,13 @@ export const indicornSpotlight = defineType({
     defineField({
       name: "heading",
       title: "Main heading",
-      description: 'Single line on desktop. e.g. "Indicorns: Celebrating India\'s Enduring Startups"',
+      description: 'Big Poppins title. e.g. "Indicorns"',
+      type: "string",
+    }),
+    defineField({
+      name: "subheading",
+      title: "Subheading",
+      description: 'Line under the main heading. e.g. "Celebrating India\'s Most Resilient Startups"',
       type: "string",
     }),
     defineField({

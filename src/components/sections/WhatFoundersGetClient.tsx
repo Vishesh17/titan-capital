@@ -1,377 +1,805 @@
 "use client";
 
-import { useRef } from "react";
-import Image from "next/image";
-import { motion, useMotionValue, useSpring, useTransform, Variants } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import {
+  motion,
+  AnimatePresence,
+  useInView,
+  type Variants,
+} from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────
    Types — shared with the server wrapper (WhatFoundersGet.tsx).
-
-   Only `title` + `desc` come from the CMS. The flowchart
-   layout (top/left/width per slot, arrows, hub image, mobile
-   scaling) stays hardcoded because it's hand-tuned design —
-   editors shouldn't have to type pixel coordinates.
    ───────────────────────────────────────────────────────── */
-export interface WhatFoundersGetFeature {
-  id: string;
+export interface HowWeShowUpRow {
   title: string;
-  desc: string;
+  shortHeading: string;
+  shortDesc: string;
+  longHeading: string;
+  longDesc: string;
+  valueTitle: string;
+  valueBullets: string[];
 }
 
 export interface WhatFoundersGetData {
-  headingFirst?: string;
-  headingSecond?: string;
-  features?: WhatFoundersGetFeature[];
+  heading?: string;
+  rows?: HowWeShowUpRow[];
 }
 
-const FALLBACK_HEADING_FIRST = "How We";
-const FALLBACK_HEADING_SECOND = "Show Up";
+/* ─────────────────────────────────────────────────────────
+   Sizing tokens — every value is derived from the 1728×1117
+   MacBook 14" Figma reference via `min(Xvw, Yvh)` so the
+   design looks identical (proportionally) at every laptop /
+   desktop viewport in public/multiview.html:
+       Xvw = px_at_ref / 1728 × 100
+       Yvh = px_at_ref / 1117 × 100
+   min(vw, vh) picks whichever axis is tighter so nothing
+   overflows on unusually tall or unusually wide viewports.
+   ───────────────────────────────────────────────────────── */
+const SZ = {
+  // typography
+  heading: "min(4.51vw, 6.98vh)",       // 78 px @ ref
+  rowTitle: "min(3.70vw, 5.73vh)",      // 64 px @ ref
+  subHeading: "min(1.85vw, 2.86vh)",    // 32 px @ ref
+  desc: "min(1.62vw, 2.51vh)",          // 28 px @ ref
+  rotTitle: "min(2.78vw, 4.30vh)",      // 48 px @ ref (opened, rotated)
+  backLink: "min(1.16vw, 1.79vh)",      // 20 px @ ref
+  // container widths (width-only — layout dims)
+  /* Both dividers span the FULL row width now — so on the closed
+     list they extend all the way past the arrow, and on the
+     opened card they reach the right section padding. The old
+     fixed vw values (78.24 / 68.17) were narrower than the
+     section content area, leaving a visible gap on the right. */
+  divider: "100%",
+  openedDivider: "100%",
+  descBox: "36.86vw",                   // 637 px @ ref
+  rowTitleBox: "22.57vw",               // 390 px @ ref
+  openedContentBox: "65.22vw",          // 1127 px @ ref
+  // spacing
+  // NOTE: horizontal/vertical section padding now come from the
+  // sitewide CSS vars `--section-px-wide` and `--section-py` in
+  // globals.css. No per-file paddingX/paddingY tokens — the section
+  // wrapper and the FullPageCard both consume the vars directly so
+  // every page section gutters the same amount at every viewport.
+  headingToDivider: "min(3.47vw, 5.37vh)", // 60 px @ ref
+  rowPaddingY: "min(2.31vw, 3.58vh)",   // 40 px @ ref  — closed-row body padding
+  rowInnerGap: "min(1.62vw, 2.51vh)",   // 28 px @ ref  — small internal gap (around HR margins)
+  openedGap: "min(3.47vw, 5.37vh)",     // 60 px @ ref  — main gap between opened-card blocks
+                                        //                (heading / desc / HR / Strategic Value / bullets).
+                                        // Larger than the closed-row gap because the opened card
+                                        // takes over the viewport and needs to fill vertical space.
+  // arrows — actual SVG dimensions
+  closedArrowW: "min(3.24vw, 4.21vh)",  // 56 px wide
+  closedArrowH: "min(2.72vw, 4.21vh)",  // 47 px tall
+  openArrowW: "min(2.66vw, 4.92vh)",    // 46 px wide
+  openArrowH: "min(3.20vw, 4.92vh)",    // 55 px tall (after rotation)
+};
 
-/** Merge CMS feature content by id into a hardcoded layout array.
- *  Mobile slots use `<id>-m` suffixes (e.g. "hiring-m"); we strip the
- *  suffix when looking up CMS entries. CMS only ever stores 6 ids:
- *  hiring, network, capital, fundraising, firefighting, playbook. */
-function overlayFromCMS<T extends { id: string; title: string; desc: string }>(
-  layout: T[],
-  cms: Map<string, WhatFoundersGetFeature>,
-): T[] {
-  return layout.map((slot) => {
-    const cmsId = slot.id.replace(/-m$/, "");
-    const fromCMS = cms.get(cmsId);
-    return fromCMS ? { ...slot, title: fromCMS.title, desc: fromCMS.desc } : slot;
-  });
-}
+/* Easing curve — matches the smooth, weighty feel of the
+   madeinmay.studio/approach entrance animations. */
+const EASE = [0.22, 1, 0.36, 1] as const;
 
-const desktopFeatures = [
-  {
-    id: "hiring",
-    title: "Hiring",
-    desc: "Broadcast roles to 20,000+ community members. Warm intros to senior talent, not job board spam.",
-    top: 150, left: 150, width: 370,
-  },
-  {
-    id: "network",
-    title: "Network",
-    desc: "650+ founders, strategic partnerships with global companies, curated expert network. A network that actually shows up.",
-    top: 58, left: 807, width: 370,
-  },
-  {
-    id: "capital",
-    title: "Follow-on Capital",
-    desc: "Breakout companies get follow-on through the winners fund. Your earliest believers investing again.",
-    top: 380, left: 0, width: 400,
-  },
-  {
-    id: "fundraising",
-    title: "Fundraising",
-    desc: "Warm intros to growth-stage funds, pitch preparation, term sheet guidance, and fundraising support from people who’ve seen hundreds of rounds.",
-    top: 330, left:950, width: 370,
-  },
-  {
-    id: "firefighting",
-    title: "Firefighting",
-    desc: "Down rounds, team disagreements, co-founder disputes, regulatory surprises. We show up when it's hard, not just when it's easy.",
-    top: 610, left: 390, width: 370,
-  },
-  {
-    id: "playbook",
-    title: "Industry Playbook",
-    desc: "GTM frameworks, financial models, cap table guides, from founders who've actually built companies themselves.",
-    top: 580, left: 790, width: 476,
-  },
-];
-
-// =========================================
-// MOBILE CANVAS — same approach as desktop.
-// Fixed 600×1000 canvas, CSS-scaled to fit mobile (scale-[0.62] → ~375px).
-// ─────────────────────────────────────────
-// TO ADJUST:
-//   • Card positions → top/left/width in this array
-//   • Hub position   → left-[___] top-[___] on the hub div below
-//   • Canvas scale   → scale-[___] on the canvas div (0.62 = 375px viewport)
-//   • Section height → h-[___] on the outer div (= canvasHeight × scale)
-//   • Arrow positions→ style={{ top, left }} on each SVG, same as desktop
-// =========================================
-const mobileFeatures = [
-  // ROW 1 — top
-  { id: "hiring-m", title: "Hiring", desc: "Broadcast roles to 20,000+ community members. Warm intros to senior talent, not job board spam.", top: 150, left: 80, width: 180 },
-  { id: "network-m", title: "Network", desc: "650+ founders, strategic partnerships with global companies, curated expert network. A network that actually shows up.", top: 120, left: 390, width: 200 },
-  // ROW 2 — middle (flanking the hub)
-  { id: "capital-m", title: "Follow-on Capital", desc: "Breakout companies get follow-on through the winners fund. Your earliest believers investing again.", top: 290, left: 20, width: 200 },
-  { id: "fundraising-m", title: "Fundraising", desc: "Warm intros to growth-stage funds, pitch prep, term sheet guidance, and fundraising support from people who've seen hundreds of rounds.", top: 280, left: 450, width: 150 },
-  // ROW 3 — bottom
-  { id: "firefighting-m", title: "Firefighting", desc: "Down rounds, team disagreements, co-founder disputes, regulatory surprises. We show up when it's hard, not just when it's easy.", top: 460, left: 90, width: 200 },
-  { id: "playbook-m", title: "Industry Playbook", desc: "GTM frameworks, financial models, cap table guides, from founders who've actually built companies themselves.", top: 460, left: 350, width: 200 },
-];
-
-// =========================================
-// TIMELINED ANIMATION VARIANTS
-// =========================================
-const cardContainerVariants: Variants = {
+/* ─────────────────────────────────────────────────────────
+   Animation variants
+   ───────────────────────────────────────────────────────── */
+const sectionVariants: Variants = {
   hidden: {},
-  visible: {}, 
-};
-
-const titleVariants: Variants = {
-  hidden: { opacity: 0, x: -30 },
-  visible: { 
-    opacity: 1, 
-    x: 0, 
-    transition: { duration: 0.6, ease: "easeOut", delay: 1.0 } 
+  visible: {
+    transition: { staggerChildren: 0.12, delayChildren: 0.08 },
   },
 };
 
-const highlightVariants: Variants = {
+const drawLineVariants: Variants = {
   hidden: { scaleX: 0 },
-  visible: { 
-    scaleX: 1, 
-    transition: { duration: 0.6, ease: "easeInOut", delay: 1.2 } 
+  visible: {
+    scaleX: 1,
+    transition: { duration: 0.9, ease: EASE },
   },
 };
 
-const descVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { duration: 0.6, ease: "easeOut", delay: 1.6 } 
+const fadeUpVariants: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: EASE },
   },
 };
 
-// =========================================
-// FEATURE CARD COMPONENT
-// =========================================
-function FeatureCard({ feature, index }: { feature: typeof desktopFeatures[0], index: number }) {
-  const cardRef = useRef<HTMLDivElement>(null);
+const rowVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.08, delayChildren: 0.04 },
+  },
+};
 
-  const rawX = useMotionValue(0);
-  const rawY = useMotionValue(0);
-
-  const springConfig = { stiffness: 100, damping: 25, mass: 0.4 };
-  const xSpring = useSpring(rawX, springConfig);
-  const ySpring = useSpring(rawY, springConfig);
-
-  const translateX = useTransform(xSpring, [-0.5, 0.5], [-25, 25]);
-  const translateY = useTransform(ySpring, [-0.5, 0.5], [-25, 25]);
-  const rotateX = useTransform(ySpring, [-0.5, 0.5], [8, -8]);
-  const rotateY = useTransform(xSpring, [-0.5, 0.5], [-8, 8]);
-  const glareX = useTransform(xSpring, [-0.5, 0.5], [0, 100]);
-  const glareY = useTransform(ySpring, [-0.5, 0.5], [0, 100]);
-
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const mouseX = (e.clientX - rect.left) / rect.width - 0.5;
-    const mouseY = (e.clientY - rect.top) / rect.height - 0.5;
-    rawX.set(mouseX);
-    rawY.set(mouseY);
-  };
-
-  const handlePointerLeave = () => {
-    rawX.set(0);
-    rawY.set(0);
-  };
+/* ─────────────────────────────────────────────────────────
+   In-view divider — the horizontal 1 px line commits to a
+   full 0 → 100 % draw animation as soon as it enters the
+   viewport (regardless of scroll speed), and reverses back
+   to 0 % when it leaves the viewport on scroll-up. Not tied
+   to scroll position — a discrete enter / leave trigger, so
+   each line finishes its animation cleanly even if you fly
+   past it, and cleanly retracts if you scroll back above it.
+   ───────────────────────────────────────────────────────── */
+function InViewDivider({
+  className,
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, {
+    // Element becomes "in view" only once its top has moved 15 %
+    // above the bottom of the viewport — avoids a twitchy trigger
+    // right at the fold. once: false so it reverses on scroll-up.
+    margin: "0px 0px -15% 0px",
+    once: false,
+  });
 
   return (
     <motion.div
-      ref={cardRef}
-      onPointerMove={handlePointerMove}
-      onPointerLeave={handlePointerLeave}
-      variants={cardContainerVariants}
-      className="absolute z-10 flex flex-col items-start gap-[6px] md:gap-[20px] pointer-events-auto"
+      ref={ref}
+      className={`origin-left bg-black ${className ?? ""}`}
+      initial={{ scaleX: 0 }}
+      animate={{ scaleX: isInView ? 1 : 0 }}
+      transition={{ duration: 1.2, ease: EASE }}
+      style={style}
+    />
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   Row-hover rotating arrow — the closed → arrow slowly and
+   smoothly rotates to −35.229° (the ↗ orientation) whenever
+   the parent row is hovered. Uses CSS group-hover + a long
+   1 s cubic-bezier transition so the rotation reads as a
+   deliberate, premium reveal rather than a snap.
+   ───────────────────────────────────────────────────────── */
+function HoverArrow() {
+  return (
+    <div
+      className="inline-flex items-center justify-center transition-transform ease-[cubic-bezier(0.22,1,0.36,1)] duration-1000 group-hover:rotate-[-35.229deg]"
+      style={{ width: SZ.closedArrowW, height: SZ.closedArrowH }}
+    >
+      <ClosedArrow style={{ width: "100%", height: "100%" }} />
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   Fallback content — CMS overrides at runtime; this just
+   ensures the design renders when the doc is empty. Text
+   for "The Ecosystem" mirrors the Figma exactly; the other
+   5 rows are lightly-filled placeholders in the same tone
+   that editors can rewrite in Studio.
+   ───────────────────────────────────────────────────────── */
+const FALLBACK_HEADING = "How We Show Up";
+
+const FALLBACK_ROWS: HowWeShowUpRow[] = [
+  {
+    title: "The Ecosystem",
+    shortHeading: "Global Founder Network",
+    shortDesc:
+      "Direct access to 650+ founders, global corporate partners, and domain experts to unlock immediate strategic value.",
+    longHeading: "The Network is the Moat.",
+    longDesc:
+      "The Titan network represents 15 years of cultivated relationships, trust, and institutional knowledge across global markets. Integration into the Titan portfolio provides access to this collective intelligence.",
+    valueTitle: "Strategic Value",
+    valueBullets: [
+      "Warm introductions to potential customers, strategic partners, and later stage investors.",
+      "Titan Expert Network (TEN): a curated group of seasoned operators who offer 1:1 expert sessions, from GTM strategy to technical architecture",
+      "500+ founder community: An active group with 500+ founders from across the Titan portfolio. The fastest way to find someone who's already solved your problem.",
+    ],
+  },
+  {
+    title: "The Founder's Playbook",
+    shortHeading: "Operational Rigor at Scale",
+    shortDesc:
+      "Utilization of institutional-grade GTM, financial, and equity frameworks built by operators who have scaled to IPO.",
+    longHeading: "Institutional-Grade Frameworks, Founder-Speed Execution.",
+    longDesc:
+      "Fifteen years of scaling companies have crystallised into playbooks covering every stage — GTM motions, pricing, hiring architecture, board governance. Portfolio companies operate with these battle-tested frameworks from day one.",
+    valueTitle: "What You Get",
+    valueBullets: [
+      "GTM playbooks broken down by stage, sector, and motion (PLG, sales-led, hybrid).",
+      "Financial models, board decks, and equity plan templates used by companies through IPO.",
+      "Direct access to operators who authored the frameworks — for 1:1 tactical sessions.",
+    ],
+  },
+  {
+    title: "Capital Strategy",
+    shortHeading: "Sophisticated Fundraising Navigation",
+    shortDesc:
+      "End-to-end support for successive funding rounds, including investor targeting and strategic term sheet guidance.",
+    longHeading: "The Right Capital, on the Right Terms.",
+    longDesc:
+      "Every subsequent round is a negotiation with long-term consequences. We prepare, position, and connect founders with the investor best-suited to the next chapter — and structure terms that protect the company's optionality.",
+    valueTitle: "What You Get",
+    valueBullets: [
+      "Warm introductions to Series A through growth-stage funds based on stage, sector, and thesis fit.",
+      "Pitch reviews, narrative work, and dry-run sessions before the real meetings.",
+      "Term sheet and SHA reviews so short-term optics don't create long-term problems.",
+    ],
+  },
+  {
+    title: "Talent & Hiring",
+    shortHeading: "High-Signal Talent Acquisition",
+    shortDesc:
+      "Warm, direct introductions to 20,000+ vetted industry professionals, bypassing traditional recruitment channels.",
+    longHeading: "The Hires That Move the Needle.",
+    longDesc:
+      "Talent is the difference between scale and stall. Portfolio companies close senior hires — CTOs, VPs of Sales, first growth marketers — through a network built over fifteen years of operator relationships.",
+    valueTitle: "What You Get",
+    valueBullets: [
+      "Curated candidate referrals from 20,000+ vetted senior operators.",
+      "Introductions to specialist recruiters for stage- and function-specific searches.",
+      "Hiring playbooks, calibration calls, and interview design help from operators who have hired at scale.",
+    ],
+  },
+  {
+    title: "Firefighting",
+    shortHeading: "Boardroom-Tested Crisis Leadership",
+    shortDesc:
+      "Objective, boardroom-tested counsel for moments of adversity, from regulatory challenges to co-founder transitions.",
+    longHeading: "When It Breaks, We Pick Up the Phone.",
+    longDesc:
+      "The worst weeks are why partners exist. We've navigated regulatory shocks, co-founder disputes, down rounds, and public crises across three cycles — and we're reachable when it matters.",
+    valueTitle: "What You Get",
+    valueBullets: [
+      "24/7 partner access during crisis moments — fundraising stalls, key departures, customer escalations.",
+      "Introductions to the right specialists: legal, PR, restructuring, executive coaching.",
+      "Hard-call conversations: pivot vs persevere, fire vs coach, raise vs cut.",
+    ],
+  },
+  {
+    title: "Follow-On-Capital",
+    shortHeading: "Growth Capital Lifecycle",
+    shortDesc:
+      "High-conviction capital deployment through a dedicated Winners Fund across the breakout company's growth lifecycle.",
+    longHeading: "We Back Our Own — Through Every Round.",
+    longDesc:
+      "When a Titan-backed company is ready to raise more, we lead with conviction and follow with capital. Our follow-on rate is among the highest in Indian early-stage venture — a signal to future investors, and a promise to founders.",
+    valueTitle: "What You Get",
+    valueBullets: [
+      "Pro-rata participation in subsequent rounds where the company merits it.",
+      "Bridge support during off-cycle moments when timing matters more than valuation.",
+      "Co-investor introductions when the round needs to be bigger than our cheque.",
+    ],
+  },
+];
+
+/* ─────────────────────────────────────────────────────────
+   Arrow SVGs — copied verbatim from the Figma export.
+   ClosedArrow points right (→) on default rows.
+   OpenArrow points up-right (↗) and is rendered rotated
+   −35.229° per the design spec.
+   ───────────────────────────────────────────────────────── */
+function ClosedArrow({ style }: { style?: React.CSSProperties }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 56 47"
+      fill="none"
+      style={style}
+    >
+      <path
+        d="M33.1363 45.589L55.3594 23.2503L33.1363 0.911532C32.9356 0.647969 32.6806 0.430604 32.3885 0.274155C32.0965 0.117707 31.7743 0.0258257 31.4437 0.00473192C31.1131 -0.0163619 30.7818 0.0338253 30.4723 0.151894C30.1628 0.269963 29.8822 0.453157 29.6496 0.689076C29.4171 0.924995 29.2379 1.20813 29.1243 1.51931C29.0106 1.8305 28.9652 2.16246 28.991 2.49273C29.0168 2.82301 29.1133 3.14388 29.2739 3.43363C29.4345 3.72338 29.6555 3.97524 29.9219 4.17216L46.5488 20.9378L2.31063 20.9378C1.69732 20.9378 1.10913 21.1814 0.675453 21.6151C0.241776 22.0488 -0.00186539 22.637 -0.00186539 23.2503C-0.00186539 23.8636 0.241776 24.4518 0.675453 24.8855C1.10913 25.3191 1.69732 25.5628 2.31063 25.5628L46.5488 25.5628L29.9219 42.3284C29.4895 42.7638 29.2478 43.3532 29.25 43.9669C29.2521 44.5805 29.498 45.1682 29.9334 45.6006C30.3689 46.033 30.9583 46.2747 31.5719 46.2725C32.1856 46.2703 32.7732 46.0245 33.2056 45.589H33.1363Z"
+        fill="#000"
+      />
+    </svg>
+  );
+}
+
+function OpenArrow({ style }: { style?: React.CSSProperties }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 46 39"
+      fill="none"
+      style={{ ...style, transform: "rotate(-35.229deg)" }}
+    >
+      <path
+        d="M40.3795 36.6017L45.6463 5.5349L14.6072 0.106961C14.2913 0.00744613 13.9576 -0.0230157 13.6288 0.0176364C13.3 0.0582896 12.9838 0.16911 12.7016 0.342591C12.4194 0.516074 12.1777 0.748169 11.993 1.02316C11.8083 1.29816 11.6848 1.60964 11.6309 1.93651C11.577 2.26338 11.594 2.59801 11.6806 2.91775C11.7673 3.23749 11.9217 3.53487 12.1333 3.78977C12.3449 4.04466 12.6088 4.25111 12.9071 4.39515C13.2055 4.53918 13.5313 4.61744 13.8625 4.62461L37.1154 8.72836L0.979534 34.2472C0.478551 34.601 0.138629 35.1393 0.0345474 35.7437C-0.0695341 36.3481 0.0707475 36.9691 0.424538 37.4701C0.778329 37.9711 1.31665 38.311 1.92106 38.4151C2.52548 38.5192 3.14649 38.3789 3.64747 38.0251L39.7833 12.5063L35.873 35.7925C35.771 36.3976 35.9135 37.0185 36.2693 37.5185C36.625 38.0185 37.1649 38.3567 37.77 38.4587C38.3751 38.5607 38.9959 38.4182 39.496 38.0624C39.996 37.7066 40.3342 37.1668 40.4362 36.5617L40.3795 36.6017Z"
+        fill="#000"
+      />
+    </svg>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   Closed-state row body — 3-column layout: [title | short
+   heading + short desc | arrow]. Clicking anywhere expands.
+   ───────────────────────────────────────────────────────── */
+function ClosedRow({ row }: { row: HowWeShowUpRow }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1, transition: { duration: 0.45, ease: EASE } }}
+      exit={{ opacity: 0, transition: { duration: 0.25, ease: EASE } }}
+      className="grid w-full items-start"
       style={{
-        top: feature.top,
-        left: feature.left,
-        width: feature.width,
-        x: translateX,
-        y: translateY,
-        rotateX,
-        rotateY,
-        transformStyle: "preserve-3d",
+        gridTemplateColumns: `${SZ.rowTitleBox} 1fr auto`,
+        columnGap: SZ.openedGap,
+        paddingTop: SZ.rowPaddingY,
+        paddingBottom: SZ.rowPaddingY,
+        transform: "scale(0.9)",
+        transformOrigin: "left center",
       }}
     >
-      <motion.div 
-        className="absolute inset-0 transition-opacity duration-500 opacity-0 pointer-events-none mix-blend-screen group-hover:opacity-100 rounded-[inherit]"
+      {/* Row title */}
+      <h3
+        className="m-0 font-['Poppins',_sans-serif] font-normal capitalize text-black"
         style={{
-          background: useTransform(
-            [glareX, glareY],
-            ([latestX, latestY]) => 
-              `radial-gradient(circle at ${latestX}% ${latestY}%, rgba(211, 226, 255, 0.3) 0%, transparent 70%)`
-          )
+          fontSize: SZ.rowTitle,
+          lineHeight: "120%",
         }}
-      />
-      
-      <div style={{ transform: "translateZ(30px)" }} className="flex w-full flex-col gap-[8px] md:gap-[16px]">
+      >
+        {row.title}
+      </h3>
 
-        <motion.div variants={titleVariants} className="relative w-fit max-w-[476px]">
-          <motion.div
-            variants={highlightVariants}
-            className="absolute inset-0 z-0 bg-[#D3E2FF]"
-            style={{ transformOrigin: "left" }}
-          />
-          <h3 className="relative z-10 m-0 px-[8px] py-[6px] md:px-[12px] md:py-[10px] font-['Libre_Baskerville',_serif] text-[14px] md:text-[28px] font-semibold leading-[120%] text-[#001A4D]">
-            {feature.title}
-          </h3>
-        </motion.div>
+      {/* Short heading + short description */}
+      <div
+        className="flex flex-col"
+        style={{
+          gap: SZ.rowInnerGap,
+          maxWidth: SZ.descBox,
+        }}
+      >
+        <h4
+          className="m-0 font-['Poppins',_sans-serif] font-medium text-black"
+          style={{
+            fontSize: SZ.subHeading,
+            lineHeight: "150%",
+          }}
+        >
+          {row.shortHeading}
+        </h4>
+        <p
+          className="m-0 font-['Poppins',_sans-serif] font-normal text-[#0E0E0E]"
+          style={{
+            fontSize: SZ.desc,
+            lineHeight: "150%",
+          }}
+        >
+          {row.shortDesc}
+        </p>
+      </div>
 
-        <motion.p variants={descVariants} className="m-0 max-w-full md:max-w-[370px] font-['Poppins',_sans-serif] text-[11px] md:text-[clamp(14px,1.5vw,16px)] font-normal leading-[150%] text-[#333]">
-          {feature.desc}
-        </motion.p>
-
+      {/* Arrow — hover on the arrow itself smoothly morphs it
+          from → to ↗ via HoverArrow (rotates + crossfades). */}
+      <div className="flex items-center justify-end self-center">
+        <HoverArrow />
       </div>
     </motion.div>
   );
 }
 
+/* ─────────────────────────────────────────────────────────
+   Opened-state row body — matches the Figma reference:
+   [Back + rotated title | vertical rule | long heading +
+   long desc + horizontal divider + value title + bullets].
+   The rotated title reads top-to-bottom (tilt head right)
+   via writing-mode: vertical-rl alone. Clicking the row
+   OR the Back button collapses the row.
+   ───────────────────────────────────────────────────────── */
+function OpenedRow({
+  row,
+  onBack,
+}: {
+  row: HowWeShowUpRow;
+  onBack: () => void;
+}) {
+  /* Layered stagger reveal — each element has an explicit `delay`
+     so the sequence reads intentionally rather than everything
+     landing at once:
+       0.15  vertical rule starts drawing top→bottom (1.2 s)
+       0.30  Back fades in
+       0.40  rotated title writes in from the right
+       0.55  right heading (longHeading) fades up
+       0.70  right description fades up
+       0.85  horizontal divider draws left→right
+       1.00  Strategic Value heading fades up
+       1.15  bullets stagger in one after another (+0.10s each)
+     Total sequence lands by ~1.65 s. */
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{
+        opacity: 1,
+        transition: { duration: 0.35, ease: EASE },
+      }}
+      exit={{ opacity: 0, transition: { duration: 0.3, ease: EASE } }}
+      className="grid w-full"
+      style={{
+        gridTemplateColumns: `${SZ.rowTitleBox} 1fr`,
+        /* No top/bottom padding here — the FullPageCard
+           container already supplies var(--section-py) and
+           its `items-center` flex centers this vertically. */
+      }}
+    >
+      {/* LEFT column — three positioned pieces:
+           1. Back button — top-left in normal flow.
+           2. Rotated title — absolutely positioned near the
+              vertical rule (NOT the far-left edge of the
+              column) so it reads as a spine label right next
+              to the divider. Vertically centered.
+           3. Vertical rule — right edge, animates scaleY
+              top→bottom on mount per the site rule that all
+              lines animate when their section opens. */}
+      <div
+        className="relative"
+        style={{
+          paddingRight: SZ.openedGap,
+        }}
+      >
+        <motion.button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onBack();
+          }}
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: EASE, delay: 0.3 }}
+          className="cursor-pointer border-0 bg-transparent p-0 font-['Poppins',_sans-serif] font-normal text-black underline underline-offset-4 transition-opacity hover:opacity-60"
+          style={{
+            fontSize: SZ.backLink,
+            lineHeight: "150%",
+          }}
+        >
+          Back
+        </motion.button>
+
+        {/* Rotated title — absolute, vertically centered, positioned
+            just to the LEFT of the vertical rule (small breathing gap
+            between text and line). Uses writing-mode: vertical-rl so
+            the letters stack top-to-bottom (T at top, read by tilting
+            head right). */}
+        <div
+          className="pointer-events-none absolute bottom-0 top-0 flex items-center"
+          style={{
+            /* Position: `openedGap` (parent's right padding) + a small
+               gap between the text and the vertical rule. */
+            right: `calc(${SZ.openedGap} + min(1.62vw, 2.51vh))`,
+          }}
+        >
+          <motion.span
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, ease: EASE, delay: 0.4 }}
+            className="whitespace-nowrap text-center font-['Poppins',_sans-serif] font-normal capitalize text-black"
+            style={{
+              fontSize: SZ.rotTitle,
+              lineHeight: "120%",
+              writingMode: "vertical-rl",
+              rotate: "180deg",
+            }}
+          >
+            {row.title}
+          </motion.span>
+        </div>
+
+        {/* Full-height vertical rule on the right edge of the
+            left column. Animates scaleY 0 → 1 (transformOrigin
+            top) on mount so it visually DRAWS from top to bottom
+            as the card opens — matches the site-wide rule that
+            all vertical / horizontal lines animate on entrance. */}
+        <motion.div
+          aria-hidden
+          initial={{ scaleY: 0 }}
+          animate={{ scaleY: 1 }}
+          transition={{ duration: 1.2, ease: EASE, delay: 0.2 }}
+          className="absolute right-0 top-0 h-full bg-black"
+          style={{ width: "1px", transformOrigin: "top" }}
+        />
+      </div>
+
+      {/* RIGHT column — main content. Extra left padding so it
+          isn't flush against the vertical rule. */}
+      <div style={{ paddingLeft: SZ.openedGap }}>
+
+      {/* Right column — each block has an explicit `delay` so
+          the layered stagger sequence lands in a predictable
+          order (see comment on the outer motion.div).
+
+          Width: takes the FULL remaining space in the grid row
+          (no `maxWidth` cap). Per Figma, content should stretch
+          all the way to the right section padding — no blank
+          gutter on the right. */}
+      <div
+        className="flex w-full flex-col"
+        style={{ gap: SZ.openedGap }}
+      >
+        <motion.h4
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: EASE, delay: 0.55 }}
+          className="m-0 font-['Poppins',_sans-serif] font-medium text-[#0E0E0E]"
+          style={{
+            fontSize: SZ.subHeading,
+            lineHeight: "150%",
+          }}
+        >
+          {row.longHeading}
+        </motion.h4>
+
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: EASE, delay: 0.7 }}
+          className="m-0 font-['Poppins',_sans-serif] font-normal text-[#323232]"
+          style={{
+            fontSize: SZ.desc,
+            lineHeight: "150%",
+          }}
+        >
+          {row.longDesc}
+        </motion.p>
+
+        {/* Divider under the description — draws left→right per
+            the site rule that every line animates on reveal.
+            Spans the FULL right-column width so it reaches all
+            the way to the section padding (Figma reference). */}
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 0.9, ease: EASE, delay: 0.85 }}
+          className="origin-left bg-black"
+          style={{
+            width: "100%",
+            height: "1px",
+            marginTop: SZ.rowInnerGap,
+            marginBottom: SZ.rowInnerGap,
+          }}
+        />
+
+        <motion.h5
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: EASE, delay: 1.0 }}
+          /* Left-aligned per Figma reference (same left edge as
+             the longHeading and description above). Color #000,
+             font 32/500/110%. */
+          className="m-0 text-left font-['Poppins',_sans-serif] font-medium text-black"
+          style={{
+            fontSize: SZ.subHeading,
+            lineHeight: "110%",
+          }}
+        >
+          {row.valueTitle}
+        </motion.h5>
+
+        <ul
+          className="m-0 flex list-none flex-col p-0"
+          style={{ gap: SZ.rowInnerGap }}
+        >
+          {row.valueBullets.map((bullet, i) => (
+            <motion.li
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.5,
+                ease: EASE,
+                /* Bullets fire one after another starting at 1.15 s,
+                   each 0.10 s after the previous. Last bullet lands
+                   at 1.15 + (N-1)*0.10 + 0.5 s duration. */
+                delay: 1.15 + i * 0.1,
+              }}
+              className="relative font-['Poppins',_sans-serif] font-normal text-[#323232]"
+              style={{
+                fontSize: SZ.desc,
+                lineHeight: "150%",
+                paddingLeft: SZ.rowInnerGap,
+              }}
+            >
+              <span
+                className="absolute left-0 top-0"
+                style={{ fontSize: SZ.desc, lineHeight: "150%" }}
+              >
+                •
+              </span>
+              {bullet}
+            </motion.li>
+          ))}
+        </ul>
+      </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   Row wrapper — divider on top + closed body. Click opens
+   the FullPageCard overlay; this row itself doesn't morph.
+   ───────────────────────────────────────────────────────── */
+function Row({
+  row,
+  onOpen,
+}: {
+  row: HowWeShowUpRow;
+  onOpen: () => void;
+}) {
+  return (
+    <div className="group relative w-full">
+      <InViewDivider style={{ width: SZ.divider, height: "1px" }} />
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={onOpen}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onOpen();
+          }
+        }}
+        className="w-full cursor-pointer"
+      >
+        <ClosedRow row={row} />
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   FullPageCard — the opened state.
+
+   Renders as a `position: fixed; inset: 0` overlay so it
+   covers the entire viewport (not just the section it lives
+   in). Body scroll is LOCKED while it's mounted — per the
+   design: "after the card is open, the page is just the
+   card's content, and it is not scrollable".
+
+   Enter animation: opacity + slide-up + slight scale, so it
+   reads as the row expanding upward into full view.
+   Exit: reverse. Escape key also closes.
+   ───────────────────────────────────────────────────────── */
+function FullPageCard({
+  row,
+  onBack,
+}: {
+  row: HowWeShowUpRow;
+  onBack: () => void;
+}) {
+  /* Lock body scroll while the overlay is up. Restore the
+     previous value on unmount so we don't clobber other code
+     that might have set overflow. */
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
+  /* Escape key closes — standard modal behavior. */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onBack();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onBack]);
+
+  return (
+    <motion.div
+      key="fullpage"
+      /* Container just cross-fades — the layered stagger inside
+         OpenedRow (vertical rule → Back → title → heading → desc
+         → divider → Strategic Value → bullets) is what carries
+         the reveal energy. */
+      initial={{ opacity: 0 }}
+      animate={{
+        opacity: 1,
+        transition: { duration: 0.4, ease: EASE },
+      }}
+      exit={{
+        opacity: 0,
+        transition: { duration: 0.3, ease: EASE },
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{
+        background: "#FBF7F0",
+        backdropFilter: "blur(32px) saturate(1.4)",
+        WebkitBackdropFilter: "blur(32px) saturate(1.4)",
+        boxShadow: "0 8px 40px rgba(0, 0, 0, 0.08)",
+
+        /* Same sitewide padding as every other section — no
+           oversized 188 px gutters. Content will sit inside the
+           same left/right column that heading + rows use. */
+        paddingTop: "var(--section-py)",
+        paddingBottom: "var(--section-py)",
+        paddingLeft: "var(--section-px-wide)",
+        paddingRight: "var(--section-px-wide)",
+      }}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="w-full">
+        <OpenedRow row={row} onBack={onBack} />
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   Main component.
+   ───────────────────────────────────────────────────────── */
 export default function WhatFoundersGetClient({
   data,
 }: {
   data?: WhatFoundersGetData | null;
 }) {
-  /* Per-field fallback. */
-  const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
-  const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
-
-  /* Build a id → CMS-content map, then overlay onto both layout arrays.
-     Slots without a CMS entry keep their hardcoded title/desc. */
-  const cmsMap = new Map<string, WhatFoundersGetFeature>(
-    (data?.features ?? []).map((f) => [f.id, f]),
-  );
-  const desktopFeaturesResolved = overlayFromCMS(desktopFeatures, cmsMap);
-  const mobileFeaturesResolved = overlayFromCMS(mobileFeatures, cmsMap);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const heading = data?.heading || FALLBACK_HEADING;
+  const rows = data?.rows?.length ? data.rows : FALLBACK_ROWS;
 
   return (
-
-    <section className="relative m-0 flex min-h-min lg:min-h-[100dvh] w-full flex-col items-center overflow-hidden pb-[20px] pt-[23px] lg:pt-[50px]">
-      
-      {/* HEADER SECTION */}
-      {/* FIXED: Enforced strict flex justify-center centering on mobile */}
-      <motion.div 
-        className="z-10 mx-auto flex w-full max-w-[1280px] flex-row items-center justify-center lg:justify-start px-4 md:px-10 lg:px-0"
+    <section
+      className="relative w-full overflow-hidden bg-[#FBF7F0]"
+      style={{
+        /* Sitewide consistent padding — same tokens every section
+           uses. No per-section clamp values. */
+        paddingTop: "var(--section-py)",
+        paddingBottom: "var(--section-py)",
+        paddingLeft: "var(--section-px-wide)",
+        paddingRight: "var(--section-px-wide)",
+      }}
+    >
+      <motion.div
+        className="mx-auto flex w-full flex-col items-center"
+        variants={sectionVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{ once: true, amount: 0.15 }}
       >
-        <motion.h2 
-          className="m-0 font-['Libre_Baskerville',_serif] text-[clamp(28px,5vw,var(--heading-xl))] font-semibold not-italic leading-none text-[var(--Primary-Color,#001A4D)] max-md:!text-[28px] mr-2 md:mr-3 whitespace-nowrap"
-          variants={{
-            hidden: { opacity: 0, x: -40 },
-            visible: { opacity: 1, x: 0, transition: { duration: 0.9, ease: "easeOut" } }
+        {/* Section heading — fades up on scroll into view */}
+        <motion.h2
+          className="m-0 text-center font-['Poppins',_sans-serif] font-normal capitalize text-black"
+          style={{
+            fontSize: SZ.heading,
+            lineHeight: "120%",
           }}
+          variants={fadeUpVariants}
         >
-          {headingFirst}
+          {heading}
         </motion.h2>
 
-        <motion.div 
-          className="relative inline-flex items-center justify-center overflow-hidden max-md:!text-[28px] px-[4px] py-[8px] md:px-[6px] md:py-[10px] bg-transparent"
-          variants={{
-            hidden: { opacity: 0, x: -40 },
-            visible: { opacity: 1, x: 0, transition: { duration: 0.9, ease: "easeOut", delay: 0.2 } }
-          }}
-        >
-          <motion.span
-            className="absolute inset-0 z-0 bg-[#D3E2FF] h-full w-full"
-            style={{ transformOrigin: "left" }} 
-            variants={{
-              hidden: { scaleX: 0 },
-              visible: { scaleX: 1, transition: { duration: 0.6, ease: "easeInOut", delay: 0.7 } }
-            }}
-          />
-          
-          <span className="relative z-10 whitespace-nowrap font-['Libre_Baskerville',_serif] text-[clamp(28px,5vw,var(--heading-xl))] font-semibold italic leading-none text-[var(--Primary-Color,#001A4D)]">
-            {headingSecond}
-          </span>
-        </motion.div>
+        {/* Space between heading and the first divider */}
+        <div style={{ height: SZ.headingToDivider }} />
+
+        {/* Rows — always visible in the list. Clicking one
+            opens the FullPageCard overlay (rendered below,
+            outside this list) which covers the whole viewport
+            and locks page scroll. */}
+        <div className="flex w-full flex-col items-center">
+          {rows.map((row, i) => (
+            <Row
+              key={row.title}
+              row={row}
+              onOpen={() => setOpenIndex(i)}
+            />
+          ))}
+          <InViewDivider style={{ width: SZ.divider, height: "1px" }} />
+        </div>
       </motion.div>
-      
-      {/* ========================================= */}
-      {/* 1. DESKTOP FLOWCHART SECTION              */}
-      {/* ========================================= */}
-      <div className="hidden md:flex z-0 h-[550px] w-full justify-center overflow-hidden mt-[-50px] lg:h-[650px] xl:h-[750px]">
-        <motion.div 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={{ hidden: {}, visible: {} }}
-          className="relative h-[800px] w-[1280px] shrink-0 origin-top scale-[0.65] lg:scale-[0.75] xl:scale-[0.9] 2xl:scale-100"
-        >
-          {/* DESKTOP HUB */}
-          <motion.div 
-            variants={{ hidden: { opacity: 0, scale: 0.5 }, visible: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: "easeOut" } } }}
-            className="absolute left-[640px] top-[340px] z-20 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center pointer-events-none"
-            style={{ width: "263.495px", height: "218.526px", aspectRatio: "263.49 / 218.53" }}
-          >
-            <div className="relative h-full w-full">
-              <Image src="/images/misc/Whatfoundersget.svg" alt="Central Image" fill style={{ objectFit: "contain" }} priority />
-            </div>
-          </motion.div>
 
-          {/* DESKTOP ARROWS (Your original SVGs) */}
-          <div className="absolute inset-0 pointer-events-none">
-            <motion.div variants={{ hidden: { opacity: 0, scale: 0.8 }, visible: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: "easeOut", delay: 0.5 } } }} className="absolute inset-0 pointer-events-none">
-                 <svg className="pointer-events-none absolute z-0 overflow-visible" style={{ top: 140, left: 360, width: 242.059, height: 113.118, transform: 'rotate(1.9deg)'}} xmlns="http://www.w3.org/2000/svg"><path d="M3.35544 60.6738C3.55712 61.188 4.13741 61.4413 4.65155 61.2396L13.03 57.9529C13.5441 57.7513 13.7974 57.171 13.5957 56.6568C13.394 56.1427 12.8138 55.8894 12.2996 56.0911L4.85213 59.0125L1.93066 51.565C1.72898 51.0509 1.14869 50.7976 0.634545 50.9993C0.120402 51.201 -0.132893 51.7813 0.0687907 52.2954L3.35544 60.6738ZM242.562 126.535L242.772 127.513L244.727 127.093L244.517 126.115L243.54 126.325L242.562 126.535ZM4.28637 60.3086L5.20287 60.7087C5.52109 59.9796 5.85827 59.2519 6.21401 58.5259L5.31602 58.0859L4.41803 57.6459C4.04965 58.3977 3.70011 59.1521 3.36988 59.9086L4.28637 60.3086ZM7.69359 53.7071L8.55251 54.2193C9.37256 52.8439 10.2578 51.4774 11.2056 50.1222L10.3861 49.549L9.56665 48.9759C8.59226 50.3692 7.68053 51.7764 6.83467 53.195L7.69359 53.7071ZM13.3549 45.5901L14.1353 46.2153C15.1464 44.9532 16.2111 43.7036 17.3269 42.4685L16.5849 41.7981L15.8429 41.1277C14.7014 42.3912 13.6111 43.6709 12.5744 44.9649L13.3549 45.5901ZM20.0102 38.2091L20.715 38.9185C21.8598 37.7811 23.0479 36.6585 24.2773 35.5525L23.6085 34.8091L22.9397 34.0657C21.6864 35.1932 20.4742 36.3384 19.3054 37.4997L20.0102 38.2091ZM27.3956 31.5599L28.0291 32.3336C29.2799 31.3094 30.5663 30.302 31.8867 29.3128L31.2871 28.5125L30.6876 27.7122C29.3446 28.7183 28.0355 29.7434 26.762 30.7862L27.3956 31.5599ZM35.3241 25.6167L35.8903 26.4409C37.2343 25.5177 38.6084 24.6131 40.0109 23.7285L39.4774 22.8827L38.9439 22.0369C37.5196 22.9352 36.1237 23.8542 34.7579 24.7924L35.3241 25.6167ZM43.7144 20.3207L44.2158 21.1859C45.6342 20.3639 47.078 19.5621 48.5455 18.7819L48.0761 17.8989L47.6066 17.016C46.1178 17.8076 44.6527 18.6211 43.213 19.4555L43.7144 20.3207ZM52.4788 15.6571L52.9168 16.556C54.3897 15.8383 55.8836 15.1422 57.397 14.4688L56.9905 13.5551L56.584 12.6415C55.0494 13.3243 53.5345 14.0302 52.0407 14.7581L52.4788 15.6571ZM61.5505 11.6188L61.9256 12.5458C63.4439 11.9314 64.9796 11.3398 66.5313 10.7722L66.1877 9.83305L65.8442 8.89391C64.2713 9.46928 62.7145 10.069 61.1753 10.6919L61.5505 11.6188ZM70.8758 8.20708L71.1875 9.15725C72.7437 8.64663 74.3141 8.16024 75.8974 7.69909L75.6177 6.73899L75.3381 5.77888C73.7332 6.24633 72.1414 6.73935 70.564 7.25692L70.8758 8.20708ZM80.4086 5.43073L80.6557 6.39972C82.2429 5.99495 83.8414 5.61579 85.4499 5.26322L85.2358 4.28641L85.0217 3.3096C83.3909 3.66705 81.7705 4.05143 80.1615 4.46174L80.4086 5.43073ZM90.1063 3.30583L90.2868 4.2894C91.8981 3.99371 93.518 3.72505 95.1452 3.48437L94.9989 2.49513L94.8525 1.50589C93.2023 1.74998 91.5596 2.02243 89.9258 2.32226L90.1063 3.30583ZM99.9265 1.85453L100.038 2.84831C101.666 2.66585 103.3 2.51187 104.939 2.3873L104.863 1.39017L104.787 0.393049C103.124 0.519447 101.467 0.675663 99.8151 0.860751L99.9265 1.85453ZM109.824 1.10371L109.863 2.10294C111.5 2.03847 113.14 2.00394 114.783 2.00024L114.78 1.00024L114.778 0.000242497C113.111 0.00399578 111.446 0.0390562 109.785 0.104485L109.824 1.10371ZM119.75 1.0831L119.714 2.08246C121.35 2.14093 122.987 2.23073 124.624 2.35274L124.698 1.3555L124.772 0.358273C123.109 0.23432 121.447 0.143116 119.785 0.0837379L119.75 1.0831ZM129.647 1.82262L129.533 2.81613C131.158 3.00212 132.781 3.22075 134.403 3.47289L134.557 2.48476L134.71 1.49663C133.062 1.24033 131.411 1.01811 129.76 0.829104L129.647 1.82262ZM139.452 3.34914L139.258 4.3301C140.86 4.64729 142.46 4.99825 144.055 5.38383L144.29 4.41182L144.525 3.43982C142.902 3.04763 141.276 2.6907 139.646 2.36817L139.452 3.34914ZM149.098 5.68278L148.822 6.64389C150.389 7.09427 151.951 7.5793 153.507 8.09982L153.825 7.15146L154.142 6.20311C152.558 5.67342 150.969 5.17988 149.374 4.72167L149.098 5.68278ZM158.509 8.83274L158.15 9.76632C159.67 10.3495 161.182 10.9679 162.687 11.6224L163.085 10.7054L163.484 9.78836C161.953 9.12222 160.413 8.49274 158.867 7.89915L158.509 8.83274ZM167.61 12.7938L167.171 13.6922C168.629 14.405 170.078 15.1531 171.519 15.9373L171.997 15.0591L172.475 14.1808C171.009 13.3825 169.533 12.621 168.049 11.8954L167.61 12.7938ZM176.326 17.5429L175.81 18.399C177.195 19.2353 178.571 20.1066 179.936 21.0137L180.489 20.1808L181.043 19.348C179.654 18.4248 178.253 17.5379 176.843 16.6867L176.326 17.5429ZM184.584 23.0333L183.995 23.8412C185.301 24.7944 186.597 25.7821 187.881 26.8051L188.504 26.023L189.127 25.2409C187.821 24.2002 186.503 23.1953 185.173 22.2254L184.584 23.0333ZM192.334 29.2094L191.679 29.9645C192.902 31.027 194.114 32.1233 195.314 33.2542L196 32.5266L196.686 31.799C195.466 30.6495 194.234 29.5348 192.99 28.4543L192.334 29.2094ZM199.541 36.0038L198.827 36.7032C199.967 37.8682 201.094 39.0664 202.209 40.2982L202.95 39.6273L203.692 38.9564C202.56 37.7053 201.415 36.4882 200.256 35.3043L199.541 36.0038ZM206.189 43.3465L205.423 43.989C206.481 45.2514 207.527 46.5462 208.558 47.8739L209.348 47.2604L210.138 46.6468C209.091 45.2997 208.03 43.9856 206.956 42.704L206.189 43.3465ZM212.279 51.1729L211.469 51.7586C212.426 53.0828 213.369 54.4372 214.3 55.8223L215.13 55.2648L215.96 54.7073C215.017 53.3033 214.06 51.9301 213.09 50.5873L212.279 51.1729ZM217.828 59.4294L216.98 59.9594C217.836 61.3286 218.679 62.7258 219.509 64.1513L220.373 63.6481L221.238 63.1449C220.397 61.7015 219.543 60.2865 218.676 58.8994L217.828 59.4294ZM222.839 68.0367L221.96 68.5132C222.725 69.9248 223.478 71.3624 224.218 72.8264L225.111 72.3752L226.003 71.924C225.254 70.4432 224.493 68.9887 223.718 67.5602L222.839 68.0367ZM227.285 76.8291L226.38 77.2554C227.087 78.7538 227.78 80.2782 228.46 81.8289L229.376 81.4272L230.292 81.0255C229.604 79.4584 228.903 77.9176 228.19 76.4028L227.285 76.8291ZM231.274 85.9061L230.349 86.2849C230.966 87.7938 231.572 89.3264 232.165 90.8829L233.099 90.5268L234.034 90.1706C233.435 88.5991 232.823 87.0515 232.2 85.5273L231.274 85.9061ZM234.843 95.2704L233.9 95.6043C234.433 97.1088 234.955 98.6346 235.466 100.182L236.415 99.8686L237.365 99.5553C236.85 97.9944 236.323 96.4549 235.785 94.9364L234.843 95.2704ZM237.919 104.595L236.962 104.888C237.45 106.479 237.926 108.091 238.389 109.725L239.351 109.452L240.313 109.179C239.846 107.532 239.366 105.906 238.875 104.302L237.919 104.595ZM240.636 114.152L239.669 114.406C240.082 115.975 240.484 117.563 240.876 119.17L241.847 118.933L242.819 118.697C242.425 117.078 242.019 115.478 241.603 113.897L240.636 114.152ZM242.992 123.832L242.016 124.051C242.201 124.874 242.383 125.702 242.562 126.535L243.54 126.325L244.517 126.115C244.337 125.276 244.154 124.442 243.968 123.613L242.992 123.832Z" fill="black"/></svg>
-            <svg className="absolute pointer-events-none overflow-visible z-0" style={{ top: 120, left: 660, width: 270.019, height: 99.735, transform: 'rotate(6.458deg)'}} xmlns="http://www.w3.org/2000/svg"><path d="M13.5618 166.812L13.8785 167.76L11.9815 168.394L11.6648 167.445L12.6133 167.128L13.5618 166.812ZM113.512 8.52676C113.767 9.01691 113.576 9.62057 113.086 9.87507L105.098 14.0224C104.608 14.2769 104.004 14.0859 103.75 13.5957C103.495 13.1056 103.686 12.5019 104.177 12.2474L111.277 8.56089L107.59 1.46092C107.335 0.970771 107.527 0.367112 108.017 0.112611C108.507 -0.141892 109.11 0.0491396 109.365 0.539292L113.512 8.52676ZM112.625 8.98757L112.323 9.94097C111.537 9.6922 110.75 9.45454 109.962 9.22796L110.238 8.26688L110.514 7.30581C111.319 7.53729 112.124 7.78007 112.927 8.03417L112.625 8.98757ZM105.436 7.02399L105.211 7.99846C103.609 7.6293 102.004 7.3054 100.399 7.02657L100.571 6.04133L100.742 5.05609C102.383 5.34115 104.022 5.67224 105.66 6.04951L105.436 7.02399ZM95.6524 5.32599L95.5359 6.31919C93.9036 6.12786 92.2727 5.98301 90.6452 5.88444L90.7057 4.88627L90.7661 3.88809C92.4312 3.98894 94.0994 4.13711 95.7688 4.33279L95.6524 5.32599ZM85.7445 4.72721L85.7411 5.72721C84.1008 5.72153 82.4658 5.76314 80.8381 5.85182L80.7837 4.8533L80.7293 3.85478C82.3957 3.76399 84.0693 3.72141 85.748 3.72722L85.7445 4.72721ZM75.8358 5.26865L75.9487 6.26225C74.3196 6.44747 72.6998 6.68059 71.0914 6.9614L70.9194 5.97629L70.7474 4.99119C72.3952 4.70352 74.0543 4.46474 75.7228 4.27505L75.8358 5.26865ZM66.0562 6.9772L66.2874 7.95012C64.6954 8.32833 63.1168 8.7545 61.5538 9.2284L61.2636 8.27142L60.9735 7.31443C62.5757 6.82865 64.1936 6.39186 65.8251 6.00428L66.0562 6.9772ZM56.5592 9.85772L56.9079 10.795C55.3763 11.3648 53.8621 11.9822 52.3674 12.6471L51.961 11.7334L51.5546 10.8197C53.0874 10.1379 54.6401 9.50474 56.2105 8.92048L56.5592 9.85772ZM47.491 13.892L47.9539 14.7784C46.5087 15.5331 45.0847 16.3345 43.6839 17.1823L43.1661 16.3268L42.6483 15.4713C44.0852 14.6017 45.5458 13.7797 47.0281 13.0056L47.491 13.892ZM39.0027 19.0296L39.5734 19.8507C38.236 20.7801 36.9232 21.7547 35.6368 22.7743L35.0156 21.9906L34.3945 21.2069C35.7138 20.1612 37.0603 19.1616 38.432 18.2084L39.0027 19.0296ZM31.2183 25.1992L31.8872 25.9425C30.6807 27.0284 29.5012 28.1574 28.3507 29.3292L27.6372 28.6287L26.9236 27.9281C28.1029 26.7269 29.3121 25.5694 30.5493 24.4559L31.2183 25.1992ZM24.2724 32.272L25.0273 32.9279C23.9628 34.1531 22.9275 35.4191 21.9231 36.7255L21.1303 36.116L20.3375 35.5065C21.3662 34.1685 22.4268 32.8717 23.5175 31.6162L24.2724 32.272ZM18.2156 40.1474L19.0427 40.7094C18.1322 42.0494 17.252 43.4271 16.4038 44.8426L15.546 44.3285L14.6883 43.8144C15.5559 42.3666 16.4565 40.9569 17.3884 39.5854L18.2156 40.1474ZM13.118 48.6468L14.0028 49.1129C13.2471 50.5476 12.5224 52.0171 11.83 53.5215L10.9216 53.1034L10.0132 52.6853C10.7204 51.1488 11.4608 49.6473 12.2332 48.1808L13.118 48.6468ZM8.95624 57.6831L9.88501 58.0537C9.28734 59.5513 8.72021 61.0803 8.1848 62.6407L7.23893 62.3162L6.29306 61.9916C6.83901 60.4005 7.41754 58.8407 8.02748 57.3124L8.95624 57.6831ZM5.74008 67.0494L6.70026 67.3288C6.2452 68.8927 5.82073 70.4856 5.42792 72.1076L4.45602 71.8722L3.48412 71.6369C3.884 69.9857 4.31627 68.3634 4.7799 66.77L5.74008 67.0494ZM3.39889 76.6914L4.38001 76.8848C4.06595 78.4782 3.78137 80.0977 3.5272 81.7433L2.53892 81.5906L1.55065 81.438C1.80898 79.7655 2.09831 78.1188 2.41777 76.498L3.39889 76.6914ZM1.87784 86.5166L2.87136 86.6303C2.68771 88.2359 2.53212 89.8648 2.40536 91.5169L1.40829 91.4404L0.411227 91.3639C0.539856 89.6873 0.697802 88.0337 0.884313 86.403L1.87784 86.5166ZM1.1157 96.4409L2.11487 96.4815C2.04955 98.0885 2.01077 99.7163 1.99919 101.365L0.999215 101.358L-0.000757491 101.351C0.01098 99.6801 0.0502849 98.03 0.116519 96.4003L1.1157 96.4409ZM1.04586 106.352L2.04554 106.327C2.08663 107.942 2.1532 109.576 2.24581 111.229L1.24737 111.285L0.248943 111.341C0.155206 109.668 0.0878026 108.013 0.0461841 106.378L1.04586 106.352ZM1.59983 116.256L2.59619 116.171C2.73428 117.786 2.89667 119.417 3.08387 121.066L2.09027 121.178L1.09665 121.291C0.907387 119.625 0.743156 117.975 0.603465 116.342L1.59983 116.256ZM2.71875 126.12L3.70901 125.981C3.93478 127.587 4.18362 129.208 4.45596 130.844L3.46953 131.009L2.48309 131.173C2.20803 129.52 1.95664 127.882 1.72848 126.26L2.71875 126.12ZM4.3488 135.921L5.33095 135.733C5.63544 137.323 5.96169 138.927 6.31012 140.546L5.33252 140.756L4.35493 140.967C4.00332 139.334 3.67401 137.714 3.36664 136.109L4.3488 135.921ZM6.44215 145.643L7.41482 145.411C7.78949 146.981 8.18465 148.563 8.60065 150.158L7.63302 150.411L6.66539 150.663C6.24592 149.055 5.84738 147.459 5.46947 145.875L6.44215 145.643ZM8.94919 155.253L9.91149 154.981C10.3509 156.536 10.8097 158.102 11.2884 159.679L10.3314 159.97L9.37453 160.26C8.89224 158.67 8.42978 157.092 7.98689 155.525L8.94919 155.253ZM11.823 164.725L12.7743 164.417C13.0319 165.213 13.2943 166.011 13.5618 166.812L12.6133 167.128L11.6648 167.445C11.3954 166.638 11.131 165.834 10.8716 165.033L11.823 164.725Z" fill="black"/></svg>
-            <svg className="absolute pointer-events-none overflow-visible z-0" style={{ top: 300, left: 330, width: 270.019, height: 99.735, transform: 'rotate(21.458deg)'}} xmlns="http://www.w3.org/2000/svg"><path d="M262.636 30.5519L263.51 31.0382L264.482 29.2906L263.608 28.8043L263.122 29.6781L262.636 30.5519ZM4.23309 125.458C4.48601 125.949 5.08905 126.142 5.58002 125.889L13.5808 121.767C14.0718 121.515 14.2648 120.911 14.0119 120.421C13.7589 119.93 13.1559 119.737 12.6649 119.989L5.5531 123.653L1.88951 116.541C1.63659 116.05 1.03355 115.857 0.542585 116.11C0.0516157 116.363 -0.141363 116.966 0.111555 117.457L4.23309 125.458ZM5.12207 125L6.07449 125.305C6.33723 124.484 6.60227 123.668 6.86959 122.857L5.91984 122.544L4.9701 122.231C4.70096 123.047 4.43414 123.869 4.16965 124.695L5.12207 125ZM7.55654 117.72L8.50063 118.05C9.0533 116.467 9.61489 114.904 10.1852 113.361L9.24723 113.014L8.30922 112.667C7.73468 114.222 7.16903 115.796 6.61245 117.39L7.55654 117.72ZM11.0342 108.314L11.9655 108.678C12.5876 107.088 13.2194 105.518 13.8605 103.97L12.9366 103.588L12.0127 103.205C11.3665 104.765 10.7298 106.347 10.1029 107.95L11.0342 108.314ZM14.8958 98.9894L15.8117 99.3907C16.4904 97.8419 17.1787 96.3155 17.8766 94.8111L16.9694 94.3903L16.0623 93.9695C15.3584 95.4869 14.6641 97.0264 13.9798 98.5881L14.8958 98.9894ZM19.1577 89.8069L20.0552 90.2479C20.7913 88.7499 21.5371 87.2749 22.2923 85.8226L21.4051 85.3612L20.5179 84.8998C19.7556 86.3658 19.0029 87.8544 18.2602 89.3659L19.1577 89.8069ZM23.8054 80.8786L24.6811 81.3614C25.4975 79.8806 26.3241 78.4247 27.1606 76.9933L26.2973 76.4887L25.4339 75.9841C24.5888 77.4301 23.754 78.9005 22.9296 80.3958L23.8054 80.8786ZM28.8688 72.2152L29.7189 72.7418C30.6187 71.2895 31.5291 69.8638 32.4499 68.4646L31.6145 67.9149L30.7792 67.3652C29.8483 68.7798 28.928 70.2208 28.0187 71.6885L28.8688 72.2152ZM34.4232 63.7727L35.243 64.3455C36.2133 62.9567 37.1943 61.5956 38.1856 60.2616L37.383 59.6652L36.5803 59.0687C35.5773 60.4184 34.5849 61.7954 33.6035 63.2L34.4232 63.7727ZM40.4531 55.6605L41.2374 56.2809C42.2775 54.9659 43.3281 53.6792 44.3888 52.4203L43.624 51.776L42.8593 51.1316C41.7852 52.4064 40.7216 53.7091 39.6688 55.0402L40.4531 55.6605ZM46.9562 47.9477L47.6997 48.6164C48.814 47.3774 49.9386 46.1674 51.073 44.986L50.3517 44.2934L49.6304 43.6008C48.4808 44.798 47.3414 46.0239 46.2127 47.279L46.9562 47.9477ZM53.9413 40.6806L54.6385 41.3975C55.8373 40.2317 57.0463 39.0962 58.2649 37.9903L57.5929 37.2498L56.9209 36.5092C55.6851 37.6306 54.4594 38.7819 53.2442 39.9637L53.9413 40.6806ZM61.4064 33.9107L62.0516 34.6748C63.3315 33.5938 64.6213 32.544 65.9205 31.5247L65.3032 30.7379L64.6859 29.9512C63.3679 30.9854 62.0594 32.0504 60.7612 33.1467L61.4064 33.9107ZM69.3365 27.6909L69.9245 28.4997C71.2804 27.5141 72.6455 26.5601 74.0194 25.637L73.4617 24.807L72.904 23.9769C71.5097 24.9137 70.1243 25.8819 68.7485 26.882L69.3365 27.6909ZM77.7042 22.07L78.2305 22.9204C79.6553 22.0385 81.0887 21.1884 82.53 20.3693L82.0359 19.4999L81.5419 18.6304C80.0789 19.4618 78.624 20.3247 77.1779 21.2197L77.7042 22.07ZM86.4698 17.0892L86.9308 17.9766C88.4166 17.2046 89.91 16.4641 91.4104 15.7544L90.9828 14.8504L90.5552 13.9465C89.0324 14.6668 87.5167 15.4183 86.0087 16.2019L86.4698 17.0892ZM95.5845 12.7778L95.9781 13.6971C97.5159 13.0386 99.0603 12.411 100.611 11.8136L100.251 10.8805L99.8915 9.94737C98.3185 10.5535 96.7514 11.1903 95.1908 11.8586L95.5845 12.7778ZM104.994 9.15173L105.319 10.0973C106.9 9.55343 108.486 9.03966 110.076 8.55522L109.785 7.5986L109.494 6.64198C107.881 7.13329 106.272 7.6544 104.668 8.20614L104.994 9.15173ZM114.64 6.21326L114.898 7.17954C116.512 6.74932 118.131 6.34815 119.753 5.97521L119.529 5.00064L119.305 4.02607C117.661 4.40408 116.02 4.81077 114.383 5.24697L114.64 6.21326ZM124.468 3.95251L124.659 4.93407C126.299 4.61479 127.941 4.32332 129.586 4.05881L129.427 3.07151L129.268 2.0842C127.603 2.35213 125.939 2.64742 124.277 2.97094L124.468 3.95251ZM134.425 2.3497L134.552 3.34159C136.21 3.12909 137.87 2.94306 139.529 2.78263L139.433 1.78727L139.337 0.791914C137.657 0.954305 135.977 1.14264 134.298 1.35782L134.425 2.3497ZM144.464 1.37798L144.53 2.37579C146.199 2.2653 147.868 2.17984 149.535 2.11853L149.499 1.11921L149.462 0.119882C147.775 0.181894 146.087 0.268353 144.398 0.380163L144.464 1.37798ZM154.544 1.00609L154.552 2.00606C156.226 1.99229 157.898 2.00208 159.567 2.03453L159.587 1.03472L159.606 0.0349101C157.919 0.00210309 156.228 -0.00779712 154.536 0.00612712L154.544 1.00609ZM164.628 1.20084L164.582 2.19977C166.256 2.27734 167.927 2.37698 169.593 2.49779L169.665 1.50041L169.737 0.503026C168.054 0.380985 166.367 0.280302 164.675 0.201912L164.628 1.20084ZM174.688 1.92896L174.591 2.92419C176.261 3.08792 177.926 3.27225 179.584 3.47623L179.706 2.48371L179.828 1.49119C178.154 1.28523 176.473 1.09909 174.786 0.933727L174.688 1.92896ZM184.697 3.15855L184.552 4.14786C186.215 4.39302 187.871 4.65731 189.519 4.93976L189.688 3.95413L189.857 2.9685C188.194 2.68345 186.522 2.4167 184.843 2.16923L184.697 3.15855ZM194.64 4.86118L194.449 5.84271C196.101 6.16483 197.744 6.5046 199.377 6.86101L199.591 5.88401L199.804 4.90701C198.157 4.54747 196.499 4.20467 194.831 3.87965L194.64 4.86118ZM204.502 7.01253L204.268 7.98464C205.904 8.37933 207.528 8.7901 209.14 9.2159L209.395 8.24906L209.651 7.28222C208.025 6.85281 206.387 6.43852 204.737 6.04043L204.502 7.01253ZM214.263 9.59013L213.987 10.5513C215.602 11.0148 217.203 11.4927 218.789 11.9839L219.085 11.0286L219.381 10.0734C217.781 9.57809 216.167 9.09622 214.538 8.62892L214.263 9.59013ZM223.904 12.5762L223.588 13.5251C225.184 14.0558 226.762 14.5994 228.323 15.1546L228.658 14.2125L228.993 13.2703C227.42 12.7105 225.828 12.1625 224.219 11.6273L223.904 12.5762ZM233.406 15.9571L233.052 16.8921C234.633 17.4919 236.194 18.1028 237.733 18.7236L238.107 17.7961L238.481 16.8687C236.929 16.2428 235.355 15.6268 233.761 15.0221L233.406 15.9571ZM242.744 19.723L242.351 20.6424C243.917 21.3127 245.458 21.9922 246.973 22.6795L247.386 21.7688L247.799 20.8582C246.272 20.165 244.717 19.4796 243.137 18.8036L242.744 19.723ZM251.952 23.9013L251.519 24.8026C253.043 25.5355 254.537 26.2751 255.999 27.0195L256.453 26.1284L256.907 25.2373C255.431 24.4859 253.923 23.7395 252.385 23L251.952 23.9013ZM260.948 28.4859L260.473 29.3657C261.203 29.7604 261.924 30.1558 262.636 30.5519L263.122 29.6781L263.608 28.8043C262.889 28.4042 262.161 28.0047 261.423 27.6061L260.948 28.4859Z" fill="black"/></svg>
-            <svg className="absolute pointer-events-none overflow-visible z-0" style={{ top: 250, left: 700, width: 270.019, height: 99.735, transform: 'rotate(-20.458deg)'}} xmlns="http://www.w3.org/2000/svg"><path d="M219.215 78.9271C219.727 79.1341 220.31 78.8869 220.517 78.3749L223.891 70.0314C224.098 69.5194 223.851 68.9364 223.339 68.7294C222.827 68.5223 222.244 68.7695 222.037 69.2815L219.038 76.698L211.621 73.6988C211.109 73.4917 210.526 73.7389 210.319 74.2509C210.112 74.7629 210.359 75.3458 210.871 75.5529L219.215 78.9271ZM0.589844 42.3081L1.18037 43.1151C1.83711 42.6345 2.50432 42.1526 3.18173 41.6697L2.60127 40.8554L2.02081 40.0412C1.33672 40.5288 0.662799 41.0156 -0.000678837 41.501L0.589844 42.3081ZM6.75131 37.9723L7.31208 38.8003C8.67887 37.8746 10.0808 36.9479 11.516 36.0228L10.9742 35.1823L10.4324 34.3418C8.98453 35.2751 7.56996 36.2101 6.19054 37.1444L6.75131 37.9723ZM15.2196 32.5107L15.743 33.3627C17.1492 32.4988 18.5832 31.6384 20.0433 30.7835L19.538 29.9205L19.0327 29.0576C17.5604 29.9196 16.1143 30.7873 14.6961 31.6586L15.2196 32.5107ZM23.9244 27.4137L24.4115 28.2871C25.8599 27.4794 27.3309 26.6786 28.8232 25.8866L28.3544 25.0033L27.8856 24.12C26.381 24.9185 24.8978 25.7259 23.4374 26.5404L23.9244 27.4137ZM32.8208 22.6921L33.2712 23.5849C34.7563 22.8359 36.2602 22.0968 37.7815 21.3693L37.3501 20.4671L36.9187 19.565C35.3845 20.2986 33.8681 21.0439 32.3705 21.7992L32.8208 22.6921ZM41.9256 18.3386L42.3376 19.2497C43.8514 18.5651 45.3806 17.8931 46.9239 17.235L46.5317 16.3152L46.1396 15.3953C44.5827 16.0591 43.0403 16.737 41.5135 17.4274L41.9256 18.3386ZM51.1938 14.3883L51.5654 15.3167C53.1134 14.6971 54.6741 14.0927 56.2463 13.5048L55.8961 12.5681L55.5458 11.6314C53.959 12.2248 52.3841 12.8348 50.8222 13.4599L51.1938 14.3883ZM60.6333 10.8599L60.9613 11.8046C62.5384 11.257 64.1258 10.727 65.7223 10.216L65.4175 9.26362L65.1127 8.31121C63.5003 8.82722 61.8975 9.36237 60.3053 9.91524L60.6333 10.8599ZM70.2358 7.78837L70.5164 8.74822C72.1186 8.27996 73.7288 7.83186 75.346 7.40528L75.0909 6.43835L74.8359 5.47143C73.2013 5.9026 71.5741 6.35543 69.9553 6.82852L70.2358 7.78837ZM79.9826 5.2194L80.2109 6.19299C81.8367 5.81178 83.4682 5.45335 85.1047 5.11905L84.9045 4.13929L84.7043 3.15952C83.0487 3.49775 81.3984 3.86031 79.7543 4.24581L79.9826 5.2194ZM89.8573 3.20447L90.0278 4.18983C91.6731 3.9051 93.3222 3.64588 94.974 3.41351L94.8347 2.42326L94.6954 1.43301C93.0223 1.66839 91.3524 1.93089 89.6868 2.21912L89.8573 3.20447ZM99.8373 1.80324L99.9437 2.79756C101.604 2.61991 103.266 2.4706 104.928 2.35099L104.856 1.35357L104.785 0.356146C103.099 0.477462 101.414 0.628856 99.7309 0.808914L99.8373 1.80324ZM109.887 1.083L109.923 2.08238C111.591 2.0234 113.258 1.99567 114.924 2.00055L114.927 1.00055L114.93 0.000555217C113.238 -0.00439787 111.545 0.02377 109.852 0.0836276L109.887 1.083ZM119.964 1.11545L119.921 2.11453C121.586 2.18616 123.249 2.29189 124.908 2.43308L124.993 1.43668L125.077 0.440285C123.39 0.296675 121.699 0.189185 120.007 0.116375L119.964 1.11545ZM130.002 1.9727L129.874 2.96444C131.524 3.17784 133.17 3.42804 134.81 3.71641L134.984 2.73151L135.157 1.74662C133.486 1.4529 131.81 1.19816 130.13 0.980953L130.002 1.9727ZM139.924 3.71974L139.705 4.6954C141.324 5.05937 142.937 5.46247 144.542 5.90603L144.809 4.94214L145.075 3.97825C143.438 3.52595 141.794 3.11503 140.143 2.74408L139.924 3.71974ZM149.636 6.40581L149.322 7.35524C150.893 7.87481 152.456 8.43524 154.01 9.03786L154.371 8.10555L154.733 7.17323C153.147 6.55826 151.553 5.98643 149.95 5.45638L149.636 6.40581ZM159.018 10.0464L158.609 10.959C160.121 11.6367 161.623 12.3568 163.115 13.1204L163.571 12.2302L164.026 11.3401C162.504 10.5607 160.97 9.82571 159.427 9.13392L159.018 10.0464ZM167.98 14.6325L167.479 15.4981C168.91 16.3263 170.33 17.197 171.738 18.1114L172.283 17.2727L172.827 16.434C171.39 15.5009 169.941 14.6123 168.48 13.767L167.98 14.6325ZM176.431 20.1179L175.845 20.9281C177.178 21.8923 178.499 22.8982 179.808 23.9468L180.433 23.1664L181.058 22.386C179.724 21.3169 178.377 20.2912 177.017 19.3076L176.431 20.1179ZM184.303 26.4242L183.641 27.1735C184.867 28.2569 186.081 29.3802 187.282 30.5445L187.978 29.8265L188.674 29.1085C187.451 27.9229 186.214 26.7787 184.965 25.6748L184.303 26.4242ZM191.548 33.447L190.82 34.133C191.937 35.3179 193.042 36.5406 194.134 37.802L194.89 37.1474L195.646 36.4928C194.536 35.2103 193.412 33.9666 192.275 32.7611L191.548 33.447ZM198.135 41.0557L197.353 41.6786C198.368 42.9539 199.372 44.2651 200.363 45.6128L201.168 45.0205L201.974 44.4281C200.968 43.0599 199.949 41.7284 198.917 40.4327L198.135 41.0557ZM204.103 49.1721L203.276 49.7341C204.191 51.0817 205.095 52.4627 205.987 53.8779L206.833 53.3448L207.679 52.8117C206.775 51.3773 205.859 49.977 204.93 48.6101L204.103 49.1721ZM209.48 57.7079L208.617 58.2124C209.436 59.6146 210.244 61.0479 211.04 62.5127L211.919 62.0351L212.797 61.5574C211.991 60.0749 211.173 58.6237 210.343 57.2034L209.48 57.7079ZM214.286 66.5508L213.394 67.002C214.129 68.4561 214.853 69.9391 215.566 71.4516L216.471 71.0252L217.375 70.5988C216.655 69.07 215.922 67.5704 215.179 66.0996L214.286 66.5508ZM218.567 75.6314L217.652 76.0337C217.994 76.812 218.333 77.5975 218.669 78.3904L219.59 78L220.51 77.6096C220.171 76.8088 219.828 76.0153 219.483 75.2291L218.567 75.6314Z" fill="black"/></svg>
-            <svg className="absolute pointer-events-none overflow-visible z-0" style={{ top: 400, left: 480, width: 125, height: 150 }} xmlns="http://www.w3.org/2000/svg"><path d="M131.519 2H132.519V0H131.519V1V2ZM14.5862 189.935C15.1025 190.131 15.6799 189.871 15.8759 189.355L19.0697 180.941C19.2657 180.424 19.006 179.847 18.4896 179.651C17.9733 179.455 17.3958 179.715 17.1998 180.231L14.361 187.71L6.8816 184.871C6.36526 184.675 5.7878 184.935 5.59182 185.451C5.39583 185.968 5.65554 186.545 6.17188 186.741L14.5862 189.935ZM14.941 189L15.853 188.59C15.5129 187.834 15.1794 187.077 14.8523 186.321L13.9345 186.719L13.0167 187.116C13.3476 187.88 13.685 188.645 14.029 189.41L14.941 189ZM12.0391 182.158L12.968 181.788C12.3576 180.256 11.7736 178.726 11.2159 177.197L10.2764 177.54L9.33699 177.882C9.90149 179.43 10.4925 180.979 11.1102 182.528L12.0391 182.158ZM8.65565 172.879L9.60502 172.565C9.08684 170.999 8.59602 169.435 8.13229 167.873L7.17365 168.158L6.21502 168.443C6.68465 170.024 7.18165 171.608 7.70628 173.194L8.65565 172.879ZM5.84547 163.414L6.81258 163.159C6.39269 161.563 6.00097 159.969 5.63711 158.379L4.6623 158.602L3.68749 158.825C4.05617 160.437 4.45303 162.051 4.87836 163.668L5.84547 163.414ZM3.64349 153.791L4.62505 153.6C4.30931 151.978 4.02247 150.361 3.76419 148.747L2.77676 148.905L1.78934 149.064C2.05117 150.699 2.34192 152.339 2.66192 153.982L3.64349 153.791ZM2.07996 144.026L3.07218 143.902C2.86716 142.268 2.69144 140.639 2.54466 139.016L1.54872 139.106L0.552787 139.196C0.701655 140.842 0.879859 142.494 1.08774 144.151L2.07996 144.026ZM1.1901 134.18L2.18859 134.125C2.09828 132.487 2.03755 130.854 2.00603 129.229L1.00622 129.249L0.00640678 129.268C0.0383925 130.917 0.100009 132.573 0.191617 134.235L1.1901 134.18ZM0.999812 124.3L1.99967 124.317C2.02733 122.68 2.08479 121.05 2.17167 119.429L1.17311 119.375L0.17454 119.322C0.0863496 120.967 0.0280275 122.622 -4.51803e-05 124.283L0.999812 124.3ZM1.52996 114.437L2.52584 114.528C2.67457 112.895 2.85339 111.271 3.06189 109.657L2.07013 109.529L1.07838 109.401C0.866651 111.04 0.685085 112.688 0.53408 114.346L1.52996 114.437ZM2.79574 104.645L3.7819 104.811C4.05402 103.192 4.35634 101.585 4.68843 99.9882L3.70939 99.7845L2.73036 99.5809C2.39302 101.202 2.08595 102.835 1.80958 104.479L2.79574 104.645ZM4.80777 94.9747L5.77816 95.2162C6.17429 93.6248 6.60049 92.0457 7.0563 90.4797L6.09615 90.2002L5.13599 89.9208C4.67285 91.512 4.23983 93.1163 3.83738 94.7331L4.80777 94.9747ZM7.57028 85.485L8.51862 85.8022C9.03754 84.2509 9.5861 82.7136 10.1638 81.1909L9.22888 80.8361L8.29392 80.4814C7.70674 82.029 7.14926 83.5913 6.62193 85.1677L7.57028 85.485ZM11.0756 76.2487L11.9955 76.6407C12.6367 75.136 13.307 73.647 14.0061 72.1741L13.1027 71.7453L12.1993 71.3165C11.4887 72.8137 10.8073 74.3273 10.1556 75.8567L11.0756 76.2487ZM15.3111 67.3262L16.1964 67.7913C16.957 66.3436 17.7462 64.9129 18.5636 63.5001L17.698 62.9993L16.8324 62.4986C16.0014 63.9349 15.1991 65.3893 14.4258 66.8611L15.3111 67.3262ZM20.2582 58.7757L21.1026 59.3114C21.9781 57.9315 22.8814 56.5703 23.8121 55.2284L22.9904 54.6585L22.1686 54.0886C21.2224 55.453 20.304 56.837 19.4138 58.2399L20.2582 58.7757ZM25.8884 50.658L26.686 51.2612C27.6711 49.9586 28.6831 48.6761 29.7214 47.4143L28.9493 46.7789L28.1772 46.1434C27.1214 47.4263 26.0924 48.7304 25.0908 50.0548L25.8884 50.658ZM32.1658 43.0304L32.9111 43.6971C33.9989 42.4809 35.1125 41.2862 36.2514 40.1135L35.5341 39.4168L34.8167 38.7201C33.6587 39.9124 32.5264 41.1272 31.4204 42.3638L32.1658 43.0304ZM39.0501 35.9424L39.7382 36.668C40.9206 35.5466 42.1276 34.4478 43.3587 33.3723L42.7008 32.6192L42.0429 31.8661C40.7912 32.9595 39.5641 34.0767 38.3619 35.2168L39.0501 35.9424ZM46.4882 29.4443L47.1149 30.2236C48.3851 29.2021 49.6787 28.2043 50.9953 27.2308L50.4007 26.4267L49.8062 25.6227C48.4679 26.6122 47.1528 27.6266 45.8615 28.665L46.4882 29.4443ZM54.4286 23.5723L54.9902 24.3997C56.3398 23.4835 57.7115 22.5919 59.1048 21.7255L58.5768 20.8763L58.0488 20.0271C56.6327 20.9076 55.2386 21.8137 53.8669 22.7449L54.4286 23.5723ZM62.8177 18.3547L63.3117 19.2242C64.7272 18.4201 66.1634 17.6411 67.6199 16.8879L67.1606 15.9997L66.7012 15.1114C65.2215 15.8766 63.7622 16.6681 62.3238 17.4852L62.8177 18.3547ZM71.5979 13.8138L72.0222 14.7193C73.493 14.03 74.983 13.3663 76.4918 12.7287L76.1025 11.8076L75.7133 10.8864C74.181 11.534 72.6676 12.2081 71.1735 12.9083L71.5979 13.8138ZM80.6981 9.96812L81.052 10.9034C82.5709 10.3287 84.1076 9.77978 85.6617 9.25732L85.343 8.30945L85.0244 7.36158C83.4467 7.89197 81.8865 8.44925 80.3442 9.03284L80.6981 9.96812ZM90.0545 6.82201L90.3379 7.781C91.8994 7.31949 93.4772 6.88408 95.0712 6.47533L94.8228 5.50667L94.5744 4.53801C92.957 4.95276 91.3558 5.39462 89.771 5.86303L90.0545 6.82201ZM99.6193 4.36763L99.833 5.34452C101.428 4.99553 103.038 4.67273 104.664 4.37667L104.484 3.39286L104.305 2.40905C102.657 2.70931 101.024 3.03671 99.4055 3.39074L99.6193 4.36763ZM109.337 2.59461L109.482 3.58397C111.095 3.34683 112.722 3.13559 114.362 2.95075L114.25 1.95704L114.138 0.963331C112.475 1.15068 110.827 1.36482 109.191 1.60525L109.337 2.59461ZM119.155 1.48603L119.234 2.48289C120.857 2.35387 122.492 2.25034 124.139 2.17273L124.092 1.17384L124.045 0.174947C122.376 0.253562 120.72 0.358455 119.076 0.48918L119.155 1.48603ZM129.026 1.01942L129.041 2.0193C129.864 2.00645 130.69 2 131.519 2V1V0C130.68 0 129.844 0.00653207 129.01 0.0195433L129.026 1.01942Z" fill="black"/></svg>
-            <svg className="absolute pointer-events-none overflow-visible z-0" style={{ top: 400, left: 700, width: 75, height: 135 }} xmlns="http://www.w3.org/2000/svg"><path d="M111.283 160.943C111.582 161.407 112.201 161.541 112.665 161.242L120.229 156.364C120.693 156.065 120.827 155.446 120.528 154.982C120.228 154.518 119.609 154.384 119.145 154.683L112.422 159.019L108.086 152.296C107.787 151.831 107.168 151.698 106.704 151.997C106.24 152.296 106.106 152.915 106.406 153.38L111.283 160.943ZM0.478714 0.877592L-0.000268253 1.75542C0.576143 2.06993 1.40377 2.3942 2.40207 2.73862L2.72821 1.7933L3.05435 0.847977C2.06738 0.507469 1.37628 0.228166 0.957696 -0.000232953L0.478714 0.877592ZM7.52688 3.30003L7.23903 4.25771C8.68498 4.69232 10.297 5.17192 12.0625 5.70841L12.3533 4.75161L12.644 3.7948C10.875 3.25723 9.25357 2.77484 7.81473 2.34236L7.52688 3.30003ZM17.1809 6.25071L16.8775 7.2036C18.388 7.6844 19.9719 8.20101 21.6192 8.75716L21.9391 7.8097L22.259 6.86224C20.5992 6.30188 19.0041 5.78164 17.4842 5.29782L17.1809 6.25071ZM26.679 9.46214L26.3402 10.403C27.8621 10.9511 29.4245 11.5314 31.021 12.1463L31.3804 11.2132L31.7399 10.28C30.1288 9.65942 28.5526 9.07399 27.0178 8.52129L26.679 9.46214ZM36.0268 13.0655L35.6454 13.9899C37.1515 14.6113 38.6804 15.2632 40.2273 15.9474L40.6318 15.0329L41.0364 14.1184C39.4734 13.427 37.929 12.7685 36.4082 12.1411L36.0268 13.0655ZM45.1918 17.1225L44.7629 18.0259C46.2471 18.7304 47.7428 19.465 49.246 20.2314L49.7002 19.3405L50.1544 18.4496C48.6338 17.6743 47.1211 16.9313 45.6206 16.2191L45.1918 17.1225ZM54.1489 21.6923L53.6683 22.5692C55.1083 23.3584 56.5513 24.1776 57.9936 25.0281L58.5015 24.1667L59.0094 23.3053C57.5484 22.4438 56.0872 21.6143 54.6296 20.8153L54.1489 21.6923ZM62.7757 26.7821L62.2396 27.6263C63.6323 28.5107 65.021 29.4255 66.4026 30.372L66.9677 29.547L67.5329 28.722C66.1315 27.762 64.7234 26.8344 63.3118 25.938L62.7757 26.7821ZM71.0642 32.4641L70.4692 33.2678C71.7913 34.2466 73.1037 35.2561 74.4035 36.2974L75.0288 35.517L75.654 34.7366C74.3338 33.6789 73.0012 32.6538 71.6592 31.6603L71.0642 32.4641ZM78.8797 38.73L78.2237 39.4848C79.4707 40.5686 80.7028 41.684 81.9171 42.832L82.6041 42.1053L83.291 41.3787C82.056 40.211 80.8032 39.0769 79.5357 37.9752L78.8797 38.73ZM86.1696 45.6246L85.4517 46.3208C86.5978 47.5024 87.7244 48.7158 88.829 49.962L89.5773 49.2987L90.3257 48.6354C89.2008 47.3663 88.0538 46.131 86.8874 44.9284L86.1696 45.6246ZM92.8236 53.1359L92.0454 53.7638C93.0774 55.0429 94.0861 56.3541 95.0692 57.6981L95.8764 57.1078L96.6835 56.5174C95.6814 55.1474 94.6534 53.8112 93.6019 52.508L92.8236 53.1359ZM98.7354 61.2206L97.9007 61.7713C98.8089 63.1477 99.6905 64.5563 100.543 65.9979L101.404 65.4887L102.265 64.9796C101.395 63.5095 100.496 62.0731 99.5701 60.6698L98.7354 61.2206ZM103.842 69.8511L102.958 70.3175C103.722 71.7683 104.458 73.2506 105.164 74.765L106.07 74.3428L106.977 73.9205C106.257 72.3762 105.507 70.8645 104.727 69.3848L103.842 69.8511ZM108.083 78.9552L107.157 79.3325C107.772 80.8419 108.357 82.3815 108.911 83.9518L109.854 83.6193L110.797 83.2867C110.232 81.6862 109.636 80.1168 109.009 78.5778L108.083 78.9552ZM111.417 88.4146L110.459 88.702C110.927 90.2609 111.364 91.8484 111.77 93.4653L112.74 93.2219L113.71 92.9786C113.297 91.3323 112.851 89.7153 112.375 88.1272L111.417 88.4146ZM113.853 98.1237L112.873 98.3234C113.2 99.9242 113.496 101.552 113.76 103.208L114.747 103.051L115.735 102.893C115.466 101.209 115.165 99.553 114.833 97.924L113.853 98.1237ZM115.433 108.015L114.44 108.132C114.631 109.759 114.792 111.411 114.922 113.089L115.919 113.012L116.916 112.935C116.784 111.23 116.621 109.552 116.427 107.899L115.433 108.015ZM116.211 118.009L115.212 118.049C115.277 119.685 115.313 121.346 115.319 123.031L116.319 123.027L117.319 123.023C117.313 121.315 117.276 119.63 117.21 117.969L116.211 118.009ZM116.252 128.041L115.252 128.011C115.203 129.644 115.126 131.298 115.021 132.975L116.019 133.038L117.017 133.1C117.123 131.402 117.201 129.726 117.252 128.071L116.252 128.041ZM115.625 138.07L114.629 137.976C114.477 139.593 114.3 141.23 114.097 142.886L115.089 143.008L116.082 143.13C116.288 141.455 116.467 139.799 116.62 138.163L115.625 138.07ZM114.395 148.066L113.407 147.916C113.166 149.509 112.901 151.12 112.612 152.748L113.596 152.923L114.581 153.098C114.873 151.453 115.141 149.825 115.384 148.215L114.395 148.066ZM112.652 157.882L111.672 157.682C111.503 158.514 111.328 159.35 111.146 160.19L112.124 160.401L113.101 160.612C113.284 159.764 113.461 158.92 113.632 158.081L112.652 157.882Z" fill="black"/></svg>
-          
-            </motion.div>
-          </div>
-
-          {/* DESKTOP FEATURE CARDS — title/desc overlaid from CMS where present */}
-          {desktopFeaturesResolved.map((feature, i) => (
-            <FeatureCard key={feature.id} feature={feature} index={i} />
-          ))}
-        </motion.div>
-      </div>
-      {/* ========================================= */}
-      {/* 2. MOBILE FLOWCHART — same pattern as desktop                */}
-      {/*    Canvas: 600w × 1000h. Scaled via scale-[0.62] to ~375px. */}
-      {/*    Outer h-[620px] = 1000 * 0.62. Adjust both together.     */}
-      {/*    Hub: left-[300] top-[320] = center of 600px canvas.       */}
-      {/*    Cards: tweak top/left/width in mobileFeatures above.      */}
-      {/*    Arrows: position with style={{ top, left }} like desktop.  */}
-      {/* ========================================= */}
-      <div className="flex md:hidden z-0 h-[400px] w-full justify-center overflow-hidden mt-[-30px]">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.1 }}
-          variants={{ hidden: {}, visible: {} }}
-          className="relative h-[1000px] w-[600px] shrink-0 origin-top scale-[0.62]"
-        >
-          {/* MOBILE HUB — centered at (300, 320) in the 600×1000 canvas */}
-          <motion.div
-            variants={{ hidden: { opacity: 0, scale: 0.5 }, visible: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: "easeOut" } } }}
-            className="absolute left-[300px] top-[320px] z-20 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center pointer-events-none"
-            style={{ width: "135px", height: "135px" }}
-          >
-            <div className="relative h-full w-full">
-              <Image src="/images/misc/Whatfoundersget.svg" alt="Central Image" fill style={{ objectFit: "contain" }} priority />
-            </div>
-          </motion.div>
-
-          {/* MOBILE ARROWS — position these with style={{ top, left }} just like desktop arrows */}
-          <div className="absolute inset-0 pointer-events-none">
-            <motion.div variants={{ hidden: { opacity: 0, scale: 0.8 }, visible: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: "easeOut", delay: 0.5 } } }} className="absolute inset-0 pointer-events-none">
-            <svg className="absolute left-[300px] top-[300px] -translate-x-1/2 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" width="293" height="289" viewBox="0 0 183 189" fill="none">
-              <path d="M23.3168 1.64997C23.2184 1.74683 23.2172 1.90511 23.314 2.00351L24.8925 3.60694C24.9893 3.70534 25.1476 3.70658 25.246 3.60972C25.3444 3.51286 25.3457 3.35457 25.2488 3.25618L23.8457 1.8309L25.271 0.427837C25.3694 0.330976 25.3706 0.17269 25.2738 0.074295C25.1769 -0.0240998 25.0186 -0.0253428 24.9202 0.0715185L23.3168 1.64997ZM23.4922 1.82812L23.4902 2.07812C23.8079 2.08061 24.13 2.08632 24.4565 2.09534L24.4634 1.84543L24.4703 1.59553C24.1406 1.58642 23.8151 1.58065 23.4942 1.57813L23.4922 1.82812ZM26.4341 1.93735L26.4178 2.18682C27.0578 2.22852 27.7111 2.28242 28.3765 2.34913L28.4014 2.10038L28.4263 1.85163C27.7553 1.78434 27.0961 1.72996 26.4503 1.68787L26.4341 1.93735ZM30.3639 2.33027L30.3307 2.57806C30.9706 2.6637 31.6197 2.76096 32.2768 2.87033L32.3179 2.62372L32.3589 2.37711C31.6966 2.26687 31.0422 2.16883 30.3971 2.08248L30.3639 2.33027ZM34.2513 2.97641L34.2027 3.22164C34.8362 3.34732 35.4759 3.48421 36.1208 3.6327L36.1769 3.38907L36.233 3.14545C35.5831 2.99581 34.9385 2.85786 34.3 2.73119L34.2513 2.97641ZM38.0929 3.86096L38.0294 4.10277C38.6582 4.26776 39.2909 4.44385 39.9266 4.6314L39.9973 4.39161L40.0681 4.15183C39.4275 3.96284 38.7899 3.7854 38.1563 3.61915L38.0929 3.86096ZM41.8765 4.97701L41.7986 5.21455C42.4149 5.41682 43.0333 5.63001 43.6529 5.85447L43.738 5.61941L43.8232 5.38436C43.1987 5.15816 42.5756 4.94331 41.9545 4.73948L41.8765 4.97701ZM45.5833 6.32014L45.491 6.55246C46.0961 6.79301 46.7018 7.04453 47.3072 7.30733L47.4067 7.078L47.5063 6.84867C46.896 6.58378 46.2856 6.33026 45.6757 6.08782L45.5833 6.32014ZM49.1987 7.88958L49.092 8.11565C49.6806 8.39352 50.2683 8.68237 50.8545 8.98247L50.9685 8.75994L51.0824 8.5374C50.4913 8.23483 49.8988 7.94362 49.3054 7.6635L49.1987 7.88958ZM52.7127 9.68906L52.5916 9.90776C53.1596 10.2223 53.7255 10.5479 54.2887 10.8847L54.417 10.6701L54.5453 10.4555C53.9773 10.1159 53.4066 9.78759 52.8339 9.47037L52.7127 9.68906ZM56.0921 11.7102L55.9566 11.9203C56.505 12.2738 57.0502 12.6384 57.5917 13.0143L57.7343 12.809L57.8769 12.6036C57.3306 12.2244 56.7806 11.8566 56.2275 11.5001L56.0921 11.7102ZM59.33 13.9581L59.1804 14.1584C59.7021 14.5481 60.2197 14.9488 60.7326 15.3608L60.8892 15.1659L61.0458 14.971C60.5282 14.5553 60.0059 14.1509 59.4796 13.7578L59.33 13.9581ZM62.4059 16.4294L62.2425 16.6186C62.7338 17.0429 63.2202 17.4783 63.7011 17.9248L63.8712 17.7416L64.0413 17.5584C63.556 17.1077 63.0651 16.6684 62.5693 16.2402L62.4059 16.4294ZM65.2937 19.1114L65.117 19.2883C65.5767 19.7474 66.0308 20.2174 66.4787 20.6986L66.6617 20.5283L66.8447 20.358C66.3926 19.8723 65.9343 19.3979 65.4703 18.9345L65.2937 19.1114ZM67.9768 21.9941L67.7877 22.1576C68.2143 22.651 68.6346 23.1552 69.048 23.6706L69.243 23.5141L69.438 23.3577C69.0207 22.8375 68.5965 22.3286 68.1659 21.8306L67.9768 21.9941ZM70.4434 25.0674L70.2428 25.2167C70.6315 25.739 71.0134 26.272 71.388 26.8159L71.5939 26.674L71.7998 26.5322C71.4217 25.9833 71.0363 25.4454 70.644 24.9182L70.4434 25.0674ZM72.6806 28.3143L72.4698 28.4486C72.8184 28.996 73.1599 29.5537 73.4939 30.1219L73.7095 29.9952L73.925 29.8685C73.588 29.2951 73.2433 28.7324 72.8915 28.18L72.6806 28.3143ZM74.6798 31.7149L74.46 31.8339C74.7679 32.4027 75.0684 32.9816 75.3613 33.5704L75.5852 33.4591L75.809 33.3478C75.5135 32.7537 75.2103 32.1698 74.8997 31.5959L74.6798 31.7149ZM76.4367 35.2476L76.2092 35.3512C76.4765 35.9381 76.7363 36.5345 76.9884 37.1405L77.2192 37.0444L77.45 36.9484C77.1958 36.3373 76.9338 35.7359 76.6643 35.144L76.4367 35.2476ZM77.9517 38.8903L77.7179 38.9787C77.9453 39.5803 78.1654 40.191 78.3777 40.8109L78.6142 40.7298L78.8507 40.6488C78.6367 40.0241 78.4149 39.4084 78.1856 38.8019L77.9517 38.8903ZM79.2292 42.621L78.9903 42.6946C79.1795 43.3084 79.3613 43.9308 79.5355 44.5618L79.7765 44.4953L80.0175 44.4287C79.842 43.793 79.6588 43.1659 79.4682 42.5474L79.2292 42.621ZM80.2774 46.4197L80.0346 46.4792C80.1873 47.1031 80.3328 47.7352 80.4709 48.3756L80.7153 48.3229L80.9596 48.2702C80.8206 47.6254 80.6741 46.9888 80.5202 46.3603L80.2774 46.4197ZM81.1069 50.2689L80.8611 50.3149C80.9796 50.948 81.091 51.5888 81.195 52.2373L81.4418 52.1978L81.6887 52.1582C81.584 51.5053 81.4719 50.8603 81.3526 50.2229L81.1069 50.2689ZM81.7301 54.1545L81.4823 54.1878C81.5686 54.8297 81.6479 55.4789 81.72 56.1356L81.9685 56.1083L82.217 56.081C82.1445 55.4204 82.0647 54.7671 81.9779 54.1212L81.7301 54.1545ZM82.1602 58.0657L81.9111 58.0872C81.9672 58.7384 82.0164 59.3967 82.0585 60.0622L82.308 60.0464L82.5575 60.0306C82.5151 59.3614 82.4657 58.6993 82.4092 58.0443L82.1602 58.0657ZM82.4101 61.9957L82.1603 62.0061C82.1876 62.6607 82.2081 63.322 82.2218 63.9901L82.4718 63.985L82.7217 63.9799C82.708 63.3083 82.6873 62.6435 82.6599 61.9853L82.4101 61.9957ZM82.4922 65.9406L82.2422 65.9407C82.2425 66.5897 82.2365 67.245 82.224 67.9064L82.4739 67.9111L82.7239 67.9159C82.7364 67.2512 82.7425 66.5928 82.7422 65.9405L82.4922 65.9406ZM82.4175 69.8996L82.1676 69.8901C82.1434 70.5315 82.1132 71.1786 82.077 71.8313L82.3266 71.8452L82.5762 71.8591C82.6126 71.2034 82.643 70.5534 82.6673 69.909L82.4175 69.8996ZM82.1991 73.8252L81.9498 73.8069C81.9255 74.1391 81.8997 74.4727 81.8723 74.8078L82.1215 74.8281L82.3707 74.8485C82.3982 74.512 82.4241 74.177 82.4485 73.8434L82.1991 73.8252Z" fill="black"/>
-              <path d="M126.707 8.6092C126.828 8.67587 126.872 8.82794 126.805 8.94884L125.718 10.9191C125.652 11.0401 125.5 11.084 125.379 11.0174C125.258 10.9507 125.214 10.7986 125.281 10.6777L126.246 8.92633L124.495 7.96059C124.374 7.89392 124.33 7.74185 124.397 7.62095C124.463 7.50004 124.615 7.45607 124.736 7.52274L126.707 8.6092ZM126.586 8.82812L126.655 9.06829C126.334 9.1611 126.016 9.25577 125.701 9.35228L125.628 9.11322L125.554 8.87415C125.872 8.77689 126.193 8.68149 126.516 8.58796L126.586 8.82812ZM123.76 9.71663L123.841 9.95327C123.209 10.1685 122.589 10.3915 121.981 10.6222L121.892 10.3884L121.804 10.1546C122.417 9.92195 123.043 9.69703 123.679 9.48L123.76 9.71663ZM120.06 11.1203L120.157 11.3507C119.548 11.6065 118.952 11.8704 118.368 12.1422L118.263 11.9155L118.157 11.6888C118.747 11.4144 119.349 11.148 119.963 10.8898L120.06 11.1203ZM116.485 12.7861L116.599 13.0084C116.01 13.3117 115.434 13.6236 114.87 13.944L114.747 13.7266L114.623 13.5093C115.193 13.1855 115.775 12.8702 116.37 12.5638L116.485 12.7861ZM113.055 14.7379L113.188 14.9496C112.63 15.3 112.085 15.6593 111.554 16.0274L111.412 15.8219L111.269 15.6164C111.807 15.244 112.357 14.8805 112.922 14.5262L113.055 14.7379ZM109.813 16.9858L109.965 17.1844C109.441 17.5853 108.931 17.9953 108.435 18.4144L108.273 18.2234L108.112 18.0324C108.614 17.6081 109.131 17.193 109.661 16.7873L109.813 16.9858ZM106.798 19.5333L106.968 19.7161C106.488 20.1643 106.021 20.6218 105.569 21.0882L105.389 20.9142L105.21 20.7401C105.668 20.2677 106.14 19.8044 106.627 19.3505L106.798 19.5333ZM104.052 22.3639L104.24 22.5287C103.808 23.022 103.389 23.5244 102.984 24.0356L102.788 23.8804L102.592 23.7252C103.002 23.2075 103.426 22.6987 103.864 22.199L104.052 22.3639ZM101.601 25.4581L101.805 25.6034C101.425 26.1359 101.058 26.6771 100.704 27.2268L100.494 27.0916L100.284 26.9564C100.642 26.3999 101.013 25.852 101.398 25.3128L101.601 25.4581ZM99.4665 28.7763L99.6829 28.9014C99.356 29.4669 99.042 30.0407 98.7404 30.6225L98.5185 30.5074L98.2965 30.3924C98.6015 29.8039 98.9193 29.2235 99.25 28.6512L99.4665 28.7763ZM97.649 32.2802L97.8758 32.3854C97.6014 32.9774 97.3389 33.577 97.0881 34.184L96.857 34.0886L96.626 33.9931C96.8794 33.3797 97.1447 32.7736 97.4222 32.1751L97.649 32.2802ZM96.1407 35.9265L96.3754 36.0127C96.1509 36.6245 95.9373 37.2432 95.7345 37.8686L95.4967 37.7915L95.2589 37.7143C95.4636 37.083 95.6792 36.4583 95.906 35.8404L96.1407 35.9265ZM94.9218 39.6798L95.1622 39.7483C94.9834 40.3757 94.8146 41.0092 94.6556 41.6487L94.413 41.5884L94.1704 41.528C94.3307 40.8832 94.501 40.2442 94.6814 39.6113L94.9218 39.6798ZM93.967 43.5134L94.2114 43.566C94.0745 44.2025 93.9467 44.8446 93.8276 45.492L93.5817 45.4468L93.3358 45.4015C93.4558 44.7494 93.5846 44.1024 93.7226 43.4609L93.967 43.5134ZM93.2523 47.3919L93.4994 47.4302C93.3994 48.0749 93.3076 48.7245 93.2237 49.3789L92.9757 49.3471L92.7278 49.3153C92.8122 48.6567 92.9046 48.0028 93.0053 47.3536L93.2523 47.3919ZM92.7488 51.3108L92.9975 51.3364C92.9306 51.9851 92.871 52.638 92.8185 53.2951L92.5693 53.2752L92.3201 53.2553C92.3729 52.5945 92.4328 51.9377 92.5002 51.2851L92.7488 51.3108ZM92.4337 55.2428L92.6833 55.2573C92.6453 55.9094 92.614 56.5652 92.589 57.2247L92.3392 57.2152L92.0894 57.2058C92.1145 56.543 92.146 55.8838 92.1841 55.2282L92.4337 55.2428ZM92.2833 59.1917L92.5333 59.1965C92.521 59.8489 92.5146 60.5046 92.5139 61.1634L92.2639 61.1631L92.0139 61.1629C92.0146 60.5012 92.021 59.8425 92.0334 59.187L92.2833 59.1917ZM92.2783 63.1361L92.5283 63.1322C92.5385 63.7865 92.554 64.4437 92.5745 65.1036L92.3247 65.1114L92.0748 65.1192C92.0541 64.4568 92.0386 63.797 92.0284 63.14L92.2783 63.1361ZM92.4008 67.085L92.6506 67.0735C92.6805 67.7263 92.7152 68.3816 92.7544 69.0392L92.5048 69.0541L92.2552 69.0689C92.2159 68.4092 92.1811 67.7516 92.1511 67.0964L92.4008 67.085ZM92.6351 71.0246L92.8844 71.0065C92.9319 71.6603 92.9835 72.3163 93.0392 72.9741L92.7901 72.9952L92.541 73.0163C92.4851 72.3565 92.4333 71.6986 92.3858 71.0427L92.6351 71.0246ZM92.9676 74.9586L93.2165 74.9347C93.248 75.2622 93.2804 75.5902 93.3137 75.9187L93.065 75.9439L92.8163 75.9692C92.7828 75.6399 92.7503 75.311 92.7188 74.9825L92.9676 74.9586Z" fill="black"/>
-              <path d="M182.059 82.8338C182.027 82.9681 181.892 83.0507 181.758 83.0185L179.57 82.4927C179.436 82.4604 179.353 82.3254 179.386 82.1912C179.418 82.0569 179.553 81.9743 179.687 82.0065L181.632 82.4739L182.099 80.5293C182.131 80.395 182.266 80.3123 182.401 80.3446C182.535 80.3769 182.618 80.5119 182.585 80.6461L182.059 82.8338ZM181.816 82.7754L181.603 82.906C181.435 82.6311 181.259 82.3598 181.075 82.0922L181.281 81.9507L181.487 81.8092C181.676 82.0838 181.857 82.3624 182.03 82.6448L181.816 82.7754ZM180.086 80.3829L179.895 80.5439C179.481 80.0515 179.04 79.5737 178.574 79.111L178.75 78.9336L178.926 78.7562C179.402 79.229 179.853 79.7178 180.278 80.222L180.086 80.3829ZM177.294 77.6036L177.133 77.7948C176.64 77.3797 176.126 76.9791 175.593 76.5936L175.739 76.3909L175.885 76.1883C176.429 76.5808 176.953 76.989 177.455 77.4124L177.294 77.6036ZM174.101 75.2921L173.969 75.5043C173.421 75.1628 172.856 74.8356 172.276 74.5233L172.394 74.3031L172.513 74.083C173.102 74.4002 173.676 74.7327 174.233 75.0799L174.101 75.2921ZM170.63 73.4198L170.525 73.6465C169.937 73.3735 169.337 73.1147 168.725 72.8706L168.818 72.6384L168.91 72.4062C169.53 72.6537 170.139 72.9161 170.735 73.1931L170.63 73.4198ZM166.965 71.9555L166.885 72.1922C166.271 71.9836 165.646 71.7892 165.014 71.6094L165.082 71.3689L165.151 71.1285C165.791 71.3106 166.423 71.5074 167.046 71.7187L166.965 71.9555ZM163.174 70.8761L163.117 71.1196C162.484 70.9722 161.844 70.839 161.198 70.7205L161.244 70.4746L161.289 70.2287C161.942 70.3486 162.59 70.4834 163.231 70.6326L163.174 70.8761ZM159.296 70.1634L159.262 70.4111C158.616 70.3232 157.966 70.2498 157.313 70.1911L157.335 69.9421L157.357 69.6931C158.019 69.7525 158.676 69.8268 159.329 69.9157L159.296 70.1634ZM155.366 69.8105L155.355 70.0602C154.703 70.0316 154.049 70.0177 153.394 70.0189L153.394 69.7689L153.393 69.5189C154.056 69.5177 154.718 69.5317 155.377 69.5607L155.366 69.8105ZM151.423 69.8179L151.435 70.0676C150.782 70.099 150.13 70.1455 149.479 70.2075L149.455 69.9586L149.432 69.7098C150.091 69.647 150.751 69.5999 151.411 69.5682L151.423 69.8179ZM147.497 70.1924L147.532 70.4398C146.886 70.5328 146.241 70.6415 145.599 70.7662L145.552 70.5208L145.504 70.2754C146.154 70.1491 146.806 70.0391 147.461 69.9449L147.497 70.1924ZM143.626 70.9456L143.686 71.1883C143.051 71.3451 142.421 71.5181 141.796 71.7078L141.724 71.4685L141.651 71.2293C142.285 71.0371 142.923 70.8617 143.566 70.7029L143.626 70.9456ZM139.853 72.0915L139.938 72.3264C139.324 72.5493 138.717 72.789 138.117 73.0457L138.018 72.8159L137.92 72.586C138.529 72.3255 139.145 72.0825 139.767 71.8565L139.853 72.0915ZM136.228 73.6429L136.34 73.8667C135.756 74.1572 135.18 74.4649 134.614 74.7902L134.489 74.5734L134.365 74.3566C134.94 74.0263 135.524 73.7139 136.117 73.4191L136.228 73.6429ZM132.809 75.6076L132.946 75.8164C132.403 76.1741 131.87 76.5493 131.348 76.9424L131.198 76.7427L131.047 76.5429C131.578 76.1434 132.12 75.7622 132.671 75.3988L132.809 75.6076ZM129.662 77.9773L129.824 78.167C129.332 78.5894 128.851 79.0294 128.383 79.4873L128.208 79.3085L128.033 79.1297C128.509 78.6642 128.998 78.2169 129.499 77.7876L129.662 77.9773ZM126.842 80.7327L127.028 80.8997C126.595 81.3822 126.175 81.8821 125.767 82.3996L125.571 82.2451L125.374 82.0905C125.788 81.5644 126.216 81.0562 126.656 80.5657L126.842 80.7327ZM124.405 83.8293L124.611 83.971C124.246 84.5021 123.894 85.0499 123.556 85.6145L123.342 85.4861L123.127 85.3577C123.47 84.7841 123.828 84.2275 124.199 83.6877L124.405 83.8293ZM122.381 87.2102L122.603 87.3252C122.305 87.8994 122.022 88.4894 121.752 89.0953L121.524 88.9938L121.296 88.8922C121.569 88.2773 121.857 87.6784 122.159 87.0953L122.381 87.2102ZM120.779 90.8086L121.012 90.897C120.896 91.2041 120.784 91.515 120.674 91.8297L120.438 91.7478L120.202 91.6659C120.313 91.3469 120.427 91.0316 120.545 90.7201L120.779 90.8086Z" fill="black"/>
-              <path d="M18.9036 188.377C19.0371 188.412 19.1737 188.332 19.2087 188.198L19.7778 186.021C19.8128 185.888 19.7328 185.751 19.5992 185.716C19.4656 185.681 19.329 185.761 19.2941 185.895L18.7882 187.83L16.8532 187.324C16.7196 187.289 16.583 187.369 16.5481 187.502C16.5132 187.636 16.5932 187.773 16.7267 187.807L18.9036 188.377ZM18.9668 188.135L19.1825 188.008C19.0179 187.727 18.8597 187.441 18.708 187.15L18.4863 187.266L18.2646 187.381C18.42 187.679 18.5822 187.973 18.7511 188.261L18.9668 188.135ZM17.6493 185.459L17.8807 185.364C17.6342 184.762 17.4121 184.143 17.2141 183.51L16.9755 183.585L16.7369 183.66C16.939 184.305 17.1659 184.937 17.4179 185.553L17.6493 185.459ZM16.456 181.662L16.6997 181.606C16.554 180.971 16.4304 180.324 16.3287 179.667L16.0816 179.706L15.8346 179.744C15.9381 180.412 16.0639 181.07 16.2124 181.718L16.456 181.662ZM15.843 177.728L16.0921 177.706C16.0351 177.055 15.9983 176.397 15.9815 175.733L15.7316 175.739L15.4817 175.745C15.4987 176.419 15.5361 177.088 15.594 177.75L15.843 177.728ZM15.7398 173.746L15.9897 173.755C16.0113 173.1 16.0515 172.441 16.1101 171.78L15.8611 171.757L15.6121 171.735C15.5527 172.406 15.5119 173.074 15.49 173.738L15.7398 173.746ZM16.0899 169.778L16.3374 169.813C16.43 169.163 16.5399 168.511 16.6669 167.86L16.4215 167.813L16.1761 167.765C16.0475 168.424 15.9362 169.084 15.8424 169.743L16.0899 169.778ZM16.8522 165.867L17.0949 165.927C17.253 165.288 17.4275 164.652 17.6181 164.018L17.3787 163.946L17.1393 163.874C16.9463 164.515 16.7697 165.16 16.6095 165.807L16.8522 165.867ZM17.9988 162.053L18.2344 162.137C18.4548 161.516 18.6908 160.899 18.9421 160.288L18.7109 160.193L18.4797 160.097C18.2252 160.716 17.9863 161.341 17.7632 161.969L17.9988 162.053ZM19.5139 158.369L19.7402 158.476C20.021 157.879 20.3169 157.288 20.6276 156.706L20.407 156.588L20.1864 156.471C19.8717 157.06 19.5721 157.658 19.2877 158.263L19.5139 158.369ZM21.3895 154.855L21.6037 154.984C21.944 154.418 22.2989 153.862 22.6681 153.316L22.461 153.176L22.2539 153.036C21.8797 153.589 21.52 154.153 21.1752 154.726L21.3895 154.855ZM23.6214 151.557L23.8205 151.708C24.2197 151.182 24.6331 150.668 25.0606 150.167L24.8704 150.005L24.6802 149.843C24.2465 150.351 23.8271 150.872 23.4223 151.405L23.6214 151.557ZM26.2076 148.528L26.3879 148.701C26.845 148.226 27.3161 147.765 27.8008 147.319L27.6316 147.135L27.4624 146.951C26.97 147.404 26.4916 147.872 26.0274 148.355L26.2076 148.528ZM29.1403 145.835L29.2973 146.029C29.8097 145.616 30.3355 145.219 30.8746 144.841L30.731 144.636L30.5873 144.432C30.039 144.817 29.5042 145.22 28.9833 145.64L29.1403 145.835ZM32.3995 143.549L32.5285 143.764C33.0909 143.425 33.6661 143.105 34.254 142.805L34.1406 142.583L34.0271 142.36C33.4284 142.665 32.8428 142.99 32.2704 143.335L32.3995 143.549ZM35.9477 141.744L36.0445 141.975C36.6484 141.721 37.2644 141.489 37.8924 141.278L37.813 141.041L37.7336 140.804C37.0937 141.018 36.4661 141.255 35.8509 141.514L35.9477 141.744ZM39.7223 140.48L39.7838 140.722C40.415 140.562 41.0572 140.424 41.7103 140.308L41.6668 140.062L41.6234 139.816C40.9581 139.933 40.3038 140.074 39.6608 140.237L39.7223 140.48ZM43.637 139.788L43.6625 140.037C44.309 139.971 44.9655 139.927 45.6316 139.906L45.6239 139.656L45.6161 139.406C44.9381 139.427 44.2699 139.472 43.6116 139.539L43.637 139.788ZM47.6198 139.662L47.6105 139.912C48.2593 139.936 48.9167 139.982 49.5827 140.05L49.6081 139.801L49.6335 139.553C48.957 139.483 48.2888 139.437 47.629 139.413L47.6198 139.662ZM51.5736 140.064L51.533 140.311C51.8601 140.364 52.1891 140.423 52.5201 140.488L52.568 140.243L52.6159 139.997C52.2801 139.932 51.9462 139.872 51.6142 139.817L51.5736 140.064Z" fill="black"/>
-              <path d="M0.338733 78.3146C0.359325 78.4512 0.486694 78.5451 0.623221 78.5245L2.84806 78.189C2.98459 78.1684 3.07857 78.041 3.05798 77.9045C3.03739 77.768 2.91002 77.674 2.77349 77.6946L0.795858 77.9929L0.497587 76.0152C0.476996 75.8787 0.349626 75.7847 0.213099 75.8053C0.0765719 75.8259 -0.0174127 75.9533 0.00317858 76.0898L0.338733 78.3146ZM0.585938 78.2773L0.787101 78.4258C0.978504 78.1664 1.17734 77.9113 1.38337 77.6605L1.19019 77.5018L0.997008 77.3431C0.785574 77.6005 0.581406 77.8624 0.384774 78.1289L0.585938 78.2773ZM2.51546 76.0427L2.6922 76.2195C3.14732 75.7646 3.62786 75.3265 4.13196 74.9056L3.97175 74.7137L3.81153 74.5218C3.29639 74.9519 2.80479 75.4 2.33873 75.8658L2.51546 76.0427ZM5.53646 73.5139L5.68049 73.7183C6.20707 73.3471 6.75365 72.9923 7.31857 72.6541L7.19016 72.4396L7.06175 72.2251C6.48654 72.5694 5.92952 72.931 5.39244 73.3096L5.53646 73.5139ZM8.91656 71.4858L9.03 71.7086C9.60559 71.4155 10.1965 71.1382 10.8014 70.8769L10.7022 70.6474L10.6031 70.4179C9.98887 70.6832 9.38836 70.965 8.80312 71.263L8.91656 71.4858ZM12.5361 69.9192L12.6216 70.1542C13.2304 69.9327 13.8508 69.7265 14.4813 69.5359L14.409 69.2966L14.3366 69.0573C13.6975 69.2505 13.0683 69.4596 12.4507 69.6843L12.5361 69.9192ZM16.3131 68.7757L16.3727 69.0184C17.0029 68.8635 17.6414 68.7236 18.2869 68.5988L18.2395 68.3534L18.1921 68.1079C17.5384 68.2342 16.8918 68.376 16.2534 68.5329L16.3131 68.7757ZM20.1831 68.0266L20.2187 68.274C20.8622 68.1817 21.5113 68.1041 22.1649 68.0416L22.141 67.7927L22.1172 67.5438C21.4559 67.6071 20.799 67.6856 20.1476 67.7791L20.1831 68.0266ZM24.1085 67.6503L24.1207 67.9C24.7716 67.868 25.4256 67.8508 26.0817 67.8486L26.0808 67.5986L26.08 67.3486C25.4163 67.3508 24.7547 67.3682 24.0962 67.4006L24.1085 67.6503ZM28.0537 67.6369L28.0432 67.8867C28.6951 67.9142 29.3479 67.9567 30.0005 68.0142L30.0225 67.7652L30.0445 67.5162C29.3842 67.4579 28.7238 67.415 28.0643 67.3871L28.0537 67.6369ZM31.9821 67.9837L31.9487 68.2314C32.5957 68.3188 33.2415 68.4213 33.885 68.5391L33.93 68.2932L33.975 68.0473C33.3238 67.928 32.6703 67.8243 32.0156 67.7359L31.9821 67.9837ZM35.8613 68.6946L35.8045 68.9381C36.4408 69.0864 37.0737 69.2502 37.7022 69.4296L37.7708 69.1892L37.8394 68.9488C37.2029 68.7671 36.5621 68.6013 35.918 68.4512L35.8613 68.6946ZM39.6532 69.7782L39.5725 70.0148C40.1908 70.2256 40.8036 70.4523 41.4099 70.695L41.5028 70.4629L41.5957 70.2308C40.9812 69.9848 40.3602 69.7551 39.7339 69.5416L39.6532 69.7782ZM43.3136 71.2445L43.2083 71.4713C43.8004 71.7461 44.3849 72.0372 44.9609 72.3446L45.0786 72.1241L45.1964 71.9036C44.612 71.5916 44.0192 71.2964 43.4188 71.0178L43.3136 71.2445ZM46.791 73.1022L46.6608 73.3156C47.2173 73.6552 47.7642 74.0113 48.3007 74.3841L48.4434 74.1789L48.5861 73.9736C48.0413 73.595 47.486 73.2334 46.9212 72.8888L46.791 73.1022ZM50.0285 75.3538L49.8736 75.55C50.3838 75.9531 50.8827 76.3728 51.3692 76.8094L51.5362 76.6234L51.7032 76.4373C51.2087 75.9936 50.7018 75.5671 50.1835 75.1577L50.0285 75.3538ZM52.9602 77.9856L52.7817 78.1606C53.2359 78.6238 53.6771 79.1036 54.1045 79.6001L54.294 79.437L54.4835 79.2739C54.0489 78.7691 53.6004 78.2814 53.1388 77.8106L52.9602 77.9856ZM55.5317 80.9734L55.332 81.1238C55.7222 81.6418 56.0982 82.176 56.4593 82.7266L56.6683 82.5896L56.8774 82.4525C56.5104 81.8927 56.1281 81.3496 55.7314 80.823L55.5317 80.9734ZM57.6934 84.2682L57.476 84.3916C57.7941 84.9523 58.0976 85.5283 58.3857 86.1198L58.6105 86.0104L58.8352 85.9009C58.5426 85.3 58.2342 84.7146 57.9108 84.1449L57.6934 84.2682ZM59.4194 87.8109L59.1883 87.9063C59.4351 88.504 59.667 89.1162 59.8832 89.743L60.1195 89.6615L60.3559 89.58C60.1365 88.9438 59.9011 88.3223 59.6504 87.7154L59.4194 87.8109ZM60.706 91.5337L60.4654 91.6017C60.5547 91.9177 60.6402 92.2371 60.7218 92.56L60.9642 92.4987L61.2065 92.4375C61.1238 92.1101 61.0371 91.7862 60.9465 91.4657L60.706 91.5337Z" fill="black"/>
-              <path d="M148.274 186.687C148.137 186.707 148.011 186.612 147.991 186.475L147.67 184.248C147.65 184.111 147.745 183.985 147.882 183.965C148.019 183.945 148.145 184.04 148.165 184.177L148.45 186.156L150.43 185.871C150.566 185.852 150.693 185.946 150.713 186.083C150.732 186.22 150.638 186.346 150.501 186.366L148.274 186.687ZM148.238 186.439L148.038 186.29C148.232 186.03 148.419 185.764 148.598 185.491L148.807 185.628L149.016 185.765C148.831 186.047 148.639 186.321 148.438 186.589L148.238 186.439ZM149.799 183.906L149.576 183.793C149.867 183.216 150.13 182.616 150.365 181.996L150.599 182.085L150.833 182.174C150.591 182.809 150.321 183.425 150.022 184.018L149.799 183.906ZM151.217 180.199L150.976 180.132C151.15 179.509 151.298 178.87 151.423 178.218L151.668 178.265L151.914 178.312C151.787 178.977 151.635 179.629 151.458 180.266L151.217 180.199ZM151.966 176.301L151.717 176.273C151.791 175.627 151.842 174.972 151.871 174.309L152.121 174.32L152.37 174.331C152.341 175.005 152.289 175.672 152.214 176.329L151.966 176.301ZM152.143 172.333L151.893 172.338C151.879 171.686 151.846 171.029 151.792 170.368L152.041 170.348L152.29 170.327C152.345 170.998 152.379 171.665 152.393 172.327L152.143 172.333ZM151.821 168.372L151.573 168.407C151.482 167.759 151.372 167.11 151.243 166.461L151.489 166.413L151.734 166.364C151.864 167.022 151.976 167.68 152.068 168.337L151.821 168.372ZM151.048 164.474L150.806 164.536C150.643 163.901 150.463 163.268 150.265 162.638L150.503 162.563L150.742 162.488C150.943 163.127 151.126 163.768 151.291 164.412L151.048 164.474ZM149.855 160.684L149.621 160.772C149.39 160.157 149.142 159.547 148.877 158.944L149.106 158.843L149.335 158.743C149.604 159.355 149.855 159.973 150.089 160.596L149.855 160.684ZM148.257 157.046L148.034 157.159C147.736 156.573 147.422 155.995 147.092 155.425L147.308 155.3L147.524 155.174C147.859 155.752 148.178 156.339 148.48 156.933L148.257 157.046ZM146.26 153.611L146.052 153.749C145.689 153.201 145.309 152.664 144.914 152.139L145.113 151.988L145.313 151.838C145.715 152.371 146.1 152.917 146.468 153.473L146.26 153.611ZM143.869 150.439L143.679 150.602C143.251 150.103 142.808 149.618 142.348 149.148L142.527 148.973L142.706 148.799C143.173 149.276 143.624 149.77 144.059 150.276L143.869 150.439ZM141.091 147.601L140.924 147.787C140.435 147.351 139.93 146.931 139.41 146.529L139.562 146.331L139.715 146.134C140.245 146.543 140.759 146.97 141.257 147.414L141.091 147.601ZM137.947 145.175L137.809 145.384C137.263 145.023 136.703 144.682 136.128 144.361L136.25 144.143L136.371 143.924C136.958 144.252 137.529 144.6 138.085 144.967L137.947 145.175ZM134.479 143.242L134.374 143.469C133.783 143.196 133.177 142.944 132.557 142.714L132.644 142.48L132.731 142.245C133.363 142.48 133.98 142.737 134.584 143.015L134.479 143.242ZM130.755 141.862L130.686 142.102C130.061 141.924 129.423 141.768 128.772 141.635L128.822 141.39L128.872 141.145C129.535 141.281 130.186 141.44 130.823 141.621L130.755 141.862ZM126.864 141.066L126.833 141.314C126.192 141.232 125.539 141.172 124.876 141.134L124.89 140.885L124.904 140.635C125.579 140.673 126.243 140.734 126.896 140.818L126.864 141.066ZM122.907 140.842L122.91 141.092C122.58 141.096 122.248 141.105 121.913 141.12L121.902 140.87L121.891 140.621C122.231 140.605 122.569 140.596 122.904 140.592L122.907 140.842Z" fill="black"/>
-              </svg>
-            </motion.div>
-          </div>
-
-          {/* MOBILE FEATURE CARDS — title/desc overlaid from CMS where present */}
-          {mobileFeaturesResolved.map((feature, i) => (
-            <FeatureCard key={feature.id} feature={feature} index={i} />
-          ))}
-        </motion.div>
-      </div>
+      {/* ── FULL-PAGE OPENED CARD ── overlay that takes over
+          the viewport. Rendered OUTSIDE the section's inner
+          motion.div so its `position: fixed` isn't affected by
+          any transform/filter on ancestors (fixed positioning
+          gets clipped inside transformed parents). */}
+      <AnimatePresence>
+        {openIndex !== null && (
+          <FullPageCard
+            key="fullpage-card"
+            row={rows[openIndex]}
+            onBack={() => setOpenIndex(null)}
+          />
+        )}
+      </AnimatePresence>
     </section>
   );
 }
