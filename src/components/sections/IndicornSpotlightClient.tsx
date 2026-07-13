@@ -1,7 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { motion, useInView } from "framer-motion";
+
+/* Site-wide easing — snappy start, smooth deceleration. */
+const EASE = [0.22, 1, 0.36, 1] as const;
 
 /*
   Sizing tokens derived from the 1728×1117 MacBook 14" Figma
@@ -78,112 +82,60 @@ function resolveLogoSrc(logo: IndicornLogo): string {
 }
 
 /* ─────────────────────────────────────────────────────────
-   GlowBackdrop — the Figma "aurora" gradient (blurred ellipse
-   with grain noise) rendered inline as an SVG so we get the
-   exact filter chain from design. One instance per column;
-   `mirror` flips it horizontally so the right column's glow
-   points inward toward the divider. Filter + gradient IDs are
-   suffixed by `instanceId` because SVG filter IDs are global —
-   two copies with the same ID would collide silently.
+   GlowBlob — a soft aurora glow made from a CSS radial-gradient
+   that fades to fully transparent at its rim, plus a blur for
+   extra softness. Because the edge is transparent (not a solid
+   ellipse clipped by an SVG filter region), there is NO hard
+   line — it blends seamlessly into the navy background and into
+   the other blob.
+
+   It drifts around on an infinite loop (x / y / scale), giving
+   the "smooth gradient moving here and there" feel. Colours are
+   the Figma aurora stops (#033699 / #5054B5 / #AC71C6) over the
+   #001A4D base. Everything is min(vw,vh) / % so it's responsive.
    ───────────────────────────────────────────────────────── */
-function GlowBackdrop({
-  instanceId,
-  mirror = false,
-}: {
-  instanceId: string;
-  mirror?: boolean;
-}) {
-  const fId = `glowfilter-${instanceId}`;
-  const gId = `glowgrad-${instanceId}`;
-  /* feFuncA discrete table from the Figma export — 50 ones then 50
-     zeros creates the coarse grain pattern. Extracted to a constant
-     so the JSX below is readable. */
-  const grainTable =
-    "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ";
+function GlowBlob({ variant }: { variant: "left" | "right" }) {
+  const left = variant === "left";
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 864 793"
-      preserveAspectRatio="xMidYMid slice"
+    <motion.div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 h-full w-full"
+      className="pointer-events-none absolute rounded-full"
       style={{
-        transform: mirror ? "scaleX(-1)" : undefined,
-        zIndex: 0,
+        width: "min(62vw, 95vh)",
+        height: "min(62vw, 95vh)",
+        left: left ? "-14%" : "auto",
+        right: left ? "auto" : "-14%",
+        top: left ? "2%" : "auto",
+        bottom: left ? "auto" : "-8%",
+        /* IDENTICAL gradient for both blobs — a soft blue-indigo
+           aurora that fades to transparent, sitting nicely on the
+           #001A4D navy. (The right one used to be purplish.) */
+        background:
+          "radial-gradient(circle at center, rgba(44,86,196,0.52) 0%, rgba(80,84,181,0.30) 42%, rgba(0,26,77,0) 70%)",
+        filter: "blur(70px)",
+        willChange: "transform, opacity",
       }}
-    >
-      <g filter={`url(#${fId})`}>
-        <ellipse
-          cx="316.37"
-          cy="325.422"
-          rx="316.37"
-          ry="325.422"
-          transform="matrix(-0.412381 0.911012 -0.918704 -0.394948 700.055 359.009)"
-          fill={`url(#${gId})`}
-        />
-      </g>
-      <defs>
-        <filter
-          id={fId}
-          x="-255.652"
-          y="3.04749"
-          width="1052.55"
-          height="1031.31"
-          filterUnits="userSpaceOnUse"
-          colorInterpolationFilters="sRGB"
-        >
-          <feFlood floodOpacity="0" result="BackgroundImageFix" />
-          <feBlend
-            mode="normal"
-            in="SourceGraphic"
-            in2="BackgroundImageFix"
-            result="shape"
-          />
-          <feGaussianBlur stdDeviation="100" result="effect1_foregroundBlur" />
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="2 2"
-            stitchTiles="stitch"
-            numOctaves={3}
-            result="noise"
-            seed={5393}
-          />
-          <feColorMatrix in="noise" type="luminanceToAlpha" result="alphaNoise" />
-          <feComponentTransfer in="alphaNoise" result="coloredNoise1">
-            <feFuncA type="discrete" tableValues={grainTable} />
-          </feComponentTransfer>
-          <feComposite
-            operator="in"
-            in2="effect1_foregroundBlur"
-            in="coloredNoise1"
-            result="noise1Clipped"
-          />
-          <feFlood floodColor="rgba(0, 0, 0, 0.25)" result="color1Flood" />
-          <feComposite
-            operator="in"
-            in2="noise1Clipped"
-            in="color1Flood"
-            result="color1"
-          />
-          <feMerge result="effect2_noise">
-            <feMergeNode in="effect1_foregroundBlur" />
-            <feMergeNode in="color1" />
-          </feMerge>
-        </filter>
-        <linearGradient
-          id={gId}
-          x1="316.37"
-          y1="0"
-          x2="807.864"
-          y2="290.061"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop offset="0.0199933" stopColor="#022250" />
-          <stop offset="0.482966" stopColor="#054EB6" />
-          <stop offset="0.653846" stopColor="#5054B5" />
-        </linearGradient>
-      </defs>
-    </svg>
+      animate={{
+        /* Organic float — larger, more evident travel on a quicker
+           loop, with a scale + opacity "breathe" so the light clearly
+           moves around. The two blobs use opposite directions and
+           different periods so they never sync up. */
+        x: left
+          ? ["-14%", "20%", "-8%", "12%", "-14%"]
+          : ["14%", "-20%", "8%", "-12%", "14%"],
+        y: left
+          ? ["-16%", "10%", "20%", "-8%", "-16%"]
+          : ["16%", "-10%", "-20%", "8%", "16%"],
+        scale: [1, 1.18, 0.92, 1.1, 1],
+        opacity: [0.7, 1, 0.8, 0.95, 0.7],
+      }}
+      transition={{
+        duration: left ? 18 : 22,
+        repeat: Infinity,
+        repeatType: "loop",
+        ease: "easeInOut",
+      }}
+    />
   );
 }
 
@@ -222,35 +174,68 @@ export default function IndicornSpotlightClient({
     return () => clearInterval(timer);
   }, [indicornLogos.length]);
 
+  /* Both rules (vertical + horizontal) draw in when the section
+     scrolls into view — matching the site-wide "lines animate on
+     entrance" convention. */
+  const sectionRef = useRef<HTMLElement>(null);
+  const rulesInView = useInView(sectionRef, { once: true, amount: 0.3 });
+
   return (
     <section
-      className="relative w-full overflow-hidden max-md:!py-[56px]"
+      ref={sectionRef}
+      className="relative flex w-full items-center overflow-hidden max-md:!py-[56px] max-md:!static"
       style={{
-        /* Solid navy per spec, with a subtle top-left radial glow
-           preserved from the old build for depth (matches design ref). */
-        background:
-          "radial-gradient(197.93% 77.97% at 24.55% 26.31%, #003CB3 0%, #001A4D 100%)",
-        /* Section frame ~792.5 px @ ref → proportional min-height. */
-        minHeight: "min(45.86vw, 70.95vh)",
-        paddingTop: "min(5.79vw, 8.95vh)" /* ~100 px */,
-        paddingBottom: "min(5.79vw, 8.95vh)",
+        /* Sticky reveal — Indicorns PINS to the top of the viewport
+           while "What Our Founders Say" (next in the shared wrapper)
+           scrolls up and covers it, mirroring Impact ↔ Their Stories.
+           Low z-index so the next section (higher z) draws over it. */
+        position: "sticky",
+        top: 0,
+        zIndex: 1,
+        /* Solid navy per the Figma export (index.module.css):
+           background-color: #001a4d. The depth/aurora comes purely
+           from the GlowBackdrop SVG overlays, not a section gradient. */
+        background: "#001A4D",
+        /* Reduced height — the section now pins (sticky) and the next
+           section scrolls over it, so it no longer needs the tall
+           overlap padding it had when it was a normal-flow section.
+           Shorter section + shorter divider = far less blank navy below
+           the content. Top padding still clears the Stories card that
+           overlaps its top by 115 px. */
+        minHeight: "min(50.30vw, 75.62vh)" /* ~800 px @ ref */,
+        paddingTop: "min(12.10vw, 18.53vh)" /* ~140 px @ ref */,
+        paddingBottom: "min(12.63vw, 16.16vh)" /* ~80 px @ ref */,
         paddingLeft: "var(--section-px-wide)",
         paddingRight: "var(--section-px-wide)",
       }}
     >
+      {/* ══════════ GLOW LAYER ══════════
+          Two soft radial-gradient blobs drift around behind the
+          content. Their rims are transparent, so they blend into the
+          navy and into each other with no hard edge — and the section's
+          own overflow-hidden only ever clips already-faded pixels. */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <GlowBlob variant="left" />
+        <GlowBlob variant="right" />
+      </div>
+
       {/* Grid: LEFT column | 1 px vertical divider | RIGHT column.
           On mobile, drops to a single column and hides the vertical rule. */}
       <div
-        className="relative mx-auto grid w-full items-stretch max-md:!grid-cols-1 max-md:!gap-[40px]"
+        className="relative z-10 mx-auto grid w-full items-stretch max-md:!grid-cols-1 max-md:!gap-[40px]"
         style={{
-          maxWidth: "min(83.33vw, 128.91vh)" /* ~1440 px @ ref */,
+          /* Fixed 1440 px cap — IDENTICAL to ImpactAtGlance's
+             max-w-[1440px]. The old min(vw,vh) form shrank the content
+             on short viewports (the vh term), making Indicorns' gutters
+             bigger than every other section. A hard cap + the shared
+             --section-px-wide padding makes the gutters match exactly. */
+          maxWidth: "1440px",
           gridTemplateColumns: "1fr 1px 1fr",
           columnGap: "min(3.47vw, 5.37vh)" /* ~60 px @ ref */,
         }}
       >
         {/* ══════════ LEFT COLUMN ══════════ */}
-        <div className="relative overflow-hidden">
-          <GlowBackdrop instanceId="left" />
+        <div className="relative">
         <div className="relative z-10 flex h-full w-full flex-col items-start text-left max-md:!items-center max-md:!text-center">
           {/* Heading — Poppins 78 / 400 / 172% / #FBF7F0 */}
           <h2
@@ -286,9 +271,13 @@ export default function IndicornSpotlightClient({
             {subheading}
           </p>
 
-          {/* ── HORIZONTAL DIVIDER — spans the left column ── */}
-          <div
-            className="w-full max-md:!hidden"
+          {/* ── HORIZONTAL DIVIDER — spans the left column, draws
+                left→right when the section enters view. ── */}
+          <motion.div
+            className="w-full origin-left max-md:!hidden"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: rulesInView ? 1 : 0 }}
+            transition={{ duration: 1.8, ease: EASE, delay: 0.2 }}
             style={{
               height: 1,
               background: "rgba(255,255,255,0.35)",
@@ -406,21 +395,27 @@ export default function IndicornSpotlightClient({
         </div>
         </div>
 
-        {/* ══════════ VERTICAL DIVIDER (grid middle column) ══════════ */}
-        <div
+        {/* ══════════ VERTICAL DIVIDER (grid middle column) ══════════
+            Fixed 786.5 px tall @ 1728×1117 ref (per spec), centered in
+            the row. Draws top→bottom when the section enters view. */}
+        <motion.div
           className="max-md:!hidden"
+          initial={{ scaleY: 0 }}
+          animate={{ scaleY: rulesInView ? 1 : 0 }}
+          transition={{ duration: 2.4, ease: EASE, delay: 0.2 }}
           style={{
             width: 1,
             background: "rgba(255,255,255,0.35)",
             justifySelf: "center",
-            height: "100%",
+            alignSelf: "center",
+            transformOrigin: "top",
+            height: "min(31.83vw, 49.24vh)" /* ~550 px @ ref — shorter */,
           }}
         />
 
         {/* ══════════ RIGHT COLUMN — quote + attribution ══════════ */}
-        <div className="relative overflow-hidden">
-          <GlowBackdrop instanceId="right" mirror />
-          <div className="relative z-10 flex h-full flex-col justify-center max-md:!text-center">
+        <div className="relative">
+          <div className="relative z-10 flex h-full flex-col justify-start max-md:!text-center">
             <p
               className="m-0 font-['Poppins',_sans-serif] max-md:!text-[15px] max-md:!leading-[1.5]"
               style={{

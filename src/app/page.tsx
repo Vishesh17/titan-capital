@@ -18,8 +18,14 @@ export default function Home() {
       <WhatWeBelieve />
       <ImpactAtGlance />
       {/* <FeaturedFounderStory /> */}
-      <IndicornsSpotlight />
-      <FounderTestimonial />
+      {/* Sticky-reveal pair: Indicorns pins (position: sticky) while
+          "What Our Founders Say" scrolls up and covers it — the same
+          choreography as Impact ↔ Their Stories above. They share this
+          wrapper so Indicorns unpins once the pair is scrolled past. */}
+      <div className="relative">
+        <IndicornsSpotlight />
+        <FounderTestimonial />
+      </div>
       <Footer />
       </main>
     </>

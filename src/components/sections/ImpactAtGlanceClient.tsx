@@ -24,6 +24,9 @@ export interface FounderStory {
   role: string;
   image: string;
   logo: string;
+  /** Per-logo size multiplier (1 = base 59 px height). Lets editors
+   *  even out logos that look too big/small at a uniform height. */
+  logoScale?: number;
   text: string;
 }
 
@@ -78,7 +81,7 @@ const FALLBACK_IMPACT_HEADING_FIRST = "Impact";
 const FALLBACK_IMPACT_HEADING_SECOND = "At A Glance";
 const FALLBACK_STORIES_HEADING_FIRST = "Their Stories,";
 const FALLBACK_STORIES_HEADING_SECOND = "Our Credentials";
-const FALLBACK_CTA_LABEL = "Read Full Story";
+const FALLBACK_CTA_LABEL = "See More";
 
 /* Append Sanity CDN transform params for served images. Local /images/...
    URLs pass through unchanged so the fallback path is unaffected. */
@@ -215,24 +218,120 @@ function ImpactStatCell({ stat }: { stat: ImpactStat }) {
   );
 }
 
+/* Derive the company name shown as the card's "logo" (uppercase
+   text, per the Figma). Roles look like "Co-Founder & CEO, Ofbusiness"
+   (comma) or "Co-founder and CEO of Razorpay" (…of X) — handle both,
+   fall back to the founder's name. */
+function deriveCompany(story: FounderStory): string {
+  const role = story.role || "";
+  if (role.includes(",")) return role.split(",").pop()!.trim();
+  const m = role.match(/\bof\s+(.+)$/i);
+  if (m) return m[1].trim();
+  return story.name;
+}
+
+/* Opening quotation-mark glyph (42 × 33 @ ref), white — shown above
+   the pull-quote in the opened card. Verbatim from the Figma export. */
+function QuoteMarkIcon() {
+  return (
+    <svg
+      viewBox="0 0 42 33"
+      fill="none"
+      aria-hidden
+      style={{ width: "min(2.43vw, 3.76vh)", height: "min(1.91vw, 2.95vh)" }}
+    >
+      <path
+        d="M24.5946 22.5385C24.5946 15.948 26.7387 9.90141 31.027 4.3987C33.7387 1.07148 35.9144 -0.368185 37.5541 0.0797102C39.0676 0.655575 39.8243 1.51937 39.8243 2.6711C39.8243 3.75885 39.3198 4.91058 38.3108 6.12629C37.3649 7.34201 36.6081 8.33378 36.0405 9.1016C35.473 9.86942 35 10.7012 34.6216 11.597C33.7387 13.3886 33.2973 15.5641 33.2973 18.1235C34.8108 17.6756 36.3243 17.8675 37.8378 18.6994C40.6126 20.299 42 22.3465 42 24.8419C42 27.2733 41.2432 29.2569 39.7297 30.7925C38.2793 32.2642 36.2613 33 33.6757 33C31.0901 33 28.9144 32.0082 27.1486 30.0247C25.4459 27.9772 24.5946 25.4818 24.5946 22.5385ZM0 22.5385C0 15.6921 2.11261 9.64547 6.33784 4.3987C9.55405 0.495613 12.2342 -0.68811 14.3784 0.84753C14.8198 1.16746 15.0405 1.67934 15.0405 2.38317C15.0405 3.66287 14.5676 4.91058 13.6216 6.12629C12.7387 7.34201 12.0135 8.33378 11.4459 9.1016C10.8784 9.86942 10.4054 10.7012 10.027 11.597C9.14414 13.3886 8.7027 15.5641 8.7027 18.1235C10.2162 17.6756 11.6982 17.8675 13.1486 18.6994C15.8604 20.299 17.2162 22.3465 17.2162 24.8419C17.2162 27.2733 16.491 29.2569 15.0405 30.7925C13.5901 32.2642 11.5721 33 8.98649 33C6.4009 33 4.25676 32.0082 2.55405 30.0247C0.851351 27.9772 0 25.4818 0 22.5385Z"
+        fill="white"
+      />
+    </svg>
+  );
+}
+
+/* Up-right "open" arrow (37 × 37 @ ref) shown top-right on hover.
+   Verbatim from the Figma export. */
+function StoryArrow() {
+  return (
+    <svg
+      viewBox="0 0 37 37"
+      fill="none"
+      aria-hidden
+      style={{ width: "min(2.14vw, 3.31vh)", height: "min(2.14vw, 3.31vh)" }}
+    >
+      <path
+        d="M0.585786 33.5858C-0.195262 34.3668 -0.195262 35.6332 0.585786 36.4142C1.36683 37.1953 2.63317 37.1953 3.41421 36.4142L2 35L0.585786 33.5858ZM37 2C37 0.89543 36.1046 0 35 0H17C15.8954 0 15 0.89543 15 2C15 3.10457 15.8954 4 17 4H33V20C33 21.1046 33.8954 22 35 22C36.1046 22 37 21.1046 37 20V2ZM2 35L3.41421 36.4142L36.4142 3.41421L35 2L33.5858 0.585786L0.585786 33.5858L2 35Z"
+        fill="black"
+      />
+    </svg>
+  );
+}
+
+/* Card logo — the Sanity-uploaded company logo (square 400×400),
+   rendered white at a uniform height so all four line up, with an
+   optional per-logo scale from the CMS. `origin` sets the scale/anchor
+   corner. Falls back to the uppercase company name if a story has no
+   logo set. Shared between the closed (bottom-right) and open
+   (bottom-left) states so there's a single source of truth. */
+function CardLogo({
+  story,
+  company,
+  origin,
+}: {
+  story: FounderStory;
+  company: string;
+  origin: "left bottom" | "right bottom";
+}) {
+  if (!story.logo) {
+    return (
+      <span
+        className="whitespace-nowrap font-['Poppins',_sans-serif] font-semibold uppercase text-white max-md:!text-[18px]"
+        style={{ fontSize: "min(1.85vw, 2.86vh)", lineHeight: "155%" }}
+      >
+        {company}
+      </span>
+    );
+  }
+  return (
+    <Image
+      src={cdnImageSrc(story.logo, 400)}
+      alt={company}
+      width={400}
+      height={400}
+      className="object-contain"
+      style={{
+        height: "min(5.09vw, 7.88vh)" /* ~88 px @ ref — uniform, bigger */,
+        width: "auto",
+        filter: "brightness(0) invert(1)" /* force logo white */,
+        transform: `scale(${story.logoScale ?? 1})`,
+        transformOrigin: origin,
+      }}
+    />
+  );
+}
+
 /* ─────────────────────────────────────────────────────────
    StoryCard — one card in the 2×2 grid of founder stories.
-   Default state shows the founder image with a dark bottom
-   gradient (hard-light blend) so the logo reads. On hover
-   an up-right arrow fades in at the top-right corner and
-   the pull-quote + attribution fade up below the logo.
+   Default: founder image + dark hard-light gradient + the company
+   logo pinned BOTTOM-RIGHT. On hover the up-right arrow fades in
+   top-right and the full content (logo + quote-mark + pull-quote +
+   attribution) fades up from the bottom-left. All type sizes are
+   the exact Figma spec as min(vw,vh) off the 1728×1117 reference.
    ───────────────────────────────────────────────────────── */
 function StoryCard({ story }: { story: FounderStory }) {
   const [hovered, setHovered] = useState(false);
+  const company = deriveCompany(story);
 
   return (
     <motion.div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="group relative aspect-square w-full cursor-pointer overflow-hidden"
+      className="group relative w-full cursor-pointer overflow-hidden"
       style={{
         borderRadius: "12px",
-        maxWidth: "min(35.47vw, 54.88vh)" /* 613 px @ ref */,
+        /* 656.5 × 579 (Figma) — width stays the column width (= the
+           656.5 horizontal rule); height is shorter so the two stacked
+           cards + 127 gap = 1285 = the vertical rule height. */
+        aspectRatio: "656.5 / 579",
       }}
       variants={{
         hidden: { opacity: 0, y: 30 },
@@ -252,13 +351,13 @@ function StoryCard({ story }: { story: FounderStory }) {
         className="object-cover transition-transform duration-700 group-hover:scale-105"
       />
 
-      {/* Gradient overlay — transparent top → dark bottom
-          with hard-light blend for legibility of the logo. */}
+      {/* Gradient overlay — transparent top → #151515 bottom with
+          hard-light blend (Figma: rgba(217,217,217,0) → #151515 @77.16%). */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(180deg, rgba(217, 217, 217, 0.00) 0%, #393939 86.54%)",
+            "linear-gradient(180deg, rgba(217, 217, 217, 0.00) 0%, #151515 77.16%)",
           mixBlendMode: "hard-light",
         }}
         aria-hidden
@@ -275,105 +374,61 @@ function StoryCard({ story }: { story: FounderStory }) {
         animate={{ opacity: hovered ? 1 : 0 }}
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       >
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          style={{
-            width: "min(1.62vw, 2.51vh)",
-            height: "min(1.62vw, 2.51vh)",
-          }}
-        >
-          <path
-            d="M7 17L17 7M17 7H7M17 7V17"
-            stroke="white"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <StoryArrow />
       </motion.div>
 
-      {/* Content overlay pinned to the bottom-left */}
-      <div
-        className="absolute bottom-0 left-0 right-0 z-10 flex flex-col text-white"
+      {/* CLOSED state — logo pinned to the BOTTOM-LEFT corner.
+          Fades out on hover as the full content takes over. */}
+      <motion.div
+        className="pointer-events-none absolute z-10"
         style={{
-          padding: "min(1.85vw, 2.86vh)" /* ~32 px @ ref */,
+          bottom: "min(1.85vw, 2.86vh)" /* ~32 px @ ref */,
+          left: "min(1.85vw, 2.86vh)",
         }}
+        initial={false}
+        animate={{ opacity: hovered ? 0 : 1 }}
+        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
       >
-        {/* Logo — always visible */}
-        {story.logo ? (
-          <div className="relative self-start">
-            <Image
-              src={cdnImageSrc(story.logo, 300)}
-              alt=""
-              width={200}
-              height={40}
-              className="object-contain"
-              style={{
-                height: "min(2.31vw, 3.58vh)" /* ~40 px @ ref */,
-                width: "auto",
-                maxWidth: "min(13.89vw, 21.49vh)" /* ~240 px @ ref */,
-                filter: "brightness(0) invert(1)" /* force logo white */,
-              }}
-            />
-          </div>
-        ) : (
-          <span
-            className="self-start whitespace-nowrap font-['Poppins',_sans-serif] font-bold uppercase tracking-wide text-white"
-            style={{
-              fontSize: "min(1.62vw, 2.51vh)" /* ~28 px @ ref */,
-            }}
-          >
-            {story.role.split(",").pop()?.trim() || story.name}
-          </span>
-        )}
+        <CardLogo story={story} company={company} origin="left bottom" />
+      </motion.div>
 
-        {/* Quote block — fades up on hover */}
-        <motion.div
-          className="overflow-hidden"
-          initial={false}
-          animate={{
-            opacity: hovered ? 1 : 0,
-            height: hovered ? "auto" : 0,
-          }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <div
+      {/* OPEN state — full content (logo + quote-mark + pull-quote +
+          attribution) at the bottom-left, fades up on hover. */}
+      <motion.div
+        className="absolute bottom-0 left-0 right-0 z-10 flex flex-col items-start text-white"
+        style={{ padding: "min(1.85vw, 2.86vh)" /* ~32 px @ ref */ }}
+        initial={false}
+        animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 14 }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <CardLogo story={story} company={company} origin="left bottom" />
+        <div style={{ paddingTop: "min(0.93vw, 1.43vh)" /* ~16 px */ }}>
+          <QuoteMarkIcon />
+          {/* Description (Poppins 24 / 500 / 150% / #FFF, width 574) */}
+          <p
+            className="m-0 font-['Poppins',_sans-serif] font-medium text-white max-md:!text-[14px]"
             style={{
-              paddingTop: "min(0.93vw, 1.43vh)" /* ~16 px @ ref */,
+              fontSize: "min(1.39vw, 2.15vh)" /* 24 px @ ref */,
+              lineHeight: "150%",
+              maxWidth: "min(33.22vw, 51.39vh)" /* 574 px @ ref */,
+              marginTop: "min(0.70vw, 1.07vh)" /* ~12 px */,
             }}
           >
-            <span
-              className="block font-['Poppins',_sans-serif] leading-none text-white"
-              style={{ fontSize: "min(2.08vw, 3.22vh)" }}
-            >
-              &ldquo;
-            </span>
-            <p
-              className="m-0 font-['Poppins',_sans-serif] font-normal text-white"
-              style={{
-                fontSize: "min(0.93vw, 1.43vh)" /* ~16 px @ ref */,
-                lineHeight: "140%",
-                marginTop: "min(0.46vw, 0.72vh)",
-              }}
-            >
-              {story.text}
-            </p>
-            <p
-              className="m-0 font-['Poppins',_sans-serif] font-normal text-white/85"
-              style={{
-                fontSize: "min(0.75vw, 1.16vh)" /* ~13 px @ ref */,
-                lineHeight: "140%",
-                marginTop: "min(0.46vw, 0.72vh)",
-              }}
-            >
-              — {story.name}, {story.role}
-            </p>
-          </div>
-        </motion.div>
-      </div>
+            {story.text}
+          </p>
+          {/* Founder attribution (Poppins 14 / 500 / 150% / #FFF) */}
+          <p
+            className="m-0 font-['Poppins',_sans-serif] font-medium text-white max-md:!text-[11px]"
+            style={{
+              fontSize: "min(0.81vw, 1.25vh)" /* 14 px @ ref */,
+              lineHeight: "150%",
+              marginTop: "min(0.93vw, 1.43vh)" /* ~16 px */,
+            }}
+          >
+            — {story.name}, {story.role}
+          </p>
+        </div>
+      </motion.div>
     </motion.div>
   );
 }
@@ -385,7 +440,7 @@ function StoryCard({ story }: { story: FounderStory }) {
    "See More" label. Width + colours + label opacity animate
    together for a smooth reveal.
    ───────────────────────────────────────────────────────── */
-function SeeMoreButton({ onClick }: { onClick?: () => void }) {
+function SeeMoreButton({ label, onClick }: { label: string; onClick?: () => void }) {
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -393,52 +448,59 @@ function SeeMoreButton({ onClick }: { onClick?: () => void }) {
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="relative flex cursor-pointer items-center overflow-hidden"
+      className="relative cursor-pointer overflow-hidden"
+      /* Only WIDTH + colours animate (numbers/colours → smoothly
+         interpolatable). BOTH the label and the knob are ABSOLUTELY
+         positioned — the knob pinned to the right edge, so as the pill
+         widens the arrow rides to the right; the label fades in on the
+         left. No flex/justify to snap or reflow → smooth both ways. */
       animate={{
         width: hovered ? 243 : 64,
-        height: hovered ? 83 : 64,
-        backgroundColor: hovered ? "#FFF" : "transparent",
-        paddingLeft: hovered ? 33 : 0,
-        paddingRight: hovered ? 10 : 0,
-        justifyContent: hovered ? "space-between" : "center",
+        backgroundColor: hovered ? "#FFFFFF" : "rgba(255,255,255,0)",
+        borderColor: hovered ? "#575757" : "rgba(87,87,87,0)",
       }}
-      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      transition={{
+        width: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+        backgroundColor: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+        borderColor: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+      }}
       style={{
-        borderRadius: "51px",
-        border: hovered ? "1px solid #575757" : "1px solid transparent",
+        height: 64 /* CONSTANT — no vertical layout shift */,
+        borderRadius: 999,
+        borderWidth: 1,
+        borderStyle: "solid",
+        boxSizing: "border-box",
       }}
-      aria-label="See More"
+      aria-label={label}
     >
-      <AnimatePresence>
-        {hovered && (
-          <motion.span
-            initial={{ opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -8 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            className="whitespace-nowrap font-['Poppins',_sans-serif] font-normal text-black"
-            style={{ fontSize: "24px", lineHeight: "100%" }}
-          >
-            See More
-          </motion.span>
-        )}
-      </AnimatePresence>
-
-      <div
-        className="flex flex-shrink-0 items-center justify-center rounded-full"
-        style={{
-          width: 64,
-          height: 64,
-          background: "#001A4D",
-          border: "1px solid #575757",
+      {/* Label — absolute on the left. Fades in AFTER the pill opens
+          (delay on the way in), fades out immediately on the way out. */}
+      <motion.span
+        className="pointer-events-none absolute -translate-y-1/2 whitespace-nowrap font-['Poppins',_sans-serif] font-normal text-black"
+        style={{ left: 28, top: "50%", fontSize: "22px", lineHeight: "100%" }}
+        animate={{ opacity: hovered ? 1 : 0 }}
+        transition={{
+          duration: hovered ? 0.28 : 0.15,
+          delay: hovered ? 0.24 : 0,
+          ease: [0.22, 1, 0.36, 1],
         }}
       >
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-        >
+        {label}
+      </motion.span>
+
+      {/* Navy circle knob (arrow) — absolute, pinned to the RIGHT edge,
+          vertically centred. Rides right as the pill widens. */}
+      <div
+        className="absolute -translate-y-1/2 flex items-center justify-center rounded-full"
+        style={{
+          right: 6,
+          top: "50%",
+          width: 52,
+          height: 52,
+          background: "#001A4D",
+        }}
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
           <path
             d="M7 17L17 7M17 7H7M17 7V17"
             stroke="white"
@@ -476,10 +538,12 @@ function padStories(stories: FounderStory[], count: number): FounderStory[] {
 function StoriesSection({
   storiesHeadingFirst,
   storiesHeadingSecond,
+  ctaLabel,
   slides,
 }: {
   storiesHeadingFirst: string;
   storiesHeadingSecond: string;
+  ctaLabel: string;
   slides: FounderStory[];
 }) {
   return (
@@ -552,17 +616,92 @@ function StoriesSection({
           </h2>
         </motion.div>
 
-        {/* 2×2 grid of story cards (613 × 613 @ ref, aspect-square) */}
-        <div
-          className="grid w-full grid-cols-2 justify-items-center"
-          style={{
-            gap: "min(1.85vw, 2.86vh)" /* ~32 px @ ref */,
-            maxWidth: "min(72.80vw, 112.62vh)" /* ~1258 px @ ref */,
-          }}
-        >
-          {padStories(slides, 4).map((story, i) => (
-            <StoryCard key={`${story.name}-${i}`} story={story} />
-          ))}
+        {/* 2×2 grid of square story cards. Capped at max-w-[1440px]
+            — the SAME frame as the Impact grid above — so the left/
+            right gutters line up with every other section. The 127 px
+            gap (Figma) makes the cards a bit smaller (≈656 px) and
+            leaves room for the #D8D8D8 rules that run down the middle
+            and across the centre.
+
+            A relative wrapper holds the grid + the three rules; the
+            rules are absolute overlays centred in the gaps, so they
+            never cross a card. All animate in with the section. */}
+        <div className="relative w-full max-w-[1440px]">
+          <div
+            className="grid w-full grid-cols-2"
+            style={{ gap: "min(7.35vw, 11.37vh)" /* 127 px @ ref */ }}
+          >
+            {padStories(slides, 4).map((story, i) => (
+              <StoryCard key={`${story.name}-${i}`} story={story} />
+            ))}
+          </div>
+
+          {/* VERTICAL rule — down the centre column gap, spanning the
+              FULL card-stack height (top of the top row → bottom of the
+              bottom row) so it matches the cards. Draws top→bottom. */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute max-md:!hidden"
+            style={{
+              left: "50%",
+              marginLeft: "-0.5px",
+              top: 0,
+              bottom: 0,
+              width: 1,
+              background: "#D8D8D8",
+              transformOrigin: "top",
+            }}
+            variants={{
+              hidden: { scaleY: 0 },
+              visible: {
+                scaleY: 1,
+                transition: { duration: 1.4, ease: [0.22, 1, 0.36, 1] },
+              },
+            }}
+          />
+
+          {/* HORIZONTAL rules — two segments (one per column width) across
+              the centre row gap. Draw outward from the centre. */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute max-md:!hidden"
+            style={{
+              left: 0,
+              top: "50%",
+              marginTop: "-0.5px",
+              width: "calc((100% - min(7.35vw, 11.37vh)) / 2)" /* 656.5 px @ ref */,
+              height: 1,
+              background: "#D8D8D8",
+              transformOrigin: "right",
+            }}
+            variants={{
+              hidden: { scaleX: 0 },
+              visible: {
+                scaleX: 1,
+                transition: { duration: 1.0, ease: [0.22, 1, 0.36, 1] },
+              },
+            }}
+          />
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute max-md:!hidden"
+            style={{
+              right: 0,
+              top: "50%",
+              marginTop: "-0.5px",
+              width: "calc((100% - min(7.35vw, 11.37vh)) / 2)" /* 656.5 px @ ref */,
+              height: 1,
+              background: "#D8D8D8",
+              transformOrigin: "left",
+            }}
+            variants={{
+              hidden: { scaleX: 0 },
+              visible: {
+                scaleX: 1,
+                transition: { duration: 1.0, ease: [0.22, 1, 0.36, 1] },
+              },
+            }}
+          />
         </div>
 
         {/* See More button — circle → pill on hover */}
@@ -577,7 +716,7 @@ function StoriesSection({
           }}
           style={{ marginTop: "min(3.47vw, 5.37vh)" /* ~60 px */ }}
         >
-          <SeeMoreButton />
+          <SeeMoreButton label={ctaLabel} />
         </motion.div>
       </motion.div>
     </section>
@@ -703,7 +842,7 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
   const handlePrev = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
 
   return (
-    <div className="relative w-full bg-white">
+    <div className="relative w-full bg-[#FBF7F0]">
 
       {/* =========================================================
             STAGE 1: IMPACT AT GLANCE — 3×2 GRID OF STATS
@@ -729,6 +868,7 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          borderRadius: "min(6.66vw, 10.30vh)",
           paddingTop: "min(4.63vw, 7.16vh)" /* ~80 px @ ref */,
           paddingBottom: "min(4.63vw, 7.16vh)",
           paddingLeft: "var(--section-px-wide)",
@@ -919,6 +1059,7 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
       <StoriesSection
         storiesHeadingFirst={storiesHeadingFirst}
         storiesHeadingSecond={storiesHeadingSecond}
+        ctaLabel={ctaLabel}
         slides={slides}
       />
 

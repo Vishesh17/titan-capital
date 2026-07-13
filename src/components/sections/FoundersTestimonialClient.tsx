@@ -378,6 +378,17 @@ export default function FoundersTestimonialClient({
       className="relative w-full"
       style={{
         background: "#FBF7F0",
+        /* Only the TOP corners are rounded (the edge that rides over the
+           navy Indicorns section). The bottom flows straight into the
+           footer, so its corners stay square. */
+        borderTopLeftRadius: "min(6.66vw, 10.30vh)",
+        borderTopRightRadius: "min(6.66vw, 10.30vh)",
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
+        /* Higher z-index than the sticky Indicorns section above (z:1)
+           so this section scrolls UP and covers it — the sticky-reveal
+           pairing set up in page.tsx. */
+        zIndex: 20,
         /* NOTE: no overflow-hidden here — the white pill inside has
            marginTop: -115px so its rounded TOP corners intentionally
            sit above the section (over the navy Indicorns behind).

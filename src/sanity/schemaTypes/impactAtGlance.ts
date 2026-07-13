@@ -5,10 +5,10 @@ import { defineField, defineType } from "sanity";
  *
  * Singleton (only one document should exist). Field shape mirrors what
  * ImpactAtGlanceClient.tsx renders:
- *   - Two headings (each: italic+highlighted word + plain word)
- *   - 5 rotating stat cards
- *   - 3 founder-story slides (image + logo + pull quote)
- *   - 1 CTA button label
+ *   - Two headings for each section (plain Poppins text)
+ *   - 6 impact stats (3×2 grid: rolling number + two-line label)
+ *   - 4 founder-story cards (image + logo + pull quote)
+ *   - 1 "See More" button label
  */
 export const impactAtGlance = defineType({
   name: "impactAtGlance",
@@ -31,28 +31,28 @@ export const impactAtGlance = defineType({
     }),
     defineField({
       name: "storiesHeadingFirst",
-      title: "Stories heading — italic + highlighted word",
+      title: "Stories heading — line 1",
       description: 'e.g. "Their Stories,"',
       type: "string",
     }),
     defineField({
       name: "storiesHeadingSecond",
-      title: "Stories heading — semibold tail",
+      title: "Stories heading — line 2",
       description: 'e.g. "Our Credentials"',
       type: "string",
     }),
     defineField({
       name: "ctaLabel",
-      title: "Story card CTA button label",
-      description: 'e.g. "Read Full Story"',
+      title: '"See More" button label',
+      description: 'Text on the button below the story cards. e.g. "See More"',
       type: "string",
     }),
 
     /* ─────────── Impact stats (rotating carousel) ─────────── */
     defineField({
       name: "impactStats",
-      title: "Impact stats — rotating carousel",
-      description: "5 entries is the design ideal; 3–7 works too.",
+      title: "Impact stats — 3×2 grid",
+      description: "6 entries fills the 3-column × 2-row grid.",
       type: "array",
       of: [
         {
@@ -61,19 +61,23 @@ export const impactAtGlance = defineType({
           fields: [
             defineField({
               name: "num",
-              title: "Number (e.g. 300+, 650+, ₹45,000 Cr+)",
+              title: "Number (e.g. 300+, 7, 250M+)",
+              description: "Animates as a rolling counter on scroll into view.",
               type: "string",
               validation: (r) => r.required(),
             }),
             defineField({
               name: "label",
-              title: "Label (e.g. Startups Backed)",
-              type: "string",
+              title: "Label — up to two lines",
+              description:
+                'Shown under the number. Press Enter for a line break, e.g. "Startup" ⏎ "Backed".',
+              type: "text",
+              rows: 2,
               validation: (r) => r.required(),
             }),
             defineField({
               name: "caption",
-              title: "Caption (optional — currently hidden, kept for future)",
+              title: "Caption (unused — not rendered by the current design)",
               type: "string",
             }),
           ],
@@ -82,11 +86,12 @@ export const impactAtGlance = defineType({
       ],
     }),
 
-    /* ─────────── Founder stories (TV-screen carousel) ─────────── */
+    /* ─────────── Founder stories (2×2 card grid) ─────────── */
     defineField({
       name: "founderStories",
-      title: "Founder stories — TV-screen carousel",
-      description: "3 entries fits the design best; more is fine but won't change layout.",
+      title: "Founder stories — 2×2 card grid",
+      description:
+        "4 entries fills the 2×2 grid. Fewer works too (cards cycle to fill).",
       type: "array",
       of: [
         {
@@ -108,21 +113,32 @@ export const impactAtGlance = defineType({
             }),
             defineField({
               name: "image",
-              title: "Portrait (shown inside the TV frame)",
+              title: "Card background photo",
               type: "image",
               options: { hotspot: true },
               validation: (r) => r.required(),
             }),
             defineField({
               name: "logo",
-              title: "Company logo (overlaid on portrait)",
+              title: "Company logo",
+              description:
+                "Shown bottom-left on the card. Rendered white at a uniform height, so a transparent PNG/SVG works best.",
               type: "image",
               options: { hotspot: true },
             }),
             defineField({
+              name: "logoScale",
+              title: "Logo size (1 = default)",
+              description:
+                "Fine-tune this logo's size so all four look balanced. 1 = base height; try 0.8–1.4 to even out a logo that reads too big or too small.",
+              type: "number",
+              initialValue: 1,
+              validation: (r) => r.min(0.3).max(3),
+            }),
+            defineField({
               name: "text",
               title: "Pull quote",
-              description: "The italic quote shown on the right of the TV.",
+              description: "Fades in on hover, above the founder attribution.",
               type: "text",
               rows: 3,
               validation: (r) => r.required(),

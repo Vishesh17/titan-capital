@@ -52,7 +52,8 @@ const IMAGE_SRC = "/images/what-we-believe/crowd.png";
      desc    28 / 400 / 140% / #323232, width 355
    ───────────────────────────────────────────────────────── */
 const SZ = {
-  headingFs: "min(3.70vw, 5.73vh)",     // 64 px @ ref
+  headingFs: "min(4.51vw, 6.98vh)",     // 78 px @ ref — matches Impact At
+                                        // Glance / How We Show Up / Stories.
   titleFs: "min(2.31vw, 3.58vh)",       // 40 px
   titleW: "min(21.30vw, 32.95vh)",      // 368 px
   descFs: "min(1.62vw, 2.51vh)",        // 28 px
@@ -70,27 +71,36 @@ const SPRING = { stiffness: 100, damping: 30, mass: 0.7 };
    Viewport-derived px dimensions. Card size mirrors the SZ
    min(vw,vh) formula so the rendered card and the scale math
    below stay in exact agreement (no full-bleed sliver).
+
+   FALLBACK_DIMS (reference viewport) is used for BOTH the SSR
+   render AND the client's very first (hydration) render — so the
+   two match exactly. Only after mount does useEffect swap in the
+   real measured dims. Reading `window` during the initial render
+   would make the client's first paint differ from the server's
+   HTML → React hydration mismatch.
    ───────────────────────────────────────────────────────── */
+const FALLBACK_DIMS = (() => {
+  const cardW = 428, cardH = 682, gap = 42;
+  const photoW = 3 * cardW;
+  return { winW: 1728, cardW, cardH, gap, photoW, sFull: 1728 / photoW };
+})();
+
 function computeDims() {
-  if (typeof window === "undefined") {
-    // SSR fallback ≈ reference viewport.
-    const cardW = 428, cardH = 682, gap = 42;
-    const groupW = 3 * cardW + 2 * gap;
-    return { winW: 1728, cardW, cardH, gap, groupW, sFull: 1728 / groupW };
-  }
+  if (typeof window === "undefined") return FALLBACK_DIMS;
   const winW = window.innerWidth;
   const winH = window.innerHeight;
 
   const cardW = Math.min(0.24769 * winW, 0.38317 * winH); // 428 @ ref
   const cardH = Math.min(0.39468 * winW, 0.61055 * winH); // 682 @ ref
   const gap = Math.min(0.02431 * winW, 0.0376 * winH);    // 42 @ ref
-  const groupW = 3 * cardW + 2 * gap;
 
-  /* Scale that makes the 3 touching cards span the FULL width —
-     the "one photo" start state. */
-  const sFull = winW / groupW;
+  /* Photo width = the 3 TOUCHING cards (no gap — the gap only opens
+     at the end via splitX). Scaling this to the viewport makes the
+     photo span the FULL width, edge to edge, with no side margins. */
+  const photoW = 3 * cardW;
+  const sFull = winW / photoW;
 
-  return { winW, cardW, cardH, gap, groupW, sFull };
+  return { winW, cardW, cardH, gap, photoW, sFull };
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -128,7 +138,10 @@ export default function WhatWeBelieveClient({
   });
   const p = useSpring(scrollYProgress, SPRING);
 
-  const [dims, setDims] = useState(computeDims);
+  /* Seed with the deterministic FALLBACK_DIMS so the server HTML and
+     the client's first render are identical (no hydration mismatch).
+     The real measured dims are swapped in right after mount. */
+  const [dims, setDims] = useState(FALLBACK_DIMS);
   useEffect(() => {
     const onResize = () => setDims(computeDims());
     onResize();
@@ -150,10 +163,16 @@ export default function WhatWeBelieveClient({
   const flip = useTransform(p, [0.45, 0.7], [0, 180]);
   /* Corner radius appears as the slices separate. */
   const radius = useTransform(p, [0.45, 0.58], [0, 12]);
-  /* Heading rides ON the photo (scales with the group) and only
-     disappears right as the flip kicks off (~0.45). It does NOT
-     fade independently during the shrink. */
+  /* Heading rides ON the photo and disappears right as the flip
+     kicks off (~0.45). It does NOT fade independently during shrink. */
   const headingOpacity = useTransform(p, [0.43, 0.5], [1, 0]);
+  /* Heading scales WITH the component (same ratio). Cancelling only
+     the CONSTANT initial upscale (1/sFull) means: at the start it
+     renders at its true size (SZ.headingFs = 78 px, matching Impact
+     At Glance), and as the group shrinks the heading shrinks in the
+     exact same proportion — because the live groupScale still applies
+     on top of this constant. */
+  const headingScale = 1 / dims.sFull;
 
   return (
     <section
@@ -173,7 +192,7 @@ export default function WhatWeBelieveClient({
             style={{
               scale: groupScale,
               position: "relative",
-              width: dims.groupW,
+              width: dims.photoW,
               height: dims.cardH,
             }}
           >
@@ -208,6 +227,8 @@ export default function WhatWeBelieveClient({
             <motion.h2
               style={{
                 opacity: headingOpacity,
+                scale: headingScale,
+                transformOrigin: "center top",
                 fontSize: SZ.headingFs,
                 lineHeight: "120%",
                 position: "absolute",
@@ -283,7 +304,12 @@ function CardSlice({
           borderRadius: radius,
           overflow: "hidden",
           backgroundImage: `url(${IMAGE_SRC})`,
-          backgroundSize: "300% 100%",
+          /* `300% auto` keeps the image's NATURAL aspect (1.631) — the
+             three slices reconstruct one undistorted photo, cover-
+             cropped vertically (never stretched like `300% 100%` did).
+             The card's 1.883 aspect is always wider than the image, so
+             this always fills — no letterboxing. */
+          backgroundSize: "300% auto",
           backgroundPosition: `${index * 50}% center`,
           backgroundRepeat: "no-repeat",
         }}
