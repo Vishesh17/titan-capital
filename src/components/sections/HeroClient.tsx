@@ -54,9 +54,6 @@ const FALLBACK_FOUNDERS: HeroFounder[] = [
 const FALLBACK_SUBTITLE =
   "We partner with entrepreneurs from day one. We invest conviction, not just capital, and stay by their side through every stage of their journey.";
 
-/* The card that "stays" and becomes the heading photo — randomized on mount. */
-const DEFAULT_HERO_INDEX = 0;
-
 function heroImageSrc(url: string, width: number): string {
   if (url.startsWith("https://cdn.sanity.io/")) {
     return `${url}?w=${width}&auto=format&q=85`;
@@ -74,9 +71,13 @@ const SLOT_H = "min(11.56vw, 17.87vh)"; // ~200 px @ ref (spans 2 rows)
    the CSS min(vw,vh) tokens; FALLBACK for SSR + first render.
    ───────────────────────────────────────────────────────── */
 function computeDims(w: number, h: number) {
+  const cardW = Math.min(0.072 * w, 0.115 * h); // ~124 px @ ref (portrait width)
+  const cardH = cardW * 1.3;                     // portrait card (headshot-ish)
   return {
-    cardSide: Math.min(0.078 * w, 0.121 * h), // ~135 px @ ref — bigger
-    lineGap: Math.min(0.079 * w, 0.122 * h),  // ~137 px @ ref (line still fits 8)
+    cardW,
+    cardH,
+    deckPeek: cardH * 0.17,   // how far each card peeks BELOW the one above
+    filmStep: cardH * 1.14,   // filmstrip vertical pitch (card height + gap)
   };
 }
 const FALLBACK_DIMS = computeDims(1728, 1117);
@@ -202,9 +203,10 @@ function HeroGlow() {
 }
 
 /* ─────────────────────────────────────────────────────────
-   Hero — self-playing intro (~5.5 s): ONE image → stack →
-   vertical line → one card stays and grows into the heading
-   photo (in the FOR ▢ ENDURING/IMPACT slot), colouring up.
+   Hero — self-playing intro (cappen-style): slideshow → the
+   others fan into a downward deck behind the centred hero →
+   they open into a vertical filmstrip → the hero flies into the
+   heading slot (FOR ▢ ENDURING/IMPACT) and colours up.
    ───────────────────────────────────────────────────────── */
 export default function HeroClient({ data }: { data?: HeroData | null }) {
   const subtitle = data?.subtitle || FALLBACK_SUBTITLE;
@@ -215,53 +217,55 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     return FALLBACK_FOUNDERS;
   })();
 
-  const [heroIndex, setHeroIndex] = useState<number | null>(null);
-  useEffect(() => {
-    setHeroIndex(Math.floor(Math.random() * founders.length));
-  }, [founders.length]);
+  /* The featured founder — the card that stays centred through the deck +
+     filmstrip and finally lands in the heading slot. Chosen once on mount
+     and used from the start so the deck/filmstrip can be built around it. */
+  const [heroIndex] = useState<number>(() => Math.floor(Math.random() * founders.length));
+
+  /* Gate the whole card cluster until dims are measured, so the first
+     frame never paints at the SSR fallback size and then resize-jumps
+     ("a bigger card once at the start"). */
+  const [ready, setReady] = useState(false);
 
   const progress = useMotionValue(0);
 
   /* Intro has two stages:
        1. "slideshow" — a single centred card flips through EVERY founder
-          photo (like a slideshow) once.
-       2. "animate"   — the shuffle-stack → vertical-line → one-stays
-          timeline plays (driven by `progress`).
-     Slower + smoother than before, per the brief. */
+          photo once, settling on the hero.
+       2. "animate"   — the deck → filmstrip → hero-lands timeline plays
+          (driven by `progress`). */
   const [stage, setStage] = useState<"slideshow" | "animate">("slideshow");
   const [slideIndex, setSlideIndex] = useState(0);
 
   useEffect(() => {
-    if (stage !== "slideshow" || heroIndex === null) return;
+    if (stage !== "slideshow" || !ready) return;
+    /* Flip through every founder photo once, then SETTLE on the hero photo
+       so the centred deck card that follows shows the same face — a
+       seamless handoff into the shuffle. */
     let count = 0;
-    let handoff: ReturnType<typeof setTimeout> | undefined;
     const id = setInterval(() => {
       count += 1;
-      if (count >= founders.length) {
-        /* Land on the HERO photo, hold a beat, THEN hand off to the
-           shuffle — the stack's top card is the same hero photo, so the
-           slideshow → shuffle transition is seamless (no image jump). */
+      if (count >= founders.length - 1) {
         setSlideIndex(heroIndex);
         clearInterval(id);
-        handoff = setTimeout(() => setStage("animate"), 300);
+        setTimeout(() => setStage("animate"), 400);
       } else {
         setSlideIndex(count);
       }
-    }, 260); // fast flip
-    return () => {
-      clearInterval(id);
-      if (handoff) clearTimeout(handoff);
-    };
-  }, [stage, founders.length, heroIndex]);
+    }, 300);
+    return () => clearInterval(id);
+  }, [stage, ready, founders.length, heroIndex]);
 
   useEffect(() => {
     if (stage !== "animate") return;
-    /* Spring drive — gives the whole timeline natural momentum + settle
-       (physics feel) and reaches the end snappily. useTransform clamps,
-       so any spring overshoot past 1 never overshoots the visuals. */
+    /* ONE smooth tween 0 → 1 drives the whole timeline. The short pauses
+       (deck settle, filmstrip settle) are baked as flat segments in each
+       card's keyframes, so progress can stay a single-target tween — the
+       form that reliably honours `duration`. Mildly eased so phase pacing
+       stays even and fluid rather than snapping. */
     const controls = animate(progress, 1, {
-      duration: 7.5, // slower, more cinematic
-      ease: [0.33, 0, 0.2, 1],
+      duration: 6.4,
+      ease: [0.3, 0, 0.25, 1],
     });
     return () => controls.stop();
   }, [stage, progress]);
@@ -286,6 +290,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
         w: r.width,
         h: r.height,
       });
+      setReady(true);
     };
     measure();
     const t = setTimeout(measure, 300); // after web-font layout settles
@@ -296,20 +301,16 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     };
   }, []);
 
-  /* Side labels + bottom subtitle — visible through the card stages,
-     fade out for the heading reveal. */
-  /* Visible from the very start (progress is 0 during the slideshow, and
-     this clamps to 1 there) through the stack + line, fading only for
-     the heading reveal. */
-  const sideLabelsOpacity = useTransform(progress, [0.58, 0.7], [1, 0]);
-  /* Visible from the start (slideshow + stack); DISAPPEARS as the cards
-     open into the vertical line (~0.34); the heading brings its own copy
-     back at the end. */
-  const subtitleBottomOpacity = useTransform(progress, [0.32, 0.42], [1, 0]);
+  /* Side labels — visible through the deck + filmstrip, fade as the hero
+     card breaks away toward the heading slot. */
+  const sideLabelsOpacity = useTransform(progress, [0.6, 0.72], [1, 0]);
+  /* Bottom subtitle — visible through the deck; DISAPPEARS as the cards
+     spread into the filmstrip; the heading brings its own copy back. */
+  const subtitleBottomOpacity = useTransform(progress, [0.32, 0.44], [1, 0]);
 
-  /* Heading block */
-  const headingOpacity = useTransform(progress, [0.7, 0.94], [0, 1]);
-  const headingScale = useTransform(progress, [0.72, 0.98], [0.98, 1]);
+  /* Heading block reveals as the hero card lands. */
+  const headingOpacity = useTransform(progress, [0.72, 0.92], [0, 1]);
+  const headingScale = useTransform(progress, [0.74, 0.98], [0.98, 1]);
 
   /* Typewriter: triggers once heading is visible */
   const [typewriterStarted, setTypewriterStarted] = useState(false);
@@ -355,19 +356,19 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
         </motion.p>
 
         {/* ═══ SLIDESHOW (stage 1) — one centred card cycling every
-            founder photo, then fades into the shuffle stack. ═══ */}
+            founder photo, then fades into the deck of cards. ═══ */}
         <AnimatePresence>
-          {stage === "slideshow" && heroIndex !== null && (
+          {ready && stage === "slideshow" && (
             <motion.div
               key="slideshow"
               className="absolute z-40 overflow-hidden bg-[#FBF7F0]"
               style={{
-                width: dims.cardSide,
-                height: dims.cardSide,
+                width: dims.cardW,
+                height: dims.cardH,
                 left: "50%",
                 top: "50%",
-                marginLeft: dims.cardSide / -2,
-                marginTop: dims.cardSide / -2,
+                marginLeft: dims.cardW / -2,
+                marginTop: dims.cardH / -2,
                 borderRadius: "min(0.93vw, 1.43vh)",
               }}
               initial={{ opacity: 0 }}
@@ -403,16 +404,18 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
           )}
         </AnimatePresence>
 
-        {/* ═══ CARDS (stage 2) — shuffle → line → one stays ═══ */}
-        {heroIndex !== null && (
+        {/* ═══ CARDS (stage 2) — shuffle → line → one stays ═══
+            Only mounted once the slideshow hands off. Before that they
+            would paint at progress 0 (a full-size card stacked at centre)
+            on the very first frame — a jarring "big picture" flash. */}
+        {stage === "animate" && (
           <div className="absolute inset-0 z-10 flex items-center justify-center">
             {founders.map((founder, i) => (
               <FounderCard
                 key={founder.name}
                 founder={founder}
                 index={i}
-                total={founders.length}
-                isHero={i === heroIndex}
+                heroIndex={heroIndex}
                 progress={progress}
                 dims={dims}
                 slot={slot}
@@ -563,68 +566,80 @@ function TypewriterLine({ text, started, delay }: { text: string; started: boole
 function FounderCard({
   founder,
   index,
-  total,
-  isHero,
+  heroIndex,
   progress,
   dims,
   slot,
 }: {
   founder: HeroFounder;
   index: number;
-  total: number;
-  isHero: boolean;
+  heroIndex: number;
   progress: MotionValue<number>;
   dims: Dims;
   slot: Slot;
 }) {
-  const centerIdx = (total - 1) / 2;
-  const offset = index - centerIdx;
-  /* Receding cascade: the top card (index 0) is biggest and in front;
-     each card below peeks out under the one above and is progressively
-     smaller — a stack of photos seen in perspective. */
-  const cascadeGap = dims.cardSide * 0.42;
-  const yStackCascade = offset * cascadeGap; // centred, index 0 at top
-  const yLine = offset * dims.lineGap;       // even vertical line
-  const scaleStack = Math.max(0.42, 1 - index * 0.09); // top biggest → smaller
+  const isHero = index === heroIndex;
 
-  /* y: ONE image (held) → cascade stack → vertical line → hero lands on
-     the heading slot / others collapse to centre. */
+  /* Rank among the NON-hero cards (0-based), used to place them relative
+     to the centred hero card in both the deck and the filmstrip. */
+  const otherPos = index < heroIndex ? index : index - 1;
+
+  /* DECK (cappen "frame 1"): hero on top at centre; every other card
+     peeks out just BELOW it, each a little lower + smaller + further
+     back — a downward-fanned deck. */
+  const deckRank = isHero ? 0 : otherPos + 1;
+  const deckY = deckRank * dims.deckPeek;
+  const deckScale = isHero ? 1 : Math.max(0.72, 1 - deckRank * 0.05);
+
+  /* FILMSTRIP (cappen "frame 2"): hero stays centred; the others open
+     out symmetrically above & below it into an evenly-gapped column
+     (+1, -1, +2, -2, …). */
+  const filmSlot = isHero
+    ? 0
+    : (otherPos % 2 === 0 ? 1 : -1) * Math.ceil((otherPos + 1) / 2);
+  const filmY = filmSlot * dims.filmStep;
+
+  /* Shared timeline (progress 0 → 1). Flat segments = the small pauses.
+       0.00→0.22  cards fan out from behind the hero into the deck
+       0.22→0.30  deck settles (small pause)
+       0.30→0.56  deck opens into the vertical filmstrip
+       0.56→0.68  filmstrip settles (small pause)
+       0.68→0.90  hero flies to the heading slot; others fade out         */
   const y = useTransform(
     progress,
-    [0, 0.12, 0.35, 0.6, 0.86],
-    [0, 0, yStackCascade, yLine, isHero ? slot.cy : 0],
+    isHero ? [0, 0.68, 0.9] : [0, 0.22, 0.3, 0.56],
+    isHero ? [0, 0, slot.cy] : [0, deckY, deckY, filmY],
   );
-  /* x: only the hero shifts, from centre to the heading slot. */
-  const x = useTransform(progress, [0.6, 0.86], [0, isHero ? slot.cx : 0]);
+  const x = useTransform(progress, [0.68, 0.9], [0, isHero ? slot.cx : 0]);
+  const scale = useTransform(
+    progress,
+    [0, 0.22, 0.3, 0.56],
+    isHero ? [1, 1, 1, 1] : [1, deckScale, deckScale, 1],
+  );
 
-  /* scale: uniform(1, one image) → per-card cascade sizes → uniform(1)
-     for the line and everything after. */
-  const scale = useTransform(progress, [0, 0.12, 0.35, 0.6], [1, 1, scaleStack, 1]);
-
-  /* Cards are invisible during the slideshow (progress=0), appear as
-     the animate stage begins, then non-hero cards fade out at the end. */
+  /* Hero stays solid; the others fade in from behind it, hold, then fade
+     out once the hero breaks away. */
   const opacity = useTransform(
     progress,
-    isHero ? [0, 0.01, 0.6, 0.78] : [0, 0.01, 0.6, 0.78],
-    isHero ? [0, 1, 1, 1] : [0, 1, 1, 0],
+    isHero ? [0, 1] : [0, 0.1, 0.58, 0.72],
+    isHero ? [1, 1] : [0, 1, 1, 0],
   );
 
-  /* The hero morphs from the square card into the landscape heading slot
-     (width & height independently; the photo re-crops via object-cover,
-     so it never distorts). Others keep the square size. */
+  /* Hero morphs from the portrait card into the landscape heading slot
+     (object-cover re-crops, so it never distorts). */
   const width = useTransform(
     progress,
-    [0.6, 0.86],
-    [dims.cardSide, isHero ? slot.w : dims.cardSide],
+    [0.68, 0.9],
+    [dims.cardW, isHero ? slot.w : dims.cardW],
   );
   const height = useTransform(
     progress,
-    [0.6, 0.86],
-    [dims.cardSide, isHero ? slot.h : dims.cardSide],
+    [0.68, 0.9],
+    [dims.cardH, isHero ? slot.h : dims.cardH],
   );
 
   /* Monochrome throughout; ONLY the hero colours up as it lands. */
-  const grayscale = useTransform(progress, [0.62, 0.82], [0.9, isHero ? 0 : 0.9]);
+  const grayscale = useTransform(progress, [0.72, 0.88], [0.9, isHero ? 0 : 0.9]);
   const filter = useMotionTemplate`grayscale(${grayscale})`;
 
   return (
@@ -639,7 +654,8 @@ function FounderCard({
         opacity,
         filter,
         borderRadius: "min(0.93vw, 1.43vh)",
-        zIndex: isHero ? 30 : total - index,
+        /* Hero above all; other cards stack behind it by deck rank. */
+        zIndex: isHero ? 50 : 40 - deckRank,
         willChange: "transform, width, height, opacity, filter",
       }}
     >

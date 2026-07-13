@@ -39,10 +39,15 @@ export interface WhatFoundersGetData {
    ───────────────────────────────────────────────────────── */
 const SZ = {
   // typography
-  heading: "min(4.51vw, 6.98vh)",       // 78 px @ ref
-  rowTitle: "min(3.70vw, 5.73vh)",      // 64 px @ ref
-  subHeading: "min(1.85vw, 2.86vh)",    // 32 px @ ref
-  desc: "min(1.62vw, 2.51vh)",          // 28 px @ ref
+  heading: "min(4.51vw, 6.98vh)",       // 78 px @ ref  — UNCHANGED (sitewide)
+  /* Closed-list row — tightened to the madeinmay.studio/approach feel:
+     a large-but-restrained title, a small uppercase category label, and
+     a compact description, so ~6 rows sit calmly on screen. */
+  rowTitle: "min(2.66vw, 4.12vh)",      // 46 px @ ref (was 64)
+  rowLabel: "min(0.87vw, 1.34vh)",      // 15 px @ ref — uppercase category
+  rowDesc: "min(1.16vw, 1.79vh)",       // 20 px @ ref — closed-row description
+  subHeading: "min(1.85vw, 2.86vh)",    // 32 px @ ref — OPENED card only
+  desc: "min(1.62vw, 2.51vh)",          // 28 px @ ref — OPENED card only
   rotTitle: "min(2.78vw, 4.30vh)",      // 48 px @ ref (opened, rotated)
   backLink: "min(1.16vw, 1.79vh)",      // 20 px @ ref
   // container widths (width-only — layout dims)
@@ -63,15 +68,16 @@ const SZ = {
   // wrapper and the FullPageCard both consume the vars directly so
   // every page section gutters the same amount at every viewport.
   headingToDivider: "min(3.47vw, 5.37vh)", // 60 px @ ref
-  rowPaddingY: "min(2.31vw, 3.58vh)",   // 40 px @ ref  — closed-row body padding
+  rowPaddingY: "min(1.50vw, 2.33vh)",   // 26 px @ ref  — closed-row body padding (was 40)
+  rowLabelGap: "min(0.64vw, 0.99vh)",   // 11 px @ ref  — label → description gap (closed row)
   rowInnerGap: "min(1.62vw, 2.51vh)",   // 28 px @ ref  — small internal gap (around HR margins)
   openedGap: "min(3.47vw, 5.37vh)",     // 60 px @ ref  — main gap between opened-card blocks
                                         //                (heading / desc / HR / Strategic Value / bullets).
                                         // Larger than the closed-row gap because the opened card
                                         // takes over the viewport and needs to fill vertical space.
-  // arrows — actual SVG dimensions
-  closedArrowW: "min(3.24vw, 4.21vh)",  // 56 px wide
-  closedArrowH: "min(2.72vw, 4.21vh)",  // 47 px tall
+  // arrows — actual SVG dimensions (scaled down with the tighter rows)
+  closedArrowW: "min(2.43vw, 3.76vh)",  // 42 px wide (was 56)
+  closedArrowH: "min(2.04vw, 3.16vh)",  // 35 px tall (was 47)
   openArrowW: "min(2.66vw, 4.92vh)",    // 46 px wide
   openArrowH: "min(3.20vw, 4.92vh)",    // 55 px tall (after rotation)
 };
@@ -87,30 +93,6 @@ const sectionVariants: Variants = {
   hidden: {},
   visible: {
     transition: { staggerChildren: 0.12, delayChildren: 0.08 },
-  },
-};
-
-const drawLineVariants: Variants = {
-  hidden: { scaleX: 0 },
-  visible: {
-    scaleX: 1,
-    transition: { duration: 0.9, ease: EASE },
-  },
-};
-
-const fadeUpVariants: Variants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.7, ease: EASE },
-  },
-};
-
-const rowVariants: Variants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.08, delayChildren: 0.04 },
   },
 };
 
@@ -272,10 +254,9 @@ const FALLBACK_ROWS: HowWeShowUpRow[] = [
 ];
 
 /* ─────────────────────────────────────────────────────────
-   Arrow SVGs — copied verbatim from the Figma export.
-   ClosedArrow points right (→) on default rows.
-   OpenArrow points up-right (↗) and is rendered rotated
-   −35.229° per the design spec.
+   Arrow SVG — copied verbatim from the Figma export. Points
+   right (→) on default rows; HoverArrow rotates it to the ↗
+   orientation on row hover.
    ───────────────────────────────────────────────────────── */
 function ClosedArrow({ style }: { style?: React.CSSProperties }) {
   return (
@@ -293,22 +274,6 @@ function ClosedArrow({ style }: { style?: React.CSSProperties }) {
   );
 }
 
-function OpenArrow({ style }: { style?: React.CSSProperties }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 46 39"
-      fill="none"
-      style={{ ...style, transform: "rotate(-35.229deg)" }}
-    >
-      <path
-        d="M40.3795 36.6017L45.6463 5.5349L14.6072 0.106961C14.2913 0.00744613 13.9576 -0.0230157 13.6288 0.0176364C13.3 0.0582896 12.9838 0.16911 12.7016 0.342591C12.4194 0.516074 12.1777 0.748169 11.993 1.02316C11.8083 1.29816 11.6848 1.60964 11.6309 1.93651C11.577 2.26338 11.594 2.59801 11.6806 2.91775C11.7673 3.23749 11.9217 3.53487 12.1333 3.78977C12.3449 4.04466 12.6088 4.25111 12.9071 4.39515C13.2055 4.53918 13.5313 4.61744 13.8625 4.62461L37.1154 8.72836L0.979534 34.2472C0.478551 34.601 0.138629 35.1393 0.0345474 35.7437C-0.0695341 36.3481 0.0707475 36.9691 0.424538 37.4701C0.778329 37.9711 1.31665 38.311 1.92106 38.4151C2.52548 38.5192 3.14649 38.3789 3.64747 38.0251L39.7833 12.5063L35.873 35.7925C35.771 36.3976 35.9135 37.0185 36.2693 37.5185C36.625 38.0185 37.1649 38.3567 37.77 38.4587C38.3751 38.5607 38.9959 38.4182 39.496 38.0624C39.996 37.7066 40.3342 37.1668 40.4362 36.5617L40.3795 36.6017Z"
-        fill="#000"
-      />
-    </svg>
-  );
-}
-
 /* ─────────────────────────────────────────────────────────
    Closed-state row body — 3-column layout: [title | short
    heading + short desc | arrow]. Clicking anywhere expands.
@@ -319,14 +284,12 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: 0.45, ease: EASE } }}
       exit={{ opacity: 0, transition: { duration: 0.25, ease: EASE } }}
-      className="grid w-full items-start"
+      className="grid w-full items-center"
       style={{
         gridTemplateColumns: `${SZ.rowTitleBox} 1fr auto`,
         columnGap: SZ.openedGap,
         paddingTop: SZ.rowPaddingY,
         paddingBottom: SZ.rowPaddingY,
-        transform: "scale(0.9)",
-        transformOrigin: "left center",
       }}
     >
       {/* Row title */}
@@ -334,33 +297,34 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
         className="m-0 font-['Poppins',_sans-serif] font-normal capitalize text-black"
         style={{
           fontSize: SZ.rowTitle,
-          lineHeight: "120%",
+          lineHeight: "115%",
         }}
       >
         {row.title}
       </h3>
 
-      {/* Short heading + short description */}
+      {/* Uppercase category label + compact description (madeinmay feel) */}
       <div
         className="flex flex-col"
         style={{
-          gap: SZ.rowInnerGap,
+          gap: SZ.rowLabelGap,
           maxWidth: SZ.descBox,
         }}
       >
         <h4
-          className="m-0 font-['Poppins',_sans-serif] font-medium text-black"
+          className="m-0 font-['Poppins',_sans-serif] font-semibold uppercase text-black"
           style={{
-            fontSize: SZ.subHeading,
-            lineHeight: "150%",
+            fontSize: SZ.rowLabel,
+            lineHeight: "140%",
+            letterSpacing: "0.08em",
           }}
         >
           {row.shortHeading}
         </h4>
         <p
-          className="m-0 font-['Poppins',_sans-serif] font-normal text-[#0E0E0E]"
+          className="m-0 font-['Poppins',_sans-serif] font-normal text-[#323232]"
           style={{
-            fontSize: SZ.desc,
+            fontSize: SZ.rowDesc,
             lineHeight: "150%",
           }}
         >
@@ -368,8 +332,7 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
         </p>
       </div>
 
-      {/* Arrow — hover on the arrow itself smoothly morphs it
-          from → to ↗ via HoverArrow (rotates + crossfades). */}
+      {/* Arrow — hovering the row smoothly rotates it from → to ↗. */}
       <div className="flex items-center justify-end self-center">
         <HoverArrow />
       </div>
@@ -687,21 +650,27 @@ function FullPageCard({
   return (
     <motion.div
       key="fullpage"
-      /* Container just cross-fades — the layered stagger inside
-         OpenedRow (vertical rule → Back → title → heading → desc
-         → divider → Strategic Value → bullets) is what carries
-         the reveal energy. */
-      initial={{ opacity: 0 }}
+      /* Expands into view (madeinmay.studio/approach feel): the card
+         grows up from a slightly smaller, lower, translucent state so it
+         reads as the row opening OUT — not a modal popping in. The layered
+         stagger inside OpenedRow (vertical rule → Back → title → heading →
+         desc → divider → Strategic Value → bullets) carries the reveal. */
+      initial={{ opacity: 0, scale: 0.94, y: 24 }}
       animate={{
         opacity: 1,
-        transition: { duration: 0.4, ease: EASE },
+        scale: 1,
+        y: 0,
+        transition: { duration: 0.55, ease: EASE },
       }}
       exit={{
         opacity: 0,
+        scale: 0.97,
+        y: 12,
         transition: { duration: 0.3, ease: EASE },
       }}
       className="fixed inset-0 z-50 flex items-center justify-center"
       style={{
+        transformOrigin: "center",
         background: "#FBF7F0",
         backdropFilter: "blur(32px) saturate(1.4)",
         WebkitBackdropFilter: "blur(32px) saturate(1.4)",

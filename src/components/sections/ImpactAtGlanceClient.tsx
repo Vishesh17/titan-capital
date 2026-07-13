@@ -6,8 +6,6 @@ import TypewriterText from "@/components/ui/TypewriterText";
 import {
   motion,
   AnimatePresence,
-  useScroll,
-  useTransform,
   type Variants,
 } from "framer-motion";
 
@@ -329,10 +327,11 @@ function StoryCard({ story }: { story: FounderStory }) {
       className="group relative w-full cursor-pointer overflow-hidden"
       style={{
         borderRadius: "12px",
-        /* 656.5 × 579 (Figma) — width stays the column width (= the
-           656.5 horizontal rule); height is shorter so the two stacked
-           cards + 127 gap = 1285 = the vertical rule height. */
-        aspectRatio: "656.5 / 579",
+        /* Shorter than the original 656.5×579 so the grid sits more
+           compactly, but not so flat that the SQUARE (1:1) source photos
+           get over-cropped. Paired with objectPosition "center 30%" below
+           so the crop keeps founders' faces in frame. */
+        aspectRatio: "656.5 / 530",
       }}
       variants={{
         hidden: { opacity: 0, y: 30 },
@@ -350,6 +349,7 @@ function StoryCard({ story }: { story: FounderStory }) {
         fill
         sizes="(max-width: 768px) 100vw, 50vw"
         className="object-cover transition-transform duration-700 group-hover:scale-105"
+        style={{ objectPosition: "center 30%" }}
       />
 
       {/* Gradient overlay — transparent top → #151515 bottom with
@@ -490,7 +490,9 @@ function SeeMoreButton({ label, onClick }: { label: string; onClick?: () => void
       </motion.span>
 
       {/* Navy circle knob (arrow) — absolute, pinned to the RIGHT edge,
-          vertically centred. Rides right as the pill widens. */}
+          vertically centred. Rides right as the pill widens. The diagonal
+          ↗ glyph starts rotated to point RIGHT (→) and smoothly rotates to
+          its natural ↗ orientation on hover as the pill opens. */}
       <div
         className="absolute -translate-y-1/2 flex items-center justify-center rounded-full"
         style={{
@@ -501,7 +503,14 @@ function SeeMoreButton({ label, onClick }: { label: string; onClick?: () => void
           background: "#001A4D",
         }}
       >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <motion.svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          animate={{ rotate: hovered ? 0 : 45 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
           <path
             d="M7 17L17 7M17 7H7M17 7V17"
             stroke="white"
@@ -509,7 +518,7 @@ function SeeMoreButton({ label, onClick }: { label: string; onClick?: () => void
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-        </svg>
+        </motion.svg>
       </div>
     </motion.button>
   );
@@ -630,7 +639,7 @@ function StoriesSection({
         <div className="relative w-full max-w-[1440px]">
           <div
             className="grid w-full grid-cols-2"
-            style={{ gap: "min(14.47vw, 22.38vh)" /* 250 px @ ref */ }}
+            style={{ gap: "min(4.63vw, 7.16vh)" /* 80 px @ ref (was 250) */ }}
           >
             {padStories(slides, 4).map((story, i) => (
               <StoryCard key={`${story.name}-${i}`} story={story} />
@@ -670,7 +679,7 @@ function StoriesSection({
               left: 0,
               top: "50%",
               marginTop: "-0.5px",
-              width: "calc((100% - min(14.47vw, 22.38vh)) / 2)" /* adjusted */,
+              width: "calc((100% - min(4.63vw, 7.16vh)) / 2)" /* adjusted */,
               height: 1,
               background: "#D8D8D8",
               transformOrigin: "right",
@@ -690,7 +699,7 @@ function StoriesSection({
               right: 0,
               top: "50%",
               marginTop: "-0.5px",
-              width: "calc((100% - min(14.47vw, 22.38vh)) / 2)" /* adjusted */,
+              width: "calc((100% - min(4.63vw, 7.16vh)) / 2)" /* adjusted */,
               height: 1,
               background: "#D8D8D8",
               transformOrigin: "left",

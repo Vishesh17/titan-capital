@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 /*
   RESPONSIVE STRATEGY — clamp(MIN, min(vw-fluid, vh-fluid), MAX)
@@ -363,24 +363,42 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
 }
 
 export default function Footer() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end end"],
+  });
+
+  /* Parallax: footer content starts shifted down and moves up slower
+     than the scroll, creating depth as it's uncovered. */
+  const y = useTransform(scrollYProgress, [0, 1], ["-30%", "0%"]);
+
   return (
+    <div
+      ref={containerRef}
+      className="relative"
+      style={{ clipPath: "inset(0 0 0 0)" }}
+    >
     <footer
       className="relative flex w-full flex-col items-center overflow-hidden bg-white shadow-[0_-3px_27.6px_0_rgba(178,178,178,0.25)]"
-      style={{ paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)", paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)" }}
+      style={{
+        position: "sticky",
+        bottom: 0,
+        paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
+        paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
+      }}
     >
-
-      {/* Inner Content Wrapper */}
-      <div
+      <motion.div
+        style={{ y }}
         className="relative z-10 flex w-full max-w-[1440px] flex-col"
+      >
+      <div
+        className="flex w-full flex-col"
         style={{
           paddingLeft:  "var(--section-px-wide, 5%)",
           paddingRight: "var(--section-px-wide, 5%)",
         }}
       >
-
-        {/* ============================================================
-            DESKTOP (lg+): Original side-by-side layout — UNTOUCHED
-            ============================================================ */}
         <div className="hidden lg:flex w-full flex-row justify-between gap-0">
 
           {/* Left: Logo, Address, Socials */}
@@ -691,7 +709,9 @@ export default function Footer() {
           </text>
         </svg>
       </div>
-
+      </div>
+      </motion.div>
     </footer>
+    </div>
   );
 }
