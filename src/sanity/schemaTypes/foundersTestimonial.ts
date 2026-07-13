@@ -60,6 +60,12 @@ export const foundersTestimonial = defineType({
               validation: (r) => r.required(),
             }),
             defineField({
+              name: "companyLogo",
+              title: "Company logo",
+              description: "Logo displayed at the top of the card. Will be rendered monochrome.",
+              type: "image",
+            }),
+            defineField({
               name: "text",
               title: "Quote / Testimonial text",
               type: "text",

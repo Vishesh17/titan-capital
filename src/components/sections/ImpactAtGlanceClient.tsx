@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
+import TypewriterText from "@/components/ui/TypewriterText";
 import {
   motion,
   AnimatePresence,
@@ -603,7 +604,7 @@ function StoriesSection({
               lineHeight: "150%",
             }}
           >
-            {storiesHeadingFirst}
+            <TypewriterText text={storiesHeadingFirst} />
           </h2>
           <h2
             className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black"
@@ -612,7 +613,7 @@ function StoriesSection({
               lineHeight: "150%",
             }}
           >
-            {storiesHeadingSecond}
+            <TypewriterText text={storiesHeadingSecond} delay={0.4} />
           </h2>
         </motion.div>
 
@@ -629,7 +630,7 @@ function StoriesSection({
         <div className="relative w-full max-w-[1440px]">
           <div
             className="grid w-full grid-cols-2"
-            style={{ gap: "min(7.35vw, 11.37vh)" /* 127 px @ ref */ }}
+            style={{ gap: "min(14.47vw, 22.38vh)" /* 250 px @ ref */ }}
           >
             {padStories(slides, 4).map((story, i) => (
               <StoryCard key={`${story.name}-${i}`} story={story} />
@@ -669,7 +670,7 @@ function StoriesSection({
               left: 0,
               top: "50%",
               marginTop: "-0.5px",
-              width: "calc((100% - min(7.35vw, 11.37vh)) / 2)" /* 656.5 px @ ref */,
+              width: "calc((100% - min(14.47vw, 22.38vh)) / 2)" /* adjusted */,
               height: 1,
               background: "#D8D8D8",
               transformOrigin: "right",
@@ -689,7 +690,7 @@ function StoriesSection({
               right: 0,
               top: "50%",
               marginTop: "-0.5px",
-              width: "calc((100% - min(7.35vw, 11.37vh)) / 2)" /* 656.5 px @ ref */,
+              width: "calc((100% - min(14.47vw, 22.38vh)) / 2)" /* adjusted */,
               height: 1,
               background: "#D8D8D8",
               transformOrigin: "left",
@@ -864,12 +865,12 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
         style={{
           position: "sticky",
           top: 0,
-          minHeight: "100vh",
+          height: "min(50.30vw, 75.62vh)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           borderRadius: "min(6.66vw, 10.30vh)",
-          paddingTop: "min(4.63vw, 7.16vh)" /* ~80 px @ ref */,
+          paddingTop: "min(4.63vw, 7.16vh)",
           paddingBottom: "min(4.63vw, 7.16vh)",
           paddingLeft: "var(--section-px-wide)",
           paddingRight: "var(--section-px-wide)",
@@ -901,14 +902,14 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
                 },
               },
             }}
-            className="m-0 text-center font-['Poppins',_sans-serif] font-normal capitalize text-black"
+            className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black"
             style={{
               fontSize: "min(4.51vw, 6.98vh)" /* 78 px @ ref */,
               lineHeight: "150%",
               marginBottom: "min(4.05vw, 6.27vh)" /* ~70 px @ ref */,
             }}
           >
-            {impactHeadingFirst} {impactHeadingSecond}
+            <TypewriterText text={`${impactHeadingFirst} ${impactHeadingSecond}`} />
           </motion.h2>
 
           {/* 3 columns × 2 rows grid of 6 stats */}

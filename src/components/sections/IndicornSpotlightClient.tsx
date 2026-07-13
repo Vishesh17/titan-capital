@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion, useInView } from "framer-motion";
+import TypewriterText from "@/components/ui/TypewriterText";
 
 /* Site-wide easing — snappy start, smooth deceleration. */
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -139,6 +141,51 @@ function GlowBlob({ variant }: { variant: "left" | "right" }) {
   );
 }
 
+/* ─── Cursor-origin fill button (white pill → navy fill, text turns white) ─── */
+function CursorFillButtonIndicorn({ href, label }: { href: string; label: string }) {
+  const [origin, setOrigin] = useState("50% 50%");
+  const [hovered, setHovered] = useState(false);
+
+  const handleMouseEnter = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setOrigin(`${((e.clientX - rect.left) / rect.width) * 100}% ${((e.clientY - rect.top) / rect.height) * 100}%`);
+    setHovered(true);
+  };
+  const handleMouseLeave = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setOrigin(`${((e.clientX - rect.left) / rect.width) * 100}% ${((e.clientY - rect.top) / rect.height) * 100}%`);
+    setHovered(false);
+  };
+
+  return (
+    <Link
+      href={href}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className="relative mt-[min(2.31vw,3.58vh)] flex items-center justify-center overflow-hidden font-['Poppins',_sans-serif] font-medium transition-colors duration-300 max-md:!w-[220px] max-md:!h-[48px] max-md:!text-[14px] max-md:!mt-[24px]"
+      style={{
+        width: "min(16.61vw, 25.69vh)",
+        height: "min(3.41vw, 5.28vh)",
+        borderRadius: "min(1.70vw, 2.64vh)",
+        background: hovered ? "#001A4D" : "#FFF",
+        color: hovered ? "#FFF" : "#001A4D",
+        fontSize: "min(1.16vw, 1.79vh)",
+      }}
+    >
+      <span
+        className="absolute inset-0 transition-transform duration-400 ease-out"
+        style={{
+          background: `radial-gradient(circle at ${origin}, rgba(44,86,196,0.7) 0%, #001A4D 70%)`,
+          transformOrigin: origin,
+          transform: hovered ? "scale(1)" : "scale(0)",
+          borderRadius: "inherit",
+        }}
+      />
+      <span className="relative z-10">{label}</span>
+    </Link>
+  );
+}
+
 export default function IndicornSpotlightClient({
   data,
 }: {
@@ -246,7 +293,7 @@ export default function IndicornSpotlightClient({
               lineHeight: "172%",
             }}
           >
-            {heading}
+            <TypewriterText text={heading} />
           </h2>
 
           {/* Subheading — 1:1 with the CSS spec:
@@ -311,25 +358,8 @@ export default function IndicornSpotlightClient({
             ))}
           </div>
 
-          {/* CTA button — 287×59, white pill, 10 px pad/gap. */}
-          <button
-            className="mt-[min(2.31vw,3.58vh)] cursor-pointer border-none font-['Poppins',_sans-serif] font-medium transition-all duration-200 hover:brightness-95 max-md:!w-[220px] max-md:!h-[48px] max-md:!text-[14px] max-md:!mt-[24px]"
-            style={{
-              width: "min(16.61vw, 25.69vh)" /* 287 px @ ref */,
-              height: "min(3.41vw, 5.28vh)" /* 59 px @ ref */,
-              padding: "min(0.58vw, 0.90vh)" /* 10 px @ ref */,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: "min(0.58vw, 0.90vh)" /* 10 px @ ref */,
-              background: "#FFF",
-              color: "#001A4D",
-              borderRadius: "min(1.70vw, 2.64vh)" /* half of height → pill */,
-              fontSize: "min(1.16vw, 1.79vh)" /* ~20 px @ ref */,
-            }}
-          >
-            {ctaLabel}
-          </button>
+          {/* CTA button — 287×59, white pill, cursor-origin fill. */}
+          <CursorFillButtonIndicorn href="/indicorns" label={ctaLabel} />
 
           {/* Portfolio Indicorns row — label + rotating logo. */}
           <div

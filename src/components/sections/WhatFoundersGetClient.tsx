@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import TypewriterText from "@/components/ui/TypewriterText";
 import {
   motion,
   AnimatePresence,
@@ -756,16 +757,15 @@ export default function WhatFoundersGetClient({
         viewport={{ once: true, amount: 0.15 }}
       >
         {/* Section heading — fades up on scroll into view */}
-        <motion.h2
-          className="m-0 text-center font-['Poppins',_sans-serif] font-normal capitalize text-black"
+        <h2
+          className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black"
           style={{
             fontSize: SZ.heading,
             lineHeight: "120%",
           }}
-          variants={fadeUpVariants}
         >
-          {heading}
-        </motion.h2>
+          <TypewriterText text={heading} />
+        </h2>
 
         {/* Space between heading and the first divider */}
         <div style={{ height: SZ.headingToDivider }} />

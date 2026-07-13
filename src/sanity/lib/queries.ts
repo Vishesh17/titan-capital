@@ -16,7 +16,8 @@ export const foundersTestimonialQuery = groq`
       role,
       text,
       longText,
-      "image": image.asset->url
+      "image": image.asset->url,
+      "companyLogo": companyLogo.asset->url
     }
   }
 `;
