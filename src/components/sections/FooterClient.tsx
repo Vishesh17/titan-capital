@@ -709,7 +709,6 @@ export default function Footer() {
           </text>
         </svg>
       </div>
-      </div>
       </motion.div>
     </footer>
     </div>
