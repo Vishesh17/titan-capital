@@ -275,6 +275,51 @@ function ClosedArrow({ style }: { style?: React.CSSProperties }) {
 }
 
 /* ─────────────────────────────────────────────────────────
+   Mobile closed row — stacked: title + arrow, short heading,
+   short description. Separated by dividers.
+   ───────────────────────────────────────────────────────── */
+function MobileClosedRow({ row }: { row: HowWeShowUpRow }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1, transition: { duration: 0.45, ease: EASE } }}
+      exit={{ opacity: 0, transition: { duration: 0.25, ease: EASE } }}
+      className="flex w-full flex-col"
+      style={{ paddingTop: "16px", paddingBottom: "16px" }}
+    >
+      {/* Title + arrow row */}
+      <div className="flex w-full items-start justify-between" style={{ gap: "12px" }}>
+        <h3
+          className="m-0 font-['Poppins',_sans-serif] font-normal capitalize text-black"
+          style={{ fontSize: "clamp(22px, 6vw, 32px)", lineHeight: "115%" }}
+        >
+          {row.title}
+        </h3>
+        <div className="shrink-0 pt-1">
+          <ClosedArrow style={{ width: "24px", height: "20px" }} />
+        </div>
+      </div>
+
+      {/* Short heading */}
+      <h4
+        className="m-0 mt-2 font-['Poppins',_sans-serif] font-semibold text-black"
+        style={{ fontSize: "clamp(13px, 3.5vw, 16px)", lineHeight: "140%" }}
+      >
+        {row.shortHeading}
+      </h4>
+
+      {/* Short description */}
+      <p
+        className="m-0 mt-1 font-['Poppins',_sans-serif] font-normal text-[#323232]"
+        style={{ fontSize: "clamp(12px, 3.2vw, 14px)", lineHeight: "150%" }}
+      >
+        {row.shortDesc}
+      </p>
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
    Closed-state row body — 3-column layout: [title | short
    heading + short desc | arrow]. Clicking anywhere expands.
    ───────────────────────────────────────────────────────── */
@@ -576,6 +621,37 @@ function OpenedRow({
 }
 
 /* ─────────────────────────────────────────────────────────
+   Mobile row wrapper — divider on top + mobile closed body.
+   ───────────────────────────────────────────────────────── */
+function MobileRow({
+  row,
+  onOpen,
+}: {
+  row: HowWeShowUpRow;
+  onOpen: () => void;
+}) {
+  return (
+    <div className="w-full">
+      <div className="h-[1px] w-full bg-black" />
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={onOpen}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onOpen();
+          }
+        }}
+        className="w-full cursor-pointer"
+      >
+        <MobileClosedRow row={row} />
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
    Row wrapper — divider on top + closed body. Click opens
    the FullPageCard overlay; this row itself doesn't morph.
    ───────────────────────────────────────────────────────── */
@@ -727,7 +803,7 @@ export default function WhatFoundersGetClient({
       >
         {/* Section heading — fades up on scroll into view */}
         <h2
-          className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black"
+          className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[32px] max-md:!leading-[120%]"
           style={{
             fontSize: SZ.heading,
             lineHeight: "120%",
@@ -739,11 +815,8 @@ export default function WhatFoundersGetClient({
         {/* Space between heading and the first divider */}
         <div style={{ height: SZ.headingToDivider }} />
 
-        {/* Rows — always visible in the list. Clicking one
-            opens the FullPageCard overlay (rendered below,
-            outside this list) which covers the whole viewport
-            and locks page scroll. */}
-        <div className="flex w-full flex-col items-center">
+        {/* Rows — Desktop (hidden on mobile) */}
+        <div className="hidden md:flex w-full flex-col items-center">
           {rows.map((row, i) => (
             <Row
               key={row.title}
@@ -752,6 +825,18 @@ export default function WhatFoundersGetClient({
             />
           ))}
           <InViewDivider style={{ width: SZ.divider, height: "1px" }} />
+        </div>
+
+        {/* Rows — Mobile (hidden on desktop) */}
+        <div className="flex md:hidden w-full flex-col">
+          {rows.map((row, i) => (
+            <MobileRow
+              key={row.title}
+              row={row}
+              onOpen={() => setOpenIndex(i)}
+            />
+          ))}
+          <div className="h-[1px] w-full bg-black" />
         </div>
       </motion.div>
 

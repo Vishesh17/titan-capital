@@ -141,7 +141,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
           MAIN TOP NAVBAR (Closed State)
           ========================================= */}
       {/* FLUID BUT TIGHT: Height stays between 65px and 80px */}
-      <nav className={`fixed left-0 top-0 z-[40] flex h-[clamp(65px,min(5.5vw,7vh),80px)] w-full items-center justify-between px-4 transition-colors duration-300 ease-out lg:px-[clamp(32px,4.3vw,62px)] ${
+      <nav className={`fixed left-0 top-0 z-[40] flex h-[clamp(65px,min(5.5vw,7vh),80px)] w-full items-center justify-between px-4 transition-colors duration-300 ease-out max-md:!h-[56px] max-md:!px-[16px] lg:px-[clamp(32px,4.3vw,62px)] ${
         scrolled ? "bg-[#001A4D]/95 shadow-lg backdrop-blur-md" : "bg-transparent"
       }`}>
 
@@ -156,20 +156,22 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
           </svg>
         </button>
 
-        {/* LOGO: Absolutely centered */}
-        <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 shrink-0">
+        {/* LOGO: Absolutely centered on desktop, right-aligned on mobile */}
+        <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 shrink-0 max-md:!static max-md:!translate-x-0 max-md:!translate-y-0 max-md:!ml-auto">
           <Image
             src="/images/logos/titancapitallogo.svg"
             alt="Titan Capital"
             width={98}
             height={32}
             priority
-            className="h-[32px] w-[98px] object-contain brightness-0 invert"
+            className="h-[32px] w-[98px] object-contain brightness-0 invert max-md:!h-[26px] max-md:!w-[80px]"
           />
         </Link>
 
-        {/* CTA BUTTON: Pill with cursor-origin fill */}
-        <NavCursorFillButton href={ctaUrl} label={ctaLabel} />
+        {/* CTA BUTTON: Pill with cursor-origin fill — hidden on mobile */}
+        <div className="hidden md:block">
+          <NavCursorFillButton href={ctaUrl} label={ctaLabel} />
+        </div>
       </nav>
 
      {/* =========================================

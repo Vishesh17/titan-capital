@@ -182,7 +182,7 @@ function FlipCard({ item }: { item: TestimonialItem }) {
   return (
     <div className="flex flex-col items-center">
       <div
-        className="group relative shrink-0"
+        className="group relative shrink-0 max-md:!w-[42vw] max-md:!h-[52vw]"
         style={{
           width: "min(23.67vw, 36.62vh)",
           height: "min(28.36vw, 43.87vh)",
@@ -271,15 +271,15 @@ function FlipCard({ item }: { item: TestimonialItem }) {
       </div>
 
       {/* Name + role below card */}
-      <div className="mt-[min(1.16vw,1.79vh)] flex flex-col items-center text-center">
+      <div className="mt-[min(1.16vw,1.79vh)] flex flex-col items-center text-center max-md:!mt-[8px]">
         <p
-          className="m-0 font-['Poppins',_sans-serif] font-semibold text-black"
+          className="m-0 font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[14px]"
           style={{ fontSize: "min(1.62vw, 2.51vh)", lineHeight: "130%" }}
         >
           {item.name}
         </p>
         <p
-          className="m-0 mt-[min(0.29vw,0.45vh)] font-['Poppins',_sans-serif] font-normal text-black"
+          className="m-0 mt-[min(0.29vw,0.45vh)] font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[11px]"
           style={{ fontSize: "min(0.93vw, 1.43vh)", lineHeight: "150%" }}
         >
           {item.role}
@@ -409,7 +409,7 @@ export default function FoundersTestimonialClient({
       >
         {/* Heading */}
         <motion.h2
-          className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[36px] max-md:!px-[24px]"
+          className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[32px] max-md:!leading-[120%] max-md:!px-[24px]"
           style={{
             fontSize: "min(4.51vw, 6.98vh)",
             lineHeight: "120%",

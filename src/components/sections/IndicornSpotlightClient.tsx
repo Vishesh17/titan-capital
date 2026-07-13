@@ -162,7 +162,7 @@ function CursorFillButtonIndicorn({ href, label }: { href: string; label: string
       href={href}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="relative mt-[min(2.31vw,3.58vh)] flex items-center justify-center overflow-hidden font-['Poppins',_sans-serif] font-medium transition-colors duration-300 max-md:!w-[220px] max-md:!h-[48px] max-md:!text-[14px] max-md:!mt-[24px]"
+      className="relative mt-[min(2.31vw,3.58vh)] flex items-center justify-center overflow-hidden font-['Poppins',_sans-serif] font-medium transition-colors duration-300 max-md:!w-[240px] max-md:!h-[50px] max-md:!text-[15px] max-md:!mt-[24px] max-md:!rounded-[25px] max-md:!border max-md:!border-white/30"
       style={{
         width: "min(16.61vw, 25.69vh)",
         height: "min(3.41vw, 5.28vh)",
@@ -230,7 +230,7 @@ export default function IndicornSpotlightClient({
   return (
     <section
       ref={sectionRef}
-      className="relative flex w-full items-center overflow-hidden max-md:!py-[56px] max-md:!static"
+      className="relative flex w-full items-center overflow-hidden max-md:!min-h-[100vh] max-md:!py-[80px] max-md:!pt-[120px]"
       style={{
         /* Sticky reveal — Indicorns PINS to the top of the viewport
            while "What Our Founders Say" (next in the shared wrapper)
@@ -286,7 +286,7 @@ export default function IndicornSpotlightClient({
         <div className="relative z-10 flex h-full w-full flex-col items-start text-left max-md:!items-center max-md:!text-center">
           {/* Heading — Poppins 78 / 400 / 172% / #FBF7F0 */}
           <h2
-            className="m-0 font-['Poppins',_sans-serif] font-normal max-md:!text-[36px] max-md:!leading-[1.15]"
+            className="m-0 font-['Poppins',_sans-serif] font-normal max-md:!text-[32px] max-md:!leading-[120%]"
             style={{
               color: "#FBF7F0",
               fontSize: "min(4.51vw, 6.98vh)" /* 78 px @ ref */,
@@ -318,8 +318,6 @@ export default function IndicornSpotlightClient({
             {subheading}
           </p>
 
-          {/* ── HORIZONTAL DIVIDER — spans the left column, draws
-                left→right when the section enters view. ── */}
           <motion.div
             className="w-full origin-left max-md:!hidden"
             initial={{ scaleX: 0 }}
@@ -358,12 +356,26 @@ export default function IndicornSpotlightClient({
             ))}
           </div>
 
+          {/* Mobile-only divider after bullets */}
+          <motion.div
+            className="hidden max-md:!block w-full origin-left"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: rulesInView ? 1 : 0 }}
+            transition={{ duration: 1.8, ease: EASE, delay: 0.3 }}
+            style={{
+              height: 1,
+              background: "rgba(255,255,255,0.35)",
+              marginTop: 24,
+              marginBottom: 8,
+            }}
+          />
+
           {/* CTA button — 287×59, white pill, cursor-origin fill. */}
           <CursorFillButtonIndicorn href="/indicorns" label={ctaLabel} />
 
           {/* Portfolio Indicorns row — label + rotating logo. */}
           <div
-            className="flex items-center max-md:!gap-[12px]"
+            className="flex items-center max-md:!gap-[12px] max-md:!justify-center"
             style={{
               gap: "min(0.87vw, 1.34vh)" /* ~15 px */,
               marginTop: "min(1.16vw, 1.79vh)" /* ~20 px */,
@@ -445,6 +457,18 @@ export default function IndicornSpotlightClient({
 
         {/* ══════════ RIGHT COLUMN — quote + attribution ══════════ */}
         <div className="relative">
+          {/* Mobile-only horizontal divider before quote */}
+          <motion.div
+            className="hidden max-md:!block w-full origin-left"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: rulesInView ? 1 : 0 }}
+            transition={{ duration: 1.8, ease: EASE, delay: 0.4 }}
+            style={{
+              height: 1,
+              background: "rgba(255,255,255,0.35)",
+              marginBottom: 32,
+            }}
+          />
           <div className="relative z-10 flex h-full flex-col justify-start max-md:!text-center">
             <p
               className="m-0 font-['Poppins',_sans-serif] max-md:!text-[15px] max-md:!leading-[1.5]"

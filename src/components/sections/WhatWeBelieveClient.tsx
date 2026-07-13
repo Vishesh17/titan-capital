@@ -69,16 +69,8 @@ const SZ = {
 const SPRING = { stiffness: 100, damping: 30, mass: 0.7 };
 
 /* ─────────────────────────────────────────────────────────
-   Viewport-derived px dimensions. Card size mirrors the SZ
-   min(vw,vh) formula so the rendered card and the scale math
-   below stay in exact agreement (no full-bleed sliver).
-
-   FALLBACK_DIMS (reference viewport) is used for BOTH the SSR
-   render AND the client's very first (hydration) render — so the
-   two match exactly. Only after mount does useEffect swap in the
-   real measured dims. Reading `window` during the initial render
-   would make the client's first paint differ from the server's
-   HTML → React hydration mismatch.
+   Viewport-derived px dimensions — DESKTOP (landscape photo,
+   3 vertical slices side by side).
    ───────────────────────────────────────────────────────── */
 const FALLBACK_DIMS = (() => {
   const cardW = 428, cardH = 682, gap = 42;
@@ -91,17 +83,35 @@ function computeDims() {
   const winW = window.innerWidth;
   const winH = window.innerHeight;
 
-  const cardW = Math.min(0.24769 * winW, 0.38317 * winH); // 428 @ ref
-  const cardH = Math.min(0.39468 * winW, 0.61055 * winH); // 682 @ ref
-  const gap = Math.min(0.02431 * winW, 0.0376 * winH);    // 42 @ ref
+  const cardW = Math.min(0.24769 * winW, 0.38317 * winH);
+  const cardH = Math.min(0.39468 * winW, 0.61055 * winH);
+  const gap = Math.min(0.02431 * winW, 0.0376 * winH);
 
-  /* Photo width = the 3 TOUCHING cards (no gap — the gap only opens
-     at the end via splitX). Scaling this to the viewport makes the
-     photo span the FULL width, edge to edge, with no side margins. */
   const photoW = 3 * cardW;
   const sFull = winW / photoW;
 
   return { winW, cardW, cardH, gap, photoW, sFull };
+}
+
+/* Mobile dims — portrait photo, 3 horizontal slices stacked. */
+const FALLBACK_MOBILE_DIMS = (() => {
+  const cardW = 340, cardH = 160, gap = 16;
+  const photoH = 3 * cardH;
+  return { winW: 390, winH: 844, cardW, cardH, gap, photoH, sFull: 844 / photoH };
+})();
+
+function computeMobileDims() {
+  if (typeof window === "undefined") return FALLBACK_MOBILE_DIMS;
+  const winW = window.innerWidth;
+  const winH = window.innerHeight;
+
+  const cardW = winW * 0.87; // ~87vw
+  const cardH = winH * 0.19; // ~19vh per row
+  const gap = 14;
+  const photoH = 3 * cardH;
+  const sFull = winH / photoH;
+
+  return { winW, winH, cardW, cardH, gap, photoH, sFull };
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -139,57 +149,49 @@ export default function WhatWeBelieveClient({
   });
   const p = useSpring(scrollYProgress, SPRING);
 
-  /* Seed with the deterministic FALLBACK_DIMS so the server HTML and
-     the client's first render are identical (no hydration mismatch).
-     The real measured dims are swapped in right after mount. */
   const [dims, setDims] = useState(FALLBACK_DIMS);
+  const [mobileDims, setMobileDims] = useState(FALLBACK_MOBILE_DIMS);
+
   useEffect(() => {
-    const onResize = () => setDims(computeDims());
+    const onResize = () => {
+      setDims(computeDims());
+      setMobileDims(computeMobileDims());
+    };
     onResize();
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  /* Desktop transforms */
   const sHalf = dims.sFull * 0.5;
-
-  /* Group scale: full-photo → 50% (shrink) → 1 (grow to final). */
-  const groupScale = useTransform(
-    p,
-    [0, 0.45, 0.7],
-    [dims.sFull, sHalf, 1],
-  );
-  /* Split: side cards slide out by one gap (only at the end). */
+  const groupScale = useTransform(p, [0, 0.45, 0.7], [dims.sFull, sHalf, 1]);
   const splitX = useTransform(p, [0.45, 0.7], [0, dims.gap]);
-  /* Flip: reveal text face (only at the end). */
   const flip = useTransform(p, [0.45, 0.7], [0, 180]);
-  /* Corner radius appears as the slices separate. */
   const radius = useTransform(p, [0.45, 0.58], [0, 12]);
-  /* Heading rides ON the photo and disappears right as the flip
-     kicks off (~0.45). It does NOT fade independently during shrink. */
   const headingOpacity = useTransform(p, [0.43, 0.5], [1, 0]);
-  /* Heading scales WITH the component (same ratio). Cancelling only
-     the CONSTANT initial upscale (1/sFull) means: at the start it
-     renders at its true size (SZ.headingFs = 78 px, matching Impact
-     At Glance), and as the group shrinks the heading shrinks in the
-     exact same proportion — because the live groupScale still applies
-     on top of this constant. */
   const headingScale = 1 / dims.sFull;
+
+  /* Mobile transforms — same phases, vertical split + rotateX */
+  const mSHalf = mobileDims.sFull * 0.5;
+  const mGroupScale = useTransform(p, [0, 0.45, 0.7], [mobileDims.sFull, mSHalf, 1]);
+  const mSplitY = useTransform(p, [0.45, 0.7], [0, mobileDims.gap]);
+  const mFlip = useTransform(p, [0.45, 0.7], [0, 180]);
+  const mRadius = useTransform(p, [0.45, 0.58], [0, 12]);
+  const mHeadingOpacity = useTransform(p, [0.43, 0.5], [1, 0]);
+  const mHeadingScale = 1 / mobileDims.sFull;
 
   return (
     <section
       ref={sectionRef}
-      className="relative w-full bg-[#FBF7F0]"
+      className="relative w-full bg-[#FBF7F0] max-md:!h-[200vh]"
       style={{ height: "300vh" }}
     >
       <div className="sticky top-0 h-screen w-full overflow-hidden">
-        {/* Centering layer holds the scaled group in the middle
-            of the viewport. */}
         <div className="flex h-full w-full items-center justify-center">
-          {/* GROUP — cards + heading scale together as ONE unit, so
-              the heading shrinks WITH the photo (it doesn't fade on
-              its own). The group is exactly the photo size (cardH
-              tall) and `relative` so the heading can overlay ON it. */}
+
+          {/* ═══ DESKTOP VERSION (hidden on mobile) ═══ */}
           <motion.div
+            className="hidden md:block"
             style={{
               scale: groupScale,
               position: "relative",
@@ -197,10 +199,6 @@ export default function WhatWeBelieveClient({
               height: dims.cardH,
             }}
           >
-            {/* CARDS ROW — perspective lives here so the cards'
-                rotateY reads as a real 3-D flip. Zero-gap flex row so
-                at full scale they tile into one continuous photo;
-                splitX opens the gaps later. */}
             <div
               className="flex h-full w-full items-center justify-center"
               style={{ perspective: 2000 }}
@@ -223,8 +221,6 @@ export default function WhatWeBelieveClient({
               })}
             </div>
 
-            {/* HEADING — overlaid OVER the top of the photo (as
-                before), scales with the group, disappears on flip. */}
             <motion.h2
               style={{
                 opacity: headingOpacity,
@@ -233,7 +229,7 @@ export default function WhatWeBelieveClient({
                 fontSize: SZ.headingFs,
                 lineHeight: "120%",
                 position: "absolute",
-                top: "min(2.78vw, 4.30vh)" /* ~48 px from photo top */,
+                top: "min(2.78vw, 4.30vh)",
                 left: 0,
                 right: 0,
                 zIndex: 20,
@@ -243,6 +239,58 @@ export default function WhatWeBelieveClient({
               <TypewriterText text={heading} />
             </motion.h2>
           </motion.div>
+
+          {/* ═══ MOBILE VERSION (hidden on desktop) ═══ */}
+          <motion.div
+            className="block md:hidden"
+            style={{
+              scale: mGroupScale,
+              position: "relative",
+              width: mobileDims.cardW,
+              height: mobileDims.photoH,
+            }}
+          >
+            <div
+              className="flex h-full w-full flex-col items-center justify-center"
+              style={{ perspective: 2000 }}
+            >
+              {beliefs.map((belief, i) => {
+                const direction = i === 0 ? -1 : i === 2 ? 1 : 0;
+                return (
+                  <MobileCardSlice
+                    key={belief.title}
+                    belief={belief}
+                    index={i}
+                    direction={direction}
+                    cardW={mobileDims.cardW}
+                    cardH={mobileDims.cardH}
+                    splitY={mSplitY}
+                    flip={mFlip}
+                    radius={mRadius}
+                  />
+                );
+              })}
+            </div>
+
+            <motion.h2
+              style={{
+                opacity: mHeadingOpacity,
+                scale: mHeadingScale,
+                transformOrigin: "center top",
+                fontSize: "32px",
+                lineHeight: "120%",
+                position: "absolute",
+                top: "20px",
+                left: 0,
+                right: 0,
+                zIndex: 20,
+              }}
+              className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black"
+            >
+              <TypewriterText text={heading} />
+            </motion.h2>
+          </motion.div>
+
         </div>
       </div>
     </section>
@@ -250,7 +298,7 @@ export default function WhatWeBelieveClient({
 }
 
 /* ─────────────────────────────────────────────────────────
-   CardSlice — fixed-size card (no width/height animation).
+   CardSlice — DESKTOP: fixed-size card (no width/height animation).
    Front = one third of the crowd photo (the three touching
    slices reconstruct a single image); back = white belief card.
    ───────────────────────────────────────────────────────── */
@@ -355,6 +403,110 @@ function CardSlice({
             fontWeight: 400,
             lineHeight: "140%",
             maxWidth: SZ.descW,
+            margin: 0,
+          }}
+          className="font-['Poppins',_sans-serif] text-[#323232]"
+        >
+          {belief.description}
+        </p>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   MobileCardSlice — MOBILE: portrait photo split into 3
+   horizontal rows. Front = one third of the photo (stacked
+   vertically); back = white belief card. Flips on X-axis.
+   ───────────────────────────────────────────────────────── */
+function MobileCardSlice({
+  belief,
+  index,
+  direction,
+  cardW,
+  cardH,
+  splitY,
+  flip,
+  radius,
+}: {
+  belief: Belief;
+  index: number;
+  direction: number;
+  cardW: number;
+  cardH: number;
+  splitY: MotionValue<number>;
+  flip: MotionValue<number>;
+  radius: MotionValue<number>;
+}) {
+  const y = useTransform(splitY, (v) => v * direction);
+
+  return (
+    <motion.div
+      style={{
+        width: cardW,
+        height: cardH,
+        y,
+        rotateX: flip,
+        transformStyle: "preserve-3d",
+        WebkitTransformStyle: "preserve-3d",
+        position: "relative",
+        flexShrink: 0,
+        willChange: "transform",
+      }}
+    >
+      {/* FRONT FACE — image slice (horizontal strip of portrait photo) */}
+      <motion.div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: -0.5,
+          bottom: -0.5,
+          backfaceVisibility: "hidden",
+          WebkitBackfaceVisibility: "hidden",
+          borderRadius: radius,
+          overflow: "hidden",
+          backgroundImage: `url(${IMAGE_SRC})`,
+          backgroundSize: "auto 300%",
+          backgroundPosition: `center ${index * 50}%`,
+          backgroundRepeat: "no-repeat",
+        }}
+      />
+
+      {/* BACK FACE — white belief card */}
+      <motion.div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backfaceVisibility: "hidden",
+          WebkitBackfaceVisibility: "hidden",
+          rotateX: 180,
+          borderRadius: radius,
+          overflow: "hidden",
+          background: "#FFF",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          padding: "16px 20px",
+        }}
+      >
+        <h3
+          style={{
+            fontSize: "18px",
+            fontWeight: 500,
+            lineHeight: "140%",
+            margin: 0,
+            marginBottom: 6,
+          }}
+          className="font-['Poppins',_sans-serif] text-black"
+        >
+          {belief.title}
+        </h3>
+        <p
+          style={{
+            fontSize: "12px",
+            fontWeight: 400,
+            lineHeight: "150%",
             margin: 0,
           }}
           className="font-['Poppins',_sans-serif] text-[#323232]"

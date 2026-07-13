@@ -71,13 +71,16 @@ const SLOT_H = "min(11.56vw, 17.87vh)"; // ~200 px @ ref (spans 2 rows)
    the CSS min(vw,vh) tokens; FALLBACK for SSR + first render.
    ───────────────────────────────────────────────────────── */
 function computeDims(w: number, h: number) {
-  const cardW = Math.min(0.072 * w, 0.115 * h); // ~124 px @ ref (portrait width)
-  const cardH = cardW * 1.3;                     // portrait card (headshot-ish)
+  const isMobile = w < 768;
+  const cardW = isMobile
+    ? w * 0.38  // ~148px on 390px screen
+    : Math.min(0.072 * w, 0.115 * h);
+  const cardH = cardW * 1.3;
   return {
     cardW,
     cardH,
-    deckPeek: cardH * 0.17,   // how far each card peeks BELOW the one above
-    filmStep: cardH * 1.14,   // filmstrip vertical pitch (card height + gap)
+    deckPeek: cardH * 0.17,
+    filmStep: cardH * (isMobile ? 1.08 : 1.14),
   };
 }
 const FALLBACK_DIMS = computeDims(1728, 1117);
@@ -273,15 +276,15 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   const [dims, setDims] = useState<Dims>(FALLBACK_DIMS);
   const [slot, setSlot] = useState<Slot>(FALLBACK_SLOT);
   const slotRef = useRef<HTMLSpanElement>(null);
+  const mobileSlotRef = useRef<HTMLSpanElement>(null);
 
   /* Measure the heading photo slot (relative to screen centre) so the
-     hero card can land exactly on it, whatever the heading layout. The
-     slot is always in the DOM (only its opacity animates), so it can be
-     measured immediately + on resize + after fonts settle. */
+     hero card can land exactly on it, whatever the heading layout. */
   useEffect(() => {
     const measure = () => {
       setDims(computeDims(window.innerWidth, window.innerHeight));
-      const el = slotRef.current;
+      const isMobile = window.innerWidth < 768;
+      const el = isMobile ? mobileSlotRef.current : slotRef.current;
       if (!el) return;
       const r = el.getBoundingClientRect();
       setSlot({
@@ -293,7 +296,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
       setReady(true);
     };
     measure();
-    const t = setTimeout(measure, 300); // after web-font layout settles
+    const t = setTimeout(measure, 300);
     window.addEventListener("resize", measure);
     return () => {
       clearTimeout(t);
@@ -336,13 +339,13 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
         {/* Side labels: FOUNDER-FIRST / ENDURING-VALUE */}
         <motion.span
           style={{ opacity: sideLabelsOpacity }}
-          className="pointer-events-none absolute left-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 font-['Poppins',_sans-serif] text-[min(1.04vw,1.61vh)] font-medium tracking-[0.2em] text-white/70"
+          className="pointer-events-none absolute left-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 font-['Poppins',_sans-serif] text-[min(1.04vw,1.61vh)] font-medium tracking-[0.2em] text-white/70 max-md:!left-1/2 max-md:!top-[5vh] max-md:!-translate-x-1/2 max-md:!translate-y-0 max-md:!text-[14px]"
         >
           FOUNDER-FIRST
         </motion.span>
         <motion.span
           style={{ opacity: sideLabelsOpacity }}
-          className="pointer-events-none absolute right-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 font-['Poppins',_sans-serif] text-[min(1.04vw,1.61vh)] font-medium tracking-[0.2em] text-white/70"
+          className="pointer-events-none absolute right-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 font-['Poppins',_sans-serif] text-[min(1.04vw,1.61vh)] font-medium tracking-[0.2em] text-white/70 max-md:!right-auto max-md:!left-1/2 max-md:!top-auto max-md:!bottom-[18vh] max-md:!-translate-x-1/2 max-md:!translate-y-0 max-md:!text-[14px]"
         >
           ENDURING-VALUE
         </motion.span>
@@ -350,7 +353,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
         {/* Bottom subtitle (during the card stages) */}
         <motion.p
           style={{ opacity: subtitleBottomOpacity, maxWidth: "min(52vw, 900px)" }}
-          className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 text-center font-['Poppins',_sans-serif] text-[min(1.39vw,2.15vh)] font-normal leading-[145%] text-white/90"
+          className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 text-center font-['Poppins',_sans-serif] text-[min(1.39vw,2.15vh)] font-normal leading-[145%] text-white/90 max-md:!bottom-[4vh] max-md:!text-[13px] max-md:!max-w-[85vw]"
         >
           {subtitle}
         </motion.p>
@@ -409,7 +412,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
             would paint at progress 0 (a full-size card stacked at centre)
             on the very first frame — a jarring "big picture" flash. */}
         {stage === "animate" && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center">
+          <div className="absolute inset-0 z-10 flex items-center justify-center max-md:!z-30">
             {founders.map((founder, i) => (
               <FounderCard
                 key={founder.name}
@@ -427,14 +430,12 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
         {/* ═══ HEADING (reveals around the hero card) ═══ */}
         <motion.div
           style={{ opacity: headingOpacity, scale: headingScale }}
-          className="absolute inset-0 z-20 flex items-center justify-center px-[var(--section-px-wide)]"
+          className="absolute inset-0 z-20 flex items-center justify-center px-[var(--section-px-wide)] max-md:!items-start max-md:!pt-[12vh]"
         >
-          <div className="relative flex flex-col items-center">
-            {/* BACKING FOUNDER                                         */}
-            {/* FOR  [portrait photo]  ENDURING                         */}
-            {/*                        IMPACT                           */}
+          <div className="relative flex flex-col items-center max-md:!items-start max-md:!px-[24px]">
+            {/* DESKTOP heading layout */}
             <h1
-              className="pointer-events-none m-0 flex flex-col items-start text-left font-['Poppins',_sans-serif] font-bold uppercase leading-[106%] text-white"
+              className="pointer-events-none m-0 hidden md:flex flex-col items-start text-left font-['Poppins',_sans-serif] font-bold uppercase leading-[106%] text-white"
               style={{ fontSize: "min(5.56vw, 8.59vh)" }}
             >
               <TypewriterLine text="Backing Founder" started={typewriterStarted} delay={0} />
@@ -456,15 +457,33 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
               </span>
             </h1>
 
+            {/* MOBILE heading layout */}
+            <h1
+              className="pointer-events-none m-0 flex md:hidden flex-col items-start text-left font-['Poppins',_sans-serif] font-bold uppercase text-white"
+              style={{ fontSize: "38px", lineHeight: "110%" }}
+            >
+              <TypewriterLine text="Backing" started={typewriterStarted} delay={0} />
+              <TypewriterLine text="Founder" started={typewriterStarted} delay={0.15} />
+              <TypewriterLine text="For" started={typewriterStarted} delay={0.3} />
+              <span
+                aria-hidden
+                className="inline-block shrink-0 my-[8px]"
+                style={{ width: "55vw", height: "38vw", borderRadius: 12 }}
+                ref={mobileSlotRef}
+              />
+              <TypewriterLine text="Enduring" started={typewriterStarted} delay={0.6} />
+              <TypewriterLine text="Impact" started={typewriterStarted} delay={0.8} />
+            </h1>
+
             {/* Buttons + description — hung below the h1. */}
-            <div className="absolute left-1/2 top-full flex -translate-x-1/2 flex-col items-center mt-[min(4.63vw,7.16vh)]">
+            <div className="absolute left-1/2 top-full flex -translate-x-1/2 flex-col items-center mt-[min(4.63vw,7.16vh)] max-md:!static max-md:!translate-x-0 max-md:!mt-[32px] max-md:!items-start">
               <div
-                className="pointer-events-auto flex items-center justify-center"
+                className="pointer-events-auto flex items-center justify-center max-md:!gap-[16px]"
                 style={{ gap: "min(2.31vw, 3.58vh)" }}
               >
                 <Link
                   href="/portfolio"
-                  className="group relative whitespace-nowrap font-['Poppins',_sans-serif] text-[min(1.16vw,1.79vh)] font-normal text-white"
+                  className="group relative whitespace-nowrap font-['Poppins',_sans-serif] text-[min(1.16vw,1.79vh)] font-normal text-white max-md:!text-[14px]"
                   style={{ lineHeight: "140%" }}
                 >
                   View Portfolio
@@ -474,7 +493,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
               </div>
 
               <p
-                className="pointer-events-none mt-[min(3.47vw,5.37vh)] text-center font-['Poppins',_sans-serif] font-normal leading-[145%] text-white/90"
+                className="pointer-events-none mt-[min(3.47vw,5.37vh)] text-center font-['Poppins',_sans-serif] font-normal leading-[145%] text-white/90 max-md:!text-[13px] max-md:!mt-[24px] max-md:!text-center"
                 style={{ fontSize: "min(1.39vw, 2.15vh)", width: "min(52vw, 900px)" }}
               >
                 {subtitle}
@@ -516,7 +535,7 @@ function CursorFillButton({ href, label }: { href: string; label: string }) {
       href={href}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="relative flex items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] text-[min(1.16vw,1.79vh)] font-normal transition-colors duration-300"
+      className="relative flex items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] text-[min(1.16vw,1.79vh)] font-normal transition-colors duration-300 max-md:!w-[160px] max-md:!h-[40px] max-md:!text-[13px]"
       style={{
         width: "min(12.15vw, 18.8vh)",
         height: "min(3.36vw, 5.19vh)",

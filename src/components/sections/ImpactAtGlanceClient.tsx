@@ -171,7 +171,7 @@ function RollingNumber({ value }: { value: string }) {
 function ImpactStatCell({ stat }: { stat: ImpactStat }) {
   return (
     <motion.div
-      className="flex flex-row items-start"
+      className="flex flex-row items-start max-md:!gap-[10px]"
       style={{ gap: "min(1.85vw, 2.86vh)" /* ~32 px @ ref */ }}
       variants={{
         hidden: { opacity: 0, y: 20 },
@@ -182,9 +182,9 @@ function ImpactStatCell({ stat }: { stat: ImpactStat }) {
         },
       }}
     >
-      {/* Vertical line — 1 px × 208 px @ ref */}
+      {/* Vertical line */}
       <div
-        className="shrink-0 bg-black"
+        className="shrink-0 bg-black max-md:!h-[80px]"
         style={{
           width: "1px",
           height: "min(12.04vw, 18.62vh)",
@@ -194,7 +194,7 @@ function ImpactStatCell({ stat }: { stat: ImpactStat }) {
       {/* Number + description stack */}
       <div className="flex flex-col">
         <span
-          className="font-['Poppins',_sans-serif] font-normal capitalize text-black"
+          className="font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[36px]"
           style={{
             fontSize: "min(5.56vw, 8.59vh)" /* 96 px @ ref */,
             lineHeight: "150%",
@@ -203,7 +203,7 @@ function ImpactStatCell({ stat }: { stat: ImpactStat }) {
           <RollingNumber value={stat.num} />
         </span>
         <span
-          className="whitespace-pre-line font-['Poppins',_sans-serif] font-normal capitalize text-black"
+          className="whitespace-pre-line font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[14px]"
           style={{
             fontSize: "min(2.31vw, 3.58vh)" /* 40 px @ ref */,
             lineHeight: "98%",
@@ -607,7 +607,7 @@ function StoriesSection({
           style={{ marginBottom: "min(3.47vw, 5.37vh)" /* ~60 px */ }}
         >
           <h2
-            className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black"
+            className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[32px] max-md:!leading-[120%]"
             style={{
               fontSize: "min(4.51vw, 6.98vh)" /* 78 px @ ref */,
               lineHeight: "150%",
@@ -616,7 +616,7 @@ function StoriesSection({
             <TypewriterText text={storiesHeadingFirst} />
           </h2>
           <h2
-            className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black"
+            className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[32px] max-md:!leading-[120%]"
             style={{
               fontSize: "min(4.51vw, 6.98vh)" /* 78 px @ ref */,
               lineHeight: "150%",
@@ -626,19 +626,10 @@ function StoriesSection({
           </h2>
         </motion.div>
 
-        {/* 2×2 grid of square story cards. Capped at max-w-[1440px]
-            — the SAME frame as the Impact grid above — so the left/
-            right gutters line up with every other section. The 127 px
-            gap (Figma) makes the cards a bit smaller (≈656 px) and
-            leaves room for the #D8D8D8 rules that run down the middle
-            and across the centre.
-
-            A relative wrapper holds the grid + the three rules; the
-            rules are absolute overlays centred in the gaps, so they
-            never cross a card. All animate in with the section. */}
+        {/* 2×2 grid on desktop, 1×4 on mobile */}
         <div className="relative w-full max-w-[1440px]">
           <div
-            className="grid w-full grid-cols-2"
+            className="grid w-full grid-cols-2 max-md:!grid-cols-1"
             style={{ gap: "min(4.63vw, 7.16vh)" /* 80 px @ ref (was 250) */ }}
           >
             {padStories(slides, 4).map((story, i) => (
@@ -870,7 +861,7 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
           No scroll-linked JS needed; sticky positioning IS the
           animation and it reverses for free. */}
       <section
-        className="relative w-full bg-[#FBF7F0]"
+        className="relative w-full bg-[#FBF7F0] max-md:!h-[100vh] max-md:!py-[40px]"
         style={{
           position: "sticky",
           top: 0,
@@ -911,7 +902,7 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
                 },
               },
             }}
-            className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black"
+            className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[32px] max-md:!leading-[120%]"
             style={{
               fontSize: "min(4.51vw, 6.98vh)" /* 78 px @ ref */,
               lineHeight: "150%",
@@ -921,9 +912,9 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
             <TypewriterText text={`${impactHeadingFirst} ${impactHeadingSecond}`} />
           </motion.h2>
 
-          {/* 3 columns × 2 rows grid of 6 stats */}
+          {/* 3 columns × 2 rows on desktop, 2 columns × 3 rows on mobile */}
           <div
-            className="grid w-full"
+            className="grid w-full max-md:!grid-cols-2"
             style={{
               gridTemplateColumns: "repeat(3, 1fr)",
               columnGap: "min(2.31vw, 3.58vh)" /* ~40 px @ ref */,
