@@ -8,6 +8,7 @@ import {
   AnimatePresence,
   useTransform,
   useMotionValue,
+  useMotionTemplate,
   animate,
   easeInOut,
   type MotionValue,
@@ -246,20 +247,23 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
   useEffect(() => {
     if (stage !== "slideshow" || !ready) return;
-    /* Flip through every founder photo once, then SETTLE on founders[0] —
-       the FRONT/TOP card of the deck that follows — so the handoff into
-       the shuffle is pixel-seamless (same photo, same spot). */
+    /* Flip through EVERY founder photo TWICE (fast), then SETTLE on
+       founders[0] — the FRONT/TOP card of the deck that follows — so the
+       handoff into the shuffle is pixel-seamless (same photo, same spot). */
     let count = 0;
+    const totalTicks = founders.length * 2; // each image twice
     const id = setInterval(() => {
       count += 1;
-      if (count >= founders.length - 1) {
-        setSlideIndex(0);
+      if (count >= totalTicks) {
+        /* totalTicks % length === 0 → settles on founders[0], and the
+           key stays monotonic so no crossfade collides. */
+        setSlideIndex(totalTicks);
         clearInterval(id);
-        setTimeout(() => setStage("animate"), 400);
+        setTimeout(() => setStage("animate"), 300);
       } else {
         setSlideIndex(count);
       }
-    }, 450);
+    }, 200);
     return () => clearInterval(id);
   }, [stage, ready, founders.length]);
 
@@ -272,10 +276,11 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
        stays even and fluid rather than snapping. */
     const controls = animate(progress, 1, {
       /* ~7 s total — cappen's intro pace: quick deal, brisk strip,
-         unhurried landing. Near-linear ease; each phase's own keyframe
-         ranges shape the local feel. */
+         unhurried landing. Gentle ease-in-out so the cards glide (no
+         push at the start, soft settle at the end); each phase's own
+         keyframe ranges shape the local feel. */
       duration: 7,
-      ease: [0.35, 0, 0.3, 1],
+      ease: [0.33, 0, 0.18, 1],
     });
     return () => controls.stop();
   }, [stage, progress]);
@@ -324,9 +329,15 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   /* Side labels — visible through the deck + filmstrip, fade as the hero
      card breaks away toward the heading slot. */
   const sideLabelsOpacity = useTransform(progress, [0.6, 0.72], [1, 0]);
-  /* Bottom subtitle — visible through the deck; DISAPPEARS as the cards
-     spread into the filmstrip; the heading brings its own copy back. */
-  const subtitleBottomOpacity = useTransform(progress, [0.32, 0.44], [1, 0]);
+  /* Bottom subtitle — ONE fixed element at bottom-8vh the whole time, so
+     its START and END positions are identical. Visible at the start,
+     fades out as the cards spread, then fades back in with the heading —
+     it never moves, only its opacity changes. */
+  const subtitleBottomOpacity = useTransform(
+    progress,
+    [0.32, 0.44, 0.74, 0.86],
+    [1, 0, 0, 1],
+  );
 
   /* Heading block becomes visible early (photo slot + buttons); the text
      lines then rise on their own per-character reveal (RevealLine).
@@ -353,8 +364,16 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
          parked card while it fades underneath (0.945→0.995). One object,
          one place — no double-image while the card is still flying. */
       if (v >= 0.94 && !headingReady) setHeadingReady(true);
+      /* Hide the navbar while the vertical film-strip of photos is on
+         screen: from when the fan starts opening into the strip (~0.38)
+         until the hero has flown up and parked (~0.9). */
+      const hideNav = v >= 0.38 && v < 0.9;
+      document.body.classList.toggle("hero-hide-nav", hideNav);
     });
-    return unsub;
+    return () => {
+      unsub();
+      document.body.classList.remove("hero-hide-nav");
+    };
   }, [progress, headingReady]);
   useEffect(() => {
     if (!headingReady) return;
@@ -432,11 +451,14 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 1, transition: { duration: 0.2 } }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  transition={{ duration: 0.22, ease: "easeOut" }}
                 >
                   <Image
-                    src={heroImageSrc(founders[slideIndex].image, 400)}
-                    alt={founders[slideIndex].name}
+                    src={heroImageSrc(
+                      founders[slideIndex % founders.length].image,
+                      400,
+                    )}
+                    alt={founders[slideIndex % founders.length].name}
                     fill
                     sizes="16vw"
                     priority
@@ -546,13 +568,9 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 </Link>
                 <CursorFillButton href="/getinvestment" label="Get Investment" />
               </div>
-
-              <p
-                className="pointer-events-none mt-[min(2.9vw,4.5vh)] text-center font-['Poppins',_sans-serif] font-normal leading-[145%] text-white/90 max-md:!text-[13px] max-md:!mt-[24px] max-md:!text-center"
-                style={{ fontSize: "min(1.39vw, 2.15vh)", width: "min(52vw, 900px)" }}
-              >
-                {subtitle}
-              </p>
+              {/* The description is NOT here — the single fixed bottom
+                  subtitle (at bottom-8vh) fades back in with the heading,
+                  so it ends exactly where it started. */}
             </div>
           </div>
         </motion.div>
@@ -644,7 +662,7 @@ function HeadingPhoto({
         initial={{ opacity: 0 }}
         animate={{ opacity: show ? 1 : 0 }}
         exit={{ opacity: 1 }}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
       >
         <Image
           src={heroImageSrc(founder.image, 600)}
@@ -805,18 +823,26 @@ function FounderCard({
 
   /* Everyone stays solid through the fan; the strip clears while the
      hero comes forward, and the hero itself fades only AFTER it has
-     parked in the rectangle — dissolving into the coloured portrait. */
+     parked in the rectangle — crossfading into the coloured portrait
+     over a longer window so the swap reads as a gradual dissolve. */
   const opacity = useTransform(
     progress,
-    isHero ? [0.945, 0.995] : [0.8, 0.9],
+    isHero ? [0.9, 1] : [0.8, 0.9],
     [1, 0],
   );
+
+  /* Grey → COLOUR bloom: once the hero parks, its own greyscale eases
+     from 0.9 → 0 across the last stretch, so the colour comes in as a
+     smooth gradient (not an immediate swap). Only the hero card animates
+     its filter, and only once, so the repaint cost is negligible. */
+  const grayscaleMV = useTransform(progress, [0.86, 1], [0.9, 0]);
+  const heroFilter = useMotionTemplate`grayscale(${grayscaleMV})`;
 
   return (
     <motion.div
       className="absolute overflow-hidden bg-[#FBF7F0]"
       style={{
-        /* If it's the hero, use the animated dimensions. 
+        /* If it's the hero, use the animated dimensions.
            Otherwise, strictly map to the responsive dims just like before! */
         width: isHero ? heroWidth : dims.cardW,
         height: isHero ? heroHeight : dims.cardH,
@@ -826,7 +852,11 @@ function FounderCard({
         opacity,
         zIndex,
         borderRadius: "2px",
-        willChange: "transform, opacity, width, height",
+        /* Hero desaturates gradually (colour bloom); the rest stay grey. */
+        filter: isHero ? heroFilter : "grayscale(0.9)",
+        willChange: isHero
+          ? "transform, opacity, width, height, filter"
+          : "transform, opacity",
       }}
     >
       <Image
@@ -834,7 +864,7 @@ function FounderCard({
         alt={founder.name}
         fill
         sizes="16vw"
-        style={{ objectFit: "cover", objectPosition: "top", filter: "grayscale(0.9)" }}
+        style={{ objectFit: "cover", objectPosition: "top" }}
       />
     </motion.div>
   );

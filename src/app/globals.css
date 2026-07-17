@@ -486,3 +486,11 @@ body {
     border-radius: 10px;
   }
  
+/* ─── Hero intro: hide the navbar while the film-strip of founder
+   photos forms, then bring it back once the hero has landed. Driven
+   by a body class the Hero toggles off its scroll-free intro progress. */
+body.hero-hide-nav .site-navbar {
+  opacity: 0;
+  transform: translateY(-120%);
+  pointer-events: none;
+}

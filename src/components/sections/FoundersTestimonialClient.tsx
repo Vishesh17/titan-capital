@@ -35,7 +35,7 @@ const FALLBACK_TESTIMONIALS: TestimonialItem[] = [
     name: "Abhiraj Bahl",
     role: "Cofounder, Urban Company",
     companyName: "Urban Company",
-    image: "/images/hero_founders_images/abhiraj_bahl.png",
+    image: "/images/Testimonials/abhiraj-singh-uc.png",
     text: "\u201CKunal and Rohit were the first investors to believe in Urban Company, even before we launched the platform or decided on the name. Their unwavering support has been a constant throughout our journey, guiding us through ups and downs. As Founders, we deeply value their mentorship and friendship.\u201D",
   },
   {
@@ -163,8 +163,8 @@ function FlipCard({ item }: { item: TestimonialItem }) {
     <div
       className="relative"
       style={{
-        width: "min(10vw, 15.49vh)",
-        height: "min(3.47vw, 5.37vh)",
+        width: "min(15vw, 20.49vh)",
+        height: "min(6.47vw, 10.37vh)",
         filter: "grayscale(1)",
       }}
     >
@@ -173,7 +173,7 @@ function FlipCard({ item }: { item: TestimonialItem }) {
         alt={companyName}
         fill
         sizes="120px"
-        style={{ objectFit: "contain", objectPosition: "left" }}
+        style={{ objectFit: "contain", objectPosition: "center" }}
       />
     </div>
   ) : null;
@@ -188,7 +188,11 @@ function FlipCard({ item }: { item: TestimonialItem }) {
              in-between gaps. Height follows via aspect ratio. */
           width:
             "calc((100vw - 2 * var(--section-px-wide) - 2 * min(1.85vw, 2.86vh)) / 3)",
-          aspectRatio: "410 / 491",
+          /* 4:5 → after the top 20% logo band, the bottom 80% photo block
+             is a PERFECT SQUARE (= card width). So the 400×400 square
+             portfolio photos (uploaded via Sanity) fill it edge-to-edge
+             with zero crop and zero letterbox — scaled exactly as they are. */
+          aspectRatio: "4 / 5",
           perspective: "1000px",
         }}
       >
@@ -196,64 +200,64 @@ function FlipCard({ item }: { item: TestimonialItem }) {
           className="relative h-full w-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:[transform:rotateY(180deg)]"
           style={{ transformStyle: "preserve-3d" }}
         >
-          {/* FRONT — photo */}
+          {/* FRONT — logo band (top 20%) + cutout photo (bottom 80%) */}
           <div
             className="absolute inset-0 overflow-hidden"
             style={{
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
-              borderRadius: "min(0.93vw, 1.43vh)",
-              background: "#FBF7F0",
+              borderRadius: "12px",
+              background: "linear-gradient(180deg, #FBF7F0 0%, #F3E6CF 100%)",
             }}
           >
-            {/* Logo strip */}
+            {/* Logo band — the first 20% of the card height, logo centred */}
             <div
-              className="absolute z-10 flex items-center"
-              style={{
-                top: "min(1.16vw, 1.79vh)",
-                left: "min(1.16vw, 1.79vh)",
-              }}
+              className="flex items-center justify-center"
+              style={{ height: "20%" }}
             >
               {logoContent}
             </div>
-            <Image
-              src={cdnImageSrc(item.image || "", 800)}
-              alt={item.name}
-              fill
-              sizes="(max-width: 1440px) 24vw, 410px"
-              style={{
-                objectFit: "cover",
-                objectPosition: "center 20%",
-                filter: "grayscale(1)",
-              }}
-            />
+            {/* Photo — the bottom 80% of the card, a PERFECT SQUARE at
+                100% width (no padding). Portfolio photos are 400×400
+                squares, so `cover` scales them 1:1 into this square block
+                with no crop and no letterbox — exactly as they are. */}
+            <div className="relative" style={{ height: "80%" }}>
+              <Image
+                src={cdnImageSrc(item.image || "", 800)}
+                alt={item.name}
+                fill
+                sizes="(max-width: 1440px) 33vw, 500px"
+                style={{
+                  objectFit: "cover",
+                  objectPosition: "center",
+                  filter: "grayscale(1)",
+                }}
+              />
+            </div>
           </div>
 
-          {/* BACK — text */}
+          {/* BACK — logo band (top 20%) + testimonial text (80%) */}
           <div
             className="absolute inset-0 flex flex-col overflow-hidden"
             style={{
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
               transform: "rotateY(180deg)",
-              borderRadius: "min(0.93vw, 1.43vh)",
-              background: "#DBE1F5",
+              borderRadius: "12px",
+              background: "linear-gradient(180deg, #EFF4FF 0%, #D3E2FF 100%)",
             }}
           >
-            {/* Logo strip */}
+            {/* Logo band — same 20% as the front so the flip lines up */}
             <div
-              className="absolute z-10 flex items-center"
-              style={{
-                top: "min(1.16vw, 1.79vh)",
-                left: "min(1.16vw, 1.79vh)",
-              }}
+              className="flex shrink-0 items-center justify-center"
+              style={{ height: "20%" }}
             >
               {logoContent}
             </div>
             <div
-              className="flex flex-1 items-center"
+              className="flex items-center"
               style={{
-                paddingTop: "min(6.36vw, 9.85vh)",
+                height: "80%",
                 paddingBottom: "min(1.85vw, 2.86vh)",
                 paddingLeft: "min(1.85vw, 2.86vh)",
                 paddingRight: "min(1.85vw, 2.86vh)",

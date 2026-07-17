@@ -141,7 +141,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
           MAIN TOP NAVBAR (Closed State)
           ========================================= */}
       {/* FLUID BUT TIGHT: Height stays between 65px and 80px */}
-      <nav className={`fixed left-0 top-0 z-[40] flex h-[clamp(65px,min(5.5vw,7vh),80px)] w-full items-center justify-between px-4 transition-colors duration-300 ease-out max-md:!h-[56px] max-md:!px-[16px] lg:px-[clamp(32px,4.3vw,62px)] ${
+      <nav className={`site-navbar fixed left-0 top-0 z-[40] flex h-[clamp(65px,min(5.5vw,7vh),80px)] w-full items-center justify-between px-4 transition-[background-color,color,transform,opacity] duration-500 ease-out max-md:!h-[56px] max-md:!px-[16px] lg:px-[clamp(32px,4.3vw,62px)] ${
         scrolled ? "bg-[#001A4D]/95 shadow-lg backdrop-blur-md" : "bg-transparent"
       }`}>
 
