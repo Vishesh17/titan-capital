@@ -9,7 +9,6 @@ import {
   useTransform,
   useMotionValue,
   animate,
-  easeOut,
   easeInOut,
   type MotionValue,
 } from "framer-motion";
@@ -349,11 +348,11 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   const headingFounder = founders[(heroIndex + headingTick) % founders.length];
   useEffect(() => {
     const unsub = progress.on("change", (v) => {
-      /* Fires only once the hero card has ARRIVED at the slot (flight ends
-         at 0.92) — the coloured photo then blooms in over the parked card
-         while it fades underneath (0.93→0.99). One object, one place — no
-         double-image while the card is still flying. */
-      if (v >= 0.92 && !headingReady) setHeadingReady(true);
+      /* Fires only once the hero card has ARRIVED at the rectangle (flight
+         ends at 0.94) — the coloured portrait then blooms in over the
+         parked card while it fades underneath (0.945→0.995). One object,
+         one place — no double-image while the card is still flying. */
+      if (v >= 0.94 && !headingReady) setHeadingReady(true);
     });
     return unsub;
   }, [progress, headingReady]);
@@ -460,6 +459,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 key={founder.name}
                 founder={founder}
                 index={i}
+                total={founders.length}
                 heroIndex={heroIndex}
                 progress={progress}
                 dims={dims}
@@ -478,7 +478,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
             {/* DESKTOP heading layout */}
             <h1
               className="pointer-events-none m-0 hidden md:flex flex-col items-start text-left font-['Poppins',_sans-serif] font-black uppercase leading-[100%] text-white"
-              style={{ fontSize: "min(10.4vw, 16.0vh)" }}
+              style={{ fontSize: "min(9.4vw, 15.0vh)" }}
             >
               <RevealLine show={headingReady} delay={0}>Backing Founder</RevealLine>
               {/* Row 2–3: items-stretch makes the photo slot span EXACTLY
@@ -693,13 +693,13 @@ function RevealLine({
           }}
           style={{ willChange: "transform, opacity" }}
         >
-          {ch === " " ? " " : ch}
+          {/* Use a non-breaking space so the inline-block doesn't collapse to 0px width */}
+          {ch === " " ? "\u00A0\u00A0" : ch}
         </motion.span>
       ))}
     </span>
   );
 }
-
 /* ─────────────────────────────────────────────────────────
    FounderCard — one card, driven by the shared `progress`.
    Absolutely positioned, so size/position changes never reflow.
@@ -707,6 +707,7 @@ function RevealLine({
 function FounderCard({
   founder,
   index,
+  total,
   heroIndex,
   progress,
   dims,
@@ -714,6 +715,7 @@ function FounderCard({
 }: {
   founder: HeroFounder;
   index: number;
+  total: number;
   heroIndex: number;
   progress: MotionValue<number>;
   dims: Dims;
@@ -721,81 +723,92 @@ function FounderCard({
 }) {
   const isHero = index === heroIndex;
 
-  /* ── cappen's choreography: the stack SHUFFLES ITSELF UPWARDS ──
-     Card order is preserved end-to-end (card 0 = front/top card, hero =
-     last/bottom card), and every motion is strictly UPWARD:
+  /* ═══ cappen.com choreography ═══
+     1. DECK (3-D): the stack reads in depth — card 0 is CLOSEST to the
+        viewer (biggest, in front); each card behind peeks a little lower
+        and sits visibly deeper (smaller).
+     2. OPEN (the fan): the stack opens by INVERTING its order — the
+        closest card sweeps DOWN to the bottom strip slot, card 1 to the
+        slot above it, … the deepest card rises to the TOP. Cards pass
+        each other by design; because the closer card always renders in
+        front (z by depth), the crossing reads as a 3-D fan, not a glitch.
+     3. FORWARD: one card then comes toward the viewer — scaling up out
+        of the strip into the heading rectangle — and its black & white
+        photo dissolves into the coloured heading portrait. */
 
-       deal   : cards deal DOWNWARD out of the stack, one by one
-       peel   : cards PEEL UPWARD off the stack one after another — card 0
-                first, flying to the top strip slot, then card 1, … — the
-                reel empties upward until only the hero (bottom card) is
-                left sitting at centre
-       land   : the hero rises into the heading slot                     */
+  /* — deck geometry (depth via scale recession + downward peek) — */
   const deckY = index * dims.deckPeek;
-  const deckScale = Math.max(0.72, 1 - index * 0.04);
-  /* Final strip slot — hero (last card) at centre, everyone else above:
-     card k ends at (k − heroIndex)·step ≤ 0 → every peel is upward. */
-  const stripEndY = (index - heroIndex) * dims.filmStep;
+  const deckScale = Math.max(0.58, 1 - index * 0.06);
 
-  /* Staggered deal — each card fans out slightly after the one above it,
-     so the deck forms card-by-card (the "shuffle" beat). */
+  /* — strip geometry (inverted order, centred on screen) —
+     card k lands in strip slot (N−1−k):  y = ((N−1)/2 − k) · step      */
+  const stripY = ((total - 1) / 2 - index) * dims.filmStep;
+
+  /* — per-card timing —
+     deal: the stack builds card-by-card behind the slideshow card.
+     open: the closest card leads the fan; each deeper card follows a
+           heartbeat later, so the whole spread reads as one gesture.   */
   const dealStart = 0.02 + index * 0.02;
   const dealEnd = 0.18 + index * 0.02;
+  const openStart = 0.4 + index * 0.015;
+  const openEnd = 0.66 + index * 0.015;
 
-  /* Staggered peel — card 0 lifts off first, each next card follows a
-     beat later. The stack visibly shuffles itself upward. */
-  const peelStart = 0.36 + index * 0.02;
-  const peelEnd = 0.6 + index * 0.02;
+  /* — hero flight morphing —
+     Instead of changing scale, we dynamically animate the width/height 
+     of the Hero card to the slot's exact dimensions. */
+  const heroWidth = useTransform(progress, [0.8, 0.94], [dims.cardW, slot.w], { ease: easeInOut });
+  const heroHeight = useTransform(progress, [0.8, 0.94], [dims.cardH, slot.h], { ease: easeInOut });
 
-  /* Uniform scale that grows the square hero card toward the heading slot
-     HEIGHT — no width/height layout morph; the hero then crossfades into
-     the coloured landscape HeadingPhoto (same founder) in the slot. */
-  const slotScale = dims.cardH > 0 ? slot.h / dims.cardH : 1.5;
+  const linear = (t: number) => t;
 
   /* Timeline (progress 0 → 1):
-       0.02→0.32  deal (staggered downward)
-       0.36→0.74  peel — staggered upward lift-offs into the strip
-       0.76→0.92  hero rises from centre into the slot; others fade
-
-     Continuity: the hero's flight segment uses easeOut (it inherits the
-     upward momentum of its own peel and decelerates into the slot), and
-     its x/scale ramp with easeInOut — one unbroken curve, no corner.   */
-  const linear = (t: number) => t;
+       0.02–0.32  deal — stack forms in depth
+       0.40–0.77  open — inverted 3-D fan into the vertical strip
+       0.80–0.94  hero comes forward into the heading rectangle
+       0.94–1.00  dissolve: grey card → coloured heading portrait        */
   const y = useTransform(
     progress,
     isHero
-      ? [dealStart, dealEnd, peelStart, peelEnd, 0.92]
-      : [dealStart, dealEnd, peelStart, peelEnd],
+      ? [dealStart, dealEnd, openStart, openEnd, 0.8, 0.94]
+      : [dealStart, dealEnd, openStart, openEnd],
     isHero
-      ? [0, deckY, deckY, 0, slot.cy]
-      : [0, deckY, deckY, stripEndY],
+      ? [0, deckY, deckY, stripY, stripY, slot.cy]
+      : [0, deckY, deckY, stripY],
     isHero
-      ? { ease: [easeInOut, linear, easeInOut, easeOut] }
-      : { ease: [easeInOut, linear, easeInOut] },
-  );
-  const x = useTransform(progress, [0.76, 0.92], [0, isHero ? slot.cx : 0], {
-    ease: easeInOut,
-  });
-  const scale = useTransform(
-    progress,
-    isHero
-      ? [dealStart, dealEnd, peelStart, peelEnd, 0.92]
-      : [dealStart, dealEnd, peelStart, peelEnd],
-    isHero
-      ? [1, deckScale, deckScale, 1, slotScale]
-      : [1, deckScale, deckScale, 1],
-    isHero
-      ? { ease: [easeInOut, linear, easeInOut, easeInOut] }
+      ? { ease: [easeInOut, linear, easeInOut, linear, easeInOut] }
       : { ease: [easeInOut, linear, easeInOut] },
   );
 
-  /* Cards are solid the whole way (they start perfectly stacked behind
-     the front card). The peeled cards fade once the strip is formed; the
-     hero fades LAST — only after it has fully arrived at the slot —
-     dissolving into the coloured HeadingPhoto of the SAME founder. */
+  const x = useTransform(progress, [0.8, 0.94], [0, isHero ? slot.cx : 0], {
+    ease: easeInOut,
+  });
+
+  const scale = useTransform(
+    progress,
+    isHero
+      ? [dealStart, dealEnd, openStart, openEnd, 0.8, 0.94]
+      : [dealStart, dealEnd, openStart, openEnd],
+    isHero
+      /* Keep scale at 1 for the final landing phase, size is handled by width/height now */
+      ? [1, deckScale, deckScale, 1, 1, 1]
+      : [1, deckScale, deckScale, 1],
+    isHero
+      ? { ease: [easeInOut, linear, easeInOut, linear, easeInOut] }
+      : { ease: [easeInOut, linear, easeInOut] },
+  );
+
+  /* Depth-true stacking: closer cards always render in front. The hero
+     jumps to the front only when it starts coming forward. */
+  const zIndex = useTransform(progress, (v) =>
+    isHero && v >= 0.79 ? 60 : 40 - index,
+  );
+
+  /* Everyone stays solid through the fan; the strip clears while the
+     hero comes forward, and the hero itself fades only AFTER it has
+     parked in the rectangle — dissolving into the coloured portrait. */
   const opacity = useTransform(
     progress,
-    isHero ? [0.93, 0.99] : [0.78, 0.88],
+    isHero ? [0.945, 0.995] : [0.8, 0.9],
     [1, 0],
   );
 
@@ -803,22 +816,17 @@ function FounderCard({
     <motion.div
       className="absolute overflow-hidden bg-[#FBF7F0]"
       style={{
-        width: dims.cardW,
-        height: dims.cardH,
+        /* If it's the hero, use the animated dimensions. 
+           Otherwise, strictly map to the responsive dims just like before! */
+        width: isHero ? heroWidth : dims.cardW,
+        height: isHero ? heroHeight : dims.cardH,
         x,
         y,
         scale,
         opacity,
+        zIndex,
         borderRadius: "2px",
-        /* Hero above all; centre-most cards sit above the outer ones. */
-        /* Front/top card (index 0) above the ones peeking below it —
-           exactly the deck order; the strip keeps the same order. */
-        zIndex: 40 - index,
-        /* Only transform + opacity animate — NO per-frame filter repaint
-           (that was the stutter). Cards stay statically grey; the hero
-           "colours up" purely by crossfading into the coloured HeadingPhoto
-           in the slot. */
-        willChange: "transform, opacity",
+        willChange: "transform, opacity, width, height",
       }}
     >
       <Image
