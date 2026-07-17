@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import TypewriterText from "@/components/ui/TypewriterText";
 import {
   motion,
   useScroll,
@@ -236,7 +235,7 @@ export default function WhatWeBelieveClient({
               }}
               className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black"
             >
-              <TypewriterText text={heading} />
+              {heading}
             </motion.h2>
           </motion.div>
 
@@ -287,7 +286,7 @@ export default function WhatWeBelieveClient({
               }}
               className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black"
             >
-              <TypewriterText text={heading} />
+              {heading}
             </motion.h2>
           </motion.div>
 

@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useInView } from "framer-motion";
-import TypewriterText from "@/components/ui/TypewriterText";
 
 /* Site-wide easing — snappy start, smooth deceleration. */
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -293,7 +292,7 @@ export default function IndicornSpotlightClient({
               lineHeight: "172%",
             }}
           >
-            <TypewriterText text={heading} />
+            {heading}
           </h2>
 
           {/* Subheading — 1:1 with the CSS spec:

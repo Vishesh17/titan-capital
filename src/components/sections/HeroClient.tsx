@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -8,8 +8,9 @@ import {
   AnimatePresence,
   useTransform,
   useMotionValue,
-  useMotionTemplate,
   animate,
+  easeOut,
+  easeInOut,
   type MotionValue,
 } from "framer-motion";
 
@@ -63,8 +64,11 @@ function heroImageSrc(url: string, width: number): string {
 
 /* Portrait photo slot (spans the ENDURING / IMPACT rows). Kept in one
    place so the heading placeholder and the fallback card target agree. */
-const SLOT_W = "min(16.2vw, 25vh)";     // ~280 px @ ref — LANDSCAPE
-const SLOT_H = "min(11.56vw, 17.87vh)"; // ~200 px @ ref (spans 2 rows)
+const SLOT_W = "min(23.1vw, 35.8vh)";   // ~399 px @ ref — LANDSCAPE
+/* Slot HEIGHT is no longer fixed — the slot stretches to the exact height
+   of the ENDURING/IMPACT text column (items-stretch + em trims), so the
+   photo always spans precisely from the top of ENDURING to the bottom of
+   IMPACT at any viewport. The flight target uses the measured rect. */
 
 /* ─────────────────────────────────────────────────────────
    Viewport-derived px dims for the stack / line stages. Mirrors
@@ -75,7 +79,7 @@ function computeDims(w: number, h: number) {
   const cardW = isMobile
     ? w * 0.38  // ~148px on 390px screen
     : Math.min(0.072 * w, 0.115 * h);
-  const cardH = cardW * 1.3;
+  const cardH = cardW; // SQUARE cards for the slideshow + shuffle
   return {
     cardW,
     cardH,
@@ -111,14 +115,14 @@ function HeroGlow() {
       <motion.div
         aria-hidden
         className="pointer-events-none absolute"
-        style={{ left: "-16%", top: "-12%", width: "min(60vw, 95vh)", zIndex: 0 }}
+        style={{ left: "-16%", top: "-12%", width: "min(72vw, 112vh)", zIndex: 0 }}
         animate={{
-          x: ["-10%", "38%", "12%", "30%", "-10%"],
-          y: ["-12%", "20%", "40%", "8%", "-12%"],
-          scale: [1, 1.15, 0.9, 1.08, 1],
-          rotate: [0, 12, -8, 5, 0],
+          x: ["-20%", "80%", "20%", "60%", "-20%"],
+          y: ["-20%", "40%", "60%", "10%", "-20%"],
+          scale: [1, 1.2, 0.88, 1.12, 1],
+          rotate: [0, 16, -10, 7, 0],
         }}
-        transition={{ duration: 24, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
+        transition={{ duration: 18, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
       >
         <svg viewBox="0 0 836 1113" fill="none" className="h-auto w-full" style={{ overflow: "visible" }}>
           <g filter="url(#hero_glow_l_f)">
@@ -162,14 +166,14 @@ function HeroGlow() {
       <motion.div
         aria-hidden
         className="pointer-events-none absolute"
-        style={{ right: "-14%", bottom: "-14%", width: "min(54vw, 82vh)", zIndex: 0 }}
+        style={{ right: "-14%", bottom: "-14%", width: "min(66vw, 100vh)", zIndex: 0 }}
         animate={{
-          x: ["10%", "-36%", "-10%", "-28%", "10%"],
-          y: ["12%", "-22%", "-40%", "-8%", "12%"],
-          scale: [1, 1.16, 0.9, 1.08, 1],
-          rotate: [0, -12, 8, -5, 0],
+          x: ["20%", "-70%", "-15%", "-50%", "20%"],
+          y: ["20%", "-42%", "-58%", "-12%", "20%"],
+          scale: [1, 1.2, 0.88, 1.12, 1],
+          rotate: [0, -16, 10, -7, 0],
         }}
-        transition={{ duration: 28, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
+        transition={{ duration: 21, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
       >
         <svg viewBox="0 0 825 906" fill="none" className="h-auto w-full" style={{ overflow: "visible" }}>
           <g filter="url(#hero_glow_r_f)">
@@ -220,10 +224,11 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     return FALLBACK_FOUNDERS;
   })();
 
-  /* The featured founder — the card that stays centred through the deck +
-     filmstrip and finally lands in the heading slot. Chosen once on mount
-     and used from the start so the deck/filmstrip can be built around it. */
-  const [heroIndex] = useState<number>(() => Math.floor(Math.random() * founders.length));
+  /* The featured founder — the card whose INVERTED strip slot lands
+     nearest the screen centre, so its "come forward" move to the heading
+     slot is the shortest, calmest path. (The fan inverts order: card k
+     ends at strip slot N−1−k.) */
+  const heroIndex = Math.ceil((founders.length - 1) / 2);
 
   /* Gate the whole card cluster until dims are measured, so the first
      frame never paints at the SSR fallback size and then resize-jumps
@@ -242,22 +247,22 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
   useEffect(() => {
     if (stage !== "slideshow" || !ready) return;
-    /* Flip through every founder photo once, then SETTLE on the hero photo
-       so the centred deck card that follows shows the same face — a
-       seamless handoff into the shuffle. */
+    /* Flip through every founder photo once, then SETTLE on founders[0] —
+       the FRONT/TOP card of the deck that follows — so the handoff into
+       the shuffle is pixel-seamless (same photo, same spot). */
     let count = 0;
     const id = setInterval(() => {
       count += 1;
       if (count >= founders.length - 1) {
-        setSlideIndex(heroIndex);
+        setSlideIndex(0);
         clearInterval(id);
         setTimeout(() => setStage("animate"), 400);
       } else {
         setSlideIndex(count);
       }
-    }, 300);
+    }, 450);
     return () => clearInterval(id);
-  }, [stage, ready, founders.length, heroIndex]);
+  }, [stage, ready, founders.length]);
 
   useEffect(() => {
     if (stage !== "animate") return;
@@ -267,8 +272,11 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
        form that reliably honours `duration`. Mildly eased so phase pacing
        stays even and fluid rather than snapping. */
     const controls = animate(progress, 1, {
-      duration: 6.4,
-      ease: [0.3, 0, 0.25, 1],
+      /* ~7 s total — cappen's intro pace: quick deal, brisk strip,
+         unhurried landing. Near-linear ease; each phase's own keyframe
+         ranges shape the local feel. */
+      duration: 7,
+      ease: [0.35, 0, 0.3, 1],
     });
     return () => controls.stop();
   }, [stage, progress]);
@@ -297,8 +305,18 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     };
     measure();
     const t = setTimeout(measure, 300);
+    /* Re-measure once webfonts finish loading — Poppins changes the
+       heading's metrics, which moves the slot. A stale measure made the
+       hero card land at the wrong spot (the "glitch" on arrival). */
+    let cancelled = false;
+    if (typeof document !== "undefined" && document.fonts?.ready) {
+      document.fonts.ready.then(() => {
+        if (!cancelled) measure();
+      });
+    }
     window.addEventListener("resize", measure);
     return () => {
+      cancelled = true;
       clearTimeout(t);
       window.removeEventListener("resize", measure);
     };
@@ -311,26 +329,50 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
      spread into the filmstrip; the heading brings its own copy back. */
   const subtitleBottomOpacity = useTransform(progress, [0.32, 0.44], [1, 0]);
 
-  /* Heading block reveals as the hero card lands. */
-  const headingOpacity = useTransform(progress, [0.72, 0.92], [0, 1]);
-  const headingScale = useTransform(progress, [0.74, 0.98], [0.98, 1]);
+  /* Heading block becomes visible early (photo slot + buttons); the text
+     lines then rise on their own per-character reveal (RevealLine).
+     NO scale animation here — the hero card flies to the slot's MEASURED
+     position, and scaling the container would move that target under the
+     card mid-flight (that was the landing glitch). */
+  const headingOpacity = useTransform(progress, [0.74, 0.84], [0, 1]);
 
-  /* Typewriter: triggers once heading is visible */
-  const [typewriterStarted, setTypewriterStarted] = useState(false);
+  /* Once the hero card has landed, the heading photo keeps cycling
+     through every founder (a slow slideshow inside the FOR ▢ ENDURING
+     slot). `headingReady` flips on near the end of the intro; `headingIdx`
+     then advances every 2.6 s. Starts on the landed hero so the first
+     frame matches the card underneath. */
+  const [headingReady, setHeadingReady] = useState(false);
+  /* Monotonic tick so each cycled photo gets a strictly-increasing key +
+     zIndex — the incoming one always crossfades in ON TOP of the still-
+     opaque previous one (no dark dip). Founder = heroIndex + tick. */
+  const [headingTick, setHeadingTick] = useState(0);
+  const headingFounder = founders[(heroIndex + headingTick) % founders.length];
   useEffect(() => {
     const unsub = progress.on("change", (v) => {
-      if (v >= 0.85 && !typewriterStarted) setTypewriterStarted(true);
+      /* Fires only once the hero card has ARRIVED at the slot (flight ends
+         at 0.92) — the coloured photo then blooms in over the parked card
+         while it fades underneath (0.93→0.99). One object, one place — no
+         double-image while the card is still flying. */
+      if (v >= 0.92 && !headingReady) setHeadingReady(true);
     });
     return unsub;
-  }, [progress, typewriterStarted]);
+  }, [progress, headingReady]);
+  useEffect(() => {
+    if (!headingReady) return;
+    const id = setInterval(() => {
+      setHeadingTick((t) => t + 1);
+    }, 2600);
+    return () => clearInterval(id);
+  }, [headingReady]);
 
   return (
     <section className="relative h-screen w-full">
       <div
         className="relative flex h-screen w-full items-center justify-center overflow-hidden"
         style={{
-          background:
-            "radial-gradient(ellipse at 50% 50%, #0a2a6e 0%, #001a4d 40%, #000d26 100%)",
+          /* Flat dark navy — NO centre gradient. The only light comes from
+             the two drifting glow blobs (HeroGlow). */
+          background: "#000c22",
         }}
       >
         {/* Drifting aurora glows (behind everything) */}
@@ -372,7 +414,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 top: "50%",
                 marginLeft: dims.cardW / -2,
                 marginTop: dims.cardH / -2,
-                borderRadius: "min(0.93vw, 1.43vh)",
+                borderRadius: "2px",
               }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -429,50 +471,63 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
         {/* ═══ HEADING (reveals around the hero card) ═══ */}
         <motion.div
-          style={{ opacity: headingOpacity, scale: headingScale }}
+          style={{ opacity: headingOpacity }}
           className="absolute inset-0 z-20 flex items-center justify-center px-[var(--section-px-wide)] max-md:!items-start max-md:!pt-[12vh]"
         >
           <div className="relative flex flex-col items-center max-md:!items-start max-md:!px-[24px]">
             {/* DESKTOP heading layout */}
             <h1
-              className="pointer-events-none m-0 hidden md:flex flex-col items-start text-left font-['Poppins',_sans-serif] font-bold uppercase leading-[106%] text-white"
-              style={{ fontSize: "min(5.56vw, 8.59vh)" }}
+              className="pointer-events-none m-0 hidden md:flex flex-col items-start text-left font-['Poppins',_sans-serif] font-black uppercase leading-[100%] text-white"
+              style={{ fontSize: "min(10.4vw, 16.0vh)" }}
             >
-              <TypewriterLine text="Backing Founder" started={typewriterStarted} delay={0} />
+              <RevealLine show={headingReady} delay={0}>Backing Founder</RevealLine>
+              {/* Row 2–3: items-stretch makes the photo slot span EXACTLY
+                  the height of the ENDURING/IMPACT column, and the small
+                  em margins trim it to the caps' visual top / baseline —
+                  so the image top meets FOR/ENDURING and its bottom ends
+                  with IMPACT. */}
               <span
-                className="flex items-start"
-                style={{ gap: "min(1.1vw, 1.7vh)", marginTop: "min(0.7vw, 1.08vh)" }}
+                className="flex items-stretch"
+                style={{ gap: "min(0.8vw, 1.4vh)", marginTop: "min(0.35vw, 0.54vh)" }}
               >
-                <TypewriterLine text="For" started={typewriterStarted} delay={0.4} />
+                <RevealLine show={headingReady} delay={0.5}>For</RevealLine>
                 <span
                   ref={slotRef}
-                  aria-hidden
-                  className="inline-block shrink-0"
-                  style={{ width: SLOT_W, height: SLOT_H }}
-                />
-                <span className="flex flex-col items-start leading-[106%]">
-                  <TypewriterLine text="Enduring" started={typewriterStarted} delay={0.6} />
-                  <TypewriterLine text="Impact" started={typewriterStarted} delay={0.9} />
+                  className="relative inline-block shrink-0 overflow-hidden"
+                  style={{
+                    width: SLOT_W,
+                    borderRadius: "2px",
+                    alignSelf: "stretch",
+                    marginTop: "0.12em",
+                    marginBottom: "0.12em",
+                  }}
+                >
+                  <HeadingPhoto founder={headingFounder} tick={headingTick} show={headingReady} />
+                </span>
+                <span className="flex flex-col items-start leading-[100%]">
+                  <RevealLine show={headingReady} delay={0.7}>Enduring</RevealLine>
+                  <RevealLine show={headingReady} delay={1.0}>Impact</RevealLine>
                 </span>
               </span>
             </h1>
 
             {/* MOBILE heading layout */}
             <h1
-              className="pointer-events-none m-0 flex md:hidden flex-col items-start text-left font-['Poppins',_sans-serif] font-bold uppercase text-white"
-              style={{ fontSize: "38px", lineHeight: "110%" }}
+              className="pointer-events-none m-0 flex md:hidden flex-col items-start text-left font-['Poppins',_sans-serif] font-black uppercase text-white"
+              style={{ fontSize: "52px", lineHeight: "106%" }}
             >
-              <TypewriterLine text="Backing" started={typewriterStarted} delay={0} />
-              <TypewriterLine text="Founder" started={typewriterStarted} delay={0.15} />
-              <TypewriterLine text="For" started={typewriterStarted} delay={0.3} />
+              <RevealLine show={headingReady} delay={0}>Backing</RevealLine>
+              <RevealLine show={headingReady} delay={0.3}>Founder</RevealLine>
+              <RevealLine show={headingReady} delay={0.6}>For</RevealLine>
               <span
-                aria-hidden
-                className="inline-block shrink-0 my-[8px]"
-                style={{ width: "55vw", height: "38vw", borderRadius: 12 }}
+                className="relative inline-block shrink-0 overflow-hidden my-[8px]"
+                style={{ width: "55vw", height: "38vw", borderRadius: 2 }}
                 ref={mobileSlotRef}
-              />
-              <TypewriterLine text="Enduring" started={typewriterStarted} delay={0.6} />
-              <TypewriterLine text="Impact" started={typewriterStarted} delay={0.8} />
+              >
+                <HeadingPhoto founder={headingFounder} tick={headingTick} show={headingReady} />
+              </span>
+              <RevealLine show={headingReady} delay={0.9}>Enduring</RevealLine>
+              <RevealLine show={headingReady} delay={1.2}>Impact</RevealLine>
             </h1>
 
             {/* Buttons + description — hung below the h1. */}
@@ -493,7 +548,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
               </div>
 
               <p
-                className="pointer-events-none mt-[min(3.47vw,5.37vh)] text-center font-['Poppins',_sans-serif] font-normal leading-[145%] text-white/90 max-md:!text-[13px] max-md:!mt-[24px] max-md:!text-center"
+                className="pointer-events-none mt-[min(2.9vw,4.5vh)] text-center font-['Poppins',_sans-serif] font-normal leading-[145%] text-white/90 max-md:!text-[13px] max-md:!mt-[24px] max-md:!text-center"
                 style={{ fontSize: "min(1.39vw, 2.15vh)", width: "min(52vw, 900px)" }}
               >
                 {subtitle}
@@ -558,20 +613,87 @@ function CursorFillButton({ href, label }: { href: string; label: string }) {
 }
 
 /* ─────────────────────────────────────────────────────────
-   TypewriterLine — reveals text character by character.
+   HeadingPhoto — the cycling founder photo in the FOR ▢ ENDURING
+   slot once the intro has landed. Crossfades between founders as
+   `founder` changes (keyed AnimatePresence).
    ───────────────────────────────────────────────────────── */
-function TypewriterLine({ text, started, delay }: { text: string; started: boolean; delay: number }) {
-  const chars = useMemo(() => text.split(""), [text]);
+function HeadingPhoto({
+  founder,
+  tick,
+  show,
+}: {
+  founder: HeroFounder;
+  tick: number;
+  show: boolean;
+}) {
   return (
-    <span className="inline-flex">
+    <AnimatePresence>
+      {/* ALWAYS mounted (opacity-gated by `show`, not conditional render)
+          so the first photo is fetched with priority DURING the intro —
+          mounting it only at the crossfade made the image download right
+          then, flashing a blank box over the arriving card (the glitch).
+          No background either: until the photo paints, the card behind
+          stays visible instead of a cream flash. */}
+      <motion.div
+        key={tick}
+        className="absolute inset-0"
+        /* No-dip crossfade: the incoming photo fades in ON TOP (higher
+           zIndex via the monotonic tick) while the outgoing one stays
+           fully opaque underneath (exit opacity 1). */
+        style={{ zIndex: tick }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: show ? 1 : 0 }}
+        exit={{ opacity: 1 }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <Image
+          src={heroImageSrc(founder.image, 600)}
+          alt={founder.name}
+          fill
+          sizes="24vw"
+          priority
+          style={{ objectFit: "cover", objectPosition: "top" }}
+        />
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   RevealLine — cappen.com-style PER-CHARACTER reveal. Cappen
+   splits its heading into individual chars (span.char) that
+   rise up + fade in with a fast left-to-right stagger (no clip
+   mask). We mirror that: each letter animates y+opacity, offset
+   by `charStagger`, with `delay` continuing the wave line-to-line.
+   ───────────────────────────────────────────────────────── */
+const CHAR_STAGGER = 0.07;
+function RevealLine({
+  children,
+  show,
+  delay = 0,
+}: {
+  children: string;
+  show: boolean;
+  delay?: number;
+}) {
+  const chars = children.split("");
+  return (
+    <span className="inline-block whitespace-nowrap" aria-label={children}>
       {chars.map((ch, i) => (
         <motion.span
           key={i}
-          initial={{ opacity: 0 }}
-          animate={started ? { opacity: 1 } : { opacity: 0 }}
-          transition={{ duration: 0.04, delay: delay + i * 0.045 }}
+          aria-hidden
+          className="inline-block"
+          initial={{ y: "0.5em", opacity: 0 }}
+          animate={show ? { y: 0, opacity: 1 } : { y: "0.5em", opacity: 0 }}
+          transition={{
+            duration: 1.3,
+            ease: [0.16, 1, 0.3, 1],
+            delay: delay + i * CHAR_STAGGER,
+          }}
+          style={{ willChange: "transform, opacity" }}
         >
-          {ch === " " ? "\u00A0" : ch}
+          {ch === " " ? " " : ch}
         </motion.span>
       ))}
     </span>
@@ -599,83 +721,104 @@ function FounderCard({
 }) {
   const isHero = index === heroIndex;
 
-  /* Rank among the NON-hero cards (0-based), used to place them relative
-     to the centred hero card in both the deck and the filmstrip. */
-  const otherPos = index < heroIndex ? index : index - 1;
+  /* ── cappen's choreography: the stack SHUFFLES ITSELF UPWARDS ──
+     Card order is preserved end-to-end (card 0 = front/top card, hero =
+     last/bottom card), and every motion is strictly UPWARD:
 
-  /* DECK (cappen "frame 1"): hero on top at centre; every other card
-     peeks out just BELOW it, each a little lower + smaller + further
-     back — a downward-fanned deck. */
-  const deckRank = isHero ? 0 : otherPos + 1;
-  const deckY = deckRank * dims.deckPeek;
-  const deckScale = isHero ? 1 : Math.max(0.72, 1 - deckRank * 0.05);
+       deal   : cards deal DOWNWARD out of the stack, one by one
+       peel   : cards PEEL UPWARD off the stack one after another — card 0
+                first, flying to the top strip slot, then card 1, … — the
+                reel empties upward until only the hero (bottom card) is
+                left sitting at centre
+       land   : the hero rises into the heading slot                     */
+  const deckY = index * dims.deckPeek;
+  const deckScale = Math.max(0.72, 1 - index * 0.04);
+  /* Final strip slot — hero (last card) at centre, everyone else above:
+     card k ends at (k − heroIndex)·step ≤ 0 → every peel is upward. */
+  const stripEndY = (index - heroIndex) * dims.filmStep;
 
-  /* FILMSTRIP (cappen "frame 2"): hero stays centred; the others open
-     out symmetrically above & below it into an evenly-gapped column
-     (+1, -1, +2, -2, …). */
-  const filmSlot = isHero
-    ? 0
-    : (otherPos % 2 === 0 ? 1 : -1) * Math.ceil((otherPos + 1) / 2);
-  const filmY = filmSlot * dims.filmStep;
+  /* Staggered deal — each card fans out slightly after the one above it,
+     so the deck forms card-by-card (the "shuffle" beat). */
+  const dealStart = 0.02 + index * 0.02;
+  const dealEnd = 0.18 + index * 0.02;
 
-  /* Shared timeline (progress 0 → 1). Flat segments = the small pauses.
-       0.00→0.22  cards fan out from behind the hero into the deck
-       0.22→0.30  deck settles (small pause)
-       0.30→0.56  deck opens into the vertical filmstrip
-       0.56→0.68  filmstrip settles (small pause)
-       0.68→0.90  hero flies to the heading slot; others fade out         */
+  /* Staggered peel — card 0 lifts off first, each next card follows a
+     beat later. The stack visibly shuffles itself upward. */
+  const peelStart = 0.36 + index * 0.02;
+  const peelEnd = 0.6 + index * 0.02;
+
+  /* Uniform scale that grows the square hero card toward the heading slot
+     HEIGHT — no width/height layout morph; the hero then crossfades into
+     the coloured landscape HeadingPhoto (same founder) in the slot. */
+  const slotScale = dims.cardH > 0 ? slot.h / dims.cardH : 1.5;
+
+  /* Timeline (progress 0 → 1):
+       0.02→0.32  deal (staggered downward)
+       0.36→0.74  peel — staggered upward lift-offs into the strip
+       0.76→0.92  hero rises from centre into the slot; others fade
+
+     Continuity: the hero's flight segment uses easeOut (it inherits the
+     upward momentum of its own peel and decelerates into the slot), and
+     its x/scale ramp with easeInOut — one unbroken curve, no corner.   */
+  const linear = (t: number) => t;
   const y = useTransform(
     progress,
-    isHero ? [0, 0.68, 0.9] : [0, 0.22, 0.3, 0.56],
-    isHero ? [0, 0, slot.cy] : [0, deckY, deckY, filmY],
+    isHero
+      ? [dealStart, dealEnd, peelStart, peelEnd, 0.92]
+      : [dealStart, dealEnd, peelStart, peelEnd],
+    isHero
+      ? [0, deckY, deckY, 0, slot.cy]
+      : [0, deckY, deckY, stripEndY],
+    isHero
+      ? { ease: [easeInOut, linear, easeInOut, easeOut] }
+      : { ease: [easeInOut, linear, easeInOut] },
   );
-  const x = useTransform(progress, [0.68, 0.9], [0, isHero ? slot.cx : 0]);
+  const x = useTransform(progress, [0.76, 0.92], [0, isHero ? slot.cx : 0], {
+    ease: easeInOut,
+  });
   const scale = useTransform(
     progress,
-    [0, 0.22, 0.3, 0.56],
-    isHero ? [1, 1, 1, 1] : [1, deckScale, deckScale, 1],
+    isHero
+      ? [dealStart, dealEnd, peelStart, peelEnd, 0.92]
+      : [dealStart, dealEnd, peelStart, peelEnd],
+    isHero
+      ? [1, deckScale, deckScale, 1, slotScale]
+      : [1, deckScale, deckScale, 1],
+    isHero
+      ? { ease: [easeInOut, linear, easeInOut, easeInOut] }
+      : { ease: [easeInOut, linear, easeInOut] },
   );
 
-  /* Hero stays solid; the others fade in from behind it, hold, then fade
-     out once the hero breaks away. */
+  /* Cards are solid the whole way (they start perfectly stacked behind
+     the front card). The peeled cards fade once the strip is formed; the
+     hero fades LAST — only after it has fully arrived at the slot —
+     dissolving into the coloured HeadingPhoto of the SAME founder. */
   const opacity = useTransform(
     progress,
-    isHero ? [0, 1] : [0, 0.1, 0.58, 0.72],
-    isHero ? [1, 1] : [0, 1, 1, 0],
+    isHero ? [0.93, 0.99] : [0.78, 0.88],
+    [1, 0],
   );
-
-  /* Hero morphs from the portrait card into the landscape heading slot
-     (object-cover re-crops, so it never distorts). */
-  const width = useTransform(
-    progress,
-    [0.68, 0.9],
-    [dims.cardW, isHero ? slot.w : dims.cardW],
-  );
-  const height = useTransform(
-    progress,
-    [0.68, 0.9],
-    [dims.cardH, isHero ? slot.h : dims.cardH],
-  );
-
-  /* Monochrome throughout; ONLY the hero colours up as it lands. */
-  const grayscale = useTransform(progress, [0.72, 0.88], [0.9, isHero ? 0 : 0.9]);
-  const filter = useMotionTemplate`grayscale(${grayscale})`;
 
   return (
     <motion.div
       className="absolute overflow-hidden bg-[#FBF7F0]"
       style={{
-        width,
-        height,
+        width: dims.cardW,
+        height: dims.cardH,
         x,
         y,
         scale,
         opacity,
-        filter,
-        borderRadius: "min(0.93vw, 1.43vh)",
-        /* Hero above all; other cards stack behind it by deck rank. */
-        zIndex: isHero ? 50 : 40 - deckRank,
-        willChange: "transform, width, height, opacity, filter",
+        borderRadius: "2px",
+        /* Hero above all; centre-most cards sit above the outer ones. */
+        /* Front/top card (index 0) above the ones peeking below it —
+           exactly the deck order; the strip keeps the same order. */
+        zIndex: 40 - index,
+        /* Only transform + opacity animate — NO per-frame filter repaint
+           (that was the stutter). Cards stay statically grey; the hero
+           "colours up" purely by crossfading into the coloured HeadingPhoto
+           in the slot. */
+        willChange: "transform, opacity",
       }}
     >
       <Image
@@ -683,7 +826,7 @@ function FounderCard({
         alt={founder.name}
         fill
         sizes="16vw"
-        style={{ objectFit: "cover", objectPosition: "top" }}
+        style={{ objectFit: "cover", objectPosition: "top", filter: "grayscale(0.9)" }}
       />
     </motion.div>
   );

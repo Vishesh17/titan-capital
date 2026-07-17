@@ -146,18 +146,19 @@ function DraggableMarquee({
         return (
           <motion.div
             key={`marquee-item-${company.name}-${i}`}
-            className="relative flex shrink-0 items-center justify-center h-[36px] w-[108px] md:h-[53px] md:w-[164px] select-none"
-            whileHover={{ scale: 1.15, filter: "brightness(1.08)" }}
-            whileTap={{ scale: 1.25 }}
+            className="relative flex shrink-0 items-center justify-center h-[47px] w-[114px] md:h-[70px] md:w-[171px] select-none"
+            style={{ borderRadius: "12px", background: "#FCFCFC" }}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 1.12 }}
             transition={{ type: "spring", stiffness: 400, damping: 18 }}
           >
-            <div className={`relative w-full h-full ${company.scaleClass ?? ""}`}>
+            <div className={`relative h-[62%] w-[76%] ${company.scaleClass ?? ""}`}>
               <Image
                 src={cdnImageSrc(src, 320)}
                 alt={company.name}
                 fill
                 style={{ objectFit: "contain" }}
-                sizes="(max-width: 768px) 108px, 164px"
+                sizes="(max-width: 768px) 114px, 171px"
                 priority={i < 10}
                 draggable={false}
               />
@@ -195,10 +196,11 @@ export default function BackedBeforeClient({
 
   return (
     <section
-      className="flex flex-col items-center gap-[30px] md:gap-[45px] self-stretch overflow-hidden w-full bg-white"
+      className="flex flex-col items-center gap-[15px] md:gap-[22px] self-stretch overflow-hidden w-full"
       style={{
-        paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
-        paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
+        /* Halved vertical footprint (was clamp(40,…,100)). */
+        paddingTop: "clamp(20px, min(3.47vw, 5.09vh), 50px)",
+        paddingBottom: "clamp(20px, min(3.47vw, 5.09vh), 50px)",
         paddingLeft: "var(--section-px-wide)",
         paddingRight: "var(--section-px-wide)",
       }}
@@ -251,7 +253,7 @@ export default function BackedBeforeClient({
 
       {/* TRACK ONE: Left to Right */}
       <div
-        className="flex w-full overflow-hidden relative py-4 md:py-6 mt-6"
+        className="flex w-full overflow-hidden relative py-2 md:py-3 mt-2"
         style={{
           maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
           WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)"
@@ -263,7 +265,7 @@ export default function BackedBeforeClient({
 
       {/* TRACK TWO: Right to Left */}
       <div
-        className="flex w-full overflow-hidden relative py-4 md:py-6 mt-0 md:-mt-4"
+        className="flex w-full overflow-hidden relative py-2 md:py-3 mt-0 md:-mt-2"
         style={{
           maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
           WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)"

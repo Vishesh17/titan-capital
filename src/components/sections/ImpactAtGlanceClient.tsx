@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
-import TypewriterText from "@/components/ui/TypewriterText";
 import {
   motion,
   AnimatePresence,
+  useScroll,
+  useTransform,
   type Variants,
 } from "framer-motion";
 
@@ -182,12 +183,20 @@ function ImpactStatCell({ stat }: { stat: ImpactStat }) {
         },
       }}
     >
-      {/* Vertical line */}
-      <div
-        className="shrink-0 bg-black max-md:!h-[80px]"
+      {/* Vertical line — draws top→bottom (scaleY) when the section
+          scrolls into view, inheriting the cell's visible variant. */}
+      <motion.div
+        className="shrink-0 origin-top bg-black max-md:!h-[80px]"
         style={{
           width: "1px",
-          height: "min(12.04vw, 18.62vh)",
+          height: "min(13.89vw, 21.49vh)" /* ~240 px @ ref (bigger) */,
+        }}
+        variants={{
+          hidden: { scaleY: 0 },
+          visible: {
+            scaleY: 1,
+            transition: { duration: 1.0, ease: [0.22, 1, 0.36, 1] },
+          },
         }}
       />
 
@@ -196,7 +205,7 @@ function ImpactStatCell({ stat }: { stat: ImpactStat }) {
         <span
           className="font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[36px]"
           style={{
-            fontSize: "min(5.56vw, 8.59vh)" /* 96 px @ ref */,
+            fontSize: "min(6.48vw, 10.03vh)" /* 112 px @ ref (bigger) */,
             lineHeight: "150%",
           }}
         >
@@ -205,7 +214,7 @@ function ImpactStatCell({ stat }: { stat: ImpactStat }) {
         <span
           className="whitespace-pre-line font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[14px]"
           style={{
-            fontSize: "min(2.31vw, 3.58vh)" /* 40 px @ ref */,
+            fontSize: "min(2.55vw, 3.94vh)" /* 44 px @ ref (bigger) */,
             lineHeight: "98%",
             marginTop: "min(1.16vw, 1.79vh)" /* ~20 px @ ref */,
           }}
@@ -326,19 +335,17 @@ function StoryCard({ story }: { story: FounderStory }) {
       onMouseLeave={() => setHovered(false)}
       className="group relative w-full cursor-pointer overflow-hidden"
       style={{
-        borderRadius: "12px",
-        /* Shorter than the original 656.5×579 so the grid sits more
-           compactly, but not so flat that the SQUARE (1:1) source photos
-           get over-cropped. Paired with objectPosition "center 30%" below
-           so the crop keeps founders' faces in frame. */
-        aspectRatio: "656.5 / 530",
+        borderRadius: "2px",
+        /* 656.5 × 579 (Figma) — width fills the column; the near-square
+           ratio fits the 1:1 founder photos without over-cropping. */
+        aspectRatio: "656.5 / 579",
       }}
       variants={{
         hidden: { opacity: 0, y: 30 },
         visible: {
           opacity: 1,
           y: 0,
-          transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+          transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.4 },
         },
       }}
     >
@@ -349,7 +356,6 @@ function StoryCard({ story }: { story: FounderStory }) {
         fill
         sizes="(max-width: 768px) 100vw, 50vw"
         className="object-cover transition-transform duration-700 group-hover:scale-105"
-        style={{ objectPosition: "center 30%" }}
       />
 
       {/* Gradient overlay — transparent top → #151515 bottom with
@@ -556,6 +562,23 @@ function StoriesSection({
   ctaLabel: string;
   slides: FounderStory[];
 }) {
+  /* SCROLL-LINKED rules — the centre vertical + horizontal lines draw in
+     lockstep with the user's scroll through the grid (and retract when
+     scrolling back up), instead of a one-shot in-view trigger. */
+  const gridRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: gridRef,
+    /* 0 when the grid's top reaches 85% of the viewport (just entering);
+       1 only when its bottom reaches 60% — so the lines keep drawing across
+       the ENTIRE scroll through both card rows, in lockstep with the user. */
+    offset: ["start 0.85", "end 0.6"],
+  });
+  /* The vertical rule draws across the FULL scroll range (never finishes
+     early); horizontals join from ~a quarter in. Both scrub forward AND
+     backward with the scroll. */
+  const vRuleScale = useTransform(scrollYProgress, [0, 1], [0, 1]);
+  const hRuleScale = useTransform(scrollYProgress, [0.25, 1], [0, 1]);
+
   return (
     <section
       className="relative w-full"
@@ -589,7 +612,9 @@ function StoriesSection({
         variants={{
           hidden: {},
           visible: {
-            transition: { staggerChildren: 0.15, delayChildren: 0.1 },
+            /* Their Stories reveal is deliberately delayed so it lands
+               after the section settles (per request). */
+            transition: { staggerChildren: 0.18, delayChildren: 0.45 },
           },
         }}
       >
@@ -613,7 +638,7 @@ function StoriesSection({
               lineHeight: "150%",
             }}
           >
-            <TypewriterText text={storiesHeadingFirst} />
+            {storiesHeadingFirst}
           </h2>
           <h2
             className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[32px] max-md:!leading-[120%]"
@@ -622,24 +647,24 @@ function StoriesSection({
               lineHeight: "150%",
             }}
           >
-            <TypewriterText text={storiesHeadingSecond} delay={0.4} />
+            {storiesHeadingSecond}
           </h2>
         </motion.div>
 
         {/* 2×2 grid on desktop, 1×4 on mobile */}
-        <div className="relative w-full max-w-[1440px]">
+        <div ref={gridRef} className="relative w-full max-w-[1440px]">
           <div
             className="grid w-full grid-cols-2 max-md:!grid-cols-1"
-            style={{ gap: "min(4.63vw, 7.16vh)" /* 80 px @ ref (was 250) */ }}
+            style={{ gap: "min(14.47vw, 22.38vh)" /* 250 px @ ref */ }}
           >
             {padStories(slides, 4).map((story, i) => (
               <StoryCard key={`${story.name}-${i}`} story={story} />
             ))}
           </div>
 
-          {/* VERTICAL rule — down the centre column gap, spanning the
-              FULL card-stack height (top of the top row → bottom of the
-              bottom row) so it matches the cards. Draws top→bottom. */}
+          {/* VERTICAL rule — down the centre column gap. SCROLL-LINKED:
+              draws top→bottom as you scroll into the grid, and retracts
+              when you scroll back up (scaleY scrubbed by scroll). */}
           <motion.div
             aria-hidden
             className="pointer-events-none absolute max-md:!hidden"
@@ -651,18 +676,13 @@ function StoriesSection({
               width: 1,
               background: "#D8D8D8",
               transformOrigin: "top",
-            }}
-            variants={{
-              hidden: { scaleY: 0 },
-              visible: {
-                scaleY: 1,
-                transition: { duration: 1.4, ease: [0.22, 1, 0.36, 1] },
-              },
+              scaleY: vRuleScale,
             }}
           />
 
-          {/* HORIZONTAL rules — two segments (one per column width) across
-              the centre row gap. Draw outward from the centre. */}
+          {/* HORIZONTAL rules — two segments across the centre row gap.
+              SCROLL-LINKED: draw outward from the centre slightly after
+              the vertical rule, scrubbed by the same scroll progress. */}
           <motion.div
             aria-hidden
             className="pointer-events-none absolute max-md:!hidden"
@@ -670,17 +690,11 @@ function StoriesSection({
               left: 0,
               top: "50%",
               marginTop: "-0.5px",
-              width: "calc((100% - min(4.63vw, 7.16vh)) / 2)" /* adjusted */,
+              width: "calc((100% - min(14.47vw, 22.38vh)) / 2)" /* adjusted */,
               height: 1,
               background: "#D8D8D8",
               transformOrigin: "right",
-            }}
-            variants={{
-              hidden: { scaleX: 0 },
-              visible: {
-                scaleX: 1,
-                transition: { duration: 1.0, ease: [0.22, 1, 0.36, 1] },
-              },
+              scaleX: hRuleScale,
             }}
           />
           <motion.div
@@ -690,17 +704,11 @@ function StoriesSection({
               right: 0,
               top: "50%",
               marginTop: "-0.5px",
-              width: "calc((100% - min(4.63vw, 7.16vh)) / 2)" /* adjusted */,
+              width: "calc((100% - min(14.47vw, 22.38vh)) / 2)" /* adjusted */,
               height: 1,
               background: "#D8D8D8",
               transformOrigin: "left",
-            }}
-            variants={{
-              hidden: { scaleX: 0 },
-              visible: {
-                scaleX: 1,
-                transition: { duration: 1.0, ease: [0.22, 1, 0.36, 1] },
-              },
+              scaleX: hRuleScale,
             }}
           />
         </div>
@@ -865,7 +873,10 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
         style={{
           position: "sticky",
           top: 0,
-          height: "min(50.30vw, 75.62vh)",
+          /* Exactly one viewport tall on EVERY screen — the stats grid is
+             flex-centred inside, and Their Stories only scrolls into view
+             after this full screen. */
+          height: "100vh",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -909,7 +920,7 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
               marginBottom: "min(4.05vw, 6.27vh)" /* ~70 px @ ref */,
             }}
           >
-            <TypewriterText text={`${impactHeadingFirst} ${impactHeadingSecond}`} />
+            {`${impactHeadingFirst} ${impactHeadingSecond}`}
           </motion.h2>
 
           {/* 3 columns × 2 rows on desktop, 2 columns × 3 rows on mobile */}

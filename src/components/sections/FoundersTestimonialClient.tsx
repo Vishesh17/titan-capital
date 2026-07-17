@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useInView, useMotionValue, useAnimationFrame } from "framer-motion";
-import TypewriterText from "@/components/ui/TypewriterText";
 
 /* ─────────────────────────────────────────────────────────
    Types
@@ -182,10 +181,14 @@ function FlipCard({ item }: { item: TestimonialItem }) {
   return (
     <div className="flex flex-col items-center">
       <div
-        className="group relative shrink-0 max-md:!w-[42vw] max-md:!h-[52vw]"
+        className="group relative shrink-0 max-md:!w-[42vw] max-md:!h-[52vw] max-md:!aspect-auto"
         style={{
-          width: "min(23.67vw, 36.62vh)",
-          height: "min(28.36vw, 43.87vh)",
+          /* EXACTLY 3 cards per screen: a third of the site's content
+             area (viewport minus the sitewide gutters) minus the two
+             in-between gaps. Height follows via aspect ratio. */
+          width:
+            "calc((100vw - 2 * var(--section-px-wide) - 2 * min(1.85vw, 2.86vh)) / 3)",
+          aspectRatio: "410 / 491",
           perspective: "1000px",
         }}
       >
@@ -322,7 +325,13 @@ function Marquee({ testimonials }: { testimonials: TestimonialItem[] }) {
 
   return (
     <div
-      className="w-full overflow-hidden"
+      className="overflow-hidden"
+      style={{
+        /* The visible marquee window = the site's content area (same
+           gutters as every other section), so exactly 3 cards show. */
+        marginLeft: "var(--section-px-wide)",
+        marginRight: "var(--section-px-wide)",
+      }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -420,7 +429,7 @@ export default function FoundersTestimonialClient({
           initial={{ opacity: 1 }}
           viewport={{ once: true, amount: 0.4 }}
         >
-          <TypewriterText text={topHeading} />
+          {topHeading}
         </motion.h2>
 
         {/* Draggable marquee */}
@@ -432,11 +441,11 @@ export default function FoundersTestimonialClient({
         ref={bottomRef}
         className="relative z-10 flex w-full flex-col items-center justify-center"
         style={{
-          gap: "min(2.31vw, 3.58vh)",
+          gap: "min(3.24vw, 5.01vh)",
           paddingLeft: "var(--section-px-wide)",
           paddingRight: "var(--section-px-wide)",
-          paddingTop: "min(5.79vw, 8.95vh)",
-          paddingBottom: "min(5.79vw, 8.95vh)",
+          paddingTop: "min(8.68vw, 13.43vh)" /* ~150 px @ ref — bigger block */,
+          paddingBottom: "min(8.68vw, 13.43vh)",
         }}
       >
         <motion.div
@@ -446,9 +455,9 @@ export default function FoundersTestimonialClient({
           viewport={{ once: true, amount: 0.3 }}
         >
           <motion.h2
-            className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[28px]"
+            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px]"
             style={{
-              fontSize: "min(3.24vw, 5.01vh)",
+              fontSize: "min(4.51vw, 6.98vh)" /* 78 px @ ref — bigger */,
               lineHeight: "130%",
             }}
             variants={{
@@ -460,18 +469,18 @@ export default function FoundersTestimonialClient({
               },
             }}
           >
-            <TypewriterText text="You Build the" />{" "}
+            You Build the{" "}
             <span
               className="relative inline-block px-[8px] max-md:!px-[4px]"
               style={{ background: "#D3E2FF" }}
             >
-              <TypewriterText text="Vision." delay={0.5} />
+              Vision.
             </span>
           </motion.h2>
           <motion.h2
-            className="m-0 mt-[min(0.58vw,0.90vh)] text-center font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[28px]"
+            className="m-0 mt-[min(0.58vw,0.90vh)] text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px]"
             style={{
-              fontSize: "min(3.24vw, 5.01vh)",
+              fontSize: "min(4.51vw, 6.98vh)" /* 78 px @ ref — bigger */,
               lineHeight: "130%",
             }}
             variants={{
@@ -487,7 +496,7 @@ export default function FoundersTestimonialClient({
               },
             }}
           >
-            <TypewriterText text={bottomHeadingSecond} delay={0.7} />
+            {bottomHeadingSecond}
           </motion.h2>
         </motion.div>
 
@@ -521,10 +530,10 @@ function CursorFillButtonTestimonial({ href, label }: { href: string; label: str
       className="relative flex shrink-0 items-center justify-center overflow-hidden font-['Poppins',_sans-serif] font-medium leading-[107%] transition-colors duration-300"
       style={{
         background: hovered ? "#FFF" : "#001A4D",
-        height: "min(3.41vw, 5.28vh)",
-        padding: "0 min(2.31vw, 3.58vh)",
-        fontSize: "min(1.16vw, 1.79vh)",
-        borderRadius: "min(1.70vw, 2.64vh)",
+        height: "min(4.4vw, 6.8vh)" /* ~76 px @ ref — bigger */,
+        padding: "0 min(3.24vw, 5.01vh)",
+        fontSize: "min(1.5vw, 2.32vh)" /* ~26 px @ ref */,
+        borderRadius: "min(2.2vw, 3.4vh)",
         color: hovered ? "#001A4D" : "#FFF",
       }}
     >

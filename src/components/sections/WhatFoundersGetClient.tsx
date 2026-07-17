@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import TypewriterText from "@/components/ui/TypewriterText";
 import {
   motion,
   AnimatePresence,
@@ -39,15 +38,10 @@ export interface WhatFoundersGetData {
    ───────────────────────────────────────────────────────── */
 const SZ = {
   // typography
-  heading: "min(4.51vw, 6.98vh)",       // 78 px @ ref  — UNCHANGED (sitewide)
-  /* Closed-list row — tightened to the madeinmay.studio/approach feel:
-     a large-but-restrained title, a small uppercase category label, and
-     a compact description, so ~6 rows sit calmly on screen. */
-  rowTitle: "min(2.66vw, 4.12vh)",      // 46 px @ ref (was 64)
-  rowLabel: "min(0.87vw, 1.34vh)",      // 15 px @ ref — uppercase category
-  rowDesc: "min(1.16vw, 1.79vh)",       // 20 px @ ref — closed-row description
-  subHeading: "min(1.85vw, 2.86vh)",    // 32 px @ ref — OPENED card only
-  desc: "min(1.62vw, 2.51vh)",          // 28 px @ ref — OPENED card only
+  heading: "min(4.51vw, 6.98vh)",       // 78 px @ ref
+  rowTitle: "min(3.70vw, 5.73vh)",      // 64 px @ ref
+  subHeading: "min(1.85vw, 2.86vh)",    // 32 px @ ref
+  desc: "min(1.62vw, 2.51vh)",          // 28 px @ ref
   rotTitle: "min(2.78vw, 4.30vh)",      // 48 px @ ref (opened, rotated)
   backLink: "min(1.16vw, 1.79vh)",      // 20 px @ ref
   // container widths (width-only — layout dims)
@@ -68,16 +62,15 @@ const SZ = {
   // wrapper and the FullPageCard both consume the vars directly so
   // every page section gutters the same amount at every viewport.
   headingToDivider: "min(3.47vw, 5.37vh)", // 60 px @ ref
-  rowPaddingY: "min(1.50vw, 2.33vh)",   // 26 px @ ref  — closed-row body padding (was 40)
-  rowLabelGap: "min(0.64vw, 0.99vh)",   // 11 px @ ref  — label → description gap (closed row)
+  rowPaddingY: "min(2.31vw, 3.58vh)",   // 40 px @ ref  — closed-row body padding
   rowInnerGap: "min(1.62vw, 2.51vh)",   // 28 px @ ref  — small internal gap (around HR margins)
   openedGap: "min(3.47vw, 5.37vh)",     // 60 px @ ref  — main gap between opened-card blocks
                                         //                (heading / desc / HR / Strategic Value / bullets).
                                         // Larger than the closed-row gap because the opened card
                                         // takes over the viewport and needs to fill vertical space.
-  // arrows — actual SVG dimensions (scaled down with the tighter rows)
-  closedArrowW: "min(2.43vw, 3.76vh)",  // 42 px wide (was 56)
-  closedArrowH: "min(2.04vw, 3.16vh)",  // 35 px tall (was 47)
+  // arrows — actual SVG dimensions
+  closedArrowW: "min(3.24vw, 4.21vh)",  // 56 px wide
+  closedArrowH: "min(2.72vw, 4.21vh)",  // 47 px tall
   openArrowW: "min(2.66vw, 4.92vh)",    // 46 px wide
   openArrowH: "min(3.20vw, 4.92vh)",    // 55 px tall (after rotation)
 };
@@ -329,12 +322,14 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: 0.45, ease: EASE } }}
       exit={{ opacity: 0, transition: { duration: 0.25, ease: EASE } }}
-      className="grid w-full items-center"
+      className="grid w-full items-start"
       style={{
         gridTemplateColumns: `${SZ.rowTitleBox} 1fr auto`,
         columnGap: SZ.openedGap,
         paddingTop: SZ.rowPaddingY,
         paddingBottom: SZ.rowPaddingY,
+        transform: "scale(0.9)",
+        transformOrigin: "left center",
       }}
     >
       {/* Row title */}
@@ -342,34 +337,33 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
         className="m-0 font-['Poppins',_sans-serif] font-normal capitalize text-black"
         style={{
           fontSize: SZ.rowTitle,
-          lineHeight: "115%",
+          lineHeight: "120%",
         }}
       >
         {row.title}
       </h3>
 
-      {/* Uppercase category label + compact description (madeinmay feel) */}
+      {/* Short heading + short description */}
       <div
         className="flex flex-col"
         style={{
-          gap: SZ.rowLabelGap,
+          gap: SZ.rowInnerGap,
           maxWidth: SZ.descBox,
         }}
       >
         <h4
-          className="m-0 font-['Poppins',_sans-serif] font-semibold uppercase text-black"
+          className="m-0 font-['Poppins',_sans-serif] font-medium text-black"
           style={{
-            fontSize: SZ.rowLabel,
-            lineHeight: "140%",
-            letterSpacing: "0.08em",
+            fontSize: SZ.subHeading,
+            lineHeight: "150%",
           }}
         >
           {row.shortHeading}
         </h4>
         <p
-          className="m-0 font-['Poppins',_sans-serif] font-normal text-[#323232]"
+          className="m-0 font-['Poppins',_sans-serif] font-normal text-[#0E0E0E]"
           style={{
-            fontSize: SZ.rowDesc,
+            fontSize: SZ.desc,
             lineHeight: "150%",
           }}
         >
@@ -377,7 +371,8 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
         </p>
       </div>
 
-      {/* Arrow — hovering the row smoothly rotates it from → to ↗. */}
+      {/* Arrow — hover on the arrow itself smoothly morphs it
+          from → to ↗ via HoverArrow (rotates + crossfades). */}
       <div className="flex items-center justify-end self-center">
         <HoverArrow />
       </div>
@@ -443,15 +438,12 @@ function OpenedRow({
           paddingRight: SZ.openedGap,
         }}
       >
-        <motion.button
+        <button
           type="button"
           onClick={(e) => {
             e.stopPropagation();
             onBack();
           }}
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: EASE, delay: 0.3 }}
           className="cursor-pointer border-0 bg-transparent p-0 font-['Poppins',_sans-serif] font-normal text-black underline underline-offset-4 transition-opacity hover:opacity-60"
           style={{
             fontSize: SZ.backLink,
@@ -459,7 +451,7 @@ function OpenedRow({
           }}
         >
           Back
-        </motion.button>
+        </button>
 
         {/* Rotated title — absolute, vertically centered, positioned
             just to the LEFT of the vertical rule (small breathing gap
@@ -474,10 +466,7 @@ function OpenedRow({
             right: `calc(${SZ.openedGap} + min(1.62vw, 2.51vh))`,
           }}
         >
-          <motion.span
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, ease: EASE, delay: 0.4 }}
+          <span
             className="whitespace-nowrap text-center font-['Poppins',_sans-serif] font-normal capitalize text-black"
             style={{
               fontSize: SZ.rotTitle,
@@ -487,7 +476,7 @@ function OpenedRow({
             }}
           >
             {row.title}
-          </motion.span>
+          </span>
         </div>
 
         {/* Full-height vertical rule on the right edge of the
@@ -521,10 +510,7 @@ function OpenedRow({
         className="flex w-full flex-col"
         style={{ gap: SZ.openedGap }}
       >
-        <motion.h4
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: EASE, delay: 0.55 }}
+        <h4
           className="m-0 font-['Poppins',_sans-serif] font-medium text-[#0E0E0E]"
           style={{
             fontSize: SZ.subHeading,
@@ -532,12 +518,9 @@ function OpenedRow({
           }}
         >
           {row.longHeading}
-        </motion.h4>
+        </h4>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: EASE, delay: 0.7 }}
+        <p
           className="m-0 font-['Poppins',_sans-serif] font-normal text-[#323232]"
           style={{
             fontSize: SZ.desc,
@@ -545,7 +528,7 @@ function OpenedRow({
           }}
         >
           {row.longDesc}
-        </motion.p>
+        </p>
 
         {/* Divider under the description — draws left→right per
             the site rule that every line animates on reveal.
@@ -564,13 +547,7 @@ function OpenedRow({
           }}
         />
 
-        <motion.h5
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: EASE, delay: 1.0 }}
-          /* Left-aligned per Figma reference (same left edge as
-             the longHeading and description above). Color #000,
-             font 32/500/110%. */
+        <h5
           className="m-0 text-left font-['Poppins',_sans-serif] font-medium text-black"
           style={{
             fontSize: SZ.subHeading,
@@ -578,25 +555,15 @@ function OpenedRow({
           }}
         >
           {row.valueTitle}
-        </motion.h5>
+        </h5>
 
         <ul
           className="m-0 flex list-none flex-col p-0"
           style={{ gap: SZ.rowInnerGap }}
         >
           {row.valueBullets.map((bullet, i) => (
-            <motion.li
+            <li
               key={i}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.5,
-                ease: EASE,
-                /* Bullets fire one after another starting at 1.15 s,
-                   each 0.10 s after the previous. Last bullet lands
-                   at 1.15 + (N-1)*0.10 + 0.5 s duration. */
-                delay: 1.15 + i * 0.1,
-              }}
               className="relative font-['Poppins',_sans-serif] font-normal text-[#323232]"
               style={{
                 fontSize: SZ.desc,
@@ -611,7 +578,7 @@ function OpenedRow({
                 •
               </span>
               {bullet}
-            </motion.li>
+            </li>
           ))}
         </ul>
       </div>
@@ -801,7 +768,7 @@ export default function WhatFoundersGetClient({
         whileInView="visible"
         viewport={{ once: true, amount: 0.15 }}
       >
-        {/* Section heading — fades up on scroll into view */}
+        {/* Section heading — static (no type-on animation) */}
         <h2
           className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[32px] max-md:!leading-[120%]"
           style={{
@@ -809,7 +776,7 @@ export default function WhatFoundersGetClient({
             lineHeight: "120%",
           }}
         >
-          <TypewriterText text={heading} />
+          {heading}
         </h2>
 
         {/* Space between heading and the first divider */}
