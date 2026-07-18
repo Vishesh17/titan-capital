@@ -24,20 +24,19 @@ function NavCursorFillButton({ href, label }: { href: string; label: string }) {
     setOrigin(`${x}% ${y}%`);
     setHovered(false);
   };
-
   return (
     <Link
       href={href}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="relative flex shrink-0 items-center justify-center overflow-hidden font-['Poppins',_sans-serif] font-medium transition-colors duration-300"
+      // 1. Added whitespace-nowrap, the fluid text-[min(...)], and max-md fallbacks
+      className="relative flex shrink-0 items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] text-[min(1.16vw,1.79vh)] font-normal transition-colors duration-300 max-md:!w-[160px] max-md:!h-[40px] max-md:!text-[13px]"
       style={{
-        width: "197px",
-        height: "49px",
-        borderRadius: "51px",
+        // 2. Replaced hardcoded px with the exact responsive tokens from the Hero button
+        width: "min(12.15vw, 18.8vh)",
+        height: "min(3.36vw, 5.19vh)",
+        borderRadius: "53px",
         border: "1px solid #CDCDCD",
-        fontSize: "16px",
-        lineHeight: "140%",
         color: hovered ? "#001A4D" : "white",
       }}
     >
@@ -71,7 +70,6 @@ export type NavbarData = {
   ctaLabel?: string;
   ctaUrl?: string;
 };
-
 const FALLBACK_SECTIONS: NavbarSection[] = [
   {
     id: "for-founders",
