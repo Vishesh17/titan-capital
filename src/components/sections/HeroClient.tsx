@@ -499,18 +499,17 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
           <div className="relative flex flex-col items-center max-md:!items-start max-md:!px-[24px]">
             {/* DESKTOP heading layout */}
             <h1
-              className="pointer-events-none m-0 hidden md:flex flex-col items-start text-left font-['Poppins',_sans-serif] font-black uppercase leading-[100%] text-white"
+              className="pointer-events-none m-0 hidden md:flex flex-col items-start text-left font-['Poppins',_sans-serif] font-black uppercase leading-[86%] text-white"
               style={{ fontSize: "min(9.4vw, 15.0vh)" }}
             >
               <RevealLine show={headingReady} delay={0}>Backing Founder</RevealLine>
               {/* Row 2–3: items-stretch makes the photo slot span EXACTLY
-                  the height of the ENDURING/IMPACT column, and the small
-                  em margins trim it to the caps' visual top / baseline —
-                  so the image top meets FOR/ENDURING and its bottom ends
-                  with IMPACT. */}
+                  the height of the ENDURING/IMPACT column. We reduced the 
+                  line-height to 86%, so the total height of this row shrinks,
+                  and the image slot automatically shrinks to match. */}
               <span
                 className="flex items-stretch"
-                style={{ gap: "min(0.8vw, 1.4vh)", marginTop: "min(0.35vw, 0.54vh)" }}
+                style={{ gap: "min(0.8vw, 1.4vh)", marginTop: "min(0.2vw, 0.4vh)" }}
               >
                 <RevealLine show={headingReady} delay={0.5}>For</RevealLine>
                 <span
@@ -520,13 +519,15 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                     width: SLOT_W,
                     borderRadius: "2px",
                     alignSelf: "stretch",
-                    marginTop: "0.12em",
-                    marginBottom: "0.12em",
+                    // Margins tweaked slightly to match the tighter line-height
+                    marginTop: "0.06em",
+                    marginBottom: "0.06em",
                   }}
                 >
                   <HeadingPhoto founder={headingFounder} tick={headingTick} show={headingReady} />
                 </span>
-                <span className="flex flex-col items-start leading-[100%]">
+                {/* Changed leading from 100% to 86% to squish the lines closer */}
+                <span className="flex flex-col items-start leading-[86%]">
                   <RevealLine show={headingReady} delay={0.7}>Enduring</RevealLine>
                   <RevealLine show={headingReady} delay={1.0}>Impact</RevealLine>
                 </span>
@@ -536,14 +537,14 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
             {/* MOBILE heading layout */}
             <h1
               className="pointer-events-none m-0 flex md:hidden flex-col items-start text-left font-['Poppins',_sans-serif] font-black uppercase text-white"
-              style={{ fontSize: "52px", lineHeight: "106%" }}
+              style={{ fontSize: "52px", lineHeight: "92%" }} // Reduced from 106% to 92%
             >
               <RevealLine show={headingReady} delay={0}>Backing</RevealLine>
               <RevealLine show={headingReady} delay={0.3}>Founder</RevealLine>
               <RevealLine show={headingReady} delay={0.6}>For</RevealLine>
               <span
-                className="relative inline-block shrink-0 overflow-hidden my-[8px]"
-                style={{ width: "55vw", height: "38vw", borderRadius: 2 }}
+                className="relative inline-block shrink-0 overflow-hidden my-[4px]" // Reduced top/bottom margin 
+                style={{ width: "55vw", height: "32vw", borderRadius: 2 }} // Reduced height to match tighter spacing
                 ref={mobileSlotRef}
               >
                 <HeadingPhoto founder={headingFounder} tick={headingTick} show={headingReady} />
@@ -568,9 +569,6 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 </Link>
                 <CursorFillButton href="/getinvestment" label="Get Investment" />
               </div>
-              {/* The description is NOT here — the single fixed bottom
-                  subtitle (at bottom-8vh) fades back in with the heading,
-                  so it ends exactly where it started. */}
             </div>
           </div>
         </motion.div>
@@ -851,7 +849,7 @@ function FounderCard({
         scale,
         opacity,
         zIndex,
-        borderRadius: "2px",
+        borderRadius: "2px, 2px",
         /* Hero desaturates gradually (colour bloom); the rest stay grey. */
         filter: isHero ? heroFilter : "grayscale(0.9)",
         willChange: isHero
@@ -863,7 +861,7 @@ function FounderCard({
         src={heroImageSrc(founder.image, 400)}
         alt={founder.name}
         fill
-        sizes="16vw"
+        sizes="14vw"
         style={{ objectFit: "cover", objectPosition: "top" }}
       />
     </motion.div>
