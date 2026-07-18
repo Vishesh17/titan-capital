@@ -42,8 +42,15 @@ const SZ = {
   rowTitle: "min(3.70vw, 5.73vh)",      // 64 px @ ref
   subHeading: "min(1.85vw, 2.86vh)",    // 32 px @ ref
   desc: "min(1.62vw, 2.51vh)",          // 28 px @ ref
-  rotTitle: "min(2.78vw, 4.30vh)",      // 48 px @ ref (opened, rotated)
-  backLink: "min(1.16vw, 1.79vh)",      // 20 px @ ref
+  rotTitle: "min(3.48vw, 5.37vh)",      // 72 px @ ref (opened, rotated — big spine)
+  backLink: "min(1.51vw, 2.33vh)",      // 26 px @ ref
+  // Opened-card typography — pushed as large as still fits the shortest
+  // laptop height (see BgTransition sizing notes). The closed rows keep
+  // their own smaller subHeading/desc.
+  oSubHeading: "min(2.20vw, 3.40vh)",   // 38 px @ ref
+  oDesc: "min(1.91vw, 2.96vh)",         // 33 px @ ref
+  oGap: "min(3.42vw, 5.28vh)",          // 59 px @ ref — opened-card block gap
+  oPadY: "min(2.31vw, 3.58vh)",         // 40 px @ ref — opened-card top/bottom (modal, not a side gutter)
   // container widths (width-only — layout dims)
   /* Both dividers span the FULL row width now — so on the closed
      list they extend all the way past the arrow, and on the
@@ -417,13 +424,18 @@ function OpenedRow({
       exit={{ opacity: 0, transition: { duration: 0.3, ease: EASE } }}
       className="grid w-full"
       style={{
-        gridTemplateColumns: `${SZ.rowTitleBox} 1fr`,
+        /* Left column shrinks to hug the rotated heading (`auto`) instead
+           of a fixed 22.57vw box — otherwise ~260 px of slack piled up on
+           the far left. Now the heading sits right at the left gutter and
+           the whole block is symmetric: gutter → heading … content →
+           gutter, equal margins on both sides. */
+        gridTemplateColumns: "auto 1fr",
         /* No top/bottom padding here — the FullPageCard
            container already supplies var(--section-py) and
            its `items-center` flex centers this vertically. */
       }}
     >
-      {/* LEFT column — three positioned pieces:
+     {/* LEFT column — three positioned pieces:
            1. Back button — top-left in normal flow.
            2. Rotated title — absolutely positioned near the
               vertical rule (NOT the far-left edge of the
@@ -432,10 +444,11 @@ function OpenedRow({
            3. Vertical rule — right edge, animates scaleY
               top→bottom on mount per the site rule that all
               lines animate when their section opens. */}
+      {/* ▼ CHANGED: Now uses a grid to pin the Back button to the top and center the title below it */}
       <div
-        className="relative"
+        className="relative grid grid-rows-[auto_1fr]"
         style={{
-          paddingRight: SZ.openedGap,
+          paddingRight: SZ.oGap,
         }}
       >
         <button
@@ -448,24 +461,14 @@ function OpenedRow({
           style={{
             fontSize: SZ.backLink,
             lineHeight: "150%",
+            textAlign: "center", // Ensures it stays centered in its grid cell
           }}
         >
           Back
         </button>
 
-        {/* Rotated title — absolute, vertically centered, positioned
-            just to the LEFT of the vertical rule (small breathing gap
-            between text and line). Uses writing-mode: vertical-rl so
-            the letters stack top-to-bottom (T at top, read by tilting
-            head right). */}
-        <div
-          className="pointer-events-none absolute bottom-0 top-0 flex items-center"
-          style={{
-            /* Position: `openedGap` (parent's right padding) + a small
-               gap between the text and the vertical rule. */
-            right: `calc(${SZ.openedGap} + min(1.62vw, 2.51vh))`,
-          }}
-        >
+        {/* Wrapper to center the vertical text in the remaining space */}
+        <div className="flex items-center justify-center">
           <span
             className="whitespace-nowrap text-center font-['Poppins',_sans-serif] font-normal capitalize text-black"
             style={{
@@ -496,7 +499,7 @@ function OpenedRow({
 
       {/* RIGHT column — main content. Extra left padding so it
           isn't flush against the vertical rule. */}
-      <div style={{ paddingLeft: SZ.openedGap }}>
+      <div style={{ paddingLeft: SZ.oGap }}>
 
       {/* Right column — each block has an explicit `delay` so
           the layered stagger sequence lands in a predictable
@@ -508,12 +511,12 @@ function OpenedRow({
           gutter on the right. */}
       <div
         className="flex w-full flex-col"
-        style={{ gap: SZ.openedGap }}
+        style={{ gap: SZ.oGap }}
       >
         <h4
           className="m-0 font-['Poppins',_sans-serif] font-medium text-[#0E0E0E]"
           style={{
-            fontSize: SZ.subHeading,
+            fontSize: SZ.oSubHeading,
             lineHeight: "150%",
           }}
         >
@@ -523,7 +526,7 @@ function OpenedRow({
         <p
           className="m-0 font-['Poppins',_sans-serif] font-normal text-[#323232]"
           style={{
-            fontSize: SZ.desc,
+            fontSize: SZ.oDesc,
             lineHeight: "150%",
           }}
         >
@@ -550,7 +553,7 @@ function OpenedRow({
         <h5
           className="m-0 text-left font-['Poppins',_sans-serif] font-medium text-black"
           style={{
-            fontSize: SZ.subHeading,
+            fontSize: SZ.oSubHeading,
             lineHeight: "110%",
           }}
         >
@@ -566,14 +569,14 @@ function OpenedRow({
               key={i}
               className="relative font-['Poppins',_sans-serif] font-normal text-[#323232]"
               style={{
-                fontSize: SZ.desc,
+                fontSize: SZ.oDesc,
                 lineHeight: "150%",
                 paddingLeft: SZ.rowInnerGap,
               }}
             >
               <span
                 className="absolute left-0 top-0"
-                style={{ fontSize: SZ.desc, lineHeight: "150%" }}
+                style={{ fontSize: SZ.oDesc, lineHeight: "150%" }}
               >
                 •
               </span>
@@ -719,11 +722,12 @@ function FullPageCard({
         WebkitBackdropFilter: "blur(32px) saturate(1.4)",
         boxShadow: "0 8px 40px rgba(0, 0, 0, 0.08)",
 
-        /* Same sitewide padding as every other section — no
-           oversized 188 px gutters. Content will sit inside the
-           same left/right column that heading + rows use. */
-        paddingTop: "var(--section-py)",
-        paddingBottom: "var(--section-py)",
+        /* Left/right gutters stay on the sitewide token so the card
+           lines up with every other section. Top/bottom is trimmed
+           (this is a full-screen modal, not an in-flow section) so the
+           larger content fills the height instead of floating. */
+        paddingTop: SZ.oPadY,
+        paddingBottom: SZ.oPadY,
         paddingLeft: "var(--section-px-wide)",
         paddingRight: "var(--section-px-wide)",
       }}

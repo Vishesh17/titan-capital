@@ -125,7 +125,9 @@ function VerticalLines({ active }: { active: boolean }) {
       initial="hidden"
       animate={active ? "visible" : "hidden"}
       variants={{
-        hidden: {},
+        /* Reverse the stagger on the way out so the lines retract in the
+           opposite order to how they drew in. */
+        hidden: { transition: { staggerChildren: 0.12, staggerDirection: -1 } },
         visible: { transition: { staggerChildren: 0.18 } },
       }}
     >
@@ -141,7 +143,10 @@ function VerticalLines({ active }: { active: boolean }) {
             transformOrigin: "top",
           }}
           variants={{
-            hidden: { scaleY: 0 },
+            hidden: {
+              scaleY: 0,
+              transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] },
+            },
             visible: {
               scaleY: 1,
               transition: { duration: 2.6, ease: [0.22, 1, 0.36, 1] },
@@ -393,7 +398,9 @@ export default function FoundersTestimonialClient({
       : FALLBACK_TESTIMONIALS;
 
   const bottomRef = useRef<HTMLDivElement>(null);
-  const bottomInView = useInView(bottomRef, { once: true, amount: 0.15 });
+  /* once:false so the lines retract when scrolled back up and redraw on
+     the way down again. */
+  const bottomInView = useInView(bottomRef, { once: false, amount: 0.15 });
 
   return (
     <section
