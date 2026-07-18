@@ -500,7 +500,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
             {/* DESKTOP heading layout */}
             <h1
               className="pointer-events-none m-0 hidden md:flex flex-col items-start text-left font-['Poppins',_sans-serif] font-black uppercase leading-[86%] text-white"
-              style={{ fontSize: "min(9.4vw, 15.0vh)" }}
+              style={{ fontSize: "min(10.4vw, 16.0vh)" }}
             >
               <RevealLine show={headingReady} delay={0}>Backing Founder</RevealLine>
               {/* Row 2–3: items-stretch makes the photo slot span EXACTLY
