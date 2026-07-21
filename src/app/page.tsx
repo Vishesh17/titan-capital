@@ -32,6 +32,11 @@ export default function Home() {
             wrapper so Indicorns unpins once the pair is scrolled past. */}
         <div className="relative">
           <IndicornsSpotlight />
+          {/* Dwell spacer — Indicorns is sticky and fills the viewport, so
+              this extra scroll height keeps it PINNED (a brief pause) before
+              the testimonial section scrolls up over it. Kept short so the
+              Indicorns dwell doesn't feel too long. */}
+          <div aria-hidden className="h-[35vh] w-full" />
           <FounderTestimonial />
         </div>
       </div>

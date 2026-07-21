@@ -196,6 +196,13 @@ export default function WhatWeBelieveClient({
               position: "relative",
               width: dims.photoW,
               height: dims.cardH,
+              /* Promote the scaling group to its OWN GPU layer so the
+                 shrink is a cheap composited transform. Without this the
+                 browser re-rasterizes the whole 3-D + background-image
+                 subtree every frame during the scale, blocking the main
+                 thread → the scroll visibly hitches while it shrinks. */
+              willChange: "transform",
+              backfaceVisibility: "hidden",
             }}
           >
             <div
@@ -247,6 +254,9 @@ export default function WhatWeBelieveClient({
               position: "relative",
               width: mobileDims.cardW,
               height: mobileDims.photoH,
+              /* Same GPU-layer promotion as desktop (see note there). */
+              willChange: "transform",
+              backfaceVisibility: "hidden",
             }}
           >
             <div

@@ -225,8 +225,11 @@ function FlipCard({ item }: { item: TestimonialItem }) {
               {logoContent}
             </div>
             {/* Photo — the bottom 74% of the card, 100% width (no padding).
-                Uniform block for every card; `cover` + centre keeps all
-                founder photos identically sized and centred. */}
+                Uniform block for every card; `cover` + TOP anchor keeps every
+                founder photo the same displayed size AND pins them all to the
+                same start (top) and end (block bottom) line, so faces are never
+                cropped out of frame regardless of the source photo's aspect
+                ratio (e.g. Zouk's taller portrait no longer runs off the top). */}
             <div className="relative" style={{ height: "74%" }}>
               <Image
                 src={cdnImageSrc(item.image || "", 800)}
@@ -235,7 +238,7 @@ function FlipCard({ item }: { item: TestimonialItem }) {
                 sizes="(max-width: 1440px) 33vw, 500px"
                 style={{
                   objectFit: "cover",
-                  objectPosition: "center",
+                  objectPosition: "top center",
                   filter: "grayscale(1)",
                 }}
               />
@@ -408,8 +411,8 @@ export default function FoundersTestimonialClient({
       className="relative w-full"
       style={{
         background: "#FBF7F0",
-        borderTopLeftRadius: "min(6.66vw, 10.30vh)",
-        borderTopRightRadius: "min(6.66vw, 10.30vh)",
+        borderTopLeftRadius: "min(4.44vw, 7.30vh)",
+        borderTopRightRadius: "min(4.44vw, 7.30vh)",
         borderBottomLeftRadius: 0,
         borderBottomRightRadius: 0,
         zIndex: 20,

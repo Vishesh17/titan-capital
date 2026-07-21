@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useInView } from "framer-motion";
+import HeroGlow from "./HeroGlow";
 
 /* Site-wide easing — snappy start, smooth deceleration. */
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -80,64 +81,6 @@ function cdnImageSrc(url: string, width: number): string {
  *  Normalise both shapes here so the render loop is one path. */
 function resolveLogoSrc(logo: IndicornLogo): string {
   return logo.src ?? logo.image ?? "";
-}
-
-/* ─────────────────────────────────────────────────────────
-   GlowBlob — a soft aurora glow made from a CSS radial-gradient
-   that fades to fully transparent at its rim, plus a blur for
-   extra softness. Because the edge is transparent (not a solid
-   ellipse clipped by an SVG filter region), there is NO hard
-   line — it blends seamlessly into the navy background and into
-   the other blob.
-
-   It drifts around on an infinite loop (x / y / scale), giving
-   the "smooth gradient moving here and there" feel. Colours are
-   the Figma aurora stops (#033699 / #5054B5 / #AC71C6) over the
-   #001A4D base. Everything is min(vw,vh) / % so it's responsive.
-   ───────────────────────────────────────────────────────── */
-function GlowBlob({ variant }: { variant: "left" | "right" }) {
-  const left = variant === "left";
-  return (
-    <motion.div
-      aria-hidden="true"
-      className="pointer-events-none absolute rounded-full"
-      style={{
-        width: "min(62vw, 95vh)",
-        height: "min(62vw, 95vh)",
-        left: left ? "-14%" : "auto",
-        right: left ? "auto" : "-14%",
-        top: left ? "2%" : "auto",
-        bottom: left ? "auto" : "-8%",
-        /* IDENTICAL gradient for both blobs — a soft blue-indigo
-           aurora that fades to transparent, sitting nicely on the
-           #001A4D navy. (The right one used to be purplish.) */
-        background:
-          "radial-gradient(circle at center, rgba(44,86,196,0.52) 0%, rgba(80,84,181,0.30) 42%, rgba(0,26,77,0) 70%)",
-        filter: "blur(70px)",
-        willChange: "transform, opacity",
-      }}
-      animate={{
-        /* Organic float — larger, more evident travel on a quicker
-           loop, with a scale + opacity "breathe" so the light clearly
-           moves around. The two blobs use opposite directions and
-           different periods so they never sync up. */
-        x: left
-          ? ["-14%", "20%", "-8%", "12%", "-14%"]
-          : ["14%", "-20%", "8%", "-12%", "14%"],
-        y: left
-          ? ["-16%", "10%", "20%", "-8%", "-16%"]
-          : ["16%", "-10%", "-20%", "8%", "16%"],
-        scale: [1, 1.18, 0.92, 1.1, 1],
-        opacity: [0.7, 1, 0.8, 0.95, 0.7],
-      }}
-      transition={{
-        duration: left ? 18 : 22,
-        repeat: Infinity,
-        repeatType: "loop",
-        ease: "easeInOut",
-      }}
-    />
-  );
 }
 
 /* ─── Cursor-origin fill button (white pill → navy fill, text turns white) ─── */
@@ -242,13 +185,12 @@ export default function IndicornSpotlightClient({
            background-color: #001a4d. The depth/aurora comes purely
            from the GlowBackdrop SVG overlays, not a section gradient. */
         background: "#001A4D",
-        /* Reduced height — the section now pins (sticky) and the next
-           section scrolls over it, so it no longer needs the tall
-           overlap padding it had when it was a normal-flow section.
-           Shorter section + shorter divider = far less blank navy below
-           the content. Top padding still clears the Stories card that
-           overlaps its top by 115 px. */
-        minHeight: "min(50.30vw, 75.62vh)" /* ~800 px @ ref */,
+        /* Full-viewport pin — the section fills the screen while it is
+           pinned (sticky), so the scroll visibly "stops" here for the
+           dwell added by the spacer after it in page.tsx, then the next
+           section scrolls up over it. Top padding still clears the
+           Stories card that overlaps its top by 115 px. */
+        minHeight: "100vh",
         paddingTop: "min(12.10vw, 18.53vh)" /* ~140 px @ ref */,
         paddingBottom: "min(12.63vw, 16.16vh)" /* ~80 px @ ref */,
         paddingLeft: "var(--section-px-wide)",
@@ -256,14 +198,13 @@ export default function IndicornSpotlightClient({
       }}
     >
       {/* ══════════ GLOW LAYER ══════════
-          Two soft radial-gradient blobs drift around behind the
-          content. Their rims are transparent, so they blend into the
-          navy and into each other with no hard edge — and the section's
-          own overflow-hidden only ever clips already-faded pixels. */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <GlowBlob variant="left" />
-        <GlowBlob variant="right" />
-      </div>
+          The exact hero-section aurora — two ambient SVG blobs (blur +
+          grain) that wander and parallax with the cursor, plus a
+          cursor-tracking blob — shared via <HeroGlow>. `idPrefix` keeps
+          the SVG filter ids unique from the hero's instance, and `scale`
+          shrinks the blobs to fit THIS section (they were sized for the
+          full-viewport hero and overflowed here). */}
+      <HeroGlow idPrefix="indi" scale={0.68} />
 
       {/* Grid: LEFT column | 1 px vertical divider | RIGHT column.
           On mobile, drops to a single column and hides the vertical rule. */}

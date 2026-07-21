@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────
    Types shared with the server wrapper (ImpactAtGlance.tsx)
@@ -106,8 +106,9 @@ const parseStat = (val: string) => {
 
 function RollingNumber({ value }: { value: string }) {
   const { prefix, numberStr, suffix } = parseStat(value);
-  const rollDuration = numberStr.length === 1 ? 2.8 : 1.5;
-  const digitStagger = 0.15;
+  /* Slower, more deliberate roll (was 2.8 / 1.5 with a 0.15 stagger). */
+  const rollDuration = numberStr.length === 1 ? 3.8 : 2.6;
+  const digitStagger = 0.22;
 
   const digitVariants = {
     hidden: { y: "0%" },
@@ -163,7 +164,13 @@ function RollingNumber({ value }: { value: string }) {
    [1 px × 208 px vertical line] + [rolling number (96 px)]
    + [description (40 px, capitalize, preserves newlines)].
    ───────────────────────────────────────────────────────── */
-function ImpactStatCell({ stat }: { stat: ImpactStat }) {
+function ImpactStatCell({
+  stat,
+  lineScale,
+}: {
+  stat: ImpactStat;
+  lineScale: MotionValue<number>;
+}) {
   return (
     <motion.div
       className="flex flex-row items-start max-md:!gap-[10px]"
@@ -177,20 +184,16 @@ function ImpactStatCell({ stat }: { stat: ImpactStat }) {
         },
       }}
     >
-      {/* Vertical line — draws top→bottom (scaleY) when the section
-          scrolls into view, inheriting the cell's visible variant. */}
+      {/* Vertical line — SCROLL-LINKED scaleY: draws top→bottom as the
+          section scrolls into view and RETRACTS in lockstep while it's
+          still on screen when you scroll back up (not a one-shot toggle,
+          so the disappear is always visible). */}
       <motion.div
         className="shrink-0 origin-top bg-black max-md:!h-[80px]"
         style={{
           width: "1px",
           height: "min(13.89vw, 21.49vh)" /* ~240 px @ ref (bigger) */,
-        }}
-        variants={{
-          hidden: { scaleY: 0 },
-          visible: {
-            scaleY: 1,
-            transition: { duration: 1.0, ease: [0.22, 1, 0.36, 1] },
-          },
+          scaleY: lineScale,
         }}
       />
 
@@ -599,7 +602,7 @@ function StoriesSection({
            marginBottom below. Without that overlap, the bottom
            corners would just show the wrapper's own bg-white and the
            radius would be invisible. */
-        borderRadius: "min(6.66vw, 10.30vh)" /* 115 px @ ref, all corners */,
+        borderRadius: "min(4.44vw, 7.30vh)" /* 115 px @ ref, all corners */,
         /* Overlap the next section (Indicorns) by exactly the corner
            radius, so the bottom-corner cutouts sit ON TOP of navy. */
         marginBottom: "min(-6.66vw, -10.30vh)" /* -115 px @ ref */,
@@ -756,6 +759,46 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
       ? data.founderStories
       : FALLBACK_SLIDES;
 
+  /* Scroll-linked draw for the vertical lines. We measure the sticky
+     section's document-Y once, then map the GLOBAL page scroll to a 0→1
+     scale as the section rises into view. Because it is scrubbed by scroll
+     (not a one-shot in-view toggle), the lines RETRACT visibly while the
+     section is still on screen as you scroll back up. Global scrollY +
+     measured Y is monotonic (a target/offset useScroll on this sticky
+     section would fight Lenis). */
+  const { scrollY } = useScroll();
+  const impactSectionRef = useRef<HTMLElement>(null);
+  const [impactTop, setImpactTop] = useState(1600);
+  const [vh, setVh] = useState(800);
+  useEffect(() => {
+    const measure = () => {
+      setVh(window.innerHeight);
+      if (impactSectionRef.current) {
+        setImpactTop(
+          impactSectionRef.current.getBoundingClientRect().top + window.scrollY,
+        );
+      }
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    const t = setTimeout(measure, 600);
+    if (typeof document !== "undefined" && document.fonts?.ready) {
+      document.fonts.ready.then(measure);
+    }
+    return () => {
+      window.removeEventListener("resize", measure);
+      clearTimeout(t);
+    };
+  }, []);
+  /* Draw from when the section is ~0.9 vh below the top to when it reaches
+     the top; clamped to [0,1] so it stays full during the pin. */
+  const lineScale = useTransform(
+    scrollY,
+    [impactTop - 0.9 * vh, impactTop - 0.15 * vh],
+    [0, 1],
+    { clamp: true },
+  );
+
   return (
     <div className="relative w-full bg-[#FBF7F0]">
 
@@ -775,6 +818,7 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
           No scroll-linked JS needed; sticky positioning IS the
           animation and it reverses for free. */}
       <section
+        ref={impactSectionRef}
         className="relative w-full bg-[#FBF7F0] max-md:!h-[100vh] max-md:!py-[40px]"
         style={{
           position: "sticky",
@@ -839,12 +883,17 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
             }}
           >
             {impactData.map((stat, i) => (
-              <ImpactStatCell key={`${stat.num}-${i}`} stat={stat} />
+              <ImpactStatCell key={`${stat.num}-${i}`} stat={stat} lineScale={lineScale} />
             ))}
           </div>
         </motion.div>
       </section>
 
+      {/* Dwell spacer — Impact is sticky and fills the viewport, so this
+          extra scroll height keeps it PINNED (the scroll visibly "stops"
+          on Impact for ~1 screen) before Their Stories scrolls up over it.
+          It sits over the wrapper's own #FBF7F0, matching Impact's bg. */}
+      <div aria-hidden className="h-[85vh] w-full" />
 
       {/* =========================================================
             STAGE 2 (NEW): Their Stories, Our Credentials

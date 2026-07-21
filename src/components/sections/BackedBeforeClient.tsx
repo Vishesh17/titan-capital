@@ -56,7 +56,7 @@ const FALLBACK_ROW2: BackedBeforeLogo[] = [
   { name: "Zingbus",    logos_backuprc: "/images/logos_backup/zingbus.webp",           scaleClass: "" },
   { name: "Anveshan",   logos_backuprc: "/images/logos_backup/anveshan.webp",          scaleClass: "" },
   { name: "Kutumb",     logos_backuprc: "/images/logos_backup/Kutumb.webp",            scaleClass: "scale-[1.3]" },
-  { name: "Magma",      logos_backuprc: "/images/logos_backup/magma factory.webp",     scaleClass: "scale-[2.4]" },
+  { name: "Magma",      logos_backuprc: "/images/logos_backup/magma factory.webp",     scaleClass: "scale-[1.5]" },
   { name: "Mekr",       logos_backuprc: "/images/logos_backup/mekr.webp",              scaleClass: "" },
   { name: "Slovic",     logos_backuprc: "/images/logos_backup/slovic.avif",            scaleClass: "scale-[1.3]" },
   { name: "Zouk",       logos_backuprc: "/images/logos_backup/zouk_new_logo.webp",     scaleClass: "scale-[0.8]" },
@@ -75,6 +75,18 @@ function cdnImageSrc(url: string, width: number): string {
  *  Normalise both shapes here so the render loop is one path. */
 function resolveLogoSrc(logo: BackedBeforeLogo): string {
   return logo.image ?? logo.logos_backuprc ?? "";
+}
+
+/* Per-logo scale, CAPPED so a bad/over-large CMS value (e.g. Magma's
+   `scale-[2.4]`) can never overflow its box. The inner logo box is 62%
+   of the card height, so a scale much above ~1.6 pushes the logo past
+   the card edges. We parse the `scale-[N]` token and clamp it; combined
+   with `overflow-hidden` on the box, every logo stays inside a uniform
+   box regardless of what the CMS sends. */
+function clampLogoScale(scaleClass?: string): number {
+  const m = scaleClass?.match(/scale-\[([\d.]+)\]/);
+  const s = m ? parseFloat(m[1]) : 1;
+  return Math.min(Number.isFinite(s) ? s : 1, 1.6);
 }
 
 // ---------------------------------------------------------
@@ -150,13 +162,16 @@ function DraggableMarquee({
         return (
           <motion.div
             key={`marquee-item-${company.name}-${i}`}
-            className="relative flex shrink-0 items-center justify-center h-[47px] w-[114px] md:h-[70px] md:w-[171px] select-none"
+            className="relative flex shrink-0 items-center justify-center overflow-hidden h-[47px] w-[114px] md:h-[70px] md:w-[171px] select-none"
             style={{ borderRadius: "12px", background: "#FCFCFC" }}
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 1.12 }}
             transition={{ type: "spring", stiffness: 400, damping: 18 }}
           >
-            <div className={`relative h-[62%] w-[76%] ${company.scaleClass ?? ""}`}>
+            <div
+              className="relative h-[62%] w-[76%]"
+              style={{ transform: `scale(${clampLogoScale(company.scaleClass)})` }}
+            >
               <Image
                 src={cdnImageSrc(src, 320)}
                 alt={company.name}

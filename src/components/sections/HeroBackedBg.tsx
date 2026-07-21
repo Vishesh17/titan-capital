@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, cubicBezier } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────
    HeroBackedBg — cappen.com-style staged background transition
@@ -78,7 +78,17 @@ export default function HeroBackedBg({
      content group top is at HERO_TRACK_VH (120vh), so at scroll 0.9 vh it
      sits at viewport y = 120vh − 90vh = 0.3 vh from the top → it already
      covers the lower 70% of the screen. */
-  const heroOpacity = useTransform(scrollY, [0.02 * vh, 0.18 * vh], [1, 0]);
+  /* Premium heading fade: as you start scrolling, the hero eases out
+     (opacity + a subtle recede) over a gentle, longer range — a smooth
+     animated fade that lasts until the section below is rising in, rather
+     than an abrupt cut. Eased so it never feels linear/glitchy. */
+  const HERO_EASE = cubicBezier(0.4, 0, 0.2, 1);
+  const heroOpacity = useTransform(scrollY, [0.0, 0.3 * vh], [1, 0], {
+    ease: HERO_EASE,
+  });
+  const heroScale = useTransform(scrollY, [0.0, 0.3 * vh], [1, 0.965], {
+    ease: HERO_EASE,
+  });
   const whiteOpacity = useTransform(scrollY, [0.35 * vh, 0.9 * vh], [0, 1]);
 
   /* Backed Before + How We Show Up fade in together as the group rises —
@@ -114,7 +124,7 @@ export default function HeroBackedBg({
         <div style={{ height: `${HERO_TRACK_VH}vh` }}>
           <div className="sticky top-0 h-screen overflow-hidden">
             <motion.div
-              style={{ opacity: heroOpacity }}
+              style={{ opacity: heroOpacity, scale: heroScale }}
               className="h-full w-full"
             >
               {hero}
