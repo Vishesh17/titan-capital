@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useScroll, useMotionValueEvent } from "framer-motion";
+import { useLenis } from "lenis/react";
 
 /* ─── Cursor-origin fill button (shared) ─── */
 function NavCursorFillButton({ href, label }: { href: string; label: string }) {
@@ -29,10 +31,8 @@ function NavCursorFillButton({ href, label }: { href: string; label: string }) {
       href={href}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      // 1. Added whitespace-nowrap, the fluid text-[min(...)], and max-md fallbacks
       className="relative flex shrink-0 items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] text-[min(1.16vw,1.79vh)] font-normal transition-colors duration-300 max-md:!w-[160px] max-md:!h-[40px] max-md:!text-[13px]"
       style={{
-        // 2. Replaced hardcoded px with the exact responsive tokens from the Hero button
         width: "min(12.15vw, 18.8vh)",
         height: "min(3.36vw, 5.19vh)",
         borderRadius: "53px",
@@ -103,47 +103,50 @@ const FALLBACK_CTA_URL = "/getinvestment";
 export default function NavbarClient({ data }: { data?: NavbarData }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null);
-  /* Transparent over the hero; picks up a solid navy bar once the user
-     scrolls past it, so the white logo/links stay readable over the
-     light sections below. */
   const [scrolled, setScrolled] = useState(false);
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const lenis = useLenis(); 
+  const { scrollY } = useScroll(); 
+
+  // OPTIMIZATION: Syncs with Framer's animation loop, eliminating main-thread stutter
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const isScrolled = latest > 60;
+    if (isScrolled !== scrolled) {
+      setScrolled(isScrolled);
+    }
+  });
 
   const sections = data?.sections?.length ? data.sections : FALLBACK_SECTIONS;
   const ctaLabel = data?.ctaLabel || FALLBACK_CTA_LABEL;
   const ctaUrl = data?.ctaUrl || FALLBACK_CTA_URL;
 
+  // FIX: Safely pause/play Lenis instead of killing the native scrollbar
   useEffect(() => {
     if (isMenuOpen) {
+      lenis?.stop(); 
       document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "auto";
+      lenis?.start(); 
+      document.body.style.overflow = ""; // Use empty string to fall back to CSS, NOT "auto"
       const timer = setTimeout(() => setActiveSubMenu(null), 500);
       return () => clearTimeout(timer);
     }
 
     return () => {
-      document.body.style.overflow = "auto";
+      lenis?.start();
+      document.body.style.overflow = "";
     };
-  }, [isMenuOpen]);
+  }, [isMenuOpen, lenis]);
 
   return (
     <>
      {/* =========================================
           MAIN TOP NAVBAR (Closed State)
           ========================================= */}
-      {/* FLUID BUT TIGHT: Height stays between 65px and 80px */}
       <nav className={`site-navbar fixed left-0 top-0 z-[40] flex h-[clamp(65px,min(5.5vw,7vh),80px)] w-full items-center justify-between px-4 transition-[background-color,color,transform,opacity] duration-500 ease-out max-md:!h-[56px] max-md:!px-[16px] lg:px-[clamp(32px,4.3vw,62px)] ${
         scrolled ? "bg-[#001A4D]/95 shadow-lg backdrop-blur-md" : "bg-transparent"
       }`}>
 
-        {/* HAMBURGER — white 3-line SVG */}
         <button
           onClick={() => setIsMenuOpen(true)}
           className="flex shrink-0 cursor-pointer items-center justify-center p-[6px] transition-opacity hover:opacity-70"
@@ -154,7 +157,6 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
           </svg>
         </button>
 
-        {/* LOGO: Absolutely centered on desktop, right-aligned on mobile */}
         <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 shrink-0 max-md:!static max-md:!translate-x-0 max-md:!translate-y-0 max-md:!ml-auto">
           <Image
             src="/images/logos/titancapitallogo.svg"
@@ -166,7 +168,6 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
           />
         </Link>
 
-        {/* CTA BUTTON: Pill with cursor-origin fill — hidden on mobile */}
         <div className="hidden md:block">
           <NavCursorFillButton href={ctaUrl} label={ctaLabel} />
         </div>
@@ -194,7 +195,6 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
           }`}
         >
 
-          {/* Inner top navbar - Responsive Logo Alignment */}
           <div className="relative flex min-h-[70px] w-full shrink-0 items-center justify-between bg-[#001A4D] px-[24px] lg:h-[var(--nav-height)] lg:px-[62px]">
             <button
               onClick={() => setIsMenuOpen(false)}
@@ -207,7 +207,6 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
               </svg>
             </button>
 
-            {/* Mobile: Always Centered Logo inside open menu */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:hidden">
                <Image
                   src="/images/logos/titancapitallogo.svg"
@@ -218,7 +217,6 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
                 />
             </div>
 
-            {/* Desktop: Original Right-Aligned Logo when SubMenu is Active */}
             <div className="hidden lg:block">
               {activeSubMenu && (
                 <Image
@@ -234,7 +232,6 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
 
           <div className="flex flex-1 overflow-hidden bg-transparent">
 
-            {/* LEFT PANEL — Responsive Width & Visibility Logic */}
             <div className={`h-full shrink-0 flex-col overflow-y-auto bg-[#001A4D] pb-[98px] pt-[20px] w-full lg:w-[480px] ${
                 activeSubMenu ? "hidden lg:flex" : "flex"
               }`}
@@ -294,7 +291,6 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
               </div>
             </div>
 
-            {/* RIGHT PANEL — Responsive Width & Visibility Logic */}
             <div
               className={`h-full shrink-0 overflow-hidden bg-[#FBF7F0] transition-[width] duration-500 ease-in-out ${
                 activeSubMenu ? "w-full lg:w-[400px]" : "w-0"
@@ -312,7 +308,6 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
                         onClick={() => setIsMenuOpen(false)}
                         className="group flex items-center rounded-[10px] px-[12px] py-[12px] font-['Poppins',_sans-serif] text-[18px] font-normal leading-[150%] text-[#0E0E0E]/75 transition-all duration-300 ease-out hover:bg-[#001A4D]/[0.06] hover:text-[#001A4D] hover:translate-x-[4px] lg:text-[20px]"
                       >
-                        {/* <span className="mr-[10px] h-[2px] w-0 rounded-full bg-[#001A4D] transition-all duration-300 ease-out group-hover:w-[16px]" /> */}
                         {subItem.label}
                       </Link>
                     ))}

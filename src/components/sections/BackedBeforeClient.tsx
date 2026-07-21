@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { motion, useAnimationFrame, useMotionValue, useTransform } from "framer-motion";
+import { motion, useAnimationFrame, useInView, useMotionValue, useTransform } from "framer-motion";
 import Image from "next/image";
 
 /* ─────────────────────────────────────────────────────────
@@ -99,6 +99,10 @@ function DraggableMarquee({
   const rawX = useMotionValue(0);
   const isDragging = useRef(false);
   const isHovered = useRef(false);
+  /* Pause the per-frame marquee loop whenever the row is off-screen —
+     otherwise both rows keep animating for the whole page and burn
+     frame budget while the user scrolls other sections. */
+  const inView = useInView(containerRef);
 
   // Measure the width of exactly 1/3 of the container to know exactly when to wrap seamlessly
   useEffect(() => {
@@ -113,7 +117,7 @@ function DraggableMarquee({
   }, [items]);
 
   useAnimationFrame((t, delta) => {
-    if (contentWidth === 0 || isDragging.current || isHovered.current) return;
+    if (!inView || contentWidth === 0 || isDragging.current || isHovered.current) return;
 
     // Add movement per frame
     const moveBy = direction * speed * (delta / 1000);
@@ -131,7 +135,7 @@ function DraggableMarquee({
       ref={containerRef}
       // Replaced standard drag with manual pan gesture, touch-pan-y ensures vertical scrolling isn't blocked on mobile
       className="flex w-max gap-[36px] md:gap-[54px] items-center cursor-grab active:cursor-grabbing touch-pan-y"
-      style={{ x: smoothX }}
+      style={{ x: smoothX , willChange: "transform" }}
       onMouseEnter={() => { isHovered.current = true; }}
       onMouseLeave={() => { isHovered.current = false; }}
       onPanStart={() => { isDragging.current = true; }}
@@ -199,8 +203,8 @@ export default function BackedBeforeClient({
       className="flex flex-col items-center gap-[15px] md:gap-[22px] self-stretch overflow-hidden w-full"
       style={{
         /* Halved vertical footprint (was clamp(40,…,100)). */
-        paddingTop: "clamp(20px, min(3.47vw, 5.09vh), 50px)",
-        paddingBottom: "clamp(20px, min(3.47vw, 5.09vh), 50px)",
+        paddingTop: "clamp(10px, min(2.0vw, 3.09vh), 25px)",
+        paddingBottom: "clamp(10px, min(2.00vw, 3.09vh), 25px)",
         paddingLeft: "var(--section-px-wide)",
         paddingRight: "var(--section-px-wide)",
       }}

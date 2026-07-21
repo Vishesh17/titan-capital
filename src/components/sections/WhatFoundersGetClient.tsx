@@ -755,7 +755,10 @@ export default function WhatFoundersGetClient({
 
   return (
     <section
-      className="relative w-full overflow-hidden bg-[#FBF7F0]"
+      /* Transparent: the beige (#FBF7F0) is painted by HeroBackedBg's
+         scroll-driven backdrop so the whole screen crossfades white→beige
+         from Backed Before into this section. */
+      className="relative w-full overflow-hidden"
       style={{
         /* Sitewide consistent padding — same tokens every section
            uses. No per-section clamp values. */

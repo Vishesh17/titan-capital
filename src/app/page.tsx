@@ -6,6 +6,7 @@ import ImpactAtGlance from "@/components/sections/ImpactAtGlance";
 import IndicornsSpotlight from "@/components/sections/IndicornSpotlight";
 import FounderTestimonial from "@/components/sections/FoundersTestimonial";
 import Footer from "@/components/sections/Footer";
+import HeroBackedBg from "@/components/sections/HeroBackedBg";
 export default function Home() {
   return (
     <>
@@ -14,9 +15,15 @@ export default function Home() {
           scrolls UP off it to reveal it, then covers it again on
           scroll-up. The mirror image of the Indicorns sticky-reveal. */}
       <div className="relative z-[2] bg-white">
-        <Hero />
-        <BackedBefore />
-        <WhatFoundersGet />
+        {/* Cappen-style pinned, staged background transition: the hero pins
+            and its content fades out, then the whole screen crossfades
+            navy → white (Backed Before) → beige (How We Show Up). All three
+            sections ride transparently on the one backdrop. */}
+        <HeroBackedBg
+          hero={<Hero />}
+          backed={<BackedBefore />}
+          howWeShow={<WhatFoundersGet />}
+        />
         <WhatWeBelieve />
         <ImpactAtGlance />
         {/* Sticky-reveal pair: Indicorns pins (position: sticky) while

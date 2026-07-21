@@ -168,8 +168,9 @@ function FlipCard({ item }: { item: TestimonialItem }) {
     <div
       className="relative"
       style={{
-        width: "min(15vw, 20.49vh)",
-        height: "min(6.47vw, 10.37vh)",
+        /* 30% larger than before (was 15vw / 6.47vw). */
+        width: "min(19.5vw, 26.64vh)",
+        height: "min(8.41vw, 13.48vh)",
         filter: "grayscale(1)",
       }}
     >
@@ -215,18 +216,18 @@ function FlipCard({ item }: { item: TestimonialItem }) {
               background: "linear-gradient(180deg, #FBF7F0 0%, #F3E6CF 100%)",
             }}
           >
-            {/* Logo band — the first 20% of the card height, logo centred */}
+            {/* Logo band — top 26% of the card (roomier so the larger
+                logo never clips), logo centred. */}
             <div
               className="flex items-center justify-center"
-              style={{ height: "20%" }}
+              style={{ height: "26%" }}
             >
               {logoContent}
             </div>
-            {/* Photo — the bottom 80% of the card, a PERFECT SQUARE at
-                100% width (no padding). Portfolio photos are 400×400
-                squares, so `cover` scales them 1:1 into this square block
-                with no crop and no letterbox — exactly as they are. */}
-            <div className="relative" style={{ height: "80%" }}>
+            {/* Photo — the bottom 74% of the card, 100% width (no padding).
+                Uniform block for every card; `cover` + centre keeps all
+                founder photos identically sized and centred. */}
+            <div className="relative" style={{ height: "74%" }}>
               <Image
                 src={cdnImageSrc(item.image || "", 800)}
                 alt={item.name}
@@ -252,17 +253,17 @@ function FlipCard({ item }: { item: TestimonialItem }) {
               background: "linear-gradient(180deg, #EFF4FF 0%, #D3E2FF 100%)",
             }}
           >
-            {/* Logo band — same 20% as the front so the flip lines up */}
+            {/* Logo band — same 26% as the front so the flip lines up */}
             <div
               className="flex shrink-0 items-center justify-center"
-              style={{ height: "20%" }}
+              style={{ height: "26%" }}
             >
               {logoContent}
             </div>
             <div
               className="flex items-center"
               style={{
-                height: "80%",
+                height: "74%",
                 paddingBottom: "min(1.85vw, 2.86vh)",
                 paddingLeft: "min(1.85vw, 2.86vh)",
                 paddingRight: "min(1.85vw, 2.86vh)",
