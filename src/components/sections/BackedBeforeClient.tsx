@@ -34,32 +34,32 @@ const FALLBACK_HEADING_1 = "Backed Before";
 const FALLBACK_HEADING_2 = "Anyone Else Did";
 
 const FALLBACK_ROW1: BackedBeforeLogo[] = [
-  { name: "Ola",           logos_backuprc: "/images/logos_backup/ola.svg",                  scaleClass: "scale-[0.7]" },
+  { name: "Ola",           logos_backuprc: "/images/logos_backup/ola.svg",                  scaleClass: "" },
   { name: "Urban Company", logos_backuprc: "/images/logos_backup/Urban Company.webp",       scaleClass: "" },
-  { name: "Mamaearth",     logos_backuprc: "/images/logos_backup/mamaearthpng.webp",        scaleClass: "scale-[1.3]" },
-  { name: "Shadowfax",     logos_backuprc: "/images/logos_backup/Shadowfax.svg",            scaleClass: "scale-[1.2]" },
-  { name: "Razorpay",      logos_backuprc: "/images/logos_backup/Razorpay.webp",            scaleClass: "scale-[1.3]" },
-  { name: "Ofbusiness",    logos_backuprc: "/images/logos_backup/Ofbusiness.png",           scaleClass: "scale-[1.6]" },
-  { name: "Cart.com",      logos_backuprc: "/images/logos_backup/Cart.com.webp",            scaleClass: "scale-[1.3]" },
+  { name: "Mamaearth",     logos_backuprc: "/images/logos_backup/mamaearthpng.webp",        scaleClass: "" },
+  { name: "Shadowfax",     logos_backuprc: "/images/logos_backup/Shadowfax.svg",            scaleClass: "" },
+  { name: "Razorpay",      logos_backuprc: "/images/logos_backup/Razorpay.webp",            scaleClass: "" },
+  { name: "Ofbusiness",    logos_backuprc: "/images/logos_backup/Ofbusiness.png",           scaleClass: "" },
+  { name: "Cart.com",      logos_backuprc: "/images/logos_backup/Cart.com.webp",            scaleClass: "" },
   { name: "Unicommerce",   logos_backuprc: "/images/logos_backup/unicommerce-logo.svg",     scaleClass: "" },
-  { name: "Snapdeal",      logos_backuprc: "/images/logos_backup/snapdeal-company-1.webp",  scaleClass: "scale-[1.3]" },
-  { name: "Credgenics",    logos_backuprc: "/images/logos_backup/Credgenics.svg",           scaleClass: "scale-[1.3]" },
+  { name: "Snapdeal",      logos_backuprc: "/images/logos_backup/snapdeal-company-1.webp",  scaleClass: "" },
+  { name: "Credgenics",    logos_backuprc: "/images/logos_backup/Credgenics.svg",           scaleClass: "" },
 ];
 
 const FALLBACK_ROW2: BackedBeforeLogo[] = [
-  { name: "Giva",       logos_backuprc: "/images/logos_backup/GIVA.webp",              scaleClass: "scale-[0.8]" },
+  { name: "Giva",       logos_backuprc: "/images/logos_backup/GIVA.webp",              scaleClass: "" },
   { name: "Boba Bhai",  logos_backuprc: "/images/logos_backup/bobabhai.webp",          scaleClass: "" },
-  { name: "Invideo",    logos_backuprc: "/images/logos_backup/invideo.svg",            scaleClass: "scale-[0.8]" },
-  { name: "Park+",      logos_backuprc: "/images/portfolio_grid/PARK+logo.png",        scaleClass: "scale-[1.8]" },
-  { name: "Renee",      logos_backuprc: "/images/logos_backup/RENEE.svg",              scaleClass: "scale-[0.7]" },
-  { name: "Supertails", logos_backuprc: "/images/portfolio_grid/supertails_black.png", scaleClass: "scale-[3.2]" },
+  { name: "Invideo",    logos_backuprc: "/images/logos_backup/invideo.svg",            scaleClass: "" },
+  { name: "Park+",      logos_backuprc: "/images/portfolio_grid/PARK+logo.png",        scaleClass: "" },
+  { name: "Renee",      logos_backuprc: "/images/logos_backup/RENEE.svg",              scaleClass: "" },
+  { name: "Supertails", logos_backuprc: "/images/portfolio_grid/supertails_black.png", scaleClass: "" },
   { name: "Zingbus",    logos_backuprc: "/images/logos_backup/zingbus.webp",           scaleClass: "" },
   { name: "Anveshan",   logos_backuprc: "/images/logos_backup/anveshan.webp",          scaleClass: "" },
-  { name: "Kutumb",     logos_backuprc: "/images/logos_backup/Kutumb.webp",            scaleClass: "scale-[1.3]" },
-  { name: "Magma",      logos_backuprc: "/images/logos_backup/magma factory.webp",     scaleClass: "scale-[1.5]" },
+  { name: "Kutumb",     logos_backuprc: "/images/logos_backup/Kutumb.webp",            scaleClass: "" },
+  { name: "Magma",      logos_backuprc: "/images/logos_backup/magma factory.webp",     scaleClass: "" },
   { name: "Mekr",       logos_backuprc: "/images/logos_backup/mekr.webp",              scaleClass: "" },
-  { name: "Slovic",     logos_backuprc: "/images/logos_backup/slovic.avif",            scaleClass: "scale-[1.3]" },
-  { name: "Zouk",       logos_backuprc: "/images/logos_backup/zouk_new_logo.webp",     scaleClass: "scale-[0.8]" },
+  { name: "Slovic",     logos_backuprc: "/images/logos_backup/slovic.avif",            scaleClass: "" },
+  { name: "Zouk",       logos_backuprc: "/images/logos_backup/zouk_new_logo.webp",     scaleClass: "" },
 ];
 
 /* Append Sanity CDN transform params for served images. Local /images/...
@@ -146,7 +146,7 @@ function DraggableMarquee({
     <motion.div
       ref={containerRef}
       // Replaced standard drag with manual pan gesture, touch-pan-y ensures vertical scrolling isn't blocked on mobile
-      className="flex w-max gap-[36px] md:gap-[54px] items-center cursor-grab active:cursor-grabbing touch-pan-y"
+      className="flex w-max gap-[14px] md:gap-[20px] items-center cursor-grab active:cursor-grabbing touch-pan-y"
       style={{ x: smoothX , willChange: "transform" }}
       onMouseEnter={() => { isHovered.current = true; }}
       onMouseLeave={() => { isHovered.current = false; }}
@@ -162,14 +162,14 @@ function DraggableMarquee({
         return (
           <motion.div
             key={`marquee-item-${company.name}-${i}`}
-            className="relative flex shrink-0 items-center justify-center overflow-hidden h-[47px] w-[114px] md:h-[70px] md:w-[171px] select-none"
-            style={{ borderRadius: "12px", background: "#FCFCFC" }}
+            className="relative flex shrink-0 items-center justify-center overflow-hidden h-[64px] w-[160px] md:h-[80px] md:w-[200px] select-none"
+            style={{ borderRadius: "2px", background: "#FCFCFC" }}
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 1.12 }}
             transition={{ type: "spring", stiffness: 400, damping: 18 }}
           >
             <div
-              className="relative h-[62%] w-[76%]"
+              className="relative h-[96%] w-[96%]"
               style={{ transform: `scale(${clampLogoScale(company.scaleClass)})` }}
             >
               <Image
@@ -177,7 +177,7 @@ function DraggableMarquee({
                 alt={company.name}
                 fill
                 style={{ objectFit: "contain" }}
-                sizes="(max-width: 768px) 114px, 171px"
+                sizes="(max-width: 768px) 120px, 144px"
                 priority={i < 10}
                 draggable={false}
               />
