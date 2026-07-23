@@ -2,12 +2,13 @@ import { defineField, defineType } from "sanity";
 
 /**
  * Home page — Hero section. Singleton: only ONE Hero document should ever exist.
- * (We don't enforce this in code yet — just create one and edit it.)
  *
- * Field shape mirrors what Hero.tsx currently renders:
+ * Field shape mirrors what HeroClient.tsx renders:
  *   - Two-line headline with one italic emphasis word in line 2
  *   - Subtitle paragraph
- *   - 5 founder slots, each rotating between 2 founders
+ *   - Flat array of founder cards. Position 4 (0-indexed) is the visual
+ *     anchor of the fanned deck and the first frame of the slideshow —
+ *     put the Titan Capital logo entry there and toggle "Render as logo".
  */
 export const hero = defineType({
   name: "hero",
@@ -60,81 +61,52 @@ export const hero = defineType({
 
     /* ─────────── Founder cards ─────────── */
     defineField({
-      name: "founderSlots",
-      title: "Founder card slots",
+      name: "founders",
+      title: "Founder cards",
       description:
-        "Each slot is one card on screen. Cards rotate through the founders in their pool every few seconds. The design uses 5 slots: large, small, small, small, large.",
+        "One entry per card. The card at position 5 (index 4) is the visual anchor of the fanned deck and the first frame of the slideshow — place the Titan Capital logo there and turn on 'Render as logo'. Use exactly 9 entries.",
       type: "array",
-      validation: (r) => r.length(5).error("Use exactly 5 slots (large, small, small, small, large)"),
+      validation: (r) =>
+        r
+          .min(8)
+          .max(9)
+          .error("Use 8 or 9 entries — 9 works best (logo at position 5)."),
       of: [
         {
           type: "object",
-          name: "founderSlot",
+          name: "heroFounder",
           fields: [
             defineField({
-              name: "size",
-              title: "Card size",
+              name: "name",
+              title: "Name",
               type: "string",
-              options: {
-                list: [
-                  { title: "Large", value: "large" },
-                  { title: "Small", value: "small" },
-                ],
-                layout: "radio",
-              },
               validation: (r) => r.required(),
             }),
             defineField({
-              name: "pool",
-              title: "Founders in this slot (will rotate)",
-              type: "array",
-              validation: (r) => r.min(1).max(4),
-              of: [
-                {
-                  type: "object",
-                  name: "heroFounder",
-                  fields: [
-                    defineField({
-                      name: "name",
-                      title: "Name",
-                      type: "string",
-                      validation: (r) => r.required(),
-                    }),
-                    defineField({
-                      name: "role",
-                      title: "Role / Title",
-                      description: 'e.g. "Co-Founder, Urban Company"',
-                      type: "string",
-                      validation: (r) => r.required(),
-                    }),
-                    defineField({
-                      name: "image",
-                      title: "Portrait photo",
-                      type: "image",
-                      options: { hotspot: true },
-                      validation: (r) => r.required(),
-                    }),
-                  ],
-                  preview: {
-                    select: { title: "name", subtitle: "role", media: "image" },
-                  },
-                },
-              ],
+              name: "role",
+              title: "Role / Title",
+              description:
+                'e.g. "Co-Founder, Urban Company". Leave blank for the logo card.',
+              type: "string",
+            }),
+            defineField({
+              name: "image",
+              title: "Portrait photo (or logo image)",
+              type: "image",
+              options: { hotspot: true },
+              validation: (r) => r.required(),
+            }),
+            defineField({
+              name: "isLogo",
+              title: "Render as logo (contain, no grayscale)",
+              description:
+                "Turn ON for the Titan Capital anchor card so its logo isn't cropped or greyed.",
+              type: "boolean",
+              initialValue: false,
             }),
           ],
           preview: {
-            select: {
-              size: "size",
-              firstName: "pool.0.name",
-              media: "pool.0.image",
-            },
-            prepare({ size, firstName, media }) {
-              return {
-                title: firstName ?? "(empty slot)",
-                subtitle: size ? `Size: ${size}` : undefined,
-                media,
-              };
-            },
+            select: { title: "name", subtitle: "role", media: "image" },
           },
         },
       ],

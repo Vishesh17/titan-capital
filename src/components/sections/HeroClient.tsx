@@ -24,11 +24,7 @@ export interface HeroFounder {
   name: string;
   role: string;
   image: string;
-}
-
-export interface HeroSlot {
-  size: string;
-  pool: HeroFounder[];
+  isLogo?: boolean;
 }
 
 export interface HeroData {
@@ -38,21 +34,22 @@ export interface HeroData {
   subtitle?: string;
   primaryCtaLabel?: string;
   secondaryCtaLabel?: string;
-  founderSlots?: HeroSlot[];
+  founders?: HeroFounder[];
 }
 
 /* ─────────────────────────────────────────────────────────
    Fallback data
    ───────────────────────────────────────────────────────── */
 const FALLBACK_FOUNDERS: HeroFounder[] = [
-  { name: "Ghazal Alagh", role: "Co-Founder, Mamaearth", image: "/images/hero_founders_images/ghazal-alagh.png" },
-  { name: "Abhiraj Singh Bhal", role: "Co-Founder, Urban Company", image: "/images/hero_founders_images/abhiraj_bahl.png" },
-  { name: "Ashutosh Valani", role: "Co-Founder, RENÉE Cosmetics", image: "/images/hero_founders_images/ashutosh-valani.png" },
-  { name: "Abhishek Bansal", role: "Co-Founder, Shadowfax", image: "/images/hero_founders_images/abhishek-bansal.png" },
-  { name: "Ruchi Kalra", role: "Co-Founder, Ofbusiness", image: "/images/hero_founders_images/ruchi-kalra.png" },
-  { name: "Varun Khaitan", role: "Co-Founder, Urban Company", image: "/images/hero_founders_images/varun-khaitan.png" },
-  { name: "Ishendra Agarwal", role: "Co-Founder, GIVA", image: "/images/hero_founders_images/ishendra-agarwal.png" },
-  { name: "Anand Agrawal", role: "Co-Founder, Credgenics", image: "/images/hero_founders_images/anand-agarwal.png" },
+  { name: "Ghazal Alagh", role: "Co-Founder, Mamaearth", image: "/images/herosection/1. Abhishek 2.png" },
+  { name: "Abhiraj Singh Bhal",  role: "Co-Founder, Urban Company",     image: "/images/herosection/3. Varun Khaitan  1.png" },
+  { name: "Ashutosh Valani",     role: "Co-Founder, RENÉE Cosmetics",   image: "/images/herosection/4. Ghazal 1.png" },
+  { name: "Abhishek Bansal",     role: "Co-Founder, Shadowfax",         image: "/images/herosection/6. Ashtosh Valani 1.png" },
+  { name: "Titan Capital",       role: "",                              image: "/images/hero_founders_images/titan-capital.png",     isLogo: true },
+  { name: "Ruchi Kalra",         role: "Co-Founder, Ofbusiness",        image: "/images/herosection/Aarti Gill 2.png" },
+  { name: "Varun Khaitan",       role: "Co-Founder, Urban Company",     image: "/images/herosection/Asish Mohapatra 1.png" },
+  { name: "Ishendra Agarwal",    role: "Co-Founder, GIVA",              image: "/images/herosection/image 177.png" },
+  { name: "Anand Agrawal",       role: "Co-Founder, Credgenics",        image: "/images/herosection/Rishabh 2.png" },
 ];
 
 const FALLBACK_SUBTITLE =
@@ -319,8 +316,8 @@ function HeroGlow() {
 export default function HeroClient({ data }: { data?: HeroData | null }) {
   const subtitle = data?.subtitle || FALLBACK_SUBTITLE;
   const founders: HeroFounder[] = (() => {
-    if (data?.founderSlots && data.founderSlots.length > 0) {
-      return data.founderSlots.flatMap((s) => s.pool).slice(0, 8);
+    if (data?.founders && data.founders.length > 0) {
+      return data.founders.slice(0, 9);
     }
     return FALLBACK_FOUNDERS;
   })();
@@ -329,7 +326,11 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   const [ready, setReady] = useState(false);
   const progress = useMotionValue(0);
   const [stage, setStage] = useState<"slideshow" | "animate">("slideshow");
-  const [slideIndex, setSlideIndex] = useState(0);
+  /* Start on heroIndex so the Titan Capital logo (placed at the anchor
+     position of the deck) is the first frame of the slideshow — it opens
+     the sequence, then cycles through every founder, and lands back on
+     the anchor as the deck fans out. */
+  const [slideIndex, setSlideIndex] = useState(heroIndex);
 
   useEffect(() => {
     if (stage !== "slideshow" || !ready) return;
@@ -338,15 +339,15 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     const id = setInterval(() => {
       count += 1;
       if (count >= totalTicks) {
-        setSlideIndex(totalTicks);
+        setSlideIndex(heroIndex + totalTicks);
         clearInterval(id);
         setTimeout(() => setStage("animate"), 300);
       } else {
-        setSlideIndex(count);
+        setSlideIndex(heroIndex + count);
       }
     }, 200);
     return () => clearInterval(id);
-  }, [stage, ready, founders.length]);
+  }, [stage, ready, founders.length, heroIndex]);
 
   useEffect(() => {
     if (stage !== "animate") return;
@@ -509,7 +510,11 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                     fill
                     sizes="(max-width: 768px) 50vw, 25vw"
                     priority
-                    style={{ ...IMG_STYLE, filter: "grayscale(0.9)" }}
+                    style={{
+                      ...IMG_STYLE,
+                      objectFit: founders[slideIndex % founders.length].isLogo ? "contain" : "cover",
+                      filter: founders[slideIndex % founders.length].isLogo ? "none" : "grayscale(0.9)",
+                    }}
                   />
                 </motion.div>
               </AnimatePresence>
@@ -689,7 +694,10 @@ function HeadingPhoto({
           fill
           sizes="(max-width: 768px) 50vw, 25vw"
           priority
-          style={IMG_STYLE}
+          style={{
+            ...IMG_STYLE,
+            objectFit: founder.isLogo ? "contain" : "cover",
+          }}
         />
       </motion.div>
     </AnimatePresence>
@@ -855,7 +863,7 @@ function FounderCard({
         opacity,
         zIndex,
         borderRadius: "2px",
-        filter: isHero ? heroFilter : "grayscale(0.9)",
+        filter: founder.isLogo ? "none" : isHero ? heroFilter : "grayscale(0.9)",
         willChange: isHero
           ? "transform, opacity, width, height, filter"
           : "transform, opacity",
@@ -866,7 +874,10 @@ function FounderCard({
         alt={founder.name}
         fill
         sizes="(max-width: 768px) 50vw, 25vw"
-        style={IMG_STYLE}
+        style={{
+          ...IMG_STYLE,
+          objectFit: founder.isLogo ? "contain" : "cover",
+        }}
       />
     </motion.div>
   );

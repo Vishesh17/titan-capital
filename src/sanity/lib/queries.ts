@@ -433,13 +433,11 @@ export const heroQuery = groq`
     subtitle,
     primaryCtaLabel,
     secondaryCtaLabel,
-    founderSlots[]{
-      size,
-      pool[]{
-        name,
-        role,
-        "image": image.asset->url
-      }
+    founders[]{
+      name,
+      role,
+      "image": image.asset->url,
+      isLogo
     }
   }
 `;

@@ -162,7 +162,7 @@ function DraggableMarquee({
         return (
           <motion.div
             key={`marquee-item-${company.name}-${i}`}
-            className="relative flex shrink-0 items-center justify-center overflow-hidden h-[64px] w-[160px] md:h-[80px] md:w-[200px] select-none"
+            className="relative flex shrink-0 items-center justify-center overflow-hidden h-[64px] w-[130px] md:h-[80px] md:w-[160px] select-none"
             style={{ borderRadius: "2px", background: "#FCFCFC" }}
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 1.12 }}
