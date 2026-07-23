@@ -39,16 +39,16 @@ export interface WhatFoundersGetData {
 const SZ = {
   // typography
   heading: "min(4.51vw, 6.98vh)",       // 78 px @ ref
-  rowTitle: "min(3.70vw, 5.73vh)",      // 64 px @ ref
+  rowTitle: "min(3.01vw, 4.65vh)",      // 52 px @ ref (smaller left row title)
   subHeading: "min(1.85vw, 2.86vh)",    // 32 px @ ref
   desc: "min(1.62vw, 2.51vh)",          // 28 px @ ref
-  rotTitle: "min(3.48vw, 5.37vh)",      // 72 px @ ref (opened, rotated — big spine)
+  rotTitle: "min(2.78vw, 4.30vh)",      // 48 px @ ref (opened, rotated spine — smaller)
   backLink: "min(1.51vw, 2.33vh)",      // 26 px @ ref
   // Opened-card typography — pushed as large as still fits the shortest
   // laptop height (see BgTransition sizing notes). The closed rows keep
   // their own smaller subHeading/desc.
-  oSubHeading: "min(2.20vw, 3.40vh)",   // 38 px @ ref
-  oDesc: "min(1.91vw, 2.96vh)",         // 33 px @ ref
+  oSubHeading: "min(1.85vw, 2.86vh)",   // 32 px @ ref (matches closed-row subHeading)
+  oDesc: "min(1.62vw, 2.51vh)",         // 28 px @ ref (matches closed-row desc)
   oGap: "min(3.42vw, 5.28vh)",          // 59 px @ ref — opened-card block gap
   oPadY: "min(2.31vw, 3.58vh)",         // 40 px @ ref — opened-card top/bottom (modal, not a side gutter)
   // container widths (width-only — layout dims)
@@ -59,7 +59,7 @@ const SZ = {
      section content area, leaving a visible gap on the right. */
   divider: "100%",
   openedDivider: "100%",
-  descBox: "36.86vw",                   // 637 px @ ref
+  descBox: "55vw",                      // 864 px @ ref (wider — description runs closer to the arrow)
   rowTitleBox: "22.57vw",               // 390 px @ ref
   openedContentBox: "65.22vw",          // 1127 px @ ref
   // spacing
@@ -69,7 +69,7 @@ const SZ = {
   // wrapper and the FullPageCard both consume the vars directly so
   // every page section gutters the same amount at every viewport.
   headingToDivider: "min(3.47vw, 5.37vh)", // 60 px @ ref
-  rowPaddingY: "min(2.31vw, 3.58vh)",   // 40 px @ ref  — closed-row body padding
+  rowPaddingY: "min(1.68vw, 2.60vh)",   // 29 px @ ref  — closed-row body padding (tightened a bit)
   rowInnerGap: "min(1.62vw, 2.51vh)",   // 28 px @ ref  — small internal gap (around HR margins)
   openedGap: "min(3.47vw, 5.37vh)",     // 60 px @ ref  — main gap between opened-card blocks
                                         //                (heading / desc / HR / Strategic Value / bullets).
@@ -723,10 +723,13 @@ function FullPageCard({
         boxShadow: "0 8px 40px rgba(0, 0, 0, 0.08)",
 
         /* Left/right gutters stay on the sitewide token so the card
-           lines up with every other section. Top/bottom is trimmed
-           (this is a full-screen modal, not an in-flow section) so the
-           larger content fills the height instead of floating. */
-        paddingTop: SZ.oPadY,
+           lines up with every other section. The card is fixed inset-0
+           and the site nav paints OVER its top edge, so the top padding
+           adds the nav height on top of oPadY — that way the content is
+           centred in the space BELOW the nav and the VISIBLE top and
+           bottom gutters come out equal (they looked lopsided before,
+           with the nav eating the top gap). */
+        paddingTop: `calc(var(--nav-height) + ${SZ.oPadY})`,
         paddingBottom: SZ.oPadY,
         paddingLeft: "var(--section-px-wide)",
         paddingRight: "var(--section-px-wide)",
@@ -777,7 +780,7 @@ export default function WhatFoundersGetClient({
       >
         {/* Section heading — static (no type-on animation) */}
         <h2
-          className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[32px] max-md:!leading-[120%]"
+          className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px] max-md:!leading-[120%]"
           style={{
             fontSize: SZ.heading,
             lineHeight: "120%",

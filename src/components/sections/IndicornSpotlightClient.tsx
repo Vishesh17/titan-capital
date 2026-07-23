@@ -226,7 +226,7 @@ export default function IndicornSpotlightClient({
         <div className="relative z-10 flex h-full w-full flex-col items-start text-left max-md:!items-center max-md:!text-center">
           {/* Heading — Poppins 78 / 400 / 172% / #FBF7F0 */}
           <h2
-            className="m-0 font-['Poppins',_sans-serif] font-normal max-md:!text-[32px] max-md:!leading-[120%]"
+            className="m-0 font-['Poppins',_sans-serif] font-semibold max-md:!text-[32px] max-md:!leading-[120%]"
             style={{
               color: "#FBF7F0",
               fontSize: "min(4.51vw, 6.98vh)" /* 78 px @ ref */,
@@ -317,15 +317,15 @@ export default function IndicornSpotlightClient({
           <div
             className="flex items-center max-md:!gap-[12px] max-md:!justify-center"
             style={{
-              gap: "min(0.87vw, 1.34vh)" /* ~15 px */,
-              marginTop: "min(1.16vw, 1.79vh)" /* ~20 px */,
+              gap: "min(2.87vw, 3.34vh)" /* ~15 px */,
+              marginTop: "min(2.16vw, 2.79vh)" /* ~20 px */,
             }}
           >
             <span
               className="font-['Poppins',_sans-serif] font-normal max-md:!text-[11px]"
               style={{
                 color: "rgba(255,255,255,0.7)",
-                fontSize: "min(0.81vw, 1.25vh)" /* ~14 px */,
+                fontSize: "min(1.39vw, 2.15vh)" /* ~14 px */,
               }}
             >
               {rotatingLogosLabel}

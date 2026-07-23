@@ -41,7 +41,10 @@ export default function HeroGlow({
   const normX = useMotionValue(0);
   const normY = useMotionValue(0);
 
-  const cursorSpring = { damping: 25, stiffness: 60, mass: 0.4 };
+  /* Softer, heavier spring so the cursor blob trails gently instead of
+     snapping to the pointer — reads as a calm, natural drift, not a
+     "violent" flick. */
+  const cursorSpring = { damping: 42, stiffness: 32, mass: 1.3 };
   const smoothX = useSpring(mouseX, cursorSpring);
   const smoothY = useSpring(mouseY, cursorSpring);
 
@@ -189,7 +192,7 @@ export default function HeroGlow({
         aria-hidden
         className="pointer-events-none absolute top-0 left-0"
         style={{
-          width: `calc(min(40vw, 50vh) * ${scale})`,
+          width: `calc(min(50vw, 62vh) * ${scale})`,
           zIndex: 5,
           x: smoothX,
           y: smoothY,
@@ -205,10 +208,10 @@ export default function HeroGlow({
             <circle cx="400" cy="400" r="300" fill={`url(#${cG})`} />
           </g>
           <defs>
-            <filter id={cF} x="-100" y="-100" width="1000" height="1000" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+            <filter id={cF} x="-250" y="-250" width="1300" height="1300" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
               <feFlood floodOpacity="0" result="BackgroundImageFix" />
               <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
-              <feGaussianBlur stdDeviation="80" result="effect1_foregroundBlur" />
+              <feGaussianBlur stdDeviation="115" result="effect1_foregroundBlur" />
               <feTurbulence type="fractalNoise" baseFrequency="2 2" stitchTiles="stitch" numOctaves={3} result="noise" seed={5393} />
               <feColorMatrix in="noise" type="luminanceToAlpha" result="alphaNoise" />
               <feComponentTransfer in="alphaNoise" result="coloredNoise1">

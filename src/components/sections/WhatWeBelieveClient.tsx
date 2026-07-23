@@ -240,7 +240,7 @@ export default function WhatWeBelieveClient({
                 right: 0,
                 zIndex: 20,
               }}
-              className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black"
+              className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black"
             >
               {heading}
             </motion.h2>
@@ -294,7 +294,7 @@ export default function WhatWeBelieveClient({
                 right: 0,
                 zIndex: 20,
               }}
-              className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black"
+              className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black"
             >
               {heading}
             </motion.h2>

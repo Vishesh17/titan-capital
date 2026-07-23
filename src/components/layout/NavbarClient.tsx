@@ -242,7 +242,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
                   onClick={() => setIsMenuOpen(false)}
                   className="group flex w-full items-center border-l-[3px] border-transparent px-[21px] py-[8px] transition-all duration-300 ease-out hover:border-l-[#4D8AFF] hover:bg-[#002868]/30 lg:px-[33px]"
                 >
-                  <span className="font-['Libre_Baskerville',_serif] text-[14px] font-medium tracking-wide text-white/80 transition-all duration-300 group-hover:text-white">
+                  <span className="font-['Poppins',_sans-serif] text-[14px] font-medium tracking-wide text-white/80 transition-all duration-300 group-hover:text-white">
                     HOME
                   </span>
                 </Link>
@@ -260,7 +260,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
                           : "border-l-transparent hover:border-l-[#4D8AFF]/70 hover:bg-[#002868]/30"
                       }`}
                     >
-                      <span className={`font-['Libre_Baskerville',_serif] text-[22px] font-medium leading-[150%] transition-all duration-300 lg:text-[28px] ${
+                      <span className={`font-['Poppins',_sans-serif] text-[22px] font-medium leading-[150%] transition-all duration-300 lg:text-[28px] ${
                         activeSubMenu === item.id ? "text-white" : "text-white/85 group-hover:text-white"
                       }`}>
                         {item.title}
@@ -282,7 +282,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
                       onClick={() => setIsMenuOpen(false)}
                       className="group flex w-full cursor-pointer items-center justify-between border-l-[3px] border-transparent px-[21px] py-[16px] transition-all duration-300 ease-out hover:border-l-[#4D8AFF]/70 hover:bg-[#002868]/30 lg:px-[33px]"
                     >
-                      <span className="font-['Libre_Baskerville',_serif] text-[22px] font-medium leading-[150%] text-white/85 transition-all duration-300 group-hover:text-white lg:text-[28px]">
+                      <span className="font-['Poppins',_sans-serif] text-[22px] font-medium leading-[150%] text-white/85 transition-all duration-300 group-hover:text-white lg:text-[28px]">
                         {item.title}
                       </span>
                     </Link>

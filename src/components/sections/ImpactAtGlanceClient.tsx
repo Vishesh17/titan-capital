@@ -277,43 +277,43 @@ function StoryArrow() {
    corner. Falls back to the uppercase company name if a story has no
    logo set. Shared between the closed (bottom-right) and open
    (bottom-left) states so there's a single source of truth. */
-function CardLogo({
-  story,
-  company,
-  origin,
-}: {
-  story: FounderStory;
-  company: string;
-  origin: "left bottom" | "right bottom";
-}) {
-  if (!story.logo) {
+   function CardLogo({
+    story,
+    company,
+    origin,
+  }: {
+    story: FounderStory;
+    company: string;
+    origin: "left bottom" | "right bottom";
+  }) {
+    if (!story.logo) {
+      return (
+        <span
+          className="whitespace-nowrap font-['Poppins',_sans-serif] font-semibold uppercase text-white max-md:!text-[18px]"
+          style={{ fontSize: "min(1.85vw, 2.86vh)", lineHeight: "155%" }}
+        >
+          {company}
+        </span>
+      );
+    }
     return (
-      <span
-        className="whitespace-nowrap font-['Poppins',_sans-serif] font-semibold uppercase text-white max-md:!text-[18px]"
-        style={{ fontSize: "min(1.85vw, 2.86vh)", lineHeight: "155%" }}
-      >
-        {company}
-      </span>
+      <img
+        src={cdnImageSrc(story.logo, 400)}
+        alt={company}
+        className="object-contain"
+        style={{
+          height: "min(5.09vw, 7.88vh)", 
+          width: "auto", 
+          objectPosition: origin, 
+          filter: "brightness(0) invert(1)",
+          transform: `scale(${story.logoScale ?? 1})`,
+          transformOrigin: origin,
+          display: "block",
+          margin: 0, // Bulletproof against global CSS margins sneaking in
+        }}
+      />
     );
   }
-  return (
-    <Image
-      src={cdnImageSrc(story.logo, 400)}
-      alt={company}
-      width={400}
-      height={400}
-      className="object-contain"
-      style={{
-        height: "min(5.09vw, 7.88vh)" /* ~88 px @ ref — uniform, bigger */,
-        width: "auto",
-        filter: "brightness(0) invert(1)" /* force logo white */,
-        transform: `scale(${story.logoScale ?? 1})`,
-        transformOrigin: origin,
-      }}
-    />
-  );
-}
-
 /* ─────────────────────────────────────────────────────────
    StoryCard — one card in the 2×2 grid of founder stories.
    Default: founder image + dark hard-light gradient + the company
@@ -353,7 +353,12 @@ function StoryCard({ story }: { story: FounderStory }) {
         alt={story.name}
         fill
         sizes="(max-width: 768px) 100vw, 50vw"
-        className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
+        /* 
+           THE FIX: Added `scale-[1.03]` as the default. 
+           This scales the image up by 3%, pushing any baked-in 8px corners 
+           off the screen so the 2px wrapper can clip it perfectly.
+        */
+        className="object-cover object-top transition-transform duration-700 scale-[1.03] group-hover:scale-[1.08]"
       />
 
       {/* Gradient overlay — transparent top → dark bottom, so the logo /
@@ -386,13 +391,20 @@ function StoryCard({ story }: { story: FounderStory }) {
         <StoryArrow />
       </motion.div>
 
-      {/* CLOSED state — logo pinned to the BOTTOM-LEFT corner.
-          Fades out on hover as the full content takes over. */}
-      <motion.div
+    {/* CLOSED state — logo pinned to the BOTTOM-LEFT corner. */}
+    <motion.div
         className="pointer-events-none absolute z-10"
         style={{
-          bottom: "min(1.85vw, 2.86vh)" /* ~32 px @ ref */,
-          left: "min(1.85vw, 2.86vh)",
+          // 1. Keep the exact left alignment
+          left: "min(1.85vw, 2.86vh)", 
+          
+          // 2. Anchor to the absolute bottom
+          bottom: 0, 
+
+          // 3. THE FIX: Physically drag the logo down by 15 pixels to hide the image's baked-in transparency.
+          // TWEAK THIS NUMBER: If it's still too high, increase it to 20px or 25px. 
+          // If it cuts off the logo, decrease it to 10px.
+          transform: "translateY(25px)", 
         }}
         initial={false}
         animate={{ opacity: hovered ? 0 : 1 }}
@@ -400,7 +412,6 @@ function StoryCard({ story }: { story: FounderStory }) {
       >
         <CardLogo story={story} company={company} origin="left bottom" />
       </motion.div>
-
       {/* OPEN state — full content (logo + quote-mark + pull-quote +
           attribution) at the bottom-left, fades up on hover. */}
       <motion.div
@@ -642,7 +653,7 @@ function StoriesSection({
           style={{ marginBottom: "min(3.47vw, 5.37vh)" /* ~60 px */ }}
         >
           <h2
-            className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[32px] max-md:!leading-[120%]"
+            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px] max-md:!leading-[120%]"
             style={{
               fontSize: "min(4.51vw, 6.98vh)" /* 78 px @ ref */,
               lineHeight: "150%",
@@ -651,7 +662,7 @@ function StoriesSection({
             {storiesHeadingFirst}
           </h2>
           <h2
-            className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[32px] max-md:!leading-[120%]"
+            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px] max-md:!leading-[120%]"
             style={{
               fontSize: "min(4.51vw, 6.98vh)" /* 78 px @ ref */,
               lineHeight: "150%",
@@ -863,7 +874,7 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
                 },
               },
             }}
-            className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[32px] max-md:!leading-[120%]"
+            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px] max-md:!leading-[120%]"
             style={{
               fontSize: "min(4.51vw, 6.98vh)" /* 78 px @ ref */,
               lineHeight: "150%",
