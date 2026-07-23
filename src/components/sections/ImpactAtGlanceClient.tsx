@@ -452,97 +452,83 @@ function StoryCard({ story }: { story: FounderStory }) {
     </motion.div>
   );
 }
-
 /* ─────────────────────────────────────────────────────────
-   SeeMoreButton — starts as a 64 px dark-navy circle with a
-   diagonal arrow. On hover the circle stays but the button
-   expands leftward into a 243 × 83 white pill, revealing the
-   "See More" label. Width + colours + label opacity animate
-   together for a smooth reveal.
+   SeeMoreButton — Size & Typography perfectly synced to 
+   the NavCursorFillButton (Get Investment) component.
    ───────────────────────────────────────────────────────── */
-function SeeMoreButton({ label, onClick }: { label: string; onClick?: () => void }) {
-  const [hovered, setHovered] = useState(false);
-
-  return (
-    <motion.button
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className="relative cursor-pointer overflow-hidden"
-      /* Only WIDTH + colours animate (numbers/colours → smoothly
-         interpolatable). BOTH the label and the knob are ABSOLUTELY
-         positioned — the knob pinned to the right edge, so as the pill
-         widens the arrow rides to the right; the label fades in on the
-         left. No flex/justify to snap or reflow → smooth both ways. */
-      animate={{
-        width: hovered ? 243 : 64,
-        backgroundColor: hovered ? "#FFFFFF" : "rgba(255,255,255,0)",
-        borderColor: hovered ? "#575757" : "rgba(87,87,87,0)",
-      }}
-      transition={{
-        width: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-        backgroundColor: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
-        borderColor: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
-      }}
-      style={{
-        height: 64 /* CONSTANT — no vertical layout shift */,
-        borderRadius: 999,
-        borderWidth: 1,
-        borderStyle: "solid",
-        boxSizing: "border-box",
-      }}
-      aria-label={label}
-    >
-      {/* Label — absolute on the left. Fades in AFTER the pill opens
-          (delay on the way in), fades out immediately on the way out. */}
-      <motion.span
-        className="pointer-events-none absolute -translate-y-1/2 whitespace-nowrap font-['Poppins',_sans-serif] font-normal text-black"
-        style={{ left: 28, top: "50%", fontSize: "22px", lineHeight: "100%" }}
-        animate={{ opacity: hovered ? 1 : 0 }}
-        transition={{
-          duration: hovered ? 0.28 : 0.15,
-          delay: hovered ? 0.24 : 0,
-          ease: [0.22, 1, 0.36, 1],
-        }}
-      >
-        {label}
-      </motion.span>
-
-      {/* Navy circle knob (arrow) — absolute, pinned to the RIGHT edge,
-          vertically centred. Rides right as the pill widens. The diagonal
-          ↗ glyph starts rotated to point RIGHT (→) and smoothly rotates to
-          its natural ↗ orientation on hover as the pill opens. */}
-      <div
-        className="absolute -translate-y-1/2 flex items-center justify-center rounded-full"
+   function SeeMoreButton({ label, onClick }: { label: string; onClick?: () => void }) {
+    const [hovered, setHovered] = useState(false);
+  
+    return (
+      <motion.button
+        onClick={onClick}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        // We use CSS transitions for width/colors so it interacts flawlessly with max-md overrides
+        className={`relative cursor-pointer overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] max-md:!h-[40px] ${
+          hovered
+            ? "bg-white border-[#575757] max-md:!w-[160px]"
+            : "bg-transparent border-transparent max-md:!w-[40px]"
+        }`}
         style={{
-          right: 6,
-          top: "50%",
-          width: 52,
-          height: 52,
-          background: "#001A4D",
+          // 1. Matches exact fluid dimensions of the Nav Button
+          width: hovered ? "min(12.15vw, 18.8vh)" : "min(3.36vw, 5.19vh)",
+          height: "min(3.36vw, 5.19vh)",
+          borderRadius: 999,
+          borderWidth: 1,
+          borderStyle: "solid",
+          boxSizing: "border-box",
         }}
+        aria-label={label}
       >
-        <motion.svg
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          animate={{ rotate: hovered ? 0 : 45 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        {/* Label — Font size and mobile fallbacks perfectly mapped to the Nav button */}
+        <motion.span
+          className="pointer-events-none absolute -translate-y-1/2 whitespace-nowrap font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[13px]"
+          style={{ 
+            left: "min(1.5vw, 2.5vh)", // ~20px fluid offset so it doesn't crowd the left edge
+            top: "50%", 
+            fontSize: "min(1.16vw,1.79vh)", 
+            lineHeight: "100%" 
+          }}
+          animate={{ opacity: hovered ? 1 : 0 }}
+          transition={{
+            duration: hovered ? 0.28 : 0.15,
+            delay: hovered ? 0.15 : 0, // Slightly faster delay to match the tighter width
+            ease: [0.22, 1, 0.36, 1],
+          }}
         >
-          <path
-            d="M7 17L17 7M17 7H7M17 7V17"
-            stroke="white"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </motion.svg>
-      </div>
-    </motion.button>
-  );
-}
-
+          {label}
+        </motion.span>
+  
+        {/* Navy circle knob (arrow) — Scales cleanly inside the new fluid height */}
+        <div
+          className="absolute -translate-y-1/2 flex items-center justify-center rounded-full bg-[#001A4D]"
+          style={{
+            right: 4, // 4px padding from the right edge
+            top: "50%",
+            height: "calc(100% - 8px)", // 100% of parent height minus 8px total vertical padding
+            aspectRatio: "1 / 1",       // Forces the width to exactly match the height (perfect circle)
+          }}
+        >
+          <motion.svg
+            className="w-[45%] h-[45%]" // Arrow icon auto-scales nicely with the knob
+            viewBox="0 0 24 24"
+            fill="none"
+            animate={{ rotate: hovered ? 0 : 45 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <path
+              d="M7 17L17 7M17 7H7M17 7V17"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </motion.svg>
+        </div>
+      </motion.button>
+    );
+  }
 /* Column/row gap of the Their Stories 2×2 grid — one constant shared by
    the grid and the centre rules so they can never drift apart.
    Spec: if the site gutter is x (--section-px-wide), the gap between two

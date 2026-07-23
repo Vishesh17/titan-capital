@@ -209,13 +209,8 @@ export default function IndicornSpotlightClient({
       {/* Grid: LEFT column | 1 px vertical divider | RIGHT column.
           On mobile, drops to a single column and hides the vertical rule. */}
       <div
-        className="relative z-10 mx-auto grid w-full items-stretch max-md:!grid-cols-1 max-md:!gap-[40px]"
+        className="relative z-10 mx-auto grid w-full items-start max-md:!grid-cols-1 max-md:!gap-[40px]"
         style={{
-          /* Fixed 1440 px cap — IDENTICAL to ImpactAtGlance's
-             max-w-[1440px]. The old min(vw,vh) form shrank the content
-             on short viewports (the vh term), making Indicorns' gutters
-             bigger than every other section. A hard cap + the shared
-             --section-px-wide padding makes the gutters match exactly. */
           maxWidth: "1440px",
           gridTemplateColumns: "1fr 1px 1fr",
           columnGap: "min(3.47vw, 5.37vh)" /* ~60 px @ ref */,
@@ -223,163 +218,155 @@ export default function IndicornSpotlightClient({
       >
         {/* ══════════ LEFT COLUMN ══════════ */}
         <div className="relative">
-        <div className="relative z-10 flex h-full w-full flex-col items-start text-left max-md:!items-center max-md:!text-center">
-          {/* Heading — Poppins 78 / 400 / 172% / #FBF7F0 */}
-          <h2
-            className="m-0 font-['Poppins',_sans-serif] font-semibold max-md:!text-[32px] max-md:!leading-[120%]"
-            style={{
-              color: "#FBF7F0",
-              fontSize: "min(4.51vw, 6.98vh)" /* 78 px @ ref */,
-              lineHeight: "172%",
-            }}
-          >
-            {heading}
-          </h2>
-
-          {/* Subheading — 1:1 with the CSS spec:
-               color:       #FBF7F0
-               font-family: Poppins
-               font-size:   36 px @ ref (proportional via min)
-               font-style:  normal
-               font-weight: 300
-               line-height: 172% */}
-          <p
-            className="m-0 max-md:!text-[16px] max-md:!leading-[1.4]"
-            style={{
-              color: "#FBF7F0",
-              fontFamily: "'Poppins', sans-serif",
-              fontSize: "min(2.08vw, 3.22vh)" /* 36 px @ 1728×1117 ref */,
-              fontStyle: "normal",
-              fontWeight: 300,
-              lineHeight: "172%",
-              marginTop: "min(0.29vw, 0.45vh)",
-            }}
-          >
-            {subheading}
-          </p>
-
-          <motion.div
-            className="w-full origin-left max-md:!hidden"
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: rulesInView ? 1 : 0 }}
-            transition={{ duration: 1.8, ease: EASE, delay: 0.2 }}
-            style={{
-              height: 1,
-              background: "rgba(255,255,255,0.35)",
-              marginTop: "min(2.31vw, 3.58vh)" /* ~40 px */,
-              marginBottom: "min(2.31vw, 3.58vh)",
-            }}
-          />
-
-          {/* Bullets — Poppins 24 / 500 / 155% / #FFF, • separator */}
-          <div
-            className="flex flex-wrap items-center font-['Poppins',_sans-serif] font-medium max-md:!text-[13px] max-md:!gap-[6px] max-md:!mt-[16px]"
-            style={{
-              color: "#FFF",
-              fontSize: "min(1.39vw, 2.15vh)" /* 24 px @ ref */,
-              lineHeight: "155%",
-              gap: "min(1.16vw, 1.79vh)" /* ~20 px */,
-            }}
-          >
-            {bullets.map((b, i) => (
-              <span key={`bullet-${i}`} className="inline-flex items-center" style={{ gap: "min(1.16vw, 1.79vh)" }}>
-                <span>{b}</span>
-                {i < bullets.length - 1 && (
-                  <span
-                    className="inline-flex select-none items-center justify-center"
-                    style={{ opacity: 0.9 }}
-                  >
-                    &bull;
-                  </span>
-                )}
-              </span>
-            ))}
-          </div>
-
-          {/* Mobile-only divider after bullets */}
-          <motion.div
-            className="hidden max-md:!block w-full origin-left"
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: rulesInView ? 1 : 0 }}
-            transition={{ duration: 1.8, ease: EASE, delay: 0.3 }}
-            style={{
-              height: 1,
-              background: "rgba(255,255,255,0.35)",
-              marginTop: 24,
-              marginBottom: 8,
-            }}
-          />
-
-          {/* CTA button — 287×59, white pill, cursor-origin fill. */}
-          <CursorFillButtonIndicorn href="/indicorns" label={ctaLabel} />
-
-          {/* Portfolio Indicorns row — label + rotating logo. */}
-          <div
-            className="flex items-center max-md:!gap-[12px] max-md:!justify-center"
-            style={{
-              gap: "min(2.87vw, 3.34vh)" /* ~15 px */,
-              marginTop: "min(2.16vw, 2.79vh)" /* ~20 px */,
-            }}
-          >
-            <span
-              className="font-['Poppins',_sans-serif] font-normal max-md:!text-[11px]"
+          <div className="relative z-10 flex w-full flex-col items-start text-left max-md:!items-center max-md:!text-center">
+            {/* THE FIX: Tightened line-height to 110% so the invisible top-spacing is removed 
+                and the word "Indicorns" sits perfectly flush at the top boundary. */}
+            <h2
+              className="m-0 font-['Poppins',_sans-serif] font-semibold max-md:!text-[32px] max-md:!leading-[120%]"
               style={{
-                color: "rgba(255,255,255,0.7)",
-                fontSize: "min(1.39vw, 2.15vh)" /* ~14 px */,
+                color: "#FBF7F0",
+                fontSize: "min(4.51vw, 6.98vh)" /* 78 px @ ref */,
+                lineHeight: "110%", 
               }}
             >
-              {rotatingLogosLabel}
-            </span>
+              {heading}
+            </h2>
+
+            <p
+              className="m-0 max-md:!text-[16px] max-md:!leading-[1.4]"
+              style={{
+                color: "#FBF7F0",
+                fontFamily: "'Poppins', sans-serif",
+                fontSize: "min(2.08vw, 3.22vh)" /* 36 px @ 1728×1117 ref */,
+                fontStyle: "normal",
+                fontWeight: 300,
+                lineHeight: "172%",
+                marginTop: "min(0.29vw, 0.45vh)",
+              }}
+            >
+              {subheading}
+            </p>
+
+            <motion.div
+              className="w-full origin-left max-md:!hidden"
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: rulesInView ? 1 : 0 }}
+              transition={{ duration: 1.8, ease: EASE, delay: 0.2 }}
+              style={{
+                height: 1,
+                background: "rgba(255,255,255,0.35)",
+                marginTop: "min(2.31vw, 3.58vh)" /* ~40 px */,
+                marginBottom: "min(2.31vw, 3.58vh)",
+              }}
+            />
+
+            {/* Bullets */}
             <div
-              className="relative overflow-hidden max-md:!w-[100px] max-md:!h-[28px]"
+              className="flex flex-wrap items-center font-['Poppins',_sans-serif] font-medium max-md:!text-[13px] max-md:!gap-[6px] max-md:!mt-[16px]"
               style={{
-                width: "min(6.94vw, 10.74vh)" /* ~120 px @ ref */,
-                height: "min(2.08vw, 3.22vh)" /* ~36 px @ ref */,
+                color: "#FFF",
+                fontSize: "min(1.39vw, 2.15vh)" /* 24 px @ ref */,
+                lineHeight: "155%",
+                gap: "min(1.16vw, 1.79vh)" /* ~20 px */,
               }}
             >
-              {indicornLogos.map((logo, i) => {
-                const filterStyle =
-                  logo.mode === "white"       ? "none" :
-                  logo.mode === "transparent" ? "brightness(0) invert(1)" :
-                  /* opaqueBg */                "invert(1) grayscale(1) brightness(10)";
-                const blendMode = logo.mode === "opaqueBg" ? ("screen" as const) : ("normal" as const);
-                const resolved = resolveLogoSrc(logo);
-                if (!resolved) return null;
+              {bullets.map((b, i) => (
+                <span key={`bullet-${i}`} className="inline-flex items-center" style={{ gap: "min(1.16vw, 1.79vh)" }}>
+                  <span>{b}</span>
+                  {i < bullets.length - 1 && (
+                    <span
+                      className="inline-flex select-none items-center justify-center"
+                      style={{ opacity: 0.9 }}
+                    >
+                      &bull;
+                    </span>
+                  )}
+                </span>
+              ))}
+            </div>
 
-                return (
-                  <div
-                    key={`${logo.alt}-${i}`}
-                    className="absolute inset-0 transition-all duration-500 ease-in-out"
-                    style={{
-                      opacity: i === logoIndex ? 1 : 0,
-                      transform: i === logoIndex ? "translateY(0)" : "translateY(8px)",
-                      mixBlendMode: blendMode,
-                    }}
-                  >
-                    <Image
-                      src={cdnImageSrc(resolved, 240)}
-                      alt={logo.alt}
-                      fill
-                      sizes="120px"
+            {/* Mobile-only divider after bullets */}
+            <motion.div
+              className="hidden max-md:!block w-full origin-left"
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: rulesInView ? 1 : 0 }}
+              transition={{ duration: 1.8, ease: EASE, delay: 0.3 }}
+              style={{
+                height: 1,
+                background: "rgba(255,255,255,0.35)",
+                marginTop: 24,
+                marginBottom: 8,
+              }}
+            />
+
+            {/* CTA button */}
+            <CursorFillButtonIndicorn href="/indicorns" label={ctaLabel} />
+
+            {/* Portfolio Indicorns row */}
+            <div
+              className="flex items-center max-md:!gap-[12px] max-md:!justify-center"
+              style={{
+                gap: "min(2.87vw, 3.34vh)" /* ~15 px */,
+                marginTop: "min(2.16vw, 2.79vh)" /* ~20 px */,
+              }}
+            >
+              <span
+                className="font-['Poppins',_sans-serif] font-normal max-md:!text-[11px]"
+                style={{
+                  color: "rgba(255,255,255,0.7)",
+                  fontSize: "min(1.39vw, 2.15vh)" /* ~14 px */,
+                }}
+              >
+                {rotatingLogosLabel}
+              </span>
+              <div
+                className="relative overflow-hidden max-md:!w-[100px] max-md:!h-[28px]"
+                style={{
+                  width: "min(6.94vw, 10.74vh)" /* ~120 px @ ref */,
+                  height: "min(2.08vw, 3.22vh)" /* ~36 px @ ref */,
+                }}
+              >
+                {indicornLogos.map((logo, i) => {
+                  const filterStyle =
+                    logo.mode === "white"       ? "none" :
+                    logo.mode === "transparent" ? "brightness(0) invert(1)" :
+                    /* opaqueBg */                "invert(1) grayscale(1) brightness(10)";
+                  const blendMode = logo.mode === "opaqueBg" ? ("screen" as const) : ("normal" as const);
+                  const resolved = resolveLogoSrc(logo);
+                  if (!resolved) return null;
+
+                  return (
+                    <div
+                      key={`${logo.alt}-${i}`}
+                      className="absolute inset-0 transition-all duration-500 ease-in-out"
                       style={{
-                        objectFit: "contain",
-                        objectPosition: "left",
-                        filter: filterStyle,
-                        transform: `scale(${logo.scale})`,
-                        transformOrigin: "left center",
+                        opacity: i === logoIndex ? 1 : 0,
+                        transform: i === logoIndex ? "translateY(0)" : "translateY(8px)",
+                        mixBlendMode: blendMode,
                       }}
-                    />
-                  </div>
-                );
-              })}
+                    >
+                      <Image
+                        src={cdnImageSrc(resolved, 240)}
+                        alt={logo.alt}
+                        fill
+                        sizes="120px"
+                        style={{
+                          objectFit: "contain",
+                          objectPosition: "left",
+                          filter: filterStyle,
+                          transform: `scale(${logo.scale})`,
+                          transformOrigin: "left center",
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
-        </div>
 
-        {/* ══════════ VERTICAL DIVIDER (grid middle column) ══════════
-            Fixed 786.5 px tall @ 1728×1117 ref (per spec), centered in
-            the row. Draws top→bottom when the section enters view. */}
+        {/* ══════════ VERTICAL DIVIDER ══════════ */}
         <motion.div
           className="max-md:!hidden"
           initial={{ scaleY: 0 }}
@@ -389,15 +376,13 @@ export default function IndicornSpotlightClient({
             width: 1,
             background: "rgba(255,255,255,0.35)",
             justifySelf: "center",
-            alignSelf: "center",
             transformOrigin: "top",
-            height: "min(31.83vw, 49.24vh)" /* ~550 px @ ref — shorter */,
+            height: "min(31.83vw, 49.24vh)" /* ~550 px @ ref */,
           }}
         />
 
-        {/* ══════════ RIGHT COLUMN — quote + attribution ══════════ */}
+        {/* ══════════ RIGHT COLUMN ══════════ */}
         <div className="relative">
-          {/* Mobile-only horizontal divider before quote */}
           <motion.div
             className="hidden max-md:!block w-full origin-left"
             initial={{ scaleX: 0 }}
@@ -409,7 +394,11 @@ export default function IndicornSpotlightClient({
               marginBottom: 32,
             }}
           />
-          <div className="relative z-10 flex h-full flex-col justify-start max-md:!text-center">
+          <div 
+            className="relative z-10 flex flex-col justify-start max-md:!text-center"
+            // THE FIX: Micro-adjustment to push the quote down slightly so its baseline matches the taller font of the heading exactly.
+            style={{ paddingTop: "min(0.25vw, 0.4vh)" }} 
+          >
             <p
               className="m-0 font-['Poppins',_sans-serif] max-md:!text-[15px] max-md:!leading-[1.5]"
               style={{
@@ -433,7 +422,6 @@ export default function IndicornSpotlightClient({
             </p>
           </div>
         </div>
-      </div>
-    </section>
+      </div>    </section>
   );
 }
