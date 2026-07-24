@@ -21,20 +21,21 @@ export interface WhatWeBelieveData {
   heading?: string;
   beliefs?: Belief[];
 }
+
 const HEADING = "What We Believe";
 const BELIEFS: Belief[] = [
   {
-    title: "Founder-Centricity",
+    title: "Founder Centricity",
     description:
       "We back individuals ahead of market cycles. Exceptional founders possess the resilience to iterate and the vision to define new categories; our conviction is anchored in the person, remaining constant as the business model evolves.",
   },
   {
-    title: "Conviction Over Consensus",
+    title: "Conviction Consensus",
     description:
       "We forgo herd mentality. By identifying asymmetric potential before it is market-validated, we prioritize independent, contrarian analysis over industry consensus.",
   },
   {
-    title: "Commitment to Endurance",
+    title: "Commitment Endurance",
     description:
       "Partnership transcends the initial capital injection. We remain deeply engaged through talent acquisition, iterative pivots, and subsequent funding, providing support in the decisive moments that define long-term success.",
   },
@@ -43,94 +44,57 @@ const BELIEFS: Belief[] = [
 const IMAGE_SRC = "/images/what-we-believe/crowd.png";
 
 /* ─────────────────────────────────────────────────────────
-   Card design tokens — EXACT Figma spec @ 1728×1117 MacBook 14"
-   reference, expressed as min(Xvw, Yvh) so they scale
-   proportionally across every viewport in public/multiview.html:
-     card    428 × 682, radius 12, gap 42
-     title   40 / 500 / 150% / #000, width 368
-     desc    28 / 400 / 140% / #323232, width 355
+   Card design tokens
    ───────────────────────────────────────────────────────── */
 const SZ = {
-  headingFs: "min(4.51vw, 6.98vh)",     // 78 px @ ref — matches Impact At
-                                        // Glance / How We Show Up / Stories.
-  titleFs: "min(2.31vw, 3.58vh)",       // 40 px
-  titleW: "min(21.30vw, 32.95vh)",      // 368 px
-  descFs: "min(1.62vw, 2.51vh)",        // 28 px
-  descW: "min(20.54vw, 31.78vh)",       // 355 px
-  titleToDesc: "min(1.16vw, 1.79vh)",   // 20 px
-  cardPadX: "min(1.74vw, 2.69vh)",      // 30 px  (428 − 368 = 60 → 30 each side)
-  cardPadY: "min(2.31vw, 3.58vh)",      // 40 px
+  headingFs: "min(4.51vw, 6.98vh)",
+  titleFs: "min(2.77vw, 4.30vh)",
+  titleW: "min(23.09vw, 35.72vh)",
+  hrW: "min(22.91vw, 35.45vh)",
+  descFs: "min(1.15vw, 1.79vh)",
+  descW: "min(21.64vw, 33.48vh)",
+  cardPadY: "min(3.47vw, 5.37vh)",
 };
 
-/* Spring — a touch snappier than before so the whole thing
-   feels faster while staying buttery-smooth. */
-const SPRING = { stiffness: 100, damping: 30, mass: 0.7 };
+/* Smooth easing for all transforms */
+const EASE = [0.22, 1, 0.36, 1] as const;
+const SPRING_CONFIG = { stiffness: 100, damping: 30, mass: 0.7 };
 
 /* ─────────────────────────────────────────────────────────
-   Viewport-derived px dimensions — DESKTOP (landscape photo,
-   3 vertical slices side by side).
+   Viewport-derived px dimensions
    ───────────────────────────────────────────────────────── */
-const FALLBACK_DIMS = (() => {
-  const cardW = 428, cardH = 682, gap = 42;
-  const photoW = 3 * cardW;
-  return { winW: 1728, cardW, cardH, gap, photoW, sFull: 1728 / photoW };
-})();
-
 function computeDims() {
-  if (typeof window === "undefined") return FALLBACK_DIMS;
+  if (typeof window === "undefined") {
+    const cardW = 428, cardH = 682, gap = 42;
+    const photoW = 3 * cardW;
+    return { winW: 1728, cardW, cardH, gap, photoW, sFull: 1728 / photoW };
+  }
   const winW = window.innerWidth;
   const winH = window.innerHeight;
-
   const cardW = Math.min(0.24769 * winW, 0.38317 * winH);
   const cardH = Math.min(0.39468 * winW, 0.61055 * winH);
-  const gap = Math.min(0.02431 * winW, 0.0376 * winH);
-
+  const gap = winW * 0.02;
   const photoW = 3 * cardW;
   const sFull = winW / photoW;
-
   return { winW, cardW, cardH, gap, photoW, sFull };
 }
 
-/* Mobile dims — portrait photo, 3 horizontal slices stacked. */
-const FALLBACK_MOBILE_DIMS = (() => {
-  const cardW = 340, cardH = 160, gap = 16;
-  const photoH = 3 * cardH;
-  return { winW: 390, winH: 844, cardW, cardH, gap, photoH, sFull: 844 / photoH };
-})();
-
 function computeMobileDims() {
-  if (typeof window === "undefined") return FALLBACK_MOBILE_DIMS;
+  if (typeof window === "undefined") {
+    const cardW = 340, cardH = 160, gap = 16;
+    const photoH = 3 * cardH;
+    return { winW: 390, winH: 844, cardW, cardH, gap, photoH, sFull: 844 / photoH };
+  }
   const winW = window.innerWidth;
   const winH = window.innerHeight;
-
-  const cardW = winW * 0.87; // ~87vw
-  const cardH = winH * 0.19; // ~19vh per row
+  const cardW = winW * 0.87;
+  const cardH = winH * 0.19;
   const gap = 14;
   const photoH = 3 * cardH;
   const sFull = winH / photoH;
-
   return { winW, winH, cardW, cardH, gap, photoH, sFull };
 }
 
-/* ─────────────────────────────────────────────────────────
-   Animation — TRANSFORM-ONLY so text never reflows and the
-   card:text ratio is constant throughout:
-
-   Phase 1 (0.00 → 0.45) SHRINK
-     One seamless photo (3 touching slices) scales down from
-     full width to 50%. No split, no flip — reads as a single
-     image getting smaller.
-
-   Phase 2 (0.45 → 0.70) SPLIT + FLIP + GROW  (all at the end)
-     Side cards translate apart (opening the 42 px gaps),
-     every card flips rotateY 0→180 to reveal its text face,
-     and the group scales from 50% up to its final size.
-     Because growth is a `scale` transform, the text scales as
-     one unit — no re-wrapping, ratio preserved.
-
-   Phase 3 (0.70 → 1.0) HOLD
-     Cards rest, centered, aligned to the site gutter.
-   ───────────────────────────────────────────────────────── */
 export default function WhatWeBelieveClient({
   data,
 }: {
@@ -145,10 +109,12 @@ export default function WhatWeBelieveClient({
     target: sectionRef,
     offset: ["start start", "end end"],
   });
-  const p = useSpring(scrollYProgress, SPRING);
+  
+  // Smooth the scroll progress to reduce jitter
+  const p = useSpring(scrollYProgress, SPRING_CONFIG);
 
-  const [dims, setDims] = useState(FALLBACK_DIMS);
-  const [mobileDims, setMobileDims] = useState(FALLBACK_MOBILE_DIMS);
+  const [dims, setDims] = useState(() => computeDims());
+  const [mobileDims, setMobileDims] = useState(() => computeMobileDims());
 
   useEffect(() => {
     const onResize = () => {
@@ -160,22 +126,22 @@ export default function WhatWeBelieveClient({
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  /* Desktop transforms */
+  /* Desktop transforms - phased to avoid overlap glitches */
   const sHalf = dims.sFull * 0.5;
-  const groupScale = useTransform(p, [0, 0.45, 0.7], [dims.sFull, sHalf, 1]);
-  const splitX = useTransform(p, [0.45, 0.7], [0, dims.gap]);
-  const flip = useTransform(p, [0.45, 0.7], [0, 180]);
-  const radius = useTransform(p, [0.45, 0.58], [0, 12]);
-  const headingOpacity = useTransform(p, [0.43, 0.5], [1, 0]);
+  const groupScale = useTransform(p, [0, 0.4, 0.65], [dims.sFull, sHalf, 1], { ease: EASE });
+  const splitX = useTransform(p, [0.5, 0.7], [0, dims.gap], { ease: EASE });
+  const flip = useTransform(p, [0.5, 0.75], [0, 180], { ease: EASE });
+  const radius = useTransform(p, [0.5, 0.65], [0, 12], { ease: EASE });
+  const headingOpacity = useTransform(p, [0.35, 0.45], [1, 0], { ease: EASE });
   const headingScale = 1 / dims.sFull;
 
-  /* Mobile transforms — same phases, vertical split + rotateX */
+  /* Mobile transforms */
   const mSHalf = mobileDims.sFull * 0.5;
-  const mGroupScale = useTransform(p, [0, 0.45, 0.7], [mobileDims.sFull, mSHalf, 1]);
-  const mSplitY = useTransform(p, [0.45, 0.7], [0, mobileDims.gap]);
-  const mFlip = useTransform(p, [0.45, 0.7], [0, 180]);
-  const mRadius = useTransform(p, [0.45, 0.58], [0, 12]);
-  const mHeadingOpacity = useTransform(p, [0.43, 0.5], [1, 0]);
+  const mGroupScale = useTransform(p, [0, 0.4, 0.65], [mobileDims.sFull, mSHalf, 1], { ease: EASE });
+  const mSplitY = useTransform(p, [0.5, 0.7], [0, mobileDims.gap], { ease: EASE });
+  const mFlip = useTransform(p, [0.5, 0.75], [0, 180], { ease: EASE });
+  const mRadius = useTransform(p, [0.5, 0.65], [0, 12], { ease: EASE });
+  const mHeadingOpacity = useTransform(p, [0.35, 0.45], [1, 0], { ease: EASE });
   const mHeadingScale = 1 / mobileDims.sFull;
 
   return (
@@ -187,7 +153,7 @@ export default function WhatWeBelieveClient({
       <div className="sticky top-0 h-screen w-full overflow-hidden">
         <div className="flex h-full w-full items-center justify-center">
 
-          {/* ═══ DESKTOP VERSION (hidden on mobile) ═══ */}
+          {/* ═══ DESKTOP VERSION ═══ */}
           <motion.div
             className="hidden md:block"
             style={{
@@ -195,18 +161,12 @@ export default function WhatWeBelieveClient({
               position: "relative",
               width: dims.photoW,
               height: dims.cardH,
-              /* Promote the scaling group to its OWN GPU layer so the
-                 shrink is a cheap composited transform. Without this the
-                 browser re-rasterizes the whole 3-D + background-image
-                 subtree every frame during the scale, blocking the main
-                 thread → the scroll visibly hitches while it shrinks. */
-              willChange: "transform",
-              backfaceVisibility: "hidden",
             }}
           >
+            {/* Perspective wrapper on the container, not the cards */}
             <div
               className="flex h-full w-full items-center justify-center"
-              style={{ perspective: 2000 }}
+              style={{ perspective: 2000, perspectiveOrigin: "center" }}
             >
               {beliefs.map((belief, i) => {
                 const direction = i === 0 ? -1 : i === 2 ? 1 : 0;
@@ -245,7 +205,7 @@ export default function WhatWeBelieveClient({
             </motion.h2>
           </motion.div>
 
-          {/* ═══ MOBILE VERSION (hidden on desktop) ═══ */}
+          {/* ═══ MOBILE VERSION ═══ */}
           <motion.div
             className="block md:hidden"
             style={{
@@ -253,14 +213,11 @@ export default function WhatWeBelieveClient({
               position: "relative",
               width: mobileDims.cardW,
               height: mobileDims.photoH,
-              /* Same GPU-layer promotion as desktop (see note there). */
-              willChange: "transform",
-              backfaceVisibility: "hidden",
             }}
           >
             <div
               className="flex h-full w-full flex-col items-center justify-center"
-              style={{ perspective: 2000 }}
+              style={{ perspective: 2000, perspectiveOrigin: "center" }}
             >
               {beliefs.map((belief, i) => {
                 const direction = i === 0 ? -1 : i === 2 ? 1 : 0;
@@ -306,9 +263,8 @@ export default function WhatWeBelieveClient({
 }
 
 /* ─────────────────────────────────────────────────────────
-   CardSlice — DESKTOP: fixed-size card (no width/height animation).
-   Front = one third of the crowd photo (the three touching
-   slices reconstruct a single image); back = white belief card.
+   CardSlice — DESKTOP
+   Clean flip animation with proper 3D context
    ───────────────────────────────────────────────────────── */
 function CardSlice({
   belief,
@@ -329,7 +285,6 @@ function CardSlice({
   flip: MotionValue<number>;
   radius: MotionValue<number>;
 }) {
-  /* Side cards translate outward; centre card stays put. */
   const x = useTransform(splitX, (v) => v * direction);
 
   return (
@@ -340,92 +295,45 @@ function CardSlice({
         x,
         rotateY: flip,
         transformStyle: "preserve-3d",
-        WebkitTransformStyle: "preserve-3d",
         position: "relative",
         flexShrink: 0,
-        willChange: "transform",
       }}
     >
-      {/* FRONT FACE — image slice. The ±0.5 px horizontal bleed
-          overlaps neighbours so there are NO hairline white seams
-          between the touching slices while it reads as one photo. */}
-      <motion.div
+      {/* FRONT - Image */}
+      <div
         style={{
           position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: -0.5,
-          right: -0.5,
+          inset: 0,
           backfaceVisibility: "hidden",
-          WebkitBackfaceVisibility: "hidden",
-          borderRadius: radius,
+          borderRadius: radius.get(),
           overflow: "hidden",
           backgroundImage: `url(${IMAGE_SRC})`,
-          /* `300% auto` keeps the image's NATURAL aspect (1.631) — the
-             three slices reconstruct one undistorted photo, cover-
-             cropped vertically (never stretched like `300% 100%` did).
-             The card's 1.883 aspect is always wider than the image, so
-             this always fills — no letterboxing. */
           backgroundSize: "300% auto",
           backgroundPosition: `${index * 50}% center`,
           backgroundRepeat: "no-repeat",
         }}
       />
 
-      {/* BACK FACE — white belief card, title at TOP. */}
+      {/* BACK - Content */}
       <motion.div
         style={{
           position: "absolute",
           inset: 0,
           backfaceVisibility: "hidden",
-          WebkitBackfaceVisibility: "hidden",
           rotateY: 180,
           borderRadius: radius,
           overflow: "hidden",
           background: "#FFF",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "flex-start",
-          paddingTop: SZ.cardPadY,
-          paddingBottom: SZ.cardPadY,
-          paddingLeft: SZ.cardPadX,
-          paddingRight: SZ.cardPadX,
         }}
       >
-        <h3
-          style={{
-            fontSize: SZ.titleFs,
-            fontWeight: 500,
-            lineHeight: "150%",
-            maxWidth: SZ.titleW,
-            margin: 0,
-            marginBottom: SZ.titleToDesc,
-          }}
-          className="font-['Poppins',_sans-serif] capitalize text-black"
-        >
-          {belief.title}
-        </h3>
-        <p
-          style={{
-            fontSize: SZ.descFs,
-            fontWeight: 400,
-            lineHeight: "140%",
-            maxWidth: SZ.descW,
-            margin: 0,
-          }}
-          className="font-['Poppins',_sans-serif] text-[#323232]"
-        >
-          {belief.description}
-        </p>
+        <CardBackContent belief={belief} radius={radius} />
       </motion.div>
     </motion.div>
   );
 }
 
 /* ─────────────────────────────────────────────────────────
-   MobileCardSlice — MOBILE: portrait photo split into 3
-   horizontal rows. Front = one third of the photo (stacked
-   vertically); back = white belief card. Flips on X-axis.
+   MobileCardSlice — MOBILE
    ───────────────────────────────────────────────────────── */
 function MobileCardSlice({
   belief,
@@ -456,23 +364,17 @@ function MobileCardSlice({
         y,
         rotateX: flip,
         transformStyle: "preserve-3d",
-        WebkitTransformStyle: "preserve-3d",
         position: "relative",
         flexShrink: 0,
-        willChange: "transform",
       }}
     >
-      {/* FRONT FACE — image slice (horizontal strip of portrait photo) */}
-      <motion.div
+      {/* FRONT - Image */}
+      <div
         style={{
           position: "absolute",
-          left: 0,
-          right: 0,
-          top: -0.5,
-          bottom: -0.5,
+          inset: 0,
           backfaceVisibility: "hidden",
-          WebkitBackfaceVisibility: "hidden",
-          borderRadius: radius,
+          borderRadius: radius.get(),
           overflow: "hidden",
           backgroundImage: `url(${IMAGE_SRC})`,
           backgroundSize: "auto 300%",
@@ -481,47 +383,214 @@ function MobileCardSlice({
         }}
       />
 
-      {/* BACK FACE — white belief card */}
+      {/* BACK - Content */}
       <motion.div
         style={{
           position: "absolute",
           inset: 0,
           backfaceVisibility: "hidden",
-          WebkitBackfaceVisibility: "hidden",
           rotateX: 180,
           borderRadius: radius,
           overflow: "hidden",
           background: "#FFF",
+        }}
+      >
+        <MobileCardBackContent belief={belief} />
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   Card Back Content Components
+   Separated for cleaner rendering
+   ───────────────────────────────────────────────────────── */
+function CardBackContent({ 
+  belief, 
+  radius 
+}: { 
+  belief: Belief;
+  radius: MotionValue<number>;
+}) {
+  const p = useSpring(
+    useTransform(radius, (r) => (r > 6 ? 1 : 0)),
+    { stiffness: 200, damping: 20 }
+  );
+  const hrScale = useTransform(p, [0, 1], [0, 1]);
+
+  return (
+    <>
+      {/* Title Area */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "50%",
           display: "flex",
-          flexDirection: "column",
+          alignItems: "flex-start",
           justifyContent: "center",
-          padding: "16px 20px",
+          paddingTop: SZ.cardPadY,
+          paddingLeft: "20px",
+          paddingRight: "20px",
+        }}
+      >
+        <h3
+          style={{
+            fontSize: SZ.titleFs,
+            fontWeight: 500,
+            lineHeight: "110%",
+            width: SZ.titleW,
+            margin: 0,
+            textAlign: "center",
+          }}
+          className="font-['Poppins',_sans-serif] capitalize text-black"
+        >
+          {belief.title}
+        </h3>
+      </div>
+
+      {/* HR Divider */}
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: 0,
+          right: 0,
+          height: 1,
+          display: "flex",
+          justifyContent: "center",
+          marginTop: "-0.5px",
+        }}
+      >
+        <motion.div
+          style={{
+            width: SZ.hrW,
+            height: 1,
+            backgroundColor: "#000",
+            scaleX: hrScale,
+            transformOrigin: "center",
+          }}
+        />
+      </div>
+
+      {/* Description Area */}
+      <div
+        style={{
+          position: "absolute",
+          top: "60%",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "center",
+          padding: "0 20px",
+        }}
+      >
+        <p
+          style={{
+            fontSize: SZ.descFs,
+            fontWeight: 400,
+            lineHeight: "140%",
+            width: SZ.descW,
+            margin: 0,
+            textAlign: "center",
+          }}
+          className="font-['Poppins',_sans-serif] text-[#323232]"
+        >
+          {belief.description}
+        </p>
+      </div>
+    </>
+  );
+}
+
+function MobileCardBackContent({ belief }: { belief: Belief }) {
+  return (
+    <>
+      {/* Title Area */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "50%",
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "center",
+          paddingTop: "24px",
+          paddingLeft: "16px",
+          paddingRight: "16px",
         }}
       >
         <h3
           style={{
             fontSize: "18px",
             fontWeight: 500,
-            lineHeight: "140%",
+            lineHeight: "110%",
             margin: 0,
-            marginBottom: 6,
+            textAlign: "center",
+            width: "95%",
           }}
           className="font-['Poppins',_sans-serif] text-black"
         >
           {belief.title}
         </h3>
+      </div>
+
+      {/* HR Divider */}
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: 0,
+          right: 0,
+          height: 1,
+          display: "flex",
+          justifyContent: "center",
+          marginTop: "-0.5px",
+        }}
+      >
+        <div
+          style={{
+            width: "92%",
+            height: 1,
+            backgroundColor: "#000",
+          }}
+        />
+      </div>
+
+      {/* Description Area */}
+      <div
+        style={{
+          position: "absolute",
+          top: "60%",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "center",
+          padding: "0 16px",
+        }}
+      >
         <p
           style={{
-            fontSize: "12px",
+            fontSize: "11px",
             fontWeight: 400,
-            lineHeight: "150%",
+            lineHeight: "140%",
             margin: 0,
+            textAlign: "center",
+            width: "90%",
           }}
           className="font-['Poppins',_sans-serif] text-[#323232]"
         >
           {belief.description}
         </p>
-      </motion.div>
-    </motion.div>
+      </div>
+    </>
   );
 }

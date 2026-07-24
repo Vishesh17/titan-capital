@@ -83,11 +83,16 @@ function resolveLogoSrc(logo: BackedBeforeLogo): string {
    the card edges. We parse the `scale-[N]` token and clamp it; combined
    with `overflow-hidden` on the box, every logo stays inside a uniform
    box regardless of what the CMS sends. */
-function clampLogoScale(scaleClass?: string): number {
-  const m = scaleClass?.match(/scale-\[([\d.]+)\]/);
-  const s = m ? parseFloat(m[1]) : 1;
-  return Math.min(Number.isFinite(s) ? s : 1, 1.6);
-}
+/* ─────────────────────────────────────────────────────────
+   UPDATED: Increased default scale and max cap to reduce whitespace
+   ───────────────────────────────────────────────────────── */
+   function clampLogoScale(scaleClass?: string): number {
+    const m = scaleClass?.match(/scale-\[([\d.]+)\]/);
+    // Default is now 1.3 (30% larger) instead of 1
+    const s = m ? parseFloat(m[1]) : 1.3; 
+    // Max cap increased to 2.0 to safely allow larger scaling
+    return Math.min(Number.isFinite(s) ? s : 1.3, 2.0);
+  }
 
 // ---------------------------------------------------------
 // HELPER LOGIC FOR DRAGGABLE MARQUEE
@@ -117,17 +122,34 @@ function DraggableMarquee({
   const inView = useInView(containerRef);
 
   // Measure the width of exactly 1/3 of the container to know exactly when to wrap seamlessly
+  // 🛑 FIX: Safe ResizeObserver implementation that avoids TypeScript/SSR errors
   useEffect(() => {
+    if (typeof window === "undefined" || !containerRef.current) return;
+
     const measure = () => {
       if (containerRef.current) {
+        // Measure exactly 1/3 since we pass the array 3 times
         setContentWidth(containerRef.current.scrollWidth / 3);
       }
     };
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, [items]);
 
+    // 1. Measure immediately on mount
+    measure();
+
+    // 2. Watch for layout shifts (e.g., images loading late)
+    const observer = new ResizeObserver(() => {
+      measure();
+    });
+    observer.observe(containerRef.current);
+
+    // 3. Fallback for window resizing
+    window.addEventListener("resize", measure);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [items]);
   useAnimationFrame((t, delta) => {
     if (!inView || contentWidth === 0 || isDragging.current || isHovered.current) return;
 
@@ -168,15 +190,16 @@ function DraggableMarquee({
             whileTap={{ scale: 1.12 }}
             transition={{ type: "spring", stiffness: 400, damping: 18 }}
           >
+            {/* 🛑 CHANGED: h-full w-full instead of 96% so it stretches closer to walls */}
             <div
-              className="relative h-[96%] w-[96%]"
+              className="relative h-full w-full"
               style={{ transform: `scale(${clampLogoScale(company.scaleClass)})` }}
             >
               <Image
                 src={cdnImageSrc(src, 320)}
                 alt={company.name}
                 fill
-                style={{ objectFit: "contain" }}
+                style={{ objectFit: "contain", padding: "6px" }} // Adding a tiny padding directly to objectFit boundary
                 sizes="(max-width: 768px) 120px, 144px"
                 priority={i < 10}
                 draggable={false}
@@ -217,7 +240,6 @@ export default function BackedBeforeClient({
     <section
       className="flex flex-col items-center gap-[15px] md:gap-[22px] self-stretch overflow-hidden w-full"
       style={{
-        /* Halved vertical footprint (was clamp(40,…,100)). */
         paddingTop: "clamp(10px, min(2.0vw, 3.09vh), 25px)",
         paddingBottom: "clamp(10px, min(2.00vw, 3.09vh), 25px)",
         paddingLeft: "var(--section-px-wide)",
@@ -278,8 +300,8 @@ export default function BackedBeforeClient({
           WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)"
         }}
       >
-        {/* direction 1 = left-to-right */}
-        <DraggableMarquee items={loopPoolRow1} direction={1} speed={60} />
+        {/* 🛑 CHANGED: Increased speed from 60 to 100 */}
+        <DraggableMarquee items={loopPoolRow1} direction={1} speed={100} />
       </div>
 
       {/* TRACK TWO: Right to Left */}
@@ -290,8 +312,8 @@ export default function BackedBeforeClient({
           WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)"
         }}
       >
-        {/* direction -1 = right-to-left */}
-        <DraggableMarquee items={loopPoolRow2} direction={-1} speed={50} />
+        {/* 🛑 CHANGED: Increased speed from 50 to 85 */}
+        <DraggableMarquee items={loopPoolRow2} direction={-1} speed={85} />
       </div>
     </section>
   );

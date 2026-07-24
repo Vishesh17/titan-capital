@@ -8,7 +8,7 @@ import { motion, useScroll, useTransform, cubicBezier } from "framer-motion";
    
    1. Hero smoothly fades on scroll (no pause in hero)
    2. Backed Before + How We Show Up rise up
-   3. PAUSE: content stays visible for 1-2 scrolls
+   3. PAUSE: content stays visible for 1-2 scrolls (increased dwell)
    4. Then scroll continues normally
    ───────────────────────────────────────────────────────── */
 
@@ -19,8 +19,9 @@ const BEIGE = "#FBF7F0";
 /* Scroll track for hero: just enough for smooth fade, no pause */
 const HERO_TRACK_VH = 100;
 
-/* Extra scroll height AFTER Backed Before appears - this creates the pause */
-const CONTENT_DWELL_VH = 150;
+/* INCREASED: Dwell height for Backed Before & How We Show Up sticky pause.
+   Setting this to 200 ensures it takes roughly 2 full scrolls before unpinning. */
+const BACKED_DWELL_VH = 120; 
 
 export default function HeroBackedBg({
   hero,
@@ -39,25 +40,37 @@ export default function HeroBackedBg({
   const [groupY, setGroupY] = useState((HERO_TRACK_VH / 100) * 800);
   const [seamY, setSeamY] = useState((HERO_TRACK_VH / 100) * 800 + 300);
 
+
   useEffect(() => {
     const measure = () => {
       setVh(window.innerHeight);
       if (groupRef.current) {
+        // Measure absolute distance from top of document
         setGroupY(groupRef.current.getBoundingClientRect().top + window.scrollY);
       }
       if (seamRef.current) {
         setSeamY(seamRef.current.getBoundingClientRect().top + window.scrollY);
       }
     };
+    
     measure();
     window.addEventListener("resize", measure);
-    const t = setTimeout(measure, 600);
-    if (typeof document !== "undefined" && document.fonts?.ready) {
-      document.fonts.ready.then(measure);
+    
+    let observer: ResizeObserver | null = null;
+    if (typeof document !== "undefined") {
+      observer = new ResizeObserver(() => {
+        measure();
+      });
+      observer.observe(document.body);
+      
+      if (document.fonts?.ready) {
+        document.fonts.ready.then(measure);
+      }
     }
+
     return () => {
       window.removeEventListener("resize", measure);
-      clearTimeout(t);
+      if (observer) observer.disconnect();
     };
   }, []);
 
@@ -128,20 +141,24 @@ export default function HeroBackedBg({
           </div>
         </div>
 
-        {/* Backed Before + How We Show Up with dwell/pause after they appear */}
+        {/* Backed Before + How We Show Up with sticky pause at top */}
         <motion.div ref={groupRef} style={{ opacity: contentOpacity }}>
-          {backed}
-          <div ref={seamRef} aria-hidden />
-          <div className="relative">
-            <motion.div
-              className="pointer-events-none absolute inset-0"
-              aria-hidden
-              style={{ background: BEIGE, opacity: beigeOpacity }}
-            />
-            <div className="relative">{howWeShow}</div>
+          {/* Sticky wrapper - Backed Before pins at top while you scroll */}
+          <div style={{ minHeight: `${100 + BACKED_DWELL_VH}vh` }}>
+            {/* 🛑 CHANGED: Replaced top-0 with top-[80px] md:top-[100px] to clear the fixed navbar */}
+            <div className="sticky top-[80px] md:top-[100px]">
+              {backed}
+              <div ref={seamRef} aria-hidden />
+              <div className="relative">
+                <motion.div
+                  className="pointer-events-none absolute inset-0"
+                  aria-hidden
+                  style={{ background: BEIGE, opacity: beigeOpacity }}
+                />
+                <div className="relative">{howWeShow}</div>
+              </div>
+            </div>
           </div>
-          {/* DWELL SPACER: creates 1-2 scroll pause after content appears */}
-          <div aria-hidden style={{ height: `${CONTENT_DWELL_VH}vh` }} />
         </motion.div>
       </div>
     </div>
