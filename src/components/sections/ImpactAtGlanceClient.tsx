@@ -111,7 +111,6 @@ function RollingNumber({ value }: { value: string }) {
   };
 
   return (
-    // tabular-nums ensures all digits natively treat width equally
     <span className="inline-flex flex-row items-center leading-none tabular-nums">
       {prefix && <span>{prefix}</span>}
       <span className="inline-flex flex-row">
@@ -122,7 +121,6 @@ function RollingNumber({ value }: { value: string }) {
             <span
               key={i}
               className="relative inline-flex flex-col overflow-hidden items-center"
-              // 🛑 FIX: Fixed width per digit forces tight spacing without relying on flex distribution
               style={{ height: "1.2em", width: "0.62em" }}
             >
               <motion.span
@@ -175,7 +173,7 @@ function ImpactStatCell({
           width: "1px",
           height: "min(13.89vw, 21.49vh)",
           scaleY: lineScale,
-          transformOrigin: "top", // Force animation top-to-bottom
+          transformOrigin: "top", // Animates top-to-bottom natively
         }}
       />
       <div className="flex flex-col">
@@ -186,7 +184,6 @@ function ImpactStatCell({
           <RollingNumber value={stat.num} />
         </span>
         <span
-          // 🛑 FIX: Force whitespace-nowrap so text is perfectly forced onto one line
           className="whitespace-nowrap font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[14px]"
           style={{
             fontSize: "min(2.55vw, 3.94vh)",
@@ -194,7 +191,6 @@ function ImpactStatCell({
             marginTop: "min(1.16vw, 1.79vh)",
           }}
         >
-          {/* Failsafe: replace any Sanity line breaks with spaces */}
           {stat.label.replace(/\n/g, " ")} 
         </span>
       </div>
@@ -389,12 +385,14 @@ function StoriesSection({
 }) {
   const gridRef = useRef<HTMLDivElement>(null);
   
+  // 🛑 FIX SPEED: Widened the offset significantly so the lines draw much slower over a longer scroll
   const { scrollYProgress } = useScroll({
     target: gridRef,
-    offset: ["start 0.85", "start 0.45"],
+    offset: ["start 0.95", "center 0.6"], 
   });
   
-  const smoothProgress = useSpring(scrollYProgress, { stiffness: 120, damping: 25 });
+  // 🛑 FIX SPEED: Softened the spring for a gentler, slower glide
+  const smoothProgress = useSpring(scrollYProgress, { stiffness: 50, damping: 20 });
   const vRuleScale = useTransform(smoothProgress, [0, 1], [0, 1]);
   const hRuleScale = useTransform(smoothProgress, [0, 1], [0, 1]);
 
@@ -467,8 +465,7 @@ function StoriesSection({
                 width: "calc(33.3333% - 2 * var(--bp))",
                 height: "1px",
                 background: "#000",
-                // 🛑 FIX: Horizontal rules animate LEFT to RIGHT (matching top to bottom scroll)
-                transformOrigin: "left",
+                transformOrigin: "left", // Animates left-to-right natively
                 scaleX: hRuleScale,
               }}
             />
@@ -477,33 +474,13 @@ function StoriesSection({
           <motion.div
             aria-hidden
             className="pointer-events-none absolute max-md:!hidden z-20"
-            style={{ 
-              top: "var(--bp)", 
-              left: "33.3333%", 
-              marginLeft: "-0.5px", 
-              width: "1px", 
-              height: "calc(100% - 2 * var(--bp))", 
-              background: "#000", 
-              // 🛑 FIX: Vertical rules animate TOP to BOTTOM
-              transformOrigin: "top", 
-              scaleY: vRuleScale 
-            }}
+            style={{ top: "var(--bp)", left: "33.3333%", marginLeft: "-0.5px", width: "1px", height: "calc(100% - 2 * var(--bp))", background: "#000", transformOrigin: "top", scaleY: vRuleScale }}
           />
 
           <motion.div
             aria-hidden
             className="pointer-events-none absolute max-md:!hidden z-20"
-            style={{ 
-              top: "var(--bp)", 
-              left: "66.6666%", 
-              marginLeft: "-0.5px", 
-              width: "1px", 
-              height: "calc(100% - 2 * var(--bp))", 
-              background: "#000", 
-              // 🛑 FIX: Vertical rules animate TOP to BOTTOM
-              transformOrigin: "top", 
-              scaleY: vRuleScale 
-            }}
+            style={{ top: "var(--bp)", left: "66.6666%", marginLeft: "-0.5px", width: "1px", height: "calc(100% - 2 * var(--bp))", background: "#000", transformOrigin: "top", scaleY: vRuleScale }}
           />
         </div>
 
@@ -530,41 +507,20 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
   const impactData = data?.impactStats && data.impactStats.length > 0 ? data.impactStats : FALLBACK_IMPACT_DATA;
   const slides = data?.founderStories && data.founderStories.length > 0 ? data.founderStories : FALLBACK_SLIDES;
 
-  const { scrollY } = useScroll();
-  const impactSectionRef = useRef<HTMLElement>(null);
-  const [impactTop, setImpactTop] = useState(1600);
-  const [vh, setVh] = useState(800);
-
-  useEffect(() => {
-    const measure = () => {
-      setVh(window.innerHeight);
-      if (impactSectionRef.current) {
-        setImpactTop(impactSectionRef.current.getBoundingClientRect().top + window.scrollY);
-      }
-    };
-    measure();
-    window.addEventListener("resize", measure);
-    const t = setTimeout(measure, 600);
-    if (typeof document !== "undefined" && document.fonts?.ready) {
-      document.fonts.ready.then(measure);
-    }
-    return () => {
-      window.removeEventListener("resize", measure);
-      clearTimeout(t);
-    };
-  }, []);
-
-  const lineScale = useTransform(
-    scrollY,
-    [impactTop - 0.9 * vh, impactTop - 0.15 * vh],
-    [0, 1],
-    { clamp: true },
-  );
+  // 🛑 GLITCH FIX: Replaced glitchy pixel math tracking with a stable parent ref
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: impactProgress } = useScroll({
+    target: wrapperRef,
+    // Widened offset slows the animation down drastically so it isn't an instant flash
+    offset: ["start 0.9", "start 0.3"], 
+  });
+  
+  // Applies a gentle spring so the lines animate flawlessly in both directions
+  const lineScale = useSpring(impactProgress, { stiffness: 80, damping: 20 });
 
   return (
-    <div className="relative w-full bg-[#FBF7F0]">
+    <div ref={wrapperRef} className="relative w-full bg-[#FBF7F0]">
       <section
-        ref={impactSectionRef}
         className="relative w-full bg-[#FBF7F0] max-md:!h-[100vh] max-md:!py-[40px]"
         style={{
           position: "sticky",
@@ -610,7 +566,9 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
             className="grid w-full max-md:!grid-cols-2"
             style={{
               gridTemplateColumns: "repeat(3, 1fr)",
-              padding: BORDER_PADDING,
+              // 🛑 ALIGNMENT FIX: Explicitly set left/right padding to perfectly match Their Stories
+              paddingLeft: BORDER_PADDING,
+              paddingRight: BORDER_PADDING,
               columnGap: STORY_GAP,
               rowGap: "min(3.47vw, 5.37vh)",
             }}

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion } from "framer-motion"; // Keep for buttonContent spinner animation
 
 /*
   RESPONSIVE STRATEGY — clamp(MIN, min(vw-fluid, vh-fluid), MAX)
@@ -41,6 +41,85 @@ const navLinks = [
    ──────────────────────────────────────────────── */
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+}
+
+/* ────────────────────────────────────────────────
+   CursorFillButton — same style as navbar's Get Investment
+   Radial fill from cursor position on hover
+   ──────────────────────────────────────────────── */
+function CursorFillButton({
+  type = "button",
+  disabled,
+  label,
+  variant = "desktop",
+  onClick,
+}: {
+  type?: "button" | "submit";
+  disabled?: boolean;
+  label: React.ReactNode;
+  variant?: "desktop" | "mobile";
+  onClick?: () => void;
+}) {
+  const [origin, setOrigin] = useState("50% 50%");
+  const [hovered, setHovered] = useState(false);
+
+  const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setOrigin(`${x}% ${y}%`);
+    setHovered(true);
+  };
+
+  const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setOrigin(`${x}% ${y}%`);
+    setHovered(false);
+  };
+
+  return (
+    <button
+      type={type}
+      disabled={disabled}
+      onClick={onClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className="relative flex items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] font-normal transition-colors duration-300 disabled:opacity-60"
+      style={
+        variant === "mobile"
+          ? {
+              width: "clamp(100px, 28vw, 140px)",
+              height: "clamp(24px, 6.5vw, 32px)",
+              borderRadius: "53px",
+              border: "1px solid transparent",
+              background: hovered ? "white" : "#001A4D",
+              color: hovered ? "#001A4D" : "white",
+              fontSize: "clamp(7px, 1.7vw, 10px)",
+            }
+          : {
+              width: "clamp(160px, min(17.01vw, 24.95vh), 245px)",
+              height: "clamp(40px, min(3.68vw, 5.4vh), 53px)",
+              borderRadius: "53px",
+              border: "1px solid #CDCDCD",
+              background: hovered ? "white" : "#001A4D",
+              color: hovered ? "#001A4D" : "white",
+              fontSize: "clamp(11px, min(1.11vw, 1.63vh), 16px)",
+            }
+      }
+    >
+      <span
+        className="absolute inset-0 bg-white transition-transform duration-400 ease-out"
+        style={{
+          transformOrigin: origin,
+          transform: hovered ? "scale(1)" : "scale(0)",
+          borderRadius: "inherit",
+        }}
+      />
+      <span className="relative z-10">{label}</span>
+    </button>
+  );
 }
 
 /* Newsletter subscribe form — handles validation, submit/loading/success
@@ -105,12 +184,11 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
     }
   };
 
-  /* Shared button — same spotlight-gradient animation as the Submit
-     Application CTA on the Get Investment form. Tap shrinks slightly. */
+  /* Button content states */
   const buttonContent = submitting ? (
     <span className="relative z-10 flex items-center justify-center gap-2">
       <motion.span
-        className="inline-block h-[14px] w-[14px] rounded-full border-2 border-white/30 border-t-white"
+        className="inline-block h-[10px] w-[10px] rounded-full border-2 border-white/30 border-t-white max-md:!h-[8px] max-md:!w-[8px]"
         animate={{ rotate: 360 }}
         transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
       />
@@ -188,38 +266,13 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
             </p>
           )}
         </div>
-        <motion.button
+        <CursorFillButton
           type="submit"
           disabled={submitting}
-          whileTap={{ scale: 0.97 }}
-          transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          onMouseMove={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            e.currentTarget.style.setProperty("--mouse-x", `${x}px`);
-            e.currentTarget.style.setProperty("--mouse-y", `${y}px`);
-          }}
-          className="group relative self-end overflow-hidden bg-[#001A4D] text-[#F5F0E8] disabled:opacity-60"
-          style={{
-            width: "clamp(100px, 28vw, 140px)",
-            height: "clamp(24px, 6.5vw, 32px)",
-            borderRadius: "6px",
-            fontFamily: "'Libre Baskerville', serif",
-            fontSize: "clamp(7px, 1.7vw, 10px)",
-            fontWeight: 600,
-            lineHeight: "107%",
-          }}
-        >
-          <div
-            className="absolute inset-0 z-0 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100"
-            style={{
-              background:
-                "radial-gradient(circle 80px at var(--mouse-x, 50%) var(--mouse-y, 50%), #003CB3 0%, transparent 100%)",
-            }}
-          />
-          {buttonContent}
-        </motion.button>
+          onClick={() => {}}
+          label={buttonContent}
+          variant="mobile"
+        />
       </form>
     );
   }
@@ -319,48 +372,22 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
         )}
       </div>
 
-      {/* Subscribe button — sits in row 2, column 2, vertically centered
-          with the email input. Animation mirrors the Submit Application
-          CTA on the Get Investment form: spotlight radial-gradient follows
-          the cursor; spring tap. */}
-      <motion.button
-        type="submit"
-        disabled={submitting}
-        whileTap={{ scale: 0.97 }}
-        transition={{ type: "spring", stiffness: 400, damping: 20 }}
-        onMouseMove={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          e.currentTarget.style.setProperty("--mouse-x", `${x}px`);
-          e.currentTarget.style.setProperty("--mouse-y", `${y}px`);
-        }}
-        className="group relative flex items-center justify-center overflow-hidden bg-[#001A4D] text-[#F5F0E8] disabled:opacity-60"
+      {/* Subscribe button — same style as navbar Get Investment button */}
+      <div
         style={{
           gridRow: "2 / span 1",
           gridColumn: "2 / span 1",
           justifySelf: "end",
           alignSelf: "center",
-          width: "clamp(160px, min(17.01vw, 24.95vh), 245px)",
-          height: "clamp(40px, min(3.68vw, 5.4vh), 53px)",
-          padding: "10px",
-          gap: "10px",
-          borderRadius: "9px",
-          fontFamily: "'Libre Baskerville', serif",
-          fontSize: "clamp(11px, min(1.11vw, 1.63vh), 16px)",
-          fontWeight: 600,
-          lineHeight: "107%",
         }}
       >
-        <div
-          className="absolute inset-0 z-0 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100"
-          style={{
-            background:
-              "radial-gradient(circle 80px at var(--mouse-x, 50%) var(--mouse-y, 50%), #003CB3 0%, transparent 100%)",
-          }}
+        <CursorFillButton
+          type="submit"
+          disabled={submitting}
+          label={buttonContent}
+          variant="desktop"
         />
-        {buttonContent}
-      </motion.button>
+      </div>
     </form>
   );
 }

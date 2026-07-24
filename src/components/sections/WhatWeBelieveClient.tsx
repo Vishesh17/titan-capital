@@ -202,7 +202,7 @@ export default function WhatWeBelieveClient({
                 fontSize: SZ.headingFs,
                 lineHeight: "120%",
                 position: "absolute",
-                top: "min(2.78vw, 4.30vh)",
+                top: "min(3.78vw, 5.30vh)",
                 left: 0,
                 right: 0,
                 zIndex: 20,
