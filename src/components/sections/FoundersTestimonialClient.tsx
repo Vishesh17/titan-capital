@@ -213,7 +213,7 @@ function FlipCard({ item }: { item: TestimonialItem }) {
             style={{
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
-              borderRadius: "12px",
+              borderRadius: "2px",
               background: "linear-gradient(180deg, #FBF7F0 0%, #F3E6CF 100%)",
             }}
           >
@@ -253,7 +253,7 @@ function FlipCard({ item }: { item: TestimonialItem }) {
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
               transform: "rotateY(180deg)",
-              borderRadius: "12px",
+              borderRadius: "2px",
               background: "linear-gradient(180deg, #EFF4FF 0%, #D3E2FF 100%)",
             }}
           >
@@ -346,6 +346,7 @@ function Marquee({ testimonials }: { testimonials: TestimonialItem[] }) {
            gutters as every other section), so exactly 3 cards show. */
         marginLeft: "var(--section-px-wide)",
         marginRight: "var(--section-px-wide)",
+        
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -496,7 +497,7 @@ export default function FoundersTestimonialClient({
                   hidden: { scaleX: 0 },
                   visible: {
                     scaleX: 1,
-                    transition: { duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.75 },
+                    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.55 },
                   },
                 }}
               />

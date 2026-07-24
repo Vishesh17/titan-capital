@@ -28,36 +28,34 @@ export interface WhatFoundersGetData {
 
 const SZ = {
   // typography
-  heading: "min(4.51vw, 6.98vh)",       // 78 px @ ref
-  rowTitle: "min(3.01vw, 4.65vh)",      // 52 px @ ref (smaller left row title)
-  subHeading: "min(1.85vw, 2.86vh)",    // 32 px @ ref
-  desc: "min(1.62vw, 2.51vh)",          // 28 px @ ref
-  rotTitle: "min(2.78vw, 4.30vh)",      // 48 px @ ref (opened, rotated spine — smaller)
-  backLink: "min(1.51vw, 2.33vh)",      // 26 px @ ref
+  heading: "min(4.51vw, 6.98vh)",       
+  rowTitle: "min(3.01vw, 4.65vh)",      
+  subHeading: "min(1.85vw, 2.86vh)",    
+  desc: "min(1.62vw, 2.51vh)",          
+  rotTitle: "min(2.78vw, 4.30vh)",      
+  backLink: "min(1.51vw, 2.33vh)",      
 
-  oSubHeading: "min(1.85vw, 2.86vh)",   // 32 px @ ref (matches closed-row subHeading)
-  oDesc: "min(1.62vw, 2.51vh)",         // 28 px @ ref (matches closed-row desc)
-  oGap: "min(3.42vw, 5.28vh)",          // 59 px @ ref — opened-card block gap
-  oPadY: "min(2.31vw, 3.58vh)",         // 40 px @ ref — opened-card top/bottom (modal, not a side gutter)
+  oSubHeading: "min(1.85vw, 2.86vh)",   
+  oDesc: "min(1.62vw, 2.51vh)",         
+  oGap: "min(3.42vw, 5.28vh)",          
+  oPadY: "min(2.31vw, 3.58vh)",         
 
   divider: "100%",
   openedDivider: "100%",
-  descBox: "55vw",                      // 864 px @ ref (wider — description runs closer to the arrow)
-  rowTitleBox: "22.57vw",               // 390 px @ ref
-  openedContentBox: "65.22vw",          // 1127 px @ ref
+  descBox: "55vw",                      
+  rowTitleBox: "22.57vw",               
+  openedContentBox: "65.22vw",          
 
-  headingToDivider: "min(3.47vw, 5.37vh)", // 60 px @ ref
-  rowPaddingY: "min(1.68vw, 2.60vh)",   // 29 px @ ref  — closed-row body padding (tightened a bit)
-  rowInnerGap: "min(1.62vw, 2.51vh)",   // 28 px @ ref  — small internal gap (around HR margins)
-  openedGap: "min(3.47vw, 5.37vh)",     // 60 px @ ref  — main gap between opened-card blocks
-                                        //                (heading / desc / HR / Strategic Value / bullets).
-                                        // Larger than the closed-row gap because the opened card
-                                        // takes over the viewport and needs to fill vertical space.
+  headingToDivider: "min(3.47vw, 5.37vh)", 
+  rowPaddingY: "min(1.68vw, 2.60vh)",   
+  rowInnerGap: "min(1.62vw, 2.51vh)",   
+  openedGap: "min(3.47vw, 5.37vh)",     
+                                        
   // arrows — actual SVG dimensions
-  closedArrowW: "min(3.24vw, 4.21vh)",  // 56 px wide
-  closedArrowH: "min(2.72vw, 4.21vh)",  // 47 px tall
-  openArrowW: "min(2.66vw, 4.92vh)",    // 46 px wide
-  openArrowH: "min(3.20vw, 4.92vh)",    // 55 px tall (after rotation)
+  closedArrowW: "min(3.24vw, 4.21vh)",  
+  closedArrowH: "min(2.72vw, 4.21vh)",  
+  openArrowW: "min(2.66vw, 4.92vh)",    
+  openArrowH: "min(3.20vw, 4.92vh)",    
 };
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -88,11 +86,13 @@ function InViewDivider({
   return (
     <motion.div
       ref={ref}
-      className={`origin-left bg-black ${className ?? ""}`}
+      // 🛑 FIX: Added shrink-0 to prevent flex compression
+      className={`origin-left bg-black shrink-0 ${className ?? ""}`}
       initial={{ scaleX: 0 }}
       animate={{ scaleX: isInView ? 1 : 0 }}
       transition={{ duration: 1.2, ease: EASE }}
-      style={style}
+      // 🛑 FIX: Added minHeight to ensure crisp 1px rendering
+      style={{ minHeight: "1px", ...style }}
     />
   );
 }
@@ -278,7 +278,6 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
         columnGap: SZ.openedGap,
         paddingTop: SZ.rowPaddingY,
         paddingBottom: SZ.rowPaddingY,
-        // CHANGED: Removed scale(0.9) constraint so row is true 100% width and arrow aligns right
       }}
     >
       <h3
@@ -384,14 +383,14 @@ function OpenedRow({
           </span>
         </div>
 
-        {/* Vertical line - CHANGED: Synced delay and duration to 1.0/0.2 */}
+        {/* 🛑 FIX: Added shrink-0 and minWidth to ensure crisp rendering */}
         <motion.div
           aria-hidden
           initial={{ scaleY: 0 }}
           animate={{ scaleY: 1 }}
           transition={{ duration: 1.0, ease: EASE, delay: 0.2 }}
-          className="absolute right-0 top-0 h-full bg-black"
-          style={{ width: "1px", transformOrigin: "top" }}
+          className="absolute right-0 top-0 h-full bg-black shrink-0"
+          style={{ width: "1px", minWidth: "1px", transformOrigin: "top" }}
         />
       </div>
 
@@ -420,15 +419,16 @@ function OpenedRow({
             {row.longDesc}
           </p>
 
-          {/* Horizontal line - CHANGED: Synced delay and duration to 1.0/0.2 to match vertical line */}
+          {/* 🛑 FIX: Added shrink-0 and minHeight to ensure crisp rendering */}
           <motion.div
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
             transition={{ duration: 1.0, ease: EASE, delay: 0.2 }}
-            className="origin-left bg-black"
+            className="origin-left bg-black shrink-0"
             style={{
               width: "100%",
               height: "1px",
+              minHeight: "1px",
               marginTop: SZ.rowInnerGap,
               marginBottom: SZ.rowInnerGap,
             }}
@@ -502,8 +502,8 @@ function MobileRow({
       >
         <MobileClosedRow row={row} />
       </div>
-      {/* CHANGED: Moved divider to the bottom of the row */}
-      {showDivider && <div className="h-[1px] w-full bg-black" />}
+      {/* 🛑 FIX: Added shrink-0 and min-h-[1px] to avoid squishing */}
+      {showDivider && <div className="h-[1px] min-h-[1px] w-full bg-black shrink-0" />}
     </div>
   );
 }
@@ -536,7 +536,6 @@ function Row({
       >
         <ClosedRow row={row} />
       </div>
-      {/* CHANGED: Moved divider to the bottom of the row */}
       {showDivider && <InViewDivider style={{ width: SZ.divider, height: "1px" }} />}
     </div>
   );
@@ -651,7 +650,6 @@ export default function WhatFoundersGetClient({
               key={row.title}
               row={row}
               onOpen={() => setOpenIndex(i)}
-              // CHANGED: Hide divider on the LAST row instead of the first
               showDivider={i !== rows.length - 1} 
             />
           ))}
@@ -664,7 +662,6 @@ export default function WhatFoundersGetClient({
               key={row.title}
               row={row}
               onOpen={() => setOpenIndex(i)}
-              // CHANGED: Hide divider on the LAST row instead of the first
               showDivider={i !== rows.length - 1} 
             />
           ))}
