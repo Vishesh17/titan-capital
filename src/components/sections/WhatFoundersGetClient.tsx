@@ -26,7 +26,6 @@ export interface WhatFoundersGetData {
   rows?: HowWeShowUpRow[];
 }
 
-
 const SZ = {
   // typography
   heading: "min(4.51vw, 6.98vh)",       // 78 px @ ref
@@ -82,7 +81,6 @@ function InViewDivider({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, {
-
     margin: "0px 0px -15% 0px",
     once: false,
   });
@@ -99,7 +97,6 @@ function InViewDivider({
   );
 }
 
-
 function HoverArrow() {
   return (
     <div
@@ -110,7 +107,6 @@ function HoverArrow() {
     </div>
   );
 }
-
 
 const FALLBACK_HEADING = "How We Show Up";
 
@@ -208,9 +204,7 @@ const FALLBACK_ROWS: HowWeShowUpRow[] = [
 ];
 
 /* ─────────────────────────────────────────────────────────
-   Arrow SVG — copied verbatim from the Figma export. Points
-   right (→) on default rows; HoverArrow rotates it to the ↗
-   orientation on row hover.
+   Arrow SVG
    ───────────────────────────────────────────────────────── */
 function ClosedArrow({ style }: { style?: React.CSSProperties }) {
   return (
@@ -229,8 +223,7 @@ function ClosedArrow({ style }: { style?: React.CSSProperties }) {
 }
 
 /* ─────────────────────────────────────────────────────────
-   Mobile closed row — stacked: title + arrow, short heading,
-   short description. Separated by dividers.
+   Mobile closed row
    ───────────────────────────────────────────────────────── */
 function MobileClosedRow({ row }: { row: HowWeShowUpRow }) {
   return (
@@ -241,7 +234,6 @@ function MobileClosedRow({ row }: { row: HowWeShowUpRow }) {
       className="flex w-full flex-col"
       style={{ paddingTop: "16px", paddingBottom: "16px" }}
     >
-      {/* Title + arrow row */}
       <div className="flex w-full items-start justify-between" style={{ gap: "12px" }}>
         <h3
           className="m-0 font-['Poppins',_sans-serif] font-normal capitalize text-black"
@@ -254,7 +246,6 @@ function MobileClosedRow({ row }: { row: HowWeShowUpRow }) {
         </div>
       </div>
 
-      {/* Short heading */}
       <h4
         className="m-0 mt-2 font-['Poppins',_sans-serif] font-semibold text-black"
         style={{ fontSize: "clamp(13px, 3.5vw, 16px)", lineHeight: "140%" }}
@@ -262,7 +253,6 @@ function MobileClosedRow({ row }: { row: HowWeShowUpRow }) {
         {row.shortHeading}
       </h4>
 
-      {/* Short description */}
       <p
         className="m-0 mt-1 font-['Poppins',_sans-serif] font-normal text-[#323232]"
         style={{ fontSize: "clamp(12px, 3.2vw, 14px)", lineHeight: "150%" }}
@@ -274,8 +264,7 @@ function MobileClosedRow({ row }: { row: HowWeShowUpRow }) {
 }
 
 /* ─────────────────────────────────────────────────────────
-   Closed-state row body — 3-column layout: [title | short
-   heading + short desc | arrow]. Clicking anywhere expands.
+   Closed-state row body
    ───────────────────────────────────────────────────────── */
 function ClosedRow({ row }: { row: HowWeShowUpRow }) {
   return (
@@ -289,11 +278,9 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
         columnGap: SZ.openedGap,
         paddingTop: SZ.rowPaddingY,
         paddingBottom: SZ.rowPaddingY,
-        transform: "scale(0.9)",
-        transformOrigin: "left center",
+        // CHANGED: Removed scale(0.9) constraint so row is true 100% width and arrow aligns right
       }}
     >
-      {/* Row title */}
       <h3
         className="m-0 font-['Poppins',_sans-serif] font-normal capitalize text-black"
         style={{
@@ -304,7 +291,6 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
         {row.title}
       </h3>
 
-      {/* Short heading + short description */}
       <div
         className="flex flex-col"
         style={{
@@ -332,8 +318,6 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
         </p>
       </div>
 
-      {/* Arrow — hover on the arrow itself smoothly morphs it
-          from → to ↗ via HoverArrow (rotates + crossfades). */}
       <div className="flex items-center justify-end self-center">
         <HoverArrow />
       </div>
@@ -342,12 +326,7 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
 }
 
 /* ─────────────────────────────────────────────────────────
-   Opened-state row body — matches the Figma reference:
-   [Back + rotated title | vertical rule | long heading +
-   long desc + horizontal divider + value title + bullets].
-   The rotated title reads top-to-bottom (tilt head right)
-   via writing-mode: vertical-rl alone. Clicking the row
-   OR the Back button collapses the row.
+   Opened-state row body
    ───────────────────────────────────────────────────────── */
 function OpenedRow({
   row,
@@ -356,18 +335,6 @@ function OpenedRow({
   row: HowWeShowUpRow;
   onBack: () => void;
 }) {
-  /* Layered stagger reveal — each element has an explicit `delay`
-     so the sequence reads intentionally rather than everything
-     landing at once:
-       0.15  vertical rule starts drawing top→bottom (1.2 s)
-       0.30  Back fades in
-       0.40  rotated title writes in from the right
-       0.55  right heading (longHeading) fades up
-       0.70  right description fades up
-       0.85  horizontal divider draws left→right
-       1.00  Strategic Value heading fades up
-       1.15  bullets stagger in one after another (+0.10s each)
-     Total sequence lands by ~1.65 s. */
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -378,11 +345,9 @@ function OpenedRow({
       exit={{ opacity: 0, transition: { duration: 0.3, ease: EASE } }}
       className="grid w-full"
       style={{
-        
         gridTemplateColumns: "auto 1fr",
       }}
     >
-
       <div
         className="relative grid grid-rows-[auto_1fr]"
         style={{
@@ -399,13 +364,12 @@ function OpenedRow({
           style={{
             fontSize: SZ.backLink,
             lineHeight: "150%",
-            textAlign: "center", // Ensures it stays centered in its grid cell
+            textAlign: "center",
           }}
         >
           Back
         </button>
 
-        {/* Wrapper to center the vertical text in the remaining space */}
         <div className="flex items-center justify-center">
           <span
             className="whitespace-nowrap text-center font-['Poppins',_sans-serif] font-normal capitalize text-black"
@@ -420,107 +384,103 @@ function OpenedRow({
           </span>
         </div>
 
-
+        {/* Vertical line - CHANGED: Synced delay and duration to 1.0/0.2 */}
         <motion.div
           aria-hidden
           initial={{ scaleY: 0 }}
           animate={{ scaleY: 1 }}
-          transition={{ duration: 1.2, ease: EASE, delay: 0.2 }}
+          transition={{ duration: 1.0, ease: EASE, delay: 0.2 }}
           className="absolute right-0 top-0 h-full bg-black"
           style={{ width: "1px", transformOrigin: "top" }}
         />
       </div>
 
-      {/* RIGHT column — main content. Extra left padding so it
-          isn't flush against the vertical rule. */}
       <div style={{ paddingLeft: SZ.oGap }}>
-
-    
-      <div
-        className="flex w-full flex-col"
-        style={{ gap: SZ.oGap }}
-      >
-        <h4
-          className="m-0 font-['Poppins',_sans-serif] font-medium text-[#0E0E0E]"
-          style={{
-            fontSize: SZ.oSubHeading,
-            lineHeight: "150%",
-          }}
+        <div
+          className="flex w-full flex-col"
+          style={{ gap: SZ.oGap }}
         >
-          {row.longHeading}
-        </h4>
+          <h4
+            className="m-0 font-['Poppins',_sans-serif] font-medium text-[#0E0E0E]"
+            style={{
+              fontSize: SZ.oSubHeading,
+              lineHeight: "150%",
+            }}
+          >
+            {row.longHeading}
+          </h4>
 
-        <p
-          className="m-0 font-['Poppins',_sans-serif] font-normal text-[#323232]"
-          style={{
-            fontSize: SZ.oDesc,
-            lineHeight: "150%",
-          }}
-        >
-          {row.longDesc}
-        </p>
+          <p
+            className="m-0 font-['Poppins',_sans-serif] font-normal text-[#323232]"
+            style={{
+              fontSize: SZ.oDesc,
+              lineHeight: "150%",
+            }}
+          >
+            {row.longDesc}
+          </p>
 
-        
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 0.9, ease: EASE, delay: 0.85 }}
-          className="origin-left bg-black"
-          style={{
-            width: "100%",
-            height: "1px",
-            marginTop: SZ.rowInnerGap,
-            marginBottom: SZ.rowInnerGap,
-          }}
-        />
+          {/* Horizontal line - CHANGED: Synced delay and duration to 1.0/0.2 to match vertical line */}
+          <motion.div
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 1.0, ease: EASE, delay: 0.2 }}
+            className="origin-left bg-black"
+            style={{
+              width: "100%",
+              height: "1px",
+              marginTop: SZ.rowInnerGap,
+              marginBottom: SZ.rowInnerGap,
+            }}
+          />
 
-        <h5
-          className="m-0 text-left font-['Poppins',_sans-serif] font-medium text-black"
-          style={{
-            fontSize: SZ.oSubHeading,
-            lineHeight: "110%",
-          }}
-        >
-          {row.valueTitle}
-        </h5>
+          <h5
+            className="m-0 text-left font-['Poppins',_sans-serif] font-medium text-black"
+            style={{
+              fontSize: SZ.oSubHeading,
+              lineHeight: "110%",
+            }}
+          >
+            {row.valueTitle}
+          </h5>
 
-        <ul
-          className="m-0 flex list-none flex-col p-0"
-          style={{ gap: SZ.rowInnerGap }}
-        >
-          {row.valueBullets.map((bullet, i) => (
-            <li
-              key={i}
-              className="relative font-['Poppins',_sans-serif] font-normal text-[#323232]"
-              style={{
-                fontSize: SZ.oDesc,
-                lineHeight: "150%",
-                paddingLeft: SZ.rowInnerGap,
-              }}
-            >
-              <span
-                className="absolute left-0 top-0"
-                style={{ fontSize: SZ.oDesc, lineHeight: "150%" }}
+          <ul
+            className="m-0 flex list-none flex-col p-0"
+            style={{ gap: SZ.rowInnerGap }}
+          >
+            {row.valueBullets.map((bullet, i) => (
+              <li
+                key={i}
+                className="relative font-['Poppins',_sans-serif] font-normal text-[#323232]"
+                style={{
+                  fontSize: SZ.oDesc,
+                  lineHeight: "150%",
+                  paddingLeft: SZ.rowInnerGap,
+                }}
               >
-                •
-              </span>
-              {bullet}
-            </li>
-          ))}
-        </ul>
-      </div>
+                <span
+                  className="absolute left-0 top-0"
+                  style={{ fontSize: SZ.oDesc, lineHeight: "150%" }}
+                >
+                  •
+                </span>
+                {bullet}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </motion.div>
   );
 }
 
 /* ─────────────────────────────────────────────────────────
-   Mobile row wrapper — divider on top + mobile closed body.
+   Mobile row wrapper
    ───────────────────────────────────────────────────────── */
 function MobileRow({
   row,
   onOpen,
-  showDivider = true, // Added prop
+  showDivider = true,
 }: {
   row: HowWeShowUpRow;
   onOpen: () => void;
@@ -528,8 +488,6 @@ function MobileRow({
 }) {
   return (
     <div className="w-full">
-      {/* Conditionally render the top divider */}
-      {showDivider && <div className="h-[1px] w-full bg-black" />}
       <div
         role="button"
         tabIndex={0}
@@ -544,45 +502,45 @@ function MobileRow({
       >
         <MobileClosedRow row={row} />
       </div>
+      {/* CHANGED: Moved divider to the bottom of the row */}
+      {showDivider && <div className="h-[1px] w-full bg-black" />}
     </div>
   );
 }
 
 /* ─────────────────────────────────────────────────────────
-   Row wrapper — divider on top + closed body. Click opens
-   the FullPageCard overlay; this row itself doesn't morph.
+   Row wrapper
    ───────────────────────────────────────────────────────── */
-   function Row({
-    row,
-    onOpen,
-    showDivider = true, // Added prop
-  }: {
-    row: HowWeShowUpRow;
-    onOpen: () => void;
-    showDivider?: boolean;
-  }) {
-    return (
-      <div className="group relative w-full">
-        {/* Conditionally render the top divider */}
-        {showDivider && <InViewDivider style={{ width: SZ.divider, height: "1px" }} />}
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={onOpen}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              onOpen();
-            }
-          }}
-          className="w-full cursor-pointer"
-        >
-          <ClosedRow row={row} />
-        </div>
+function Row({
+  row,
+  onOpen,
+  showDivider = true,
+}: {
+  row: HowWeShowUpRow;
+  onOpen: () => void;
+  showDivider?: boolean;
+}) {
+  return (
+    <div className="group relative w-full">
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={onOpen}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onOpen();
+          }
+        }}
+        className="w-full cursor-pointer"
+      >
+        <ClosedRow row={row} />
       </div>
-    );
-  }
-
+      {/* CHANGED: Moved divider to the bottom of the row */}
+      {showDivider && <InViewDivider style={{ width: SZ.divider, height: "1px" }} />}
+    </div>
+  );
+}
 
 function FullPageCard({
   row,
@@ -591,9 +549,6 @@ function FullPageCard({
   row: HowWeShowUpRow;
   onBack: () => void;
 }) {
-  /* Lock body scroll while the overlay is up. Restore the
-     previous value on unmount so we don't clobber other code
-     that might have set overflow. */
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -602,7 +557,6 @@ function FullPageCard({
     };
   }, []);
 
-  /* Escape key closes — standard modal behavior. */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onBack();
@@ -614,7 +568,6 @@ function FullPageCard({
   return (
     <motion.div
       key="fullpage"
-
       initial={{ opacity: 0, scale: 0.94, y: 24 }}
       animate={{
         opacity: 1,
@@ -635,7 +588,6 @@ function FullPageCard({
         backdropFilter: "blur(32px) saturate(1.4)",
         WebkitBackdropFilter: "blur(32px) saturate(1.4)",
         boxShadow: "0 8px 40px rgba(0, 0, 0, 0.08)",
-
         paddingTop: `calc(var(--nav-height) + ${SZ.oPadY})`,
         paddingBottom: SZ.oPadY,
         paddingLeft: "var(--section-px-wide)",
@@ -665,13 +617,8 @@ export default function WhatFoundersGetClient({
 
   return (
     <section
-      /* Transparent: the beige (#FBF7F0) is painted by HeroBackedBg's
-         scroll-driven backdrop so the whole screen crossfades white→beige
-         from Backed Before into this section. */
       className="relative w-full overflow-hidden"
       style={{
-        /* Sitewide consistent padding — same tokens every section
-           uses. No per-section clamp values. */
         paddingTop: "var(--section-py)",
         paddingBottom: "var(--section-py)",
         paddingLeft: "var(--section-px-wide)",
@@ -685,7 +632,6 @@ export default function WhatFoundersGetClient({
         whileInView="visible"
         viewport={{ once: true, amount: 0.15 }}
       >
-        {/* Section heading — static (no type-on animation) */}
         <h2
           className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px] max-md:!leading-[120%]"
           style={{
@@ -696,7 +642,6 @@ export default function WhatFoundersGetClient({
           {heading}
         </h2>
 
-        {/* Space between heading and the first divider */}
         <div style={{ height: SZ.headingToDivider }} />
 
         {/* Rows — Desktop (hidden on mobile) */}
@@ -706,10 +651,10 @@ export default function WhatFoundersGetClient({
               key={row.title}
               row={row}
               onOpen={() => setOpenIndex(i)}
-              showDivider={i !== 0} // Hides top divider for the 1st row
+              // CHANGED: Hide divider on the LAST row instead of the first
+              showDivider={i !== rows.length - 1} 
             />
           ))}
-          {/* REMOVED: <InViewDivider style={{ width: SZ.divider, height: "1px" }} /> */}
         </div>
 
         {/* Rows — Mobile (hidden on desktop) */}
@@ -719,10 +664,10 @@ export default function WhatFoundersGetClient({
               key={row.title}
               row={row}
               onOpen={() => setOpenIndex(i)}
-              showDivider={i !== 0} // Hides top divider for the 1st row
+              // CHANGED: Hide divider on the LAST row instead of the first
+              showDivider={i !== rows.length - 1} 
             />
           ))}
-          {/* REMOVED: <div className="h-[1px] w-full bg-black" /> */}
         </div>
       </motion.div>
 

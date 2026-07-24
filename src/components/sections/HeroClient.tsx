@@ -62,10 +62,9 @@ function heroImageSrc(url: string, width: number): string {
 }
 
 /* ─────────────────────────────────────────────────────────
-   ONE image-placement scheme, shared by every phase so the
-   framing can never drift between them again.
+   Shared Styles & Dimensions
    ───────────────────────────────────────────────────────── */
-const CARD_BG = "#FBF7F0";
+const CARD_BG = "white";
 const IMG_STYLE: React.CSSProperties = {
   objectFit: "cover",
   objectPosition: "top center",
@@ -78,13 +77,12 @@ const SLOT_W = "min(23.1vw, 35.8vh)";
 function computeDims(w: number, h: number) {
   const isMobile = w < 768;
   const cardW = isMobile
-    ? w * 0.20  // Reduced from 0.38 to 0.20 to match the smaller screenshot design
+    ? w * 0.20
     : Math.min(0.072 * w, 0.115 * h);
   const cardH = cardW; 
   return {
     cardW,
     cardH,
-    // Slightly increased the peek and step ratios on mobile so the smaller cards don't overlap too much
     deckPeek: cardH * (isMobile ? 0.25 : 0.17), 
     filmStep: cardH * (isMobile ? 1.25 : 1.14),
   };
@@ -103,212 +101,126 @@ const FALLBACK_SLOT: Slot = { cx: 0, cy: 0, w: 145, h: 207 };
 const GRAIN =
   "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ";
 /* ─────────────────────────────────────────────────────────
-   Both hero glows (Interactive parallax + ambient wandering)
-
-   `active` gates ALL motion: the blobs are huge SVGs behind a
-   100 px gaussian blur + fractal-noise filter, so animating them
-   (especially `scale`, which forces filter re-rasterisation)
-   costs real frame budget. When the hero is scrolled off-screen
-   the wandering keyframes stop and the mousemove listener is
-   removed, so scrolling the rest of the page pays nothing.
+   Hero Glows (Optimized CSS Version - Increased Movement)
    ───────────────────────────────────────────────────────── */
-  /* ─────────────────────────────────────────────────────────
-   Hero Glows: 2 Original Wandering Blobs + 1 3D Cursor Tracker
-   ───────────────────────────────────────────────────────── */
-function HeroGlow() {
-  // Initialize to 0 for safe server-side rendering
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
+   function HeroGlow() {
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+    const normX = useMotionValue(0);
+    const normY = useMotionValue(0);
   
-  const normX = useMotionValue(0);
-  const normY = useMotionValue(0);
-
-  // Smooth, snappy spring physics for the cursor blob
-  const cursorSpring = { damping: 25, stiffness: 60, mass: 0.4 };
-  const smoothX = useSpring(mouseX, cursorSpring);
-  const smoothY = useSpring(mouseY, cursorSpring);
-
-  // Physics for the ambient wandering blobs
-  const ambientSpring = { damping: 30, stiffness: 70, mass: 1 };
-  const smoothNormX = useSpring(normX, ambientSpring);
-  const smoothNormY = useSpring(normY, ambientSpring);
-
-  useEffect(() => {
-    // Safely jump to center of the screen after hydration
-    mouseX.set(window.innerWidth / 2);
-    mouseY.set(window.innerHeight / 2);
-
-    const handleMouseMove = (e: MouseEvent) => {
-      // Use pageX and pageY so the blob stays anchored to the document.
-      // Because it is now "absolute", this maps perfectly to the Hero section
-      // and guarantees it gets clipped and hidden when you scroll past it.
-      mouseX.set(e.pageX);
-      mouseY.set(e.pageY);
-      
-      // Normalized [-1, 1] mapped coordinates for the background sweep
-      normX.set((e.clientX / window.innerWidth) * 2 - 1);
-      normY.set((e.clientY / window.innerHeight) * 2 - 1);
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [mouseX, mouseY, normX, normY]);
-
-  // Travel range for the interactive mouse sweep
-  const leftX = useTransform(smoothNormX, [-1, 1], ["-15%", "15%"]);
-  const leftY = useTransform(smoothNormY, [-1, 1], ["-15%", "15%"]);
-
-  const rightX = useTransform(smoothNormX, [-1, 1], ["15%", "-15%"]);
-  const rightY = useTransform(smoothNormY, [-1, 1], ["15%", "-15%"]);
-
-  return (
-    <>
-      {/* 1. ORIGINAL LEFT BLOB */}
-      <motion.div
-        aria-hidden
-        className="pointer-events-none absolute"
-        style={{ left: "-16%", top: "-12%", width: "min(72vw, 112vh)", zIndex: 0, x: leftX, y: leftY , willChange: "transform" }}
-      >
+    const cursorSpring = { damping: 25, stiffness: 60, mass: 0.4 };
+    const smoothX = useSpring(mouseX, cursorSpring);
+    const smoothY = useSpring(mouseY, cursorSpring);
+  
+    const ambientSpring = { damping: 30, stiffness: 70, mass: 1 };
+    const smoothNormX = useSpring(normX, ambientSpring);
+    const smoothNormY = useSpring(normY, ambientSpring);
+  
+    useEffect(() => {
+      if (typeof window !== "undefined") {
+        mouseX.set(window.innerWidth / 2);
+        mouseY.set(window.innerHeight / 2);
+      }
+  
+      const handleMouseMove = (e: MouseEvent) => {
+        mouseX.set(e.pageX);
+        mouseY.set(e.pageY);
+        normX.set((e.clientX / window.innerWidth) * 2 - 1);
+        normY.set((e.clientY / window.innerHeight) * 2 - 1);
+      };
+  
+      window.addEventListener("mousemove", handleMouseMove);
+      return () => window.removeEventListener("mousemove", handleMouseMove);
+    }, [mouseX, mouseY, normX, normY]);
+  
+    // Expanded the mouse parallax range slightly for more responsiveness
+    const leftX = useTransform(smoothNormX, [-1, 1], ["-8%", "8%"]);
+    const leftY = useTransform(smoothNormY, [-1, 1], ["-8%", "8%"]);
+    const rightX = useTransform(smoothNormX, [-1, 1], ["8%", "-8%"]);
+    const rightY = useTransform(smoothNormY, [-1, 1], ["8%", "-8%"]);
+  
+    return (
+      <>
+        {/* 1. LEFT BLOB */}
         <motion.div
-          animate={{
-            x: ["-20%", "80%", "20%", "60%", "-20%"],
-            y: ["-20%", "40%", "60%", "10%", "-20%"],
-            scale: [1, 1.2, 0.88, 1.12, 1],
-            rotate: [0, 16, -10, 7, 0],
+          aria-hidden
+          className="pointer-events-none absolute"
+          style={{ 
+            left: "-25%", 
+            top: "-25%", 
+            width: "min(75vw, 100vh)", 
+            height: "min(75vw, 100vh)", 
+            zIndex: 0, 
+            x: leftX, 
+            y: leftY, 
+            willChange: "transform" 
           }}
-          transition={{ duration: 18, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
         >
-          <svg viewBox="0 0 836 1113" fill="none" className="h-auto w-full" style={{ overflow: "visible" }}>
-            <g filter="url(#hero_glow_l_f)">
-              <ellipse cx="350.252" cy="360.273" rx="350.252" ry="360.273" transform="matrix(-0.412381 0.911012 -0.918704 -0.394948 683.844 325.254)" fill="url(#hero_glow_l_g)" />
-            </g>
-            <defs>
-              <filter id="hero_glow_l_f" x="-352.797" y="-47.4102" width="1122.44" height="1098.92" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-                <feFlood floodOpacity="0" result="BackgroundImageFix" />
-                <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
-                <feGaussianBlur stdDeviation="100" result="effect1_foregroundBlur" />
-                <feTurbulence type="fractalNoise" baseFrequency="2 2" stitchTiles="stitch" numOctaves={3} result="noise" seed={5393} />
-                <feColorMatrix in="noise" type="luminanceToAlpha" result="alphaNoise" />
-                <feComponentTransfer in="alphaNoise" result="coloredNoise1">
-                  <feFuncA type="discrete" tableValues={GRAIN} />
-                </feComponentTransfer>
-                <feComposite operator="in" in2="effect1_foregroundBlur" in="coloredNoise1" result="noise1Clipped" />
-                <feFlood floodColor="rgba(0, 0, 0, 0.25)" result="color1Flood" />
-                <feComposite operator="in" in2="noise1Clipped" in="color1Flood" result="color1" />
-                <feMerge result="effect2_noise">
-                  <feMergeNode in="effect1_foregroundBlur" />
-                  <feMergeNode in="color1" />
-                </feMerge>
-              </filter>
-              <linearGradient id="hero_glow_l_g" x1="350.252" y1="0" x2="894.384" y2="321.126" gradientUnits="userSpaceOnUse">
-                <stop offset="0.0199933" stopColor="#022250" />
-                <stop offset="0.482966" stopColor="#054EB6" />
-                <stop offset="0.653846" stopColor="#5054B5" />
-              </linearGradient>
-            </defs>
-          </svg>
+          <motion.div
+            className="w-full h-full rounded-full blur-[120px]"
+            style={{ background: "radial-gradient(circle, #5054B5 0%, #054EB6 40%, #022250 80%, transparent 100%)", opacity: 0.6 }}
+            // Expanded wandering sequence
+            animate={{ 
+              x: ["0%", "35%", "-15%", "25%", "0%"], 
+              y: ["0%", "25%", "-10%", "35%", "0%"], 
+              scale: [1, 1.15, 0.85, 1.1, 1] 
+            }}
+            transition={{ duration: 18, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
+          />
         </motion.div>
-      </motion.div>
-
-      {/* 2. ORIGINAL RIGHT BLOB */}
-      <motion.div
-        aria-hidden
-        className="pointer-events-none absolute"
-        style={{ right: "-14%", bottom: "-14%", width: "min(66vw, 100vh)", zIndex: 0, x: rightX, y: rightY, willChange: "transform"  }}
-      >
+  
+        {/* 2. RIGHT BLOB */}
         <motion.div
-          animate={{
-            x: ["20%", "-70%", "-15%", "-50%", "20%"],
-            y: ["20%", "-42%", "-58%", "-12%", "20%"],
-            scale: [1, 1.2, 0.88, 1.12, 1],
-            rotate: [0, -16, 10, -7, 0],
+          aria-hidden
+          className="pointer-events-none absolute"
+          style={{ 
+            right: "-25%", 
+            bottom: "-25%", 
+            width: "min(70vw, 90vh)", 
+            height: "min(70vw, 90vh)", 
+            zIndex: 0, 
+            x: rightX, 
+            y: rightY, 
+            willChange: "transform" 
           }}
-          transition={{ duration: 21, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
         >
-          <svg viewBox="0 0 825 906" fill="none" className="h-auto w-full" style={{ overflow: "visible" }}>
-            <g filter="url(#hero_glow_r_f)">
-              <ellipse cx="528.5" cy="390" rx="328.5" ry="316" fill="url(#hero_glow_r_g)" />
-            </g>
-            <defs>
-              <filter id="hero_glow_r_f" x="0" y="-126" width="1057" height="1032" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-                <feFlood floodOpacity="0" result="BackgroundImageFix" />
-                <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
-                <feGaussianBlur stdDeviation="100" result="effect1_foregroundBlur" />
-                <feTurbulence type="fractalNoise" baseFrequency="2 2" stitchTiles="stitch" numOctaves={3} result="noise" seed={5393} />
-                <feColorMatrix in="noise" type="luminanceToAlpha" result="alphaNoise" />
-                <feComponentTransfer in="alphaNoise" result="coloredNoise1">
-                  <feFuncA type="discrete" tableValues={GRAIN} />
-                </feComponentTransfer>
-                <feComposite operator="in" in2="effect1_foregroundBlur" in="coloredNoise1" result="noise1Clipped" />
-                <feFlood floodColor="rgba(0, 0, 0, 0.25)" result="color1Flood" />
-                <feComposite operator="in" in2="noise1Clipped" in="color1Flood" result="color1" />
-                <feMerge result="effect2_noise">
-                  <feMergeNode in="effect1_foregroundBlur" />
-                  <feMergeNode in="color1" />
-                </feMerge>
-              </filter>
-              <linearGradient id="hero_glow_r_g" x1="528.5" y1="74" x2="159.589" y2="703.982" gradientUnits="userSpaceOnUse">
-                <stop offset="0.217633" stopColor="#001A4D" />
-                <stop offset="0.553059" stopColor="#033699" />
-                <stop offset="0.894231" stopColor="#AC71C6" />
-              </linearGradient>
-            </defs>
-          </svg>
+          <motion.div
+            className="w-full h-full rounded-full blur-[120px]"
+            style={{ background: "radial-gradient(circle, #AC71C6 0%, #033699 50%, #001A4D 80%, transparent 100%)", opacity: 0.5 }}
+            // Expanded wandering sequence
+            animate={{ 
+              x: ["0%", "-35%", "15%", "-25%", "0%"], 
+              y: ["0%", "-25%", "10%", "-35%", "0%"], 
+              scale: [1, 1.15, 0.85, 1.1, 1] 
+            }}
+            transition={{ duration: 21, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
+          />
         </motion.div>
-      </motion.div>
+  
+        {/* 3. 3D CURSOR BLOB (Smaller + Matches Left Blob Colors) */}
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute top-0 left-0 rounded-full blur-[60px]"
+          style={{
+            width: "25vw", // Reduced from 40vw to make it smaller
+            height: "25vw", // Reduced from 40vw to make it smaller
+            zIndex: 5, 
+            x: smoothX, 
+            y: smoothY,
+            translateX: "-50%", 
+            translateY: "-50%", 
+            opacity: 0.4, 
+            /* Matches the Left Blob's Indigo/Blue colors */
+            background: "radial-gradient(circle, rgba(80,84,181,0.85) 0%, rgba(5,78,182,0.5) 40%, rgba(2,34,80,0.2) 70%, transparent 100%)",
+            willChange: "transform", 
+            z: 0 
+          }}
+        />
+      </>
+    );
+  }
 
-      {/* 3. NEW 3D CURSOR BLOB */}
-      <motion.div
-        aria-hidden
-        // CHANGED: From "fixed" to "absolute" so it gets trapped inside the Hero container
-        className="pointer-events-none absolute top-0 left-0" 
-        style={{
-          width: "min(40vw, 50vh)",
-          zIndex: 5,
-          x: smoothX,
-          y: smoothY,
-          translateX: "-50%",
-          translateY: "-50%",
-          opacity: 0.8,
-          mixBlendMode: "screen",
-          willChange: "transform" 
-        }}
-      >
-        <svg viewBox="0 0 800 800" fill="none" className="h-auto w-full" style={{ overflow: "visible" }}>
-          <g filter="url(#hero_glow_c_f)">
-            <circle cx="400" cy="400" r="300" fill="url(#hero_glow_c_g)" />
-          </g>
-          <defs>
-            <filter id="hero_glow_c_f" x="-100" y="-100" width="1000" height="1000" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-              <feFlood floodOpacity="0" result="BackgroundImageFix" />
-              <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
-              <feGaussianBlur stdDeviation="80" result="effect1_foregroundBlur" />
-              <feTurbulence type="fractalNoise" baseFrequency="2 2" stitchTiles="stitch" numOctaves={3} result="noise" seed={5393} />
-              <feColorMatrix in="noise" type="luminanceToAlpha" result="alphaNoise" />
-              <feComponentTransfer in="alphaNoise" result="coloredNoise1">
-                <feFuncA type="discrete" tableValues={GRAIN} />
-              </feComponentTransfer>
-              <feComposite operator="in" in2="effect1_foregroundBlur" in="coloredNoise1" result="noise1Clipped" />
-              <feFlood floodColor="rgba(0, 0, 0, 0.25)" result="color1Flood" />
-              <feComposite operator="in" in2="noise1Clipped" in="color1Flood" result="color1" />
-              <feMerge result="effect2_noise">
-                <feMergeNode in="effect1_foregroundBlur" />
-                <feMergeNode in="color1" />
-              </feMerge>
-            </filter>
-            
-            <radialGradient id="hero_glow_c_g" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.8" />
-              <stop offset="30%" stopColor="#054EB6" stopOpacity="0.6" />
-              <stop offset="70%" stopColor="#5054B5" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#AC71C6" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-        </svg>
-      </motion.div>
-    </>
-  );
-}
 /* ─────────────────────────────────────────────────────────
    Main Hero Component
    ───────────────────────────────────────────────────────── */
@@ -321,14 +233,16 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     return FALLBACK_FOUNDERS;
   })();
 
-  const heroIndex = Math.ceil((founders.length - 1) / 2);
+  // CHANGED: We now actively seek the Titan Capital Logo to make it the flying anchor card
+  const heroIndex = (() => {
+    const idx = founders.findIndex(f => f.isLogo || f.name.includes("Titan"));
+    return idx !== -1 ? idx : Math.ceil((founders.length - 1) / 2);
+  })();
+
   const [ready, setReady] = useState(false);
   const progress = useMotionValue(0);
   const [stage, setStage] = useState<"slideshow" | "animate">("slideshow");
-  /* Start on heroIndex so the Titan Capital logo (placed at the anchor
-     position of the deck) is the first frame of the slideshow — it opens
-     the sequence, then cycles through every founder, and lands back on
-     the anchor as the deck fans out. */
+
   const [slideIndex, setSlideIndex] = useState(heroIndex);
 
   useEffect(() => {
@@ -350,8 +264,6 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
   useEffect(() => {
     if (stage !== "animate") return;
-    /* Master timeline uses 'linear' so child elements can define 
-       their own aggressive bezier curves without being slowed down. */
     const controls = animate(progress, 1, {
       duration: 5.5,
       ease: "linear",
@@ -395,18 +307,12 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     };
   }, []);
 
-  /* Side labels fade out right as the hero starts flying up */
-  const sideLabelsOpacity = useTransform(progress, [0.75, 0.82], [1, 0]);
-
-  /* Subtitle fades out BEFORE the fan opens, stays completely hidden, 
-    and fades in AFTER the hero lands */
   const subtitleBottomOpacity = useTransform(
     progress,
     [0.25, 0.32, 0.94, 0.98],
     [1, 0, 0, 1]
   );
 
-  /* Heading waits to reveal until the hero has parked */
   const headingOpacity = useTransform(progress, [0.90, 0.96], [0, 1]);
 
   const [headingReady, setHeadingReady] = useState(false);
@@ -415,7 +321,6 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
   useEffect(() => {
     const unsub = progress.on("change", (v) => {
-      // Swirl triggers perfectly as the card docks
       if (v >= 0.95 && !headingReady) setHeadingReady(true);
       const hideNav = v >= 0.35 && v < 0.90;
       document.body.classList.toggle("hero-hide-nav", hideNav);
@@ -426,49 +331,35 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     };
   }, [progress, headingReady]);
 
-  /* Everything below pauses when the hero is scrolled off-screen: the
-     glow blobs (blur+noise SVG filters — expensive to keep compositing),
-     the mouse-parallax springs, and the heading photo cycle. Without
-     this gate they all keep running for the whole page and eat frame
-     budget while the user scrolls the sections below (scroll jank). */
   const sectionRef = useRef<HTMLElement>(null);
   const heroInView = useInView(sectionRef);
 
+  // CHANGED: Timer logic to stay 4 seconds on the first image, then 2.6s for all others
   useEffect(() => {
     if (!headingReady || !heroInView) return;
-    const id = setInterval(() => {
+    
+    const delay = headingTick === 0 ? 4000 : 2600;
+    
+    const timer = setTimeout(() => {
       setHeadingTick((t) => t + 1);
-    }, 2600);
-    return () => clearInterval(id);
-  }, [headingReady, heroInView]);
+    }, delay);
+    
+    return () => clearTimeout(timer);
+  }, [headingReady, heroInView, headingTick]);
 
   return (
     <section ref={sectionRef} className="relative h-screen w-full">
       <div
         className="relative flex h-screen w-full items-center justify-center overflow-hidden"
-        /* Transparent: the navy is painted by HeroBackedBg's scroll-driven
-           backdrop so the whole screen can crossfade to white on scroll into
-           Backed Before. The drifting glows still render on top. */
         style={{ background: "transparent" }}
       >
         <HeroGlow  />
 
-        <motion.span
-          style={{ opacity: sideLabelsOpacity }}
-          className="pointer-events-none absolute left-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 font-['Poppins',_sans-serif] text-[min(1.04vw,1.61vh)] font-medium tracking-[0.2em] text-white/70 max-md:!left-1/2 max-md:!top-[5vh] max-md:!-translate-x-1/2 max-md:!translate-y-0 max-md:!text-[14px]"
-        >
-          FOUNDER-FIRST
-        </motion.span>
-        <motion.span
-          style={{ opacity: sideLabelsOpacity }}
-          className="pointer-events-none absolute right-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 font-['Poppins',_sans-serif] text-[min(1.04vw,1.61vh)] font-medium tracking-[0.2em] text-white/70 max-md:!right-auto max-md:!left-1/2 max-md:!top-auto max-md:!bottom-[18vh] max-md:!-translate-x-1/2 max-md:!translate-y-0 max-md:!text-[14px]"
-        >
-          ENDURING-VALUE
-        </motion.span>
+        {/* Removed Side Labels FOUNDER-FIRST and ENDURING-VALUE entirely */}
 
         <motion.p
           style={{ opacity: subtitleBottomOpacity, maxWidth: "min(52vw, 900px)" }}
-          className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 text-center font-['Poppins',_sans-serif] text-[min(1.39vw,2.15vh)] font-normal leading-[145%] text-white/90 max-md:!bottom-[4vh] max-md:!text-[13px] max-md:!max-w-[85vw]"
+          className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 text-center font-['Poppins',_sans-serif] text-[min(1.62vw,2.51vh)] font-normal leading-[145%] text-white/90 max-md:!bottom-[4vh] max-md:!text-[13px] max-md:!max-w-[85vw]"
         >
           {subtitle}
         </motion.p>
@@ -477,7 +368,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
           {ready && stage === "slideshow" && (
             <motion.div
               key="slideshow"
-              className="absolute z-40 overflow-hidden bg-[#FBF7F0]"
+              className="absolute z-40 overflow-hidden bg-white"
               style={{
                 width: dims.cardW,
                 height: dims.cardH,
@@ -499,11 +390,11 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                   style={{ zIndex: slideIndex, background: CARD_BG }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  exit={{ opacity: 1, transition: { duration: 0.2 } }}
-                  transition={{ duration: 0.22, ease: "easeOut" }}
+                  // CHANGED: Snappy crossfade logic to fix glitching
+                  exit={{ opacity: 0, transition: { duration: 0 } }} 
+                  transition={{ duration: 0.1, ease: "easeOut" }}
                 >
                   <Image
-                    /* Strict cache alignment to prevent swapping flashes */
                     src={heroImageSrc(founders[slideIndex % founders.length].image, 600)}
                     alt={founders[slideIndex % founders.length].name}
                     fill
@@ -852,7 +743,7 @@ function FounderCard({
 
   return (
     <motion.div
-      className="absolute overflow-hidden bg-[#FBF7F0]"
+      className="absolute overflow-hidden bg-white"
       style={{
         width: isHero ? heroWidth : dims.cardW,
         height: isHero ? heroHeight : dims.cardH,

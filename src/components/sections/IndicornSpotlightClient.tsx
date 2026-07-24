@@ -3,34 +3,148 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useInView } from "framer-motion";
-import HeroGlow from "./HeroGlow";
+import { 
+  motion, 
+  useInView,
+  useMotionValue,
+  useSpring,
+  useTransform
+} from "framer-motion";
 
 /* Site-wide easing — snappy start, smooth deceleration. */
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-/*
-  Sizing tokens derived from the 1728×1117 MacBook 14" Figma
-  reference via `min(Xvw, Yvh)` — proportional at every laptop
-  viewport, then clamped for mobile via extra max-md classes.
+/* ─────────────────────────────────────────────────────────
+   Hero Glows (Exact match from Hero + Section-Relative Tracking)
+   ───────────────────────────────────────────────────────── */
+function HeroGlow() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const normX = useMotionValue(0);
+  const normY = useMotionValue(0);
 
-  Design frame:
-    section: 1512 × 792.5 @ 1728×1117 ref
-    heading  (Indicorns):                    Poppins 78/172%/400  #FBF7F0
-    subhead  (Celebrating India's ...):      Poppins 36/172%/300  #FBF7F0
-    bullets  (Profitable • 10 Cr+ • …):      Poppins 24/155%/500  #FFF
-    button   (Meet the Indicorns):           287×59, white pill, 10 px pad
-    quote / attribution keep sensible defaults (not spec-locked).
-*/
+  const cursorSpring = { damping: 25, stiffness: 60, mass: 0.4 };
+  const smoothX = useSpring(mouseX, cursorSpring);
+  const smoothY = useSpring(mouseY, cursorSpring);
+
+  const ambientSpring = { damping: 30, stiffness: 70, mass: 1 };
+  const smoothNormX = useSpring(normX, ambientSpring);
+  const smoothNormY = useSpring(normY, ambientSpring);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      mouseX.set(rect.width / 2);
+      mouseY.set(rect.height / 2);
+    }
+
+    const handleMouseMove = (e: MouseEvent) => {
+      // Calculate mouse position strictly inside this specific section
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        mouseX.set(e.clientX - rect.left);
+        mouseY.set(e.clientY - rect.top);
+      }
+      normX.set((e.clientX / window.innerWidth) * 2 - 1);
+      normY.set((e.clientY / window.innerHeight) * 2 - 1);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [mouseX, mouseY, normX, normY]);
+
+  // Expanded the mouse parallax range slightly for more responsiveness
+  const leftX = useTransform(smoothNormX, [-1, 1], ["-8%", "8%"]);
+  const leftY = useTransform(smoothNormY, [-1, 1], ["-8%", "8%"]);
+  const rightX = useTransform(smoothNormX, [-1, 1], ["8%", "-8%"]);
+  const rightY = useTransform(smoothNormY, [-1, 1], ["8%", "-8%"]);
+
+  return (
+    <div ref={containerRef} className="absolute inset-0 pointer-events-none z-0">
+      {/* 1. LEFT BLOB */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute"
+        style={{ 
+          left: "-25%", 
+          top: "-25%", 
+          width: "min(75vw, 100vh)", 
+          height: "min(75vw, 100vh)", 
+          zIndex: 0, 
+          x: leftX, 
+          y: leftY, 
+          willChange: "transform" 
+        }}
+      >
+        <motion.div
+          className="w-full h-full rounded-full blur-[120px]"
+          style={{ background: "radial-gradient(circle, #5054B5 0%, #054EB6 40%, #022250 80%, transparent 100%)", opacity: 0.6 }}
+          animate={{ 
+            x: ["0%", "35%", "-15%", "25%", "0%"], 
+            y: ["0%", "25%", "-10%", "35%", "0%"], 
+            scale: [1, 1.15, 0.85, 1.1, 1] 
+          }}
+          transition={{ duration: 18, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
+        />
+      </motion.div>
+
+      {/* 2. RIGHT BLOB */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute"
+        style={{ 
+          right: "-25%", 
+          bottom: "-25%", 
+          width: "min(70vw, 90vh)", 
+          height: "min(70vw, 90vh)", 
+          zIndex: 0, 
+          x: rightX, 
+          y: rightY, 
+          willChange: "transform" 
+        }}
+      >
+        <motion.div
+          className="w-full h-full rounded-full blur-[120px]"
+          style={{ background: "radial-gradient(circle, #AC71C6 0%, #033699 50%, #001A4D 80%, transparent 100%)", opacity: 0.5 }}
+          animate={{ 
+            x: ["0%", "-35%", "15%", "-25%", "0%"], 
+            y: ["0%", "-25%", "10%", "-35%", "0%"], 
+            scale: [1, 1.15, 0.85, 1.1, 1] 
+          }}
+          transition={{ duration: 21, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
+        />
+      </motion.div>
+
+      {/* 3. 3D CURSOR BLOB (Smaller + Matches Left Blob Colors) */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute top-0 left-0 rounded-full blur-[60px]"
+        style={{
+          width: "25vw",
+          height: "25vw",
+          zIndex: 5, 
+          x: smoothX, 
+          y: smoothY,
+          translateX: "-50%", 
+          translateY: "-50%", 
+          opacity: 0.4, 
+          background: "radial-gradient(circle, rgba(80,84,181,0.85) 0%, rgba(5,78,182,0.5) 40%, rgba(2,34,80,0.2) 70%, transparent 100%)",
+          willChange: "transform", 
+          z: 0 
+        }}
+      />
+    </div>
+  );
+}
 
 /* ─────────────────────────────────────────────────────────
-   Types shared with the server wrapper (IndicornSpotlight.tsx)
+   Types shared with the server wrapper
    ───────────────────────────────────────────────────────── */
 export type IndicornLogoMode = "transparent" | "opaqueBg" | "white";
 
 export interface IndicornLogo {
   src?: string;
-  /** Legacy alias from the original hardcoded shape. Either `src` or `image` works. */
   image?: string;
   alt: string;
   mode: IndicornLogoMode;
@@ -49,8 +163,7 @@ export interface IndicornSpotlightData {
 }
 
 /* ─────────────────────────────────────────────────────────
-   Fallback defaults — page keeps rendering exactly per the
-   new spec if Sanity returns null / missing fields.
+   Fallback defaults
    ───────────────────────────────────────────────────────── */
 const FALLBACK_LOGOS: IndicornLogo[] = [
   { src: "/images/logos/ofbusiness_white.svg",          alt: "OfBusiness",  mode: "white",       scale: 1.0 },
@@ -68,8 +181,6 @@ const FALLBACK_QUOTE =
   '"For too long, success in the startup ecosystem has been measured solely by valuation. With Indicorns, we recognize a different standard of excellence, one built on profitability, disciplined growth, and tangible market impact."';
 const FALLBACK_ATTRIBUTION = "-Titan Capital";
 
-/* Append Sanity CDN transform params for served images. Local /images/...
-   URLs pass through unchanged so the fallback path keeps working. */
 function cdnImageSrc(url: string, width: number): string {
   if (url.startsWith("https://cdn.sanity.io/")) {
     return `${url}?w=${width}&auto=format&q=85`;
@@ -77,13 +188,11 @@ function cdnImageSrc(url: string, width: number): string {
   return url;
 }
 
-/** Logos from Sanity arrive as { image, ... }; fallback uses { src, ... }.
- *  Normalise both shapes here so the render loop is one path. */
 function resolveLogoSrc(logo: IndicornLogo): string {
   return logo.src ?? logo.image ?? "";
 }
 
-/* ─── Cursor-origin fill button (white pill → navy fill, text turns white) ─── */
+/* ─── Cursor-origin fill button ─── */
 function CursorFillButtonIndicorn({ href, label }: { href: string; label: string }) {
   const [origin, setOrigin] = useState("50% 50%");
   const [hovered, setHovered] = useState(false);
@@ -133,24 +242,15 @@ export default function IndicornSpotlightClient({
 }: {
   data?: IndicornSpotlightData | null;
 }) {
-  /* Per-field fallback — partially-edited CMS doc still renders cleanly. */
   const rawHeading = data?.heading || FALLBACK_HEADING;
-  /* Legacy CMS docs stored the whole "Indicorns: Celebrating India's
-     Enduring Startups" string in the heading field. After the schema
-     was split into heading + subheading, drop anything after the
-     first colon so the "Celebrating…" tail doesn't appear twice. */
   const heading = rawHeading.includes(":")
     ? rawHeading.split(":")[0].trim()
     : rawHeading;
   const subheading = data?.subheading || FALLBACK_SUBHEADING;
-  const bullets =
-    data?.bullets && data.bullets.length > 0 ? data.bullets : FALLBACK_BULLETS;
+  const bullets = data?.bullets && data.bullets.length > 0 ? data.bullets : FALLBACK_BULLETS;
   const ctaLabel = data?.ctaLabel || FALLBACK_CTA_LABEL;
   const rotatingLogosLabel = data?.rotatingLogosLabel || FALLBACK_ROTATING_LABEL;
-  const indicornLogos =
-    data?.rotatingLogos && data.rotatingLogos.length > 0
-      ? data.rotatingLogos
-      : FALLBACK_LOGOS;
+  const indicornLogos = data?.rotatingLogos && data.rotatingLogos.length > 0 ? data.rotatingLogos : FALLBACK_LOGOS;
   const quote = data?.quote || FALLBACK_QUOTE;
   const attribution = data?.attribution || FALLBACK_ATTRIBUTION;
 
@@ -163,9 +263,6 @@ export default function IndicornSpotlightClient({
     return () => clearInterval(timer);
   }, [indicornLogos.length]);
 
-  /* Both rules (vertical + horizontal) draw in when the section
-     scrolls into view — matching the site-wide "lines animate on
-     entrance" convention. */
   const sectionRef = useRef<HTMLElement>(null);
   const rulesInView = useInView(sectionRef, { once: true, amount: 0.3 });
 
@@ -174,58 +271,36 @@ export default function IndicornSpotlightClient({
       ref={sectionRef}
       className="relative flex w-full items-center overflow-hidden max-md:!min-h-[100vh] max-md:!py-[80px] max-md:!pt-[120px]"
       style={{
-        /* Sticky reveal — Indicorns PINS to the top of the viewport
-           while "What Our Founders Say" (next in the shared wrapper)
-           scrolls up and covers it, mirroring Impact ↔ Their Stories.
-           Low z-index so the next section (higher z) draws over it. */
         position: "sticky",
         top: 0,
         zIndex: 1,
-        /* Solid navy per the Figma export (index.module.css):
-           background-color: #001a4d. The depth/aurora comes purely
-           from the GlowBackdrop SVG overlays, not a section gradient. */
-        background: "#001A4D",
-        /* Full-viewport pin — the section fills the screen while it is
-           pinned (sticky), so the scroll visibly "stops" here for the
-           dwell added by the spacer after it in page.tsx, then the next
-           section scrolls up over it. Top padding still clears the
-           Stories card that overlaps its top by 115 px. */
+        background: "#000c22",
         minHeight: "100vh",
-        paddingTop: "min(12.10vw, 18.53vh)" /* ~140 px @ ref */,
-        paddingBottom: "min(12.63vw, 16.16vh)" /* ~80 px @ ref */,
+        paddingTop: "min(12.10vw, 18.53vh)",
+        paddingBottom: "min(12.63vw, 16.16vh)",
         paddingLeft: "var(--section-px-wide)",
         paddingRight: "var(--section-px-wide)",
       }}
     >
-      {/* ══════════ GLOW LAYER ══════════
-          The exact hero-section aurora — two ambient SVG blobs (blur +
-          grain) that wander and parallax with the cursor, plus a
-          cursor-tracking blob — shared via <HeroGlow>. `idPrefix` keeps
-          the SVG filter ids unique from the hero's instance, and `scale`
-          shrinks the blobs to fit THIS section (they were sized for the
-          full-viewport hero and overflowed here). */}
-      <HeroGlow idPrefix="indi" scale={0.68} />
+      {/* ══════════ GLOW LAYER ══════════ */}
+      <HeroGlow />
 
-      {/* Grid: LEFT column | 1 px vertical divider | RIGHT column.
-          On mobile, drops to a single column and hides the vertical rule. */}
       <div
         className="relative z-10 mx-auto grid w-full items-start max-md:!grid-cols-1 max-md:!gap-[40px]"
         style={{
           maxWidth: "1440px",
           gridTemplateColumns: "1fr 1px 1fr",
-          columnGap: "min(3.47vw, 5.37vh)" /* ~60 px @ ref */,
+          columnGap: "min(3.47vw, 5.37vh)",
         }}
       >
         {/* ══════════ LEFT COLUMN ══════════ */}
         <div className="relative">
           <div className="relative z-10 flex w-full flex-col items-start text-left max-md:!items-center max-md:!text-center">
-            {/* THE FIX: Tightened line-height to 110% so the invisible top-spacing is removed 
-                and the word "Indicorns" sits perfectly flush at the top boundary. */}
             <h2
               className="m-0 font-['Poppins',_sans-serif] font-semibold max-md:!text-[32px] max-md:!leading-[120%]"
               style={{
                 color: "#FBF7F0",
-                fontSize: "min(4.51vw, 6.98vh)" /* 78 px @ ref */,
+                fontSize: "min(4.51vw, 6.98vh)",
                 lineHeight: "110%", 
               }}
             >
@@ -237,7 +312,7 @@ export default function IndicornSpotlightClient({
               style={{
                 color: "#FBF7F0",
                 fontFamily: "'Poppins', sans-serif",
-                fontSize: "min(2.08vw, 3.22vh)" /* 36 px @ 1728×1117 ref */,
+                fontSize: "min(2.08vw, 3.22vh)",
                 fontStyle: "normal",
                 fontWeight: 300,
                 lineHeight: "172%",
@@ -255,7 +330,7 @@ export default function IndicornSpotlightClient({
               style={{
                 height: 1,
                 background: "rgba(255,255,255,0.35)",
-                marginTop: "min(2.31vw, 3.58vh)" /* ~40 px */,
+                marginTop: "min(2.31vw, 3.58vh)",
                 marginBottom: "min(2.31vw, 3.58vh)",
               }}
             />
@@ -265,9 +340,9 @@ export default function IndicornSpotlightClient({
               className="flex flex-wrap items-center font-['Poppins',_sans-serif] font-medium max-md:!text-[13px] max-md:!gap-[6px] max-md:!mt-[16px]"
               style={{
                 color: "#FFF",
-                fontSize: "min(1.39vw, 2.15vh)" /* 24 px @ ref */,
+                fontSize: "min(1.39vw, 2.15vh)",
                 lineHeight: "155%",
-                gap: "min(1.16vw, 1.79vh)" /* ~20 px */,
+                gap: "min(1.16vw, 1.79vh)",
               }}
             >
               {bullets.map((b, i) => (
@@ -285,7 +360,6 @@ export default function IndicornSpotlightClient({
               ))}
             </div>
 
-            {/* Mobile-only divider after bullets */}
             <motion.div
               className="hidden max-md:!block w-full origin-left"
               initial={{ scaleX: 0 }}
@@ -299,15 +373,12 @@ export default function IndicornSpotlightClient({
               }}
             />
 
-            {/* CTA button */}
             <CursorFillButtonIndicorn href="/indicorns" label={ctaLabel} />
 
-            {/* Portfolio Indicorns row */}
             <div
               className="flex items-center max-md:!gap-[12px] max-md:!justify-center max-md:!mt-[24px]"
               style={{
-                gap: "min(2.87vw, 3.34vh)" /* ~15 px */,
-                /* MATCHED EXACTLY to the CTA button's top margin to create perfectly even spacing */
+                gap: "min(2.87vw, 3.34vh)",
                 marginTop: "min(2.31vw, 3.58vh)", 
               }}
             >
@@ -323,8 +394,8 @@ export default function IndicornSpotlightClient({
               <div
                 className="relative overflow-hidden max-md:!w-[100px] max-md:!h-[28px]"
                 style={{
-                  width: "min(6.94vw, 10.74vh)" /* ~120 px @ ref */,
-                  height: "min(2.08vw, 3.22vh)" /* ~36 px @ ref */,
+                  width: "min(6.94vw, 10.74vh)",
+                  height: "min(2.08vw, 3.22vh)",
                 }}
               >
                 {indicornLogos.map((logo, i) => {
@@ -378,7 +449,7 @@ export default function IndicornSpotlightClient({
             background: "rgba(255,255,255,0.35)",
             justifySelf: "center",
             transformOrigin: "top",
-            height: "min(31.83vw, 49.24vh)" /* ~550 px @ ref */,
+            height: "min(31.83vw, 49.24vh)",
           }}
         />
 
@@ -397,14 +468,13 @@ export default function IndicornSpotlightClient({
           />
           <div 
             className="relative z-10 flex flex-col justify-start max-md:!text-center"
-            // THE FIX: Micro-adjustment to push the quote down slightly so its baseline matches the taller font of the heading exactly.
             style={{ paddingTop: "min(0.25vw, 0.4vh)" }} 
           >
             <p
               className="m-0 font-['Poppins',_sans-serif] max-md:!text-[15px] max-md:!leading-[1.5]"
               style={{
                 color: "#FFF",
-                fontSize: "min(1.62vw, 2.51vh)" /* ~28 px */,
+                fontSize: "min(1.62vw, 2.51vh)",
                 fontWeight: 300,
                 lineHeight: "150%",
               }}
@@ -415,7 +485,7 @@ export default function IndicornSpotlightClient({
               className="m-0 mt-[min(1.62vw,2.51vh)] font-['Poppins',_sans-serif] max-md:!text-[14px] max-md:!mt-[16px]"
               style={{
                 color: "rgba(255,255,255,0.85)",
-                fontSize: "min(1.39vw, 2.15vh)" /* ~24 px */,
+                fontSize: "min(1.39vw, 2.15vh)",
                 fontWeight: 400,
               }}
             >
@@ -423,6 +493,7 @@ export default function IndicornSpotlightClient({
             </p>
           </div>
         </div>
-      </div>    </section>
+      </div>
+    </section>
   );
 }

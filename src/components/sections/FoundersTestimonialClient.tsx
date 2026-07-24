@@ -189,11 +189,12 @@ function FlipCard({ item }: { item: TestimonialItem }) {
       <div
         className="group relative shrink-0 max-md:!w-[42vw] max-md:!h-[52vw] max-md:!aspect-auto"
         style={{
-          /* EXACTLY 3 cards per screen: a third of the site's content
-             area (viewport minus the sitewide gutters) minus the two
-             in-between gaps. Height follows via aspect ratio. */
+          /* 3.5 cards per screen: card width = (content area minus the
+             3 in-between gaps of 3.5 cards) / 3.5. The half card peeks
+             from the right edge to hint at the marquee continuing.
+             Aspect ratio is unchanged so photos still fill edge-to-edge. */
           width:
-            "calc((100vw - 2 * var(--section-px-wide) - 2 * min(1.85vw, 2.86vh)) / 3)",
+            "calc((100vw - 2 * var(--section-px-wide) - 3 * min(1.85vw, 2.86vh)) / 3.5)",
           /* 4:5 → after the top 20% logo band, the bottom 80% photo block
              is a PERFECT SQUARE (= card width). So the 400×400 square
              portfolio photos (uploaded via Sanity) fill it edge-to-edge
@@ -264,9 +265,10 @@ function FlipCard({ item }: { item: TestimonialItem }) {
               {logoContent}
             </div>
             <div
-              className="flex items-center"
+              className="flex items-start"
               style={{
                 height: "74%",
+                paddingTop: "min(0.6vw, 0.93vh)",
                 paddingBottom: "min(1.85vw, 2.86vh)",
                 paddingLeft: "min(1.85vw, 2.86vh)",
                 paddingRight: "min(1.85vw, 2.86vh)",
@@ -275,7 +277,7 @@ function FlipCard({ item }: { item: TestimonialItem }) {
               <p
                 className="m-0 font-['Poppins',_sans-serif] font-normal text-black"
                 style={{
-                  fontSize: "min(1.78vw, 2.31vh)",
+                  fontSize: "min(1.32vw, 2.01vh)",
                   lineHeight: "150%",
                 }}
               >
@@ -485,11 +487,20 @@ export default function FoundersTestimonialClient({
             }}
           >
             You Build the{" "}
-            <span
-              className="relative inline-block px-[8px] max-md:!px-[4px]"
-              style={{ background: "#D3E2FF" }}
-            >
-              Vision.
+            <span className="relative inline-block px-[8px] max-md:!px-[4px]">
+              <motion.span
+                aria-hidden="true"
+                className="absolute inset-0"
+                style={{ background: "#D3E2FF", transformOrigin: "left" }}
+                variants={{
+                  hidden: { scaleX: 0 },
+                  visible: {
+                    scaleX: 1,
+                    transition: { duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.75 },
+                  },
+                }}
+              />
+              <span className="relative">Vision.</span>
             </span>
           </motion.h2>
           <motion.h2

@@ -516,12 +516,10 @@ function StoryArrow() {
    cap) makes the photos span the whole screen between the gutters. */
 /* Column/row gap of the Their Stories grid. */
 /* Column/row gap of the Their Stories grid. */
-const STORY_GAP = "calc(var(--section-px-wide) * 0.75)";
+const STORY_GAP = "calc(var(--section-px-wide) * 0.4)";
 
-/* To make the distance from the image to the outer border exactly equal 
-   to the distance from the image to the center lines, the outer padding 
-   must be exactly half of the STORY_GAP. */
-const BORDER_PADDING = "calc(var(--section-px-wide) * 0.375)";
+/* Half of STORY_GAP so card-to-border == card-to-card distance. */
+const BORDER_PADDING = "calc(var(--section-px-wide) * 0.2)";
 
 /* Pad the stories array up to N slots by cycling the input.
    Design needs exactly 4 cards; if the CMS has fewer, we
@@ -619,7 +617,7 @@ function StoriesSection({
           </h2>
         </motion.div>
 
-        {/* 3×1 Grid container with dynamic CSS variable for perfect border alignment */}
+        {/* 3×2 Grid container */}
         <div 
           ref={gridRef} 
           className="relative w-full"
@@ -632,81 +630,48 @@ function StoriesSection({
             className="grid w-full grid-cols-3 max-md:!grid-cols-1"
             style={{ gap: STORY_GAP }}
           >
-            {padStories(slides, 3).map((story, i) => (
+            {padStories(slides, 6).map((story, i) => (
               <StoryCard key={`${story.name}-${i}`} story={story} />
             ))}
           </div>
 
-         {/* =========================================
-              ANIMATED BORDERS (Desktop Only)
-              Since STORY_GAP is exactly 2 * BORDER_PADDING, each column 
-              logically occupies exactly 33.3333% of the container width. 
-              We map over the 3 columns to generate separate horizontal 
-              lines so they scale from their individual centers.
-              ========================================= */}
-          
-          {/* 1. TOP HORIZONTAL BORDERS (Separated per square) */}
+          {/* ANIMATED BORDERS (Desktop Only)
+              Row 1 (top): no top border, has bottom border (= middle horizontal)
+              Row 2 (bottom): has top border (= middle horizontal), no bottom border
+              Left border of col 0 and right border of col 2 are omitted.
+              Inner vertical dividers span full height.
+          */}
+
+          {/* MIDDLE HORIZONTAL BORDER — between row 1 and row 2, per column */}
           {[0, 1, 2].map((i) => (
             <motion.div
-              key={`top-rule-${i}`}
+              key={`mid-rule-${i}`}
               aria-hidden
               className="pointer-events-none absolute max-md:!hidden z-20"
               style={{
-                top: 0,
+                top: "50%",
                 left: `calc(${i * 33.3333}% + var(--bp))`,
                 width: "calc(33.3333% - 2 * var(--bp))",
                 height: "1px",
-                background: "#D8D8D8",
-                transformOrigin: "center",
-                scaleX: hRuleScale,
-              }}
-            />
-          ))}
-          
-          {/* 2. BOTTOM HORIZONTAL BORDERS (Separated per square) */}
-          {[0, 1, 2].map((i) => (
-            <motion.div
-              key={`bottom-rule-${i}`}
-              aria-hidden
-              className="pointer-events-none absolute max-md:!hidden z-20"
-              style={{
-                bottom: 0,
-                left: `calc(${i * 33.3333}% + var(--bp))`,
-                width: "calc(33.3333% - 2 * var(--bp))",
-                height: "1px",
-                background: "#D8D8D8",
+                background: "#000",
                 transformOrigin: "center",
                 scaleX: hRuleScale,
               }}
             />
           ))}
 
-          {/* 3. LEFT OUTER VERTICAL BORDER */}
+          {/* INNER VERTICAL DIVIDER 1 (col 0 | col 1) — full height */}
           <motion.div
             aria-hidden
             className="pointer-events-none absolute max-md:!hidden z-20"
-            style={{ top: "var(--bp)", left: 0, width: "1px", height: "calc(100% - 2 * var(--bp))", background: "#D8D8D8", transformOrigin: "center", scaleY: vRuleScale }}
+            style={{ top: "var(--bp)", left: "33.3333%", marginLeft: "-0.5px", width: "1px", height: "calc(100% - 2 * var(--bp))", background: "#000", transformOrigin: "center", scaleY: vRuleScale }}
           />
 
-          {/* 4. RIGHT OUTER VERTICAL BORDER */}
+          {/* INNER VERTICAL DIVIDER 2 (col 1 | col 2) — full height */}
           <motion.div
             aria-hidden
             className="pointer-events-none absolute max-md:!hidden z-20"
-            style={{ top: "var(--bp)", right: 0, width: "1px", height: "calc(100% - 2 * var(--bp))", background: "#D8D8D8", transformOrigin: "center", scaleY: vRuleScale }}
-          />
-
-          {/* 5. INNER VERTICAL DIVIDER 1 */}
-          <motion.div
-            aria-hidden
-            className="pointer-events-none absolute max-md:!hidden z-20"
-            style={{ top: "var(--bp)", left: "33.3333%", marginLeft: "-0.5px", width: "1px", height: "calc(100% - 2 * var(--bp))", background: "#D8D8D8", transformOrigin: "center", scaleY: vRuleScale }}
-          />
-
-          {/* 6. INNER VERTICAL DIVIDER 2 */}
-          <motion.div
-            aria-hidden
-            className="pointer-events-none absolute max-md:!hidden z-20"
-            style={{ top: "var(--bp)", left: "66.6666%", marginLeft: "-0.5px", width: "1px", height: "calc(100% - 2 * var(--bp))", background: "#D8D8D8", transformOrigin: "center", scaleY: vRuleScale }}
+            style={{ top: "var(--bp)", left: "66.6666%", marginLeft: "-0.5px", width: "1px", height: "calc(100% - 2 * var(--bp))", background: "#000", transformOrigin: "center", scaleY: vRuleScale }}
           />
         </div>
 

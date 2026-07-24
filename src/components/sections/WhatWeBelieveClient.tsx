@@ -21,7 +21,6 @@ export interface WhatWeBelieveData {
   heading?: string;
   beliefs?: Belief[];
 }
-
 const HEADING = "What We Believe";
 const BELIEFS: Belief[] = [
   {
