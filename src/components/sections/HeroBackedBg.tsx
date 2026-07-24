@@ -17,7 +17,7 @@ const WHITE = "#ffffff";
 const BEIGE = "#FBF7F0";
 
 /* Scroll track for hero: just enough for smooth fade, no pause */
-const HERO_TRACK_VH = 130;
+const HERO_TRACK_VH = 140;
 
 /* INCREASED: Dwell height for Backed Before & How We Show Up sticky pause.
    Setting this to 200 ensures it takes roughly 2 full scrolls before unpinning. */
@@ -146,7 +146,7 @@ export default function HeroBackedBg({
           {/* Sticky wrapper - Backed Before pins at top while you scroll */}
           <div style={{ minHeight: `${100 + BACKED_DWELL_VH}vh` }}>
             {/* 🛑 CHANGED: Replaced top-0 with top-[80px] md:top-[100px] to clear the fixed navbar */}
-            <div className="sticky top-[80px] md:top-[100px]">
+            <div className="sticky top-[120px] md:top-[200px]">
               {backed}
               <div ref={seamRef} aria-hidden />
               <div className="relative">
