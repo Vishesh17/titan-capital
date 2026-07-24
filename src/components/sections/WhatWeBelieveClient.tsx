@@ -113,6 +113,7 @@ export default function WhatWeBelieveClient({
     data?.beliefs && data.beliefs.length === 3 ? data.beliefs : BELIEFS;
 
   const sectionRef = useRef<HTMLElement>(null);
+
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
@@ -134,27 +135,27 @@ export default function WhatWeBelieveClient({
 
   /* Desktop transforms */
   const sHalf = dims.sFull * 0.5;
-  const groupScale = useTransform(p, [0, 0.45, 0.7], [dims.sFull, sHalf, 1]);
-  const splitX = useTransform(p, [0.45, 0.7], [0, dims.gap]);
-  const flip = useTransform(p, [0.45, 0.7], [0, 180]);
-  const radius = useTransform(p, [0.45, 0.58], [0, 12]);
-  const headingOpacity = useTransform(p, [0.43, 0.5], [1, 0]);
+  const groupScale = useTransform(p, [0, 0.3, 0.5], [dims.sFull, sHalf, 1]);
+  const splitX = useTransform(p, [0.3, 0.5], [0, dims.gap]);
+  const flip = useTransform(p, [0.3, 0.5], [0, 180]);
+  const radius = useTransform(p, [0.3, 0.4], [0, 12]);
+  const headingOpacity = useTransform(p, [0.28, 0.35], [1, 0]);
   const headingScale = 1 / dims.sFull;
 
   /* Mobile transforms */
   const mSHalf = mobileDims.sFull * 0.5;
-  const mGroupScale = useTransform(p, [0, 0.45, 0.7], [mobileDims.sFull, mSHalf, 1]);
-  const mSplitY = useTransform(p, [0.45, 0.7], [0, mobileDims.gap]);
-  const mFlip = useTransform(p, [0.45, 0.7], [0, 180]);
-  const mRadius = useTransform(p, [0.45, 0.58], [0, 12]);
-  const mHeadingOpacity = useTransform(p, [0.43, 0.5], [1, 0]);
+  const mGroupScale = useTransform(p, [0, 0.3, 0.5], [mobileDims.sFull, mSHalf, 1]);
+  const mSplitY = useTransform(p, [0.3, 0.5], [0, mobileDims.gap]);
+  const mFlip = useTransform(p, [0.3, 0.5], [0, 180]);
+  const mRadius = useTransform(p, [0.3, 0.4], [0, 12]);
+  const mHeadingOpacity = useTransform(p, [0.28, 0.35], [1, 0]);
   const mHeadingScale = 1 / mobileDims.sFull;
 
   return (
     <section
       ref={sectionRef}
       className="relative w-full bg-[#FBF7F0] max-md:!h-[200vh]"
-      style={{ height: "300vh" }}
+      style={{ height: "200vh" }}
     >
       <div className="sticky top-0 h-screen w-full overflow-hidden">
         <div className="flex h-full w-full items-center justify-center">

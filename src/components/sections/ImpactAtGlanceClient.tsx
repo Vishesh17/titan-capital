@@ -79,9 +79,9 @@ const STORY_GAP = "calc(var(--section-px-wide) * 0.4)";
 const BORDER_PADDING = "calc(var(--section-px-wide) * 0.2)";
 
 // Impact section specific tokens - more spread out cells
-const IMPACT_CELL_PADDING = "calc(var(--section-px-wide) * 0)";
-const IMPACT_COL_GAP = "calc(var(--section-px-wide) * 1.5)"
-const IMPACT_ROW_GAP = "calc(var(--section-px-wide) * 0.9)";
+const IMPACT_CELL_PADDING = "calc(var(--section-px-wide) * 0.01)";
+const IMPACT_COL_GAP = "calc(var(--section-px-wide) * 2)"
+const IMPACT_ROW_GAP = "calc(var(--section-px-wide) * 0.8)";
 
 function cdnImageSrc(url: string, width: number): string {
   if (url.startsWith("https://cdn.sanity.io/")) {
@@ -599,7 +599,7 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
         </motion.div>
       </section>
 
-      <div aria-hidden className="h-[85vh] w-full" />
+      <div aria-hidden className="h-[50vh] w-full" />
 
       <StoriesSection
         storiesHeadingFirst={storiesHeadingFirst}
