@@ -104,6 +104,29 @@ export const hero = defineType({
               type: "boolean",
               initialValue: false,
             }),
+            defineField({
+              name: "scaleFactor",
+              title: "Scale Factor",
+              description: "Image scale in the heading slot. 0.5 = 50% smaller (more visible), 1 = normal, 1.5 = 50% larger. Use 0.6-0.8 to fit more of the photo (e.g., include chest).",
+              type: "number",
+              validation: (r) => r.min(0.5).max(2.0),
+              initialValue: 1,
+            }),
+            defineField({
+              name: "positionX",
+              title: "Horizontal Offset (px)",
+              description: "Shift image left/right. Positive = right, Negative = left.",
+              type: "number",
+              initialValue: 0,
+            }),
+            defineField({
+              name: "positionY",
+              title: "Vertical Offset (px)",
+              description: "Shift image up/down. Positive = down, Negative = up.",
+              type: "number",
+              initialValue: 0,
+            }),
+
           ],
           preview: {
             select: { title: "name", subtitle: "role", media: "image" },

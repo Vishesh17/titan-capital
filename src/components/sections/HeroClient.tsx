@@ -25,6 +25,12 @@ export interface HeroFounder {
   role: string;
   image: string;
   isLogo?: boolean;
+  /** Scale factor for image sizing (e.g., 1.2 = 20% larger, 0.8 = 20% smaller) */
+  scaleFactor?: number;
+  /** Horizontal position offset in pixels (positive = right, negative = left) */
+  positionX?: number;
+  /** Vertical position offset in pixels (positive = down, negative = up) */
+  positionY?: number;
 }
 
 export interface HeroData {
@@ -41,14 +47,14 @@ export interface HeroData {
    Fallback data
    ───────────────────────────────────────────────────────── */
 const FALLBACK_FOUNDERS: HeroFounder[] = [
-  { name: "Abhiraj Singh Bhal",  role: "Co-Founder, Urban Company",     image: "/images/herosection/3. Varun Khaitan  1.png" },
-  { name: "Ashutosh Valani",     role: "Co-Founder, RENÉE Cosmetics",   image: "/images/herosection/4. Ghazal 1.png" },
-  { name: "Abhishek Bansal",     role: "Co-Founder, Shadowfax",         image: "/images/herosection/6. Ashtosh Valani 1.png" },
-  { name: "Titan Capital",       role: "",                              image: "/images/hero_founders_images/titan-capital.png",     isLogo: true },
-  { name: "Ruchi Kalra",         role: "Co-Founder, Ofbusiness",        image: "/images/herosection/Aarti Gill 2.png" },
-  { name: "Varun Khaitan",       role: "Co-Founder, Urban Company",     image: "/images/herosection/Asish Mohapatra 1.png" },
-  { name: "Ishendra Agarwal",    role: "Co-Founder, GIVA",              image: "/images/herosection/image 177.png" },
-  { name: "Anand Agrawal",       role: "Co-Founder, Credgenics",        image: "/images/herosection/Rishabh 2.png" },
+  { name: "Abhiraj Singh Bhal",  role: "Co-Founder, Urban Company",     image: "/images/herosection/3. Varun Khaitan  1.png", scaleFactor: 1, positionX: 0, positionY: 10 },
+  { name: "Ashutosh Valani",     role: "Co-Founder, RENÉE Cosmetics",   image: "/images/herosection/4. Ghazal 1.png", scaleFactor: 1.3, positionX: 0, positionY: 5 },
+  { name: "Abhishek Bansal",     role: "Co-Founder, Shadowfax",         image: "/images/herosection/6. Ashtosh Valani 1.png", scaleFactor: 1, positionX: 0, positionY: 2 },
+  { name: "Titan Capital",       role: "",                              image: "/images/hero_founders_images/titan-capital.png",     isLogo: true, scaleFactor: 1, positionX: 0, positionY: 0 },
+  { name: "Varun Khaitan",       role: "Co-Founder, Urban Company",     image: "/images/herosection/Asish Mohapatra 1.png", scaleFactor: 0.9, positionX: -13, positionY: 20 },
+  { name: "Ishendra Agarwal",    role: "Co-Founder, GIVA",              image: "/images/herosection/image 177.png", scaleFactor: 1.3, positionX: -8, positionY: 40 },
+  { name: "Anand Agrawal",       role: "Co-Founder, Credgenics",        image: "/images/herosection/Rishabh 2.png", scaleFactor: 1, positionX: 10, positionY: 0 },
+  { name: "Ruchi Kalra",         role: "Co-Founder, Ofbusiness",        image: "/images/herosection/Aarti Gill 2.png", scaleFactor: 1.2, positionX: -20, positionY: 14 },
 ];
 
 const FALLBACK_SUBTITLE =
@@ -97,6 +103,12 @@ interface Slot {
   h: number;
 }
 const FALLBACK_SLOT: Slot = { cx: 0, cy: 0, w: 145, h: 207 };
+
+/* Clamp scale factor to safe bounds (prevent overflow/underflow) */
+function clampScale(scale?: number): number {
+  const s = scale ?? 1;
+  return Math.max(0.5, Math.min(s, 2.0));
+}
 
 const GRAIN =
   "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ";
@@ -252,7 +264,8 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     const id = setInterval(() => {
       count += 1;
       if (count >= totalTicks) {
-        setSlideIndex(heroIndex + totalTicks);
+        // End on the hero card so slideshow matches the flying hero card
+        setSlideIndex(heroIndex);
         clearInterval(id);
         setTimeout(() => setStage("animate"), 300);
       } else {
@@ -413,7 +426,10 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
         </AnimatePresence>
 
         {stage === "animate" && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center max-md:!z-30">
+          <div
+            className="absolute inset-0 z-10 flex items-center justify-center max-md:!z-30"
+            style={{ left: "50%", transform: "translateX(-50%)" }}
+          >
             {founders.map((founder, i) => (
               <FounderCard
                 key={founder.name}
@@ -567,28 +583,41 @@ function HeadingPhoto({
   tick: number;
   show: boolean;
 }) {
+  const scale = clampScale(founder.scaleFactor);
+  const imageOffsetX = founder.positionX ?? 0;
+  const imageOffsetY = founder.positionY ?? 0;
+  
   return (
     <AnimatePresence>
       <motion.div
         key={tick}
-        className="absolute inset-0"
+        className="absolute inset-0 flex items-center justify-center"
         style={{ zIndex: tick, background: CARD_BG }}
         initial={{ opacity: 0 }}
         animate={{ opacity: show ? 1 : 0 }}
         exit={{ opacity: 1 }}
         transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
       >
-        <Image
-          src={heroImageSrc(founder.image, 600)}
-          alt={founder.name}
-          fill
-          sizes="(max-width: 768px) 50vw, 25vw"
-          priority
+        <div
+          className="absolute inset-0"
           style={{
-            ...IMG_STYLE,
-            objectFit: founder.isLogo ? "contain" : "cover",
+            transform: `scale(${scale}) translate(${imageOffsetX}px, ${imageOffsetY}px)`,
+            transformOrigin: "center center",
           }}
-        />
+        >
+          <Image
+            src={heroImageSrc(founder.image, 600)}
+            alt={founder.name}
+            fill
+            sizes="(max-width: 768px) 50vw, 25vw"
+            priority
+            style={{
+              ...IMG_STYLE,
+              objectFit: founder.isLogo ? "contain" : "scale-down",
+              objectPosition: "center center",
+            }}
+          />
+        </div>
       </motion.div>
     </AnimatePresence>
   );
@@ -724,8 +753,19 @@ function FounderCard({
       : { ease: [cappenEase, linear, cappenEase] }
   );
 
-  const heroWidth = useTransform(progress, [flightStart, flightEnd], [dims.cardW, slot.w], { ease: cappenEase });
-  const heroHeight = useTransform(progress, [flightStart, flightEnd], [dims.cardH, slot.h], { ease: cappenEase });
+  // Use width/height ONLY for hero flight, keeping scale at 1 to avoid conflict
+  const heroWidth = useTransform(
+    progress, 
+    [flightStart, flightEnd], 
+    [dims.cardW, slot.w], 
+    { ease: cappenEase }
+  );
+  const heroHeight = useTransform(
+    progress, 
+    [flightStart, flightEnd], 
+    [dims.cardH, slot.h], 
+    { ease: cappenEase }
+  );
   const x = useTransform(progress, [flightStart, flightEnd], [0, isHero ? slot.cx : 0], { ease: cappenEase });
 
   const zIndex = useTransform(progress, (v) =>
@@ -734,16 +774,20 @@ function FounderCard({
 
   const opacity = useTransform(
     progress,
-    isHero ? [0.94, 1] : [0.82, 0.90],
+    isHero ? [0.97, 1] : [0.92, 0.96],
     [1, 0]
   );
 
-  const grayscaleMV = useTransform(progress, [flightEnd - 0.02, 1], [0.9, 0]);
+  const grayscaleMV = useTransform(progress, [flightStart, flightEnd], [0.9, 0]);
   const heroFilter = useMotionTemplate`grayscale(${grayscaleMV})`;
+
+  const imageScale = clampScale(founder.scaleFactor);
+  const imageOffsetX = founder.positionX ?? 0;
+  const imageOffsetY = founder.positionY ?? 0;
 
   return (
     <motion.div
-      className="absolute overflow-hidden bg-white"
+      className="absolute bg-white"
       style={{
         width: isHero ? heroWidth : dims.cardW,
         height: isHero ? heroHeight : dims.cardH,
