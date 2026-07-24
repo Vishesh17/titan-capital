@@ -16,6 +16,9 @@ export interface TestimonialItem {
   companyLogo?: string;
   companyName?: string;
   longText?: boolean;
+  imageScaleFactor?: number;
+  imagePositionX?: number;
+  imagePositionY?: number;
 }
 
 export interface FoundersTestimonialData {
@@ -35,45 +38,63 @@ const FALLBACK_TESTIMONIALS: TestimonialItem[] = [
     name: "Abhiraj Bahl",
     role: "Cofounder, Urban Company",
     companyName: "Urban Company",
-    image: "/images/Testimonials/abhiraj-singh-uc.png",
+    image: "/images/herosection/Abhiraj Singh Urban Company 1 (2).png",
     text: "\u201CKunal and Rohit were the first investors to believe in Urban Company, even before we launched the platform or decided on the name. Their unwavering support has been a constant throughout our journey, guiding us through ups and downs. As Founders, we deeply value their mentorship and friendship.\u201D",
+    imageScaleFactor: 1.15,
+    imagePositionX: -12,
+    imagePositionY: 0,
   },
   {
     name: "Disha Singh",
     role: "Cofounder, Zouk",
     companyName: "Zouk",
-    image: "/images/Testimonials/disha-singh.avif",
+    image: "/images/herosection/Rectangle 22.png",
     text: "\u201CTitan Capital has been an invaluable partner in our journey to build Zouk. Kunal and Rohit have consistently provided invaluable guidance on cultivating a long-lasting business with strong brand loyalty.\u201D",
     longText: true,
+    imageScaleFactor: 1.2,
+    imagePositionX: 10,
+    imagePositionY: 35,
   },
   {
     name: "Rishabh Goel",
     role: "Cofounder, Credgenics",
     companyName: "Credgenics",
-    image: "/images/Testimonials/Rishabh.jpeg",
+    image: "/images/herosection/Rishabh 2.png",
     text: "\u201CTitan Capital has been more than just an investor for Credgenics \u2014 they\u2019ve been our first partner in this journey. Our early conversations made it clear that they weren\u2019t your typical investors.\u201D",
     longText: true,
+    imageScaleFactor: 1.3,
+    imagePositionX: 10,
+    imagePositionY: -20,
   },
   {
     name: "Raghu Ravinutala",
     role: "Cofounder, Yellow.ai",
     companyName: "Yellow.ai",
-    image: "/images/Testimonials/Raghu-Ravinutala.webp",
+    image: "/images/herosection/Raghu-Ravinutala 1.png",
     text: "\u201CTitan Capital is truly \u2018founder only\u2019. From the first interaction, I was overwhelmed with their focus on making the founder successful beyond anything.\u201D",
+    imageScaleFactor: 1.1,
+    imagePositionX: -10,
+    imagePositionY: -5,
   },
   {
     name: "Aarti Gill",
     role: "Cofounder, OZiva",
     companyName: "OZiva",
-    image: "/images/Testimonials/Aarti Gill.png",
+    image: "/images/herosection/Aarti Gill 2.png",
     text: "\u201CWhen I first met Kunal, I wasn\u2019t even considering raising equity capital \u2014 but that one conversation completely changed my perspective. Partnering with Titan Capital was one of the best decisions we made at OZiva.\u201D",
+    imageScaleFactor: 1.3,
+    imagePositionX: -30,
+    imagePositionY: 5,
   },
   {
     name: "Anand Yadav",
     role: "Cofounder, Mekr",
     companyName: "Mekr",
-    image: "/images/Testimonials/Anand_yadav.png",
+    image: "/images/herosection/image 177.png",
     text: "\u201CTitan Capital was among the first to believe in what we were building at Mekr and backed us when it mattered most. Their founder-first mindset makes them the kind of partner every founder hopes to have.\u201D",
+    imageScaleFactor: 1.2,
+    imagePositionX: -20,
+    imagePositionY: 40,
   },
 ];
 
@@ -231,18 +252,26 @@ function FlipCard({ item }: { item: TestimonialItem }) {
                 same start (top) and end (block bottom) line, so faces are never
                 cropped out of frame regardless of the source photo's aspect
                 ratio (e.g. Zouk's taller portrait no longer runs off the top). */}
-            <div className="relative" style={{ height: "74%" }}>
-              <Image
-                src={cdnImageSrc(item.image || "", 800)}
-                alt={item.name}
-                fill
-                sizes="(max-width: 1440px) 33vw, 500px"
+            <div className="relative" style={{ height: "74%", overflow: "hidden" }}>
+              <div
+                className="absolute inset-0"
                 style={{
-                  objectFit: "cover",
-                  objectPosition: "top center",
-                  filter: "grayscale(1)",
+                  transform: `translate(${item.imagePositionX ?? 0}px, ${item.imagePositionY ?? 0}px) scale(${item.imageScaleFactor ?? 1})`,
+                  transformOrigin: "center center",
                 }}
-              />
+              >
+                {/* @ts-ignore */}
+                <img
+                  src={cdnImageSrc(item.image || "", 800)}
+                  alt={item.name}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "scale-down",
+                    filter: "grayscale(1)",
+                  }}
+                />
+              </div>
             </div>
           </div>
 

@@ -16,6 +16,9 @@ export const foundersTestimonialQuery = groq`
       role,
       text,
       longText,
+      imageScaleFactor,
+      imagePositionX,
+      imagePositionY,
       "image": image.asset->url,
       "companyLogo": companyLogo.asset->url
     }

@@ -79,6 +79,28 @@ export const foundersTestimonial = defineType({
               type: "boolean",
               initialValue: false,
             }),
+            defineField({
+              name: "imageScaleFactor",
+              title: "Image Scale Factor",
+              description: "Photo scale in the card. 0.5 = 50% smaller (zoomed out), 1 = normal, 1.5 = 50% larger (zoomed in). Use <1 to show more of the photo.",
+              type: "number",
+              validation: (r) => r.min(0.5).max(2.0),
+              initialValue: 1,
+            }),
+            defineField({
+              name: "imagePositionX",
+              title: "Horizontal Offset (%)",
+              description: "Shift photo left/right. 0 = center, 20 = 20% right, -20 = 20% left.",
+              type: "number",
+              initialValue: 50,
+            }),
+            defineField({
+              name: "imagePositionY",
+              title: "Vertical Offset (%)",
+              description: "Shift photo up/down. 0 = top, 50 = center, 100 = bottom.",
+              type: "number",
+              initialValue: 0,
+            }),
           ],
           preview: {
             select: { title: "name", subtitle: "role", media: "image" },
