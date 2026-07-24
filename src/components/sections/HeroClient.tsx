@@ -255,25 +255,26 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   const progress = useMotionValue(0);
   const [stage, setStage] = useState<"slideshow" | "animate">("slideshow");
 
-  const [slideIndex, setSlideIndex] = useState(heroIndex);
+  // Filter out logo founders for slideshow - only show founder photos
+  const slideshowFounders = founders.filter(f => !f.isLogo);
+  const [slideIndex, setSlideIndex] = useState(0);
 
   useEffect(() => {
     if (stage !== "slideshow" || !ready) return;
     let count = 0;
-    const totalTicks = founders.length * 2;
+    const totalTicks = slideshowFounders.length * 2;
     const id = setInterval(() => {
       count += 1;
       if (count >= totalTicks) {
-        // End on the hero card so slideshow matches the flying hero card
-        setSlideIndex(heroIndex);
+        setSlideIndex(0);
         clearInterval(id);
         setTimeout(() => setStage("animate"), 300);
       } else {
-        setSlideIndex(heroIndex + count);
+        setSlideIndex(count % slideshowFounders.length);
       }
     }, 200);
     return () => clearInterval(id);
-  }, [stage, ready, founders.length, heroIndex]);
+  }, [stage, ready, slideshowFounders.length]);
 
   useEffect(() => {
     if (stage !== "animate") return;
@@ -322,20 +323,29 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
   const subtitleBottomOpacity = useTransform(
     progress,
-    [0.25, 0.32, 0.94, 0.98],
+    [0.18, 0.24, 0.78, 0.84],
     [1, 0, 0, 1]
   );
 
-  const headingOpacity = useTransform(progress, [0.90, 0.96], [0, 1]);
+  const headingOpacity = useTransform(progress, [0.72, 0.80], [0, 1]);
 
   const [headingReady, setHeadingReady] = useState(false);
   const [headingTick, setHeadingTick] = useState(0);
-  const headingFounder = founders[(heroIndex + headingTick) % founders.length];
+  
+  // Logo founder (appears only once at start)
+  const logoFounder = founders.find(f => f.isLogo);
+  // Non-logo founders for rotation (after logo has shown)
+  const nonLogoFounders = founders.filter(f => !f.isLogo);
+  
+  // First tick shows logo, subsequent ticks cycle through non-logo founders
+  const headingFounder = headingTick === 0 && logoFounder 
+    ? logoFounder 
+    : nonLogoFounders[(headingTick - 1) % nonLogoFounders.length];
 
   useEffect(() => {
     const unsub = progress.on("change", (v) => {
-      if (v >= 0.95 && !headingReady) setHeadingReady(true);
-      const hideNav = v >= 0.35 && v < 0.90;
+      if (v >= 0.80 && !headingReady) setHeadingReady(true);
+      const hideNav = v >= 0.28 && v < 0.75;
       document.body.classList.toggle("hero-hide-nav", hideNav);
     });
     return () => {
@@ -403,20 +413,19 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                   style={{ zIndex: slideIndex, background: CARD_BG }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  // CHANGED: Snappy crossfade logic to fix glitching
                   exit={{ opacity: 0, transition: { duration: 0 } }} 
                   transition={{ duration: 0.1, ease: "easeOut" }}
                 >
                   <Image
-                    src={heroImageSrc(founders[slideIndex % founders.length].image, 600)}
-                    alt={founders[slideIndex % founders.length].name}
+                    src={heroImageSrc(slideshowFounders[slideIndex % slideshowFounders.length].image, 600)}
+                    alt={slideshowFounders[slideIndex % slideshowFounders.length].name}
                     fill
                     sizes="(max-width: 768px) 50vw, 25vw"
                     priority
                     style={{
                       ...IMG_STYLE,
-                      objectFit: founders[slideIndex % founders.length].isLogo ? "contain" : "cover",
-                      filter: founders[slideIndex % founders.length].isLogo ? "none" : "grayscale(0.9)",
+                      objectFit: "cover",
+                      filter: "grayscale(0.9)",
                     }}
                   />
                 </motion.div>
@@ -718,14 +727,14 @@ function FounderCard({
   const stagger = index * 0.015;
   const invertedStagger = ((total - 1) - index) * 0.015;
 
-  const dealStart = 0.05 + stagger;
-  const dealEnd = 0.20 + stagger;
-  const openStart = 0.40 + invertedStagger; 
-  const openEnd = 0.65 + invertedStagger;
+  const dealStart = 0.03 + stagger;
+  const dealEnd = 0.15 + stagger;
+  const openStart = 0.28 + invertedStagger; 
+  const openEnd = 0.50 + invertedStagger;
 
   /* The hero flies forward strictly in this window */
-  const flightStart = 0.82;
-  const flightEnd = 0.96;
+  const flightStart = 0.65;
+  const flightEnd = 0.82;
 
   const y = useTransform(
     progress,
@@ -774,7 +783,7 @@ function FounderCard({
 
   const opacity = useTransform(
     progress,
-    isHero ? [0.97, 1] : [0.92, 0.96],
+    isHero ? [0.82, 0.85] : [0.60, 0.68],
     [1, 0]
   );
 

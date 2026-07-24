@@ -4,35 +4,23 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { motion, useScroll, useTransform, cubicBezier } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────
-   HeroBackedBg — cappen.com-style staged background transition
-   across Hero → Backed Before → How We Show Up.
-
-   Timing (all off the raw window scroll, in viewport-height units):
-
-     1. The hero fades OUT (briefly pinned) while the background eases
-        navy → WHITE. Backed Before + How We Show Up rise and fade in
-        together, timed so that by the moment WHITE is fully in they
-        already cover ~70% of the screen height (they don't lag behind
-        an empty white screen).
-     2. AFTER everything has arrived, How We Show Up eases white →
-        BEIGE (a beige layer scoped to How We Show Up only), while
-        Backed Before stays on WHITE.
-
-   The navy→white surface is two stacked full-zone layers (navy base +
-   white) crossfaded by opacity; the beige is a separate layer behind
-   How We Show Up alone. Driving everything off raw scroll (mapped to
-   vh fractions + measured element Ys) is guaranteed monotonic — a
-   target+offset useScroll on a sticky child fought Lenis and glitched.
+   HeroBackedBg — Fluent scroll with pause on Backed Before
+   
+   1. Hero smoothly fades on scroll (no pause in hero)
+   2. Backed Before + How We Show Up rise up
+   3. PAUSE: content stays visible for 1-2 scrolls
+   4. Then scroll continues normally
    ───────────────────────────────────────────────────────── */
 
-const NAVY = "#000c22"; // matches the hero's original background
+const NAVY = "#000c22";
 const WHITE = "#ffffff";
-const BEIGE = "#FBF7F0"; // matches How We Show Up's own background
+const BEIGE = "#FBF7F0";
 
-/* Hero pin-track height. The extra over 100vh (here 20vh) is the pinned
-   dwell over which the hero fades out; kept short so the content group
-   rises into view promptly (see the 70%-by-white-in requirement). */
-const HERO_TRACK_VH = 120;
+/* Scroll track for hero: just enough for smooth fade, no pause */
+const HERO_TRACK_VH = 100;
+
+/* Extra scroll height AFTER Backed Before appears - this creates the pause */
+const CONTENT_DWELL_VH = 150;
 
 export default function HeroBackedBg({
   hero,
@@ -46,12 +34,11 @@ export default function HeroBackedBg({
   const { scrollY } = useScroll();
   const [vh, setVh] = useState(800);
 
-  /* Measured doc-Y of the content group top (Backed Before) and the
-     Backed Before ↔ How We Show Up seam. */
   const groupRef = useRef<HTMLDivElement>(null);
   const seamRef = useRef<HTMLDivElement>(null);
   const [groupY, setGroupY] = useState((HERO_TRACK_VH / 100) * 800);
   const [seamY, setSeamY] = useState((HERO_TRACK_VH / 100) * 800 + 300);
+
   useEffect(() => {
     const measure = () => {
       setVh(window.innerHeight);
@@ -74,42 +61,51 @@ export default function HeroBackedBg({
     };
   }, []);
 
-  /* Hero fades out (pinned) → navy→white. White finishes at 0.9 vh; the
-     content group top is at HERO_TRACK_VH (120vh), so at scroll 0.9 vh it
-     sits at viewport y = 120vh − 90vh = 0.3 vh from the top → it already
-     covers the lower 70% of the screen. */
-  /* Premium heading fade: as you start scrolling, the hero eases out
-     (opacity + a subtle recede) over a gentle, longer range — a smooth
-     animated fade that lasts until the section below is rising in, rather
-     than an abrupt cut. Eased so it never feels linear/glitchy. */
-  const HERO_EASE = cubicBezier(0.4, 0, 0.2, 1);
-  const heroOpacity = useTransform(scrollY, [0.0, 0.3 * vh], [1, 0], {
-    ease: HERO_EASE,
-  });
-  const heroScale = useTransform(scrollY, [0.0, 0.3 * vh], [1, 0.965], {
-    ease: HERO_EASE,
-  });
-  const whiteOpacity = useTransform(scrollY, [0.35 * vh, 0.9 * vh], [0, 1]);
-
-  /* Backed Before + How We Show Up fade in together as the group rises —
-     fully opaque well before white finishes, so they're solid at 70%. */
-  const contentOpacity = useTransform(
+  /* SMOOTH EASE for all transitions */
+  const SMOOTH_EASE = cubicBezier(0.4, 0, 0.2, 1);
+  
+  /* Hero fades smoothly on scroll - no pause, just fluid transition */
+  const heroOpacity = useTransform(
     scrollY,
-    [groupY - 1.0 * vh, groupY - 0.55 * vh],
-    [0, 1],
+    [0, 0.6 * vh],
+    [1, 0],
+    { ease: SMOOTH_EASE }
+  );
+  
+  const heroScale = useTransform(
+    scrollY,
+    [0, 0.5 * vh],
+    [1, 0.96],
+    { ease: SMOOTH_EASE }
   );
 
-  /* AFTER arrival: white → beige, scoped to How We Show Up only (Backed
-     Before, above the seam, keeps the white backdrop). */
+  /* Background: navy → white synced with hero fade */
+  const whiteOpacity = useTransform(
+    scrollY,
+    [0.2 * vh, 0.8 * vh],
+    [0, 1],
+    { ease: SMOOTH_EASE }
+  );
+
+  /* Content fades in smoothly as hero fades out */
+  const contentOpacity = useTransform(
+    scrollY,
+    [groupY - 0.8 * vh, groupY - 0.2 * vh],
+    [0, 1],
+    { ease: SMOOTH_EASE }
+  );
+
+  /* Beige transition for How We Show Up section */
   const beigeOpacity = useTransform(
     scrollY,
-    [seamY - 0.6 * vh, seamY + 0.05 * vh],
+    [seamY - 0.5 * vh, seamY + 0.1 * vh],
     [0, 1],
+    { ease: SMOOTH_EASE }
   );
 
   return (
     <div className="relative">
-      {/* ── navy base + white (full-zone) ── */}
+      {/* Background layers */}
       <div className="pointer-events-none absolute inset-0 z-0" aria-hidden>
         <div className="absolute inset-0" style={{ background: NAVY }} />
         <motion.div
@@ -118,9 +114,9 @@ export default function HeroBackedBg({
         />
       </div>
 
-      {/* ── Content (transparent) on top ── */}
+      {/* Content */}
       <div className="relative z-[1]">
-        {/* Hero pin — content fades out while briefly pinned. */}
+        {/* Hero section - pinned, smooth fade, no pause */}
         <div style={{ height: `${HERO_TRACK_VH}vh` }}>
           <div className="sticky top-0 h-screen overflow-hidden">
             <motion.div
@@ -132,12 +128,10 @@ export default function HeroBackedBg({
           </div>
         </div>
 
-        {/* Backed Before + How We Show Up — one group, fade in together. */}
+        {/* Backed Before + How We Show Up with dwell/pause after they appear */}
         <motion.div ref={groupRef} style={{ opacity: contentOpacity }}>
           {backed}
           <div ref={seamRef} aria-hidden />
-          {/* How We Show Up carries its OWN beige layer, so only it turns
-              beige — Backed Before stays white. */}
           <div className="relative">
             <motion.div
               className="pointer-events-none absolute inset-0"
@@ -146,6 +140,8 @@ export default function HeroBackedBg({
             />
             <div className="relative">{howWeShow}</div>
           </div>
+          {/* DWELL SPACER: creates 1-2 scroll pause after content appears */}
+          <div aria-hidden style={{ height: `${CONTENT_DWELL_VH}vh` }} />
         </motion.div>
       </div>
     </div>
