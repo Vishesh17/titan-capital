@@ -80,8 +80,8 @@ const BORDER_PADDING = "calc(var(--section-px-wide) * 0.2)";
 
 // Impact section specific tokens - more spread out cells
 const IMPACT_CELL_PADDING = "calc(var(--section-px-wide) * 0.01)";
-const IMPACT_COL_GAP = "calc(var(--section-px-wide) * 2)"
-const IMPACT_ROW_GAP = "calc(var(--section-px-wide) * 0.8)";
+const IMPACT_COL_GAP = "calc(var(--section-px-wide) * 1.4)"
+const IMPACT_ROW_GAP = "calc(var(--section-px-wide) * 0.9)";
 
 function cdnImageSrc(url: string, width: number): string {
   if (url.startsWith("https://cdn.sanity.io/")) {
