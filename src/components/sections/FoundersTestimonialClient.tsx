@@ -500,18 +500,19 @@ export default function FoundersTestimonialClient({
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
         >
+          {/* First heading: You Build the Vision. */}
           <motion.h2
             className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px]"
             style={{
-              fontSize: "min(4.51vw, 6.98vh)" /* 78 px @ ref — bigger */,
+              fontSize: "min(4.51vw, 6.98vh)",
               lineHeight: "130%",
             }}
             variants={{
-              hidden: { opacity: 0, y: 30 },
+              hidden: { opacity: 0, x: -50 },
               visible: {
                 opacity: 1,
-                y: 0,
-                transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+                x: 0,
+                transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
               },
             }}
           >
@@ -525,28 +526,29 @@ export default function FoundersTestimonialClient({
                   hidden: { scaleX: 0 },
                   visible: {
                     scaleX: 1,
-                    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.55 },
+                    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.8 },
                   },
                 }}
               />
-              <span className="relative">Vision.</span>
+              <TypingText text="Vision." delay={1.4} />
             </span>
           </motion.h2>
+          {/* Second heading: We Help You Scale It. */}
           <motion.h2
             className="m-0 mt-[min(0.58vw,0.90vh)] text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px]"
             style={{
-              fontSize: "min(4.51vw, 6.98vh)" /* 78 px @ ref — bigger */,
+              fontSize: "min(4.51vw, 6.98vh)",
               lineHeight: "130%",
             }}
             variants={{
-              hidden: { opacity: 0, y: 30 },
+              hidden: { opacity: 0, x: 50 },
               visible: {
                 opacity: 1,
-                y: 0,
+                x: 0,
                 transition: {
-                  duration: 0.6,
+                  duration: 0.8,
                   ease: [0.22, 1, 0.36, 1],
-                  delay: 0.15,
+                  delay: 0.2,
                 },
               },
             }}
@@ -558,6 +560,68 @@ export default function FoundersTestimonialClient({
         <CursorFillButtonTestimonial href="/getinvestment" label={ctaLabel} />
       </div>
     </section>
+  );
+}
+
+/* ─── Typing Text Animation ─── */
+function TypingText({ text, delay = 0 }: { text: string; delay?: number }) {
+  const [displayedText, setDisplayedText] = useState("");
+  const [started, setStarted] = useState(false);
+  const [cursorVisible, setCursorVisible] = useState(true);
+
+  useEffect(() => {
+    const startTimer = setTimeout(() => setStarted(true), delay * 1000);
+    return () => clearTimeout(startTimer);
+  }, [delay]);
+
+  useEffect(() => {
+    if (!started) return;
+    
+    let index = 0;
+    let timeoutId: NodeJS.Timeout;
+    
+    const typeNext = () => {
+      if (index <= text.length) {
+        setDisplayedText(text.slice(0, index));
+        index++;
+        timeoutId = setTimeout(typeNext, 150); // Slower typing speed
+      } else {
+        // Wait 2 seconds then restart
+        timeoutId = setTimeout(() => {
+          index = 0;
+          setDisplayedText("");
+          timeoutId = setTimeout(typeNext, 150);
+        }, 2000);
+      }
+    };
+    
+    timeoutId = setTimeout(typeNext, 150);
+    return () => clearTimeout(timeoutId);
+  }, [started, text]);
+
+  // Cursor blink
+  useEffect(() => {
+    const blinkInterval = setInterval(() => {
+      setCursorVisible((v) => !v);
+    }, 530);
+    return () => clearInterval(blinkInterval);
+  }, []);
+
+  return (
+    <span className="relative inline-block">
+      <span className="relative">{displayedText}</span>
+      <span
+        style={{
+          display: "inline-block",
+          width: "3px",
+          height: "0.9em",
+          background: "black",
+          marginLeft: "1px",
+          verticalAlign: "baseline",
+          opacity: cursorVisible ? 1 : 0,
+        }}
+      />
+    </span>
   );
 }
 
