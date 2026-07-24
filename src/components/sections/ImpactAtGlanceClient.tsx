@@ -322,136 +322,115 @@ function StoryArrow() {
    attribution) fades up from the bottom-left. All type sizes are
    the exact Figma spec as min(vw,vh) off the 1728×1117 reference.
    ───────────────────────────────────────────────────────── */
-function StoryCard({ story }: { story: FounderStory }) {
-  const [hovered, setHovered] = useState(false);
-  const company = deriveCompany(story);
-
-  return (
-    <motion.div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className="group relative w-full cursor-pointer overflow-hidden"
-      style={{
-        borderRadius: "2px",
-        /* 16:9 landscape — the story photos are 1878×1056 (exactly 16:9),
-           so this ratio shows the FULL photo with zero cover-cropping and
-           keeps the cards visibly shorter than the old near-square boxes. */
-        aspectRatio: "16 / 9",
-      }}
-      variants={{
-        hidden: { opacity: 0, y: 30 },
-        visible: {
-          opacity: 1,
-          y: 0,
-          transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.4 },
-        },
-      }}
-    >
-      {/* Background image */}
-      <Image
-        src={cdnImageSrc(story.image, 900)}
-        alt={story.name}
-        fill
-        sizes="(max-width: 768px) 100vw, 50vw"
-        /* 
-           THE FIX: Added `scale-[1.03]` as the default. 
-           This scales the image up by 3%, pushing any baked-in 8px corners 
-           off the screen so the 2px wrapper can clip it perfectly.
-        */
-        className="object-cover object-top transition-transform duration-700 scale-[1.03] group-hover:scale-[1.08]"
-      />
-
-      {/* Gradient overlay — transparent top → dark bottom, so the logo /
-          quote stay legible. Plain `normal` blend (NOT mix-blend-mode):
-          a blend mode forces the card to re-composite against everything
-          behind it on every scroll frame, and these 4 cards sit over the
-          STICKY Impact section whose backdrop is always moving — that was
-          a real scroll-jank source. This straight alpha gradient looks the
-          same but composites as a cheap cached layer. */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(21, 21, 21, 0.00) 0%, rgba(21, 21, 21, 0.82) 82%)",
-        }}
-        aria-hidden
-      />
-
-      {/* Up-right arrow, fades in on hover */}
+   function StoryCard({ story }: { story: FounderStory }) {
+    const [hovered, setHovered] = useState(false);
+    const company = deriveCompany(story);
+  
+    return (
       <motion.div
-        className="absolute z-10"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        className="group relative w-full cursor-pointer overflow-hidden"
         style={{
-          top: "min(1.85vw, 2.86vh)" /* ~32 px @ ref */,
-          right: "min(1.85vw, 2.86vh)",
+          borderRadius: "2px",
+          /* Updated to 1:1 for the perfect square grid */
+          aspectRatio: "1 / 1",
         }}
-        initial={false}
-        animate={{ opacity: hovered ? 1 : 0 }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        variants={{
+          hidden: { opacity: 0, y: 30 },
+          visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.4 },
+          },
+        }}
       >
-        <StoryArrow />
-      </motion.div>
-
-    {/* CLOSED state — logo pinned to the BOTTOM-LEFT corner. */}
-    <motion.div
-        className="pointer-events-none absolute z-10"
-        style={{
-          // 1. Keep the exact left alignment
-          left: "min(1.85vw, 2.86vh)", 
+        {/* Background image */}
+        <Image
+          src={cdnImageSrc(story.image, 900)}
+          alt={story.name}
+          fill
+          sizes="(max-width: 768px) 100vw, 33vw" // Adjusted for 3 cols
+          className="object-cover object-top transition-transform duration-700 scale-[1.03] group-hover:scale-[1.08]"
+        />
+  
+        {/* Gradient overlay */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(21, 21, 21, 0.00) 0%, rgba(21, 21, 21, 0.82) 82%)",
+          }}
+          aria-hidden
+        />
+  
+        {/* Up-right arrow, fades in on hover */}
+        <motion.div
+          className="absolute z-10"
+          style={{
+            top: "min(1.85vw, 2.86vh)" /* ~32 px @ ref */,
+            right: "min(1.85vw, 2.86vh)",
+          }}
+          initial={false}
+          animate={{ opacity: hovered ? 1 : 0 }}
+          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <StoryArrow />
+        </motion.div>
+  
+        {/* CLOSED state — logo pinned to the BOTTOM-LEFT corner. */}
+        <motion.div
+          className="pointer-events-none absolute z-10"
+          style={{
+            left: "min(1.85vw, 2.86vh)", 
+            bottom: 0, 
+            transform: "translateY(25px)", 
+          }}
+          initial={false}
+          animate={{ opacity: hovered ? 0 : 1 }}
+          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <CardLogo story={story} company={company} origin="left bottom" />
+        </motion.div>
+  
+        {/* OPEN state — full content */}
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 z-10 flex flex-col items-start text-white"
+          style={{ padding: "min(1.85vw, 2.86vh)" /* ~32 px @ ref */ }}
+          initial={false}
+          animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 14 }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <CardLogo story={story} company={company} origin="left bottom" />
           
-          // 2. Anchor to the absolute bottom
-          bottom: 0, 
-
-          // 3. THE FIX: Physically drag the logo down by 15 pixels to hide the image's baked-in transparency.
-          // TWEAK THIS NUMBER: If it's still too high, increase it to 20px or 25px. 
-          // If it cuts off the logo, decrease it to 10px.
-          transform: "translateY(25px)", 
-        }}
-        initial={false}
-        animate={{ opacity: hovered ? 0 : 1 }}
-        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <CardLogo story={story} company={company} origin="left bottom" />
+          <div style={{ paddingTop: 0, marginTop: "-28px" }}>
+            <QuoteMarkIcon />
+            <p
+              className="m-0 font-['Poppins',_sans-serif] font-medium text-white max-md:!text-[14px]"
+              style={{
+                fontSize: "min(1.39vw, 2.15vh)",
+                lineHeight: "150%",
+                maxWidth: "min(33.22vw, 51.39vh)",
+                marginTop: "min(0.70vw, 1.07vh)",
+              }}
+            >
+              {story.text}
+            </p>
+            <p
+              className="m-0 font-['Poppins',_sans-serif] font-medium text-white max-md:!text-[11px]"
+              style={{
+                fontSize: "min(0.81vw, 1.25vh)",
+                lineHeight: "150%",
+                marginTop: "min(0.93vw, 1.43vh)",
+              }}
+            >
+              — {story.name}, {story.role}
+            </p>
+          </div>
+        </motion.div>
       </motion.div>
-      {/* OPEN state — full content (logo + quote-mark + pull-quote +
-          attribution) at the bottom-left, fades up on hover. */}
-      <motion.div
-        className="absolute bottom-0 left-0 right-0 z-10 flex flex-col items-start text-white"
-        style={{ padding: "min(1.85vw, 2.86vh)" /* ~32 px @ ref */ }}
-        initial={false}
-        animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 14 }}
-        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <CardLogo story={story} company={company} origin="left bottom" />
-        <div style={{ paddingTop: "min(0.93vw, 1.43vh)" /* ~16 px */ }}>
-          <QuoteMarkIcon />
-          {/* Description (Poppins 24 / 500 / 150% / #FFF, width 574) */}
-          <p
-            className="m-0 font-['Poppins',_sans-serif] font-medium text-white max-md:!text-[14px]"
-            style={{
-              fontSize: "min(1.39vw, 2.15vh)" /* 24 px @ ref */,
-              lineHeight: "150%",
-              maxWidth: "min(33.22vw, 51.39vh)" /* 574 px @ ref */,
-              marginTop: "min(0.70vw, 1.07vh)" /* ~12 px */,
-            }}
-          >
-            {story.text}
-          </p>
-          {/* Founder attribution (Poppins 14 / 500 / 150% / #FFF) */}
-          <p
-            className="m-0 font-['Poppins',_sans-serif] font-medium text-white max-md:!text-[11px]"
-            style={{
-              fontSize: "min(0.81vw, 1.25vh)" /* 14 px @ ref */,
-              lineHeight: "150%",
-              marginTop: "min(0.93vw, 1.43vh)" /* ~16 px */,
-            }}
-          >
-            — {story.name}, {story.role}
-          </p>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
+    );
+  }
 /* ─────────────────────────────────────────────────────────
    SeeMoreButton — Size & Typography perfectly synced to 
    the NavCursorFillButton (Get Investment) component.
@@ -535,7 +514,14 @@ function StoryCard({ story }: { story: FounderStory }) {
    pictures is 3x/4 — so the vertical rule, centred in the gap, sits at
    3x/8 from each picture. The tight gap + full-bleed grid (no max-width
    cap) makes the photos span the whole screen between the gutters. */
+/* Column/row gap of the Their Stories grid. */
+/* Column/row gap of the Their Stories grid. */
 const STORY_GAP = "calc(var(--section-px-wide) * 0.75)";
+
+/* To make the distance from the image to the outer border exactly equal 
+   to the distance from the image to the center lines, the outer padding 
+   must be exactly half of the STORY_GAP. */
+const BORDER_PADDING = "calc(var(--section-px-wide) * 0.375)";
 
 /* Pad the stories array up to N slots by cycling the input.
    Design needs exactly 4 cards; if the CMS has fewer, we
@@ -549,15 +535,8 @@ function padStories(stories: FounderStory[], count: number): FounderStory[] {
   return result;
 }
 
-/* ─────────────────────────────────────────────────────────
-   StoriesSection — full-width, opaque-white card that flows
-   naturally after Impact. Because Impact is sticky, Impact
-   stays pinned while this section scrolls UP into view over
-   it (covering it from bottom to top). Scroll up reverses.
-   Only the top corners are rounded (115 px) so the reveal
-   looks like a sheet sliding over the section behind it.
-   No scroll-linked JS — the sticky parent does the work.
-   ───────────────────────────────────────────────────────── */
+import { useSpring } from "framer-motion";
+
 function StoriesSection({
   storiesHeadingFirst,
   storiesHeadingSecond,
@@ -569,43 +548,33 @@ function StoriesSection({
   ctaLabel: string;
   slides: FounderStory[];
 }) {
-  /* SCROLL-LINKED rules — the centre vertical + horizontal lines draw in
-     lockstep with the user's scroll through the grid (and retract when
-     scrolling back up), instead of a one-shot in-view trigger. */
   const gridRef = useRef<HTMLDivElement>(null);
+  
+  /* SCROLL-LINKED rules: 
+     By setting a tight offset (start 0.85 to start 0.45), the scroll progress 
+     hits 100% very quickly. We pass it through a spring so it glides to the 
+     finish line, giving it that "automatic" feel. Reversing the scroll naturally 
+     pulls the spring backwards in the exact same fluid motion. */
   const { scrollYProgress } = useScroll({
     target: gridRef,
-    /* 0 when the grid's top reaches 85% of the viewport (just entering);
-       1 only when its bottom reaches 60% — so the lines keep drawing across
-       the ENTIRE scroll through both card rows, in lockstep with the user. */
-    offset: ["start 0.85", "end 0.6"],
+    offset: ["start 0.85", "start 0.45"],
   });
-  /* The vertical rule draws across the FULL scroll range (never finishes
-     early); horizontals join from ~a quarter in. Both scrub forward AND
-     backward with the scroll. */
-  const vRuleScale = useTransform(scrollYProgress, [0, 1], [0, 1]);
-  const hRuleScale = useTransform(scrollYProgress, [0.25, 1], [0, 1]);
+  
+  const smoothProgress = useSpring(scrollYProgress, { stiffness: 120, damping: 25 });
+  
+  const vRuleScale = useTransform(smoothProgress, [0, 1], [0, 1]);
+  const hRuleScale = useTransform(smoothProgress, [0, 1], [0, 1]);
 
   return (
     <section
       className="relative w-full"
       style={{
         background: "#FFF",
-        /* All four corners rounded — Stories is a floating card. The
-           rounded TOP reveals the cream Impact section behind (Impact
-           is sticky, sits under Stories via z-index). The rounded
-           BOTTOM reveals the navy Indicorns section behind — but only
-           because we pull Indicorns up under Stories via the negative
-           marginBottom below. Without that overlap, the bottom
-           corners would just show the wrapper's own bg-white and the
-           radius would be invisible. */
-        borderRadius: "min(4.44vw, 7.30vh)" /* 115 px @ ref, all corners */,
-        /* Overlap the next section (Indicorns) by exactly the corner
-           radius, so the bottom-corner cutouts sit ON TOP of navy. */
-        marginBottom: "min(-6.66vw, -10.30vh)" /* -115 px @ ref */,
+        borderRadius: "min(4.44vw, 7.30vh)",
+        marginBottom: "min(-6.66vw, -10.30vh)",
         overflow: "hidden",
         zIndex: 10,
-        paddingTop: "min(5.79vw, 8.95vh)" /* ~100 px @ ref */,
+        paddingTop: "min(5.79vw, 8.95vh)",
         paddingBottom: "min(5.79vw, 8.95vh)",
         paddingLeft: "var(--section-px-wide)",
         paddingRight: "var(--section-px-wide)",
@@ -619,13 +588,11 @@ function StoriesSection({
         variants={{
           hidden: {},
           visible: {
-            /* Their Stories reveal is deliberately delayed so it lands
-               after the section settles (per request). */
             transition: { staggerChildren: 0.18, delayChildren: 0.45 },
           },
         }}
       >
-        {/* HEADING — Their Stories / Our Credentials (78 px Poppins 400) */}
+        {/* HEADING */}
         <motion.div
           variants={{
             hidden: { opacity: 0, y: 40 },
@@ -636,93 +603,114 @@ function StoriesSection({
             },
           }}
           className="flex flex-col items-center"
-          style={{ marginBottom: "min(3.47vw, 5.37vh)" /* ~60 px */ }}
+          style={{ marginBottom: "min(3.47vw, 5.37vh)" }}
         >
           <h2
             className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px] max-md:!leading-[120%]"
-            style={{
-              fontSize: "min(4.51vw, 6.98vh)" /* 78 px @ ref */,
-              lineHeight: "150%",
-            }}
+            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
           >
             {storiesHeadingFirst}
           </h2>
           <h2
             className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px] max-md:!leading-[120%]"
-            style={{
-              fontSize: "min(4.51vw, 6.98vh)" /* 78 px @ ref */,
-              lineHeight: "150%",
-            }}
+            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
           >
             {storiesHeadingSecond}
           </h2>
         </motion.div>
 
-        {/* 2×2 grid on desktop, 1×4 on mobile */}
-        {/* No max-width cap — the grid spans the full width between the
-            site gutters so the photos cover the screen. */}
-        <div ref={gridRef} className="relative w-full">
+        {/* 3×1 Grid container with dynamic CSS variable for perfect border alignment */}
+        <div 
+          ref={gridRef} 
+          className="relative w-full"
+          style={{ 
+            padding: BORDER_PADDING,
+            "--bp": BORDER_PADDING 
+          } as React.CSSProperties}
+        >
           <div
-            className="grid w-full grid-cols-2 max-md:!grid-cols-1"
+            className="grid w-full grid-cols-3 max-md:!grid-cols-1"
             style={{ gap: STORY_GAP }}
           >
-            {padStories(slides, 4).map((story, i) => (
+            {padStories(slides, 3).map((story, i) => (
               <StoryCard key={`${story.name}-${i}`} story={story} />
             ))}
           </div>
 
-          {/* VERTICAL rule — down the centre column gap. SCROLL-LINKED:
-              draws top→bottom as you scroll into the grid, and retracts
-              when you scroll back up (scaleY scrubbed by scroll). */}
+         {/* =========================================
+              ANIMATED BORDERS (Desktop Only)
+              Since STORY_GAP is exactly 2 * BORDER_PADDING, each column 
+              logically occupies exactly 33.3333% of the container width. 
+              We map over the 3 columns to generate separate horizontal 
+              lines so they scale from their individual centers.
+              ========================================= */}
+          
+          {/* 1. TOP HORIZONTAL BORDERS (Separated per square) */}
+          {[0, 1, 2].map((i) => (
+            <motion.div
+              key={`top-rule-${i}`}
+              aria-hidden
+              className="pointer-events-none absolute max-md:!hidden z-20"
+              style={{
+                top: 0,
+                left: `calc(${i * 33.3333}% + var(--bp))`,
+                width: "calc(33.3333% - 2 * var(--bp))",
+                height: "1px",
+                background: "#D8D8D8",
+                transformOrigin: "center",
+                scaleX: hRuleScale,
+              }}
+            />
+          ))}
+          
+          {/* 2. BOTTOM HORIZONTAL BORDERS (Separated per square) */}
+          {[0, 1, 2].map((i) => (
+            <motion.div
+              key={`bottom-rule-${i}`}
+              aria-hidden
+              className="pointer-events-none absolute max-md:!hidden z-20"
+              style={{
+                bottom: 0,
+                left: `calc(${i * 33.3333}% + var(--bp))`,
+                width: "calc(33.3333% - 2 * var(--bp))",
+                height: "1px",
+                background: "#D8D8D8",
+                transformOrigin: "center",
+                scaleX: hRuleScale,
+              }}
+            />
+          ))}
+
+          {/* 3. LEFT OUTER VERTICAL BORDER */}
           <motion.div
             aria-hidden
-            className="pointer-events-none absolute max-md:!hidden"
-            style={{
-              left: "50%",
-              marginLeft: "-0.5px",
-              top: 0,
-              bottom: 0,
-              width: 1,
-              background: "#D8D8D8",
-              transformOrigin: "top",
-              scaleY: vRuleScale,
-            }}
+            className="pointer-events-none absolute max-md:!hidden z-20"
+            style={{ top: "var(--bp)", left: 0, width: "1px", height: "calc(100% - 2 * var(--bp))", background: "#D8D8D8", transformOrigin: "center", scaleY: vRuleScale }}
           />
 
-          {/* HORIZONTAL rules — two segments across the centre row gap.
-              SCROLL-LINKED: draw outward from the centre slightly after
-              the vertical rule, scrubbed by the same scroll progress. */}
+          {/* 4. RIGHT OUTER VERTICAL BORDER */}
           <motion.div
             aria-hidden
-            className="pointer-events-none absolute max-md:!hidden"
-            style={{
-              left: 0,
-              top: "50%",
-              marginTop: "-0.5px",
-              width: `calc((100% - ${STORY_GAP}) / 2)`,
-              height: 1,
-              background: "#D8D8D8",
-              transformOrigin: "right",
-              scaleX: hRuleScale,
-            }}
+            className="pointer-events-none absolute max-md:!hidden z-20"
+            style={{ top: "var(--bp)", right: 0, width: "1px", height: "calc(100% - 2 * var(--bp))", background: "#D8D8D8", transformOrigin: "center", scaleY: vRuleScale }}
           />
+
+          {/* 5. INNER VERTICAL DIVIDER 1 */}
           <motion.div
             aria-hidden
-            className="pointer-events-none absolute max-md:!hidden"
-            style={{
-              right: 0,
-              top: "50%",
-              marginTop: "-0.5px",
-              width: `calc((100% - ${STORY_GAP}) / 2)`,
-              height: 1,
-              background: "#D8D8D8",
-              transformOrigin: "left",
-              scaleX: hRuleScale,
-            }}
+            className="pointer-events-none absolute max-md:!hidden z-20"
+            style={{ top: "var(--bp)", left: "33.3333%", marginLeft: "-0.5px", width: "1px", height: "calc(100% - 2 * var(--bp))", background: "#D8D8D8", transformOrigin: "center", scaleY: vRuleScale }}
+          />
+
+          {/* 6. INNER VERTICAL DIVIDER 2 */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute max-md:!hidden z-20"
+            style={{ top: "var(--bp)", left: "66.6666%", marginLeft: "-0.5px", width: "1px", height: "calc(100% - 2 * var(--bp))", background: "#D8D8D8", transformOrigin: "center", scaleY: vRuleScale }}
           />
         </div>
 
-        {/* See More button — circle → pill on hover */}
+        {/* See More button */}
         <motion.div
           variants={{
             hidden: { opacity: 0, y: 20 },
@@ -732,7 +720,7 @@ function StoriesSection({
               transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
             },
           }}
-          style={{ marginTop: "min(3.47vw, 5.37vh)" /* ~60 px */ }}
+          style={{ marginTop: "min(3.47vw, 5.37vh)" }}
         >
           <SeeMoreButton label={ctaLabel} />
         </motion.div>
@@ -740,8 +728,6 @@ function StoriesSection({
     </section>
   );
 }
-
-/* ── MAIN COMPONENT ── */
 export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceData | null }) {
   /* Per-field fallback so a partially-filled Sanity document still renders. */
   const impactHeadingFirst = data?.impactHeadingFirst || FALLBACK_IMPACT_HEADING_FIRST;

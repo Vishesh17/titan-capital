@@ -55,7 +55,7 @@ export interface IndicornSpotlightData {
 const FALLBACK_LOGOS: IndicornLogo[] = [
   { src: "/images/logos/ofbusiness_white.svg",          alt: "OfBusiness",  mode: "white",       scale: 1.0 },
   { src: "/images/logos/Razorpay.webp",                 alt: "Razorpay",    mode: "opaqueBg",    scale: 1.9 },
-  { src: "/images/portfolio_grid/unicommerce-logo.png", alt: "Unicommerce", mode: "transparent", scale: 1.8 },
+  { src: "/images/portfolio_grid/unicommerce-logo.png", alt: "Unicommerce", mode: "transparent", scale: 1.0 },
   { src: "/images/logos/Credgenics.svg",                alt: "Credgenics",  mode: "transparent", scale: 1.0 },
 ];
 
@@ -304,17 +304,18 @@ export default function IndicornSpotlightClient({
 
             {/* Portfolio Indicorns row */}
             <div
-              className="flex items-center max-md:!gap-[12px] max-md:!justify-center"
+              className="flex items-center max-md:!gap-[12px] max-md:!justify-center max-md:!mt-[24px]"
               style={{
                 gap: "min(2.87vw, 3.34vh)" /* ~15 px */,
-                marginTop: "min(2.16vw, 2.79vh)" /* ~20 px */,
+                /* MATCHED EXACTLY to the CTA button's top margin to create perfectly even spacing */
+                marginTop: "min(2.31vw, 3.58vh)", 
               }}
             >
               <span
                 className="font-['Poppins',_sans-serif] font-normal max-md:!text-[11px]"
                 style={{
                   color: "rgba(255,255,255,0.7)",
-                  fontSize: "min(1.39vw, 2.15vh)" /* ~14 px */,
+                  fontSize: "min(1.39vw, 2.15vh)",
                 }}
               >
                 {rotatingLogosLabel}
@@ -361,7 +362,7 @@ export default function IndicornSpotlightClient({
                     </div>
                   );
                 })}
-              </div>
+            </div>
             </div>
           </div>
         </div>

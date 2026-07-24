@@ -26,16 +26,7 @@ export interface WhatFoundersGetData {
   rows?: HowWeShowUpRow[];
 }
 
-/* ─────────────────────────────────────────────────────────
-   Sizing tokens — every value is derived from the 1728×1117
-   MacBook 14" Figma reference via `min(Xvw, Yvh)` so the
-   design looks identical (proportionally) at every laptop /
-   desktop viewport in public/multiview.html:
-       Xvw = px_at_ref / 1728 × 100
-       Yvh = px_at_ref / 1117 × 100
-   min(vw, vh) picks whichever axis is tighter so nothing
-   overflows on unusually tall or unusually wide viewports.
-   ───────────────────────────────────────────────────────── */
+
 const SZ = {
   // typography
   heading: "min(4.51vw, 6.98vh)",       // 78 px @ ref
@@ -44,30 +35,18 @@ const SZ = {
   desc: "min(1.62vw, 2.51vh)",          // 28 px @ ref
   rotTitle: "min(2.78vw, 4.30vh)",      // 48 px @ ref (opened, rotated spine — smaller)
   backLink: "min(1.51vw, 2.33vh)",      // 26 px @ ref
-  // Opened-card typography — pushed as large as still fits the shortest
-  // laptop height (see BgTransition sizing notes). The closed rows keep
-  // their own smaller subHeading/desc.
+
   oSubHeading: "min(1.85vw, 2.86vh)",   // 32 px @ ref (matches closed-row subHeading)
   oDesc: "min(1.62vw, 2.51vh)",         // 28 px @ ref (matches closed-row desc)
   oGap: "min(3.42vw, 5.28vh)",          // 59 px @ ref — opened-card block gap
   oPadY: "min(2.31vw, 3.58vh)",         // 40 px @ ref — opened-card top/bottom (modal, not a side gutter)
-  // container widths (width-only — layout dims)
-  /* Both dividers span the FULL row width now — so on the closed
-     list they extend all the way past the arrow, and on the
-     opened card they reach the right section padding. The old
-     fixed vw values (78.24 / 68.17) were narrower than the
-     section content area, leaving a visible gap on the right. */
+
   divider: "100%",
   openedDivider: "100%",
   descBox: "55vw",                      // 864 px @ ref (wider — description runs closer to the arrow)
   rowTitleBox: "22.57vw",               // 390 px @ ref
   openedContentBox: "65.22vw",          // 1127 px @ ref
-  // spacing
-  // NOTE: horizontal/vertical section padding now come from the
-  // sitewide CSS vars `--section-px-wide` and `--section-py` in
-  // globals.css. No per-file paddingX/paddingY tokens — the section
-  // wrapper and the FullPageCard both consume the vars directly so
-  // every page section gutters the same amount at every viewport.
+
   headingToDivider: "min(3.47vw, 5.37vh)", // 60 px @ ref
   rowPaddingY: "min(1.68vw, 2.60vh)",   // 29 px @ ref  — closed-row body padding (tightened a bit)
   rowInnerGap: "min(1.62vw, 2.51vh)",   // 28 px @ ref  — small internal gap (around HR margins)
@@ -82,8 +61,6 @@ const SZ = {
   openArrowH: "min(3.20vw, 4.92vh)",    // 55 px tall (after rotation)
 };
 
-/* Easing curve — matches the smooth, weighty feel of the
-   madeinmay.studio/approach entrance animations. */
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 /* ─────────────────────────────────────────────────────────
@@ -96,15 +73,6 @@ const sectionVariants: Variants = {
   },
 };
 
-/* ─────────────────────────────────────────────────────────
-   In-view divider — the horizontal 1 px line commits to a
-   full 0 → 100 % draw animation as soon as it enters the
-   viewport (regardless of scroll speed), and reverses back
-   to 0 % when it leaves the viewport on scroll-up. Not tied
-   to scroll position — a discrete enter / leave trigger, so
-   each line finishes its animation cleanly even if you fly
-   past it, and cleanly retracts if you scroll back above it.
-   ───────────────────────────────────────────────────────── */
 function InViewDivider({
   className,
   style,
@@ -114,9 +82,7 @@ function InViewDivider({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, {
-    // Element becomes "in view" only once its top has moved 15 %
-    // above the bottom of the viewport — avoids a twitchy trigger
-    // right at the fold. once: false so it reverses on scroll-up.
+
     margin: "0px 0px -15% 0px",
     once: false,
   });
@@ -133,13 +99,7 @@ function InViewDivider({
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   Row-hover rotating arrow — the closed → arrow slowly and
-   smoothly rotates to −35.229° (the ↗ orientation) whenever
-   the parent row is hovered. Uses CSS group-hover + a long
-   1 s cubic-bezier transition so the rotation reads as a
-   deliberate, premium reveal rather than a snap.
-   ───────────────────────────────────────────────────────── */
+
 function HoverArrow() {
   return (
     <div
@@ -151,13 +111,7 @@ function HoverArrow() {
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   Fallback content — CMS overrides at runtime; this just
-   ensures the design renders when the doc is empty. Text
-   for "The Ecosystem" mirrors the Figma exactly; the other
-   5 rows are lightly-filled placeholders in the same tone
-   that editors can rewrite in Studio.
-   ───────────────────────────────────────────────────────── */
+
 const FALLBACK_HEADING = "How We Show Up";
 
 const FALLBACK_ROWS: HowWeShowUpRow[] = [
@@ -424,27 +378,11 @@ function OpenedRow({
       exit={{ opacity: 0, transition: { duration: 0.3, ease: EASE } }}
       className="grid w-full"
       style={{
-        /* Left column shrinks to hug the rotated heading (`auto`) instead
-           of a fixed 22.57vw box — otherwise ~260 px of slack piled up on
-           the far left. Now the heading sits right at the left gutter and
-           the whole block is symmetric: gutter → heading … content →
-           gutter, equal margins on both sides. */
+        
         gridTemplateColumns: "auto 1fr",
-        /* No top/bottom padding here — the FullPageCard
-           container already supplies var(--section-py) and
-           its `items-center` flex centers this vertically. */
       }}
     >
-     {/* LEFT column — three positioned pieces:
-           1. Back button — top-left in normal flow.
-           2. Rotated title — absolutely positioned near the
-              vertical rule (NOT the far-left edge of the
-              column) so it reads as a spine label right next
-              to the divider. Vertically centered.
-           3. Vertical rule — right edge, animates scaleY
-              top→bottom on mount per the site rule that all
-              lines animate when their section opens. */}
-      {/* ▼ CHANGED: Now uses a grid to pin the Back button to the top and center the title below it */}
+
       <div
         className="relative grid grid-rows-[auto_1fr]"
         style={{
@@ -482,11 +420,7 @@ function OpenedRow({
           </span>
         </div>
 
-        {/* Full-height vertical rule on the right edge of the
-            left column. Animates scaleY 0 → 1 (transformOrigin
-            top) on mount so it visually DRAWS from top to bottom
-            as the card opens — matches the site-wide rule that
-            all vertical / horizontal lines animate on entrance. */}
+
         <motion.div
           aria-hidden
           initial={{ scaleY: 0 }}
@@ -501,14 +435,7 @@ function OpenedRow({
           isn't flush against the vertical rule. */}
       <div style={{ paddingLeft: SZ.oGap }}>
 
-      {/* Right column — each block has an explicit `delay` so
-          the layered stagger sequence lands in a predictable
-          order (see comment on the outer motion.div).
-
-          Width: takes the FULL remaining space in the grid row
-          (no `maxWidth` cap). Per Figma, content should stretch
-          all the way to the right section padding — no blank
-          gutter on the right. */}
+    
       <div
         className="flex w-full flex-col"
         style={{ gap: SZ.oGap }}
@@ -533,10 +460,7 @@ function OpenedRow({
           {row.longDesc}
         </p>
 
-        {/* Divider under the description — draws left→right per
-            the site rule that every line animates on reveal.
-            Spans the FULL right-column width so it reaches all
-            the way to the section padding (Figma reference). */}
+        
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
@@ -596,13 +520,16 @@ function OpenedRow({
 function MobileRow({
   row,
   onOpen,
+  showDivider = true, // Added prop
 }: {
   row: HowWeShowUpRow;
   onOpen: () => void;
+  showDivider?: boolean;
 }) {
   return (
     <div className="w-full">
-      <div className="h-[1px] w-full bg-black" />
+      {/* Conditionally render the top divider */}
+      {showDivider && <div className="h-[1px] w-full bg-black" />}
       <div
         role="button"
         tabIndex={0}
@@ -625,47 +552,38 @@ function MobileRow({
    Row wrapper — divider on top + closed body. Click opens
    the FullPageCard overlay; this row itself doesn't morph.
    ───────────────────────────────────────────────────────── */
-function Row({
-  row,
-  onOpen,
-}: {
-  row: HowWeShowUpRow;
-  onOpen: () => void;
-}) {
-  return (
-    <div className="group relative w-full">
-      <InViewDivider style={{ width: SZ.divider, height: "1px" }} />
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={onOpen}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onOpen();
-          }
-        }}
-        className="w-full cursor-pointer"
-      >
-        <ClosedRow row={row} />
+   function Row({
+    row,
+    onOpen,
+    showDivider = true, // Added prop
+  }: {
+    row: HowWeShowUpRow;
+    onOpen: () => void;
+    showDivider?: boolean;
+  }) {
+    return (
+      <div className="group relative w-full">
+        {/* Conditionally render the top divider */}
+        {showDivider && <InViewDivider style={{ width: SZ.divider, height: "1px" }} />}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={onOpen}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onOpen();
+            }
+          }}
+          className="w-full cursor-pointer"
+        >
+          <ClosedRow row={row} />
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-/* ─────────────────────────────────────────────────────────
-   FullPageCard — the opened state.
 
-   Renders as a `position: fixed; inset: 0` overlay so it
-   covers the entire viewport (not just the section it lives
-   in). Body scroll is LOCKED while it's mounted — per the
-   design: "after the card is open, the page is just the
-   card's content, and it is not scrollable".
-
-   Enter animation: opacity + slide-up + slight scale, so it
-   reads as the row expanding upward into full view.
-   Exit: reverse. Escape key also closes.
-   ───────────────────────────────────────────────────────── */
 function FullPageCard({
   row,
   onBack,
@@ -696,11 +614,7 @@ function FullPageCard({
   return (
     <motion.div
       key="fullpage"
-      /* Expands into view (madeinmay.studio/approach feel): the card
-         grows up from a slightly smaller, lower, translucent state so it
-         reads as the row opening OUT — not a modal popping in. The layered
-         stagger inside OpenedRow (vertical rule → Back → title → heading →
-         desc → divider → Strategic Value → bullets) carries the reveal. */
+
       initial={{ opacity: 0, scale: 0.94, y: 24 }}
       animate={{
         opacity: 1,
@@ -722,13 +636,6 @@ function FullPageCard({
         WebkitBackdropFilter: "blur(32px) saturate(1.4)",
         boxShadow: "0 8px 40px rgba(0, 0, 0, 0.08)",
 
-        /* Left/right gutters stay on the sitewide token so the card
-           lines up with every other section. The card is fixed inset-0
-           and the site nav paints OVER its top edge, so the top padding
-           adds the nav height on top of oPadY — that way the content is
-           centred in the space BELOW the nav and the VISIBLE top and
-           bottom gutters come out equal (they looked lopsided before,
-           with the nav eating the top gap). */
         paddingTop: `calc(var(--nav-height) + ${SZ.oPadY})`,
         paddingBottom: SZ.oPadY,
         paddingLeft: "var(--section-px-wide)",
@@ -799,9 +706,10 @@ export default function WhatFoundersGetClient({
               key={row.title}
               row={row}
               onOpen={() => setOpenIndex(i)}
+              showDivider={i !== 0} // Hides top divider for the 1st row
             />
           ))}
-          <InViewDivider style={{ width: SZ.divider, height: "1px" }} />
+          {/* REMOVED: <InViewDivider style={{ width: SZ.divider, height: "1px" }} /> */}
         </div>
 
         {/* Rows — Mobile (hidden on desktop) */}
@@ -811,17 +719,13 @@ export default function WhatFoundersGetClient({
               key={row.title}
               row={row}
               onOpen={() => setOpenIndex(i)}
+              showDivider={i !== 0} // Hides top divider for the 1st row
             />
           ))}
-          <div className="h-[1px] w-full bg-black" />
+          {/* REMOVED: <div className="h-[1px] w-full bg-black" /> */}
         </div>
       </motion.div>
 
-      {/* ── FULL-PAGE OPENED CARD ── overlay that takes over
-          the viewport. Rendered OUTSIDE the section's inner
-          motion.div so its `position: fixed` isn't affected by
-          any transform/filter on ancestors (fixed positioning
-          gets clipped inside transformed parents). */}
       <AnimatePresence>
         {openIndex !== null && (
           <FullPageCard
