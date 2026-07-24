@@ -359,11 +359,15 @@ function Marquee({ testimonials }: { testimonials: TestimonialItem[] }) {
     if (isDragging || isHovered) return;
     const current = x.get();
     const next = current - speed;
-    // Loop: when we've scrolled one full set, reset
-    if (contentWidth > 0 && Math.abs(next) >= contentWidth) {
-      x.set(next + contentWidth);
-    } else {
-      x.set(next);
+    // Seamless loop: wrap around when reaching the boundary
+    if (contentWidth > 0) {
+      if (next <= -contentWidth) {
+        x.set(next + contentWidth);
+      } else if (next > 0) {
+        x.set(next - contentWidth);
+      } else {
+        x.set(next);
+      }
     }
   });
 
@@ -371,11 +375,8 @@ function Marquee({ testimonials }: { testimonials: TestimonialItem[] }) {
     <div
       className="overflow-hidden"
       style={{
-        /* The visible marquee window = the site's content area (same
-           gutters as every other section), so exactly 3 cards show. */
         marginLeft: "var(--section-px-wide)",
         marginRight: "var(--section-px-wide)",
-        
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -388,20 +389,18 @@ function Marquee({ testimonials }: { testimonials: TestimonialItem[] }) {
           gap: "min(1.85vw, 2.86vh)",
         }}
         drag="x"
-        dragConstraints={{ left: -(contentWidth || 0), right: 0 }}
-        dragElastic={0.1}
+        dragConstraints={{ left: -Infinity, right: Infinity }}
+        dragElastic={0}
         onDragStart={() => setIsDragging(true)}
         onDragEnd={() => {
           setIsDragging(false);
-          // Wrap position after drag
+          // Seamless wrap after drag
           if (contentWidth > 0) {
             const current = x.get();
-            if (Math.abs(current) >= contentWidth) {
-              x.set(current % contentWidth);
-            }
-            if (current > 0) {
-              x.set(current - contentWidth);
-            }
+            // Normalize position within one set width
+            let newPos = current % contentWidth;
+            if (newPos > 0) newPos -= contentWidth;
+            x.set(newPos);
           }
         }}
       >
