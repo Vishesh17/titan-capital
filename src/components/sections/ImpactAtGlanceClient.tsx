@@ -585,7 +585,7 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
             className="grid max-md:!grid-cols-2"
             style={{
               gridTemplateColumns: "repeat(3, 1fr)",
-              maxWidth: "80%",
+              maxWidth: "85%",
               paddingLeft: IMPACT_CELL_PADDING,
               paddingRight: IMPACT_CELL_PADDING,
               columnGap: IMPACT_COL_GAP,
