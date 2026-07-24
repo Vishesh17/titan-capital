@@ -78,6 +78,11 @@ const FALLBACK_CTA_LABEL = "See More";
 const STORY_GAP = "calc(var(--section-px-wide) * 0.4)";
 const BORDER_PADDING = "calc(var(--section-px-wide) * 0.2)";
 
+// Impact section specific tokens - more spread out cells
+const IMPACT_CELL_PADDING = "calc(var(--section-px-wide) * 0.2)";
+const IMPACT_COL_GAP = "calc(var(--section-px-wide) * 1.2)"
+const IMPACT_ROW_GAP = "calc(var(--section-px-wide) * 0.5)";
+
 function cdnImageSrc(url: string, width: number): string {
   if (url.startsWith("https://cdn.sanity.io/")) {
     return `${url}?w=${width}&auto=format&q=85`;
@@ -157,7 +162,7 @@ function ImpactStatCell({
   return (
     <motion.div
       className="flex flex-row items-start max-md:!gap-[10px]"
-      style={{ gap: "min(1.85vw, 2.86vh)" }}
+      style={{ gap: "min(1.85vw, 2.86vh)", paddingLeft: IMPACT_CELL_PADDING }}
       variants={{
         hidden: { opacity: 0, y: 20 },
         visible: {
@@ -173,7 +178,7 @@ function ImpactStatCell({
           width: "1px",
           height: "min(13.89vw, 21.49vh)",
           scaleY: lineScale,
-          transformOrigin: "top", // Animates top-to-bottom natively
+          transformOrigin: "top",
         }}
       />
       <div className="flex flex-col">
@@ -383,21 +388,24 @@ function StoriesSection({
   ctaLabel: string;
   slides: FounderStory[];
 }) {
-  const gridRef = useRef<HTMLDivElement>(null);
-  
-  // 🛑 FIX SPEED: Widened the offset significantly so the lines draw much slower over a longer scroll
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const [isInView, setIsInView] = useState(false);
+
+  // Track scroll for reversible animation
   const { scrollYProgress } = useScroll({
-    target: gridRef,
-    offset: ["start 0.95", "center 0.6"], 
+    target: sectionRef,
+    offset: ["start end", "end start"],
   });
-  
-  // 🛑 FIX SPEED: Softened the spring for a gentler, slower glide
-  const smoothProgress = useSpring(scrollYProgress, { stiffness: 50, damping: 20 });
-  const vRuleScale = useTransform(smoothProgress, [0, 1], [0, 1]);
-  const hRuleScale = useTransform(smoothProgress, [0, 1], [0, 1]);
+
+  // Animate lines based on viewport + scroll position
+  const lineProgress = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
+  const smoothLineProgress = useSpring(lineProgress, { stiffness: 40, damping: 25 });
+  const vRuleScale = smoothLineProgress;
+  const hRuleScale = smoothLineProgress;
 
   return (
     <section
+      ref={sectionRef}
       className="relative w-full"
       style={{
         background: "#FFF",
@@ -444,7 +452,6 @@ function StoriesSection({
         </motion.div>
 
         <div 
-          ref={gridRef} 
           className="relative w-full"
           style={{ padding: BORDER_PADDING, "--bp": BORDER_PADDING } as React.CSSProperties}
         >
@@ -454,33 +461,47 @@ function StoriesSection({
             ))}
           </div>
 
-          {[0, 1, 2].map((i) => (
-            <motion.div
-              key={`mid-rule-${i}`}
-              aria-hidden
-              className="pointer-events-none absolute max-md:!hidden z-20"
-              style={{
-                top: "50%",
-                left: `calc(${i * 33.3333}% + var(--bp))`,
-                width: "calc(33.3333% - 2 * var(--bp))",
-                height: "1px",
-                background: "#000",
-                transformOrigin: "left", // Animates left-to-right natively
-                scaleX: hRuleScale,
-              }}
-            />
-          ))}
-
+          {/* Horizontal divider - left half animates from left to center */}
           <motion.div
             aria-hidden
             className="pointer-events-none absolute max-md:!hidden z-20"
-            style={{ top: "var(--bp)", left: "33.3333%", marginLeft: "-0.5px", width: "1px", height: "calc(100% - 2 * var(--bp))", background: "#000", transformOrigin: "top", scaleY: vRuleScale }}
+            style={{
+              top: "calc(50% - 0.5px)",
+              left: "var(--bp)",
+              width: "calc(50% - var(--bp))",
+              height: "1px",
+              background: "#000",
+              transformOrigin: "left",
+              scaleX: hRuleScale,
+            }}
+          />
+
+          {/* Horizontal divider - right half animates from right to center */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute max-md:!hidden z-20"
+            style={{
+              top: "calc(50% - 0.5px)",
+              right: "var(--bp)",
+              width: "calc(50% - var(--bp))",
+              height: "1px",
+              background: "#000",
+              transformOrigin: "right",
+              scaleX: hRuleScale,
+            }}
+          />
+
+          {/* Vertical dividers between columns */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute max-md:!hidden z-20"
+            style={{ top: "var(--bp)", left: "calc(33.3333% - 0.5px)", width: "1px", height: "calc(100% - 2 * var(--bp))", background: "#000", transformOrigin: "top", scaleY: vRuleScale }}
           />
 
           <motion.div
             aria-hidden
             className="pointer-events-none absolute max-md:!hidden z-20"
-            style={{ top: "var(--bp)", left: "66.6666%", marginLeft: "-0.5px", width: "1px", height: "calc(100% - 2 * var(--bp))", background: "#000", transformOrigin: "top", scaleY: vRuleScale }}
+            style={{ top: "var(--bp)", left: "calc(66.6666% - 0.5px)", width: "1px", height: "calc(100% - 2 * var(--bp))", background: "#000", transformOrigin: "top", scaleY: vRuleScale }}
           />
         </div>
 
@@ -507,16 +528,14 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
   const impactData = data?.impactStats && data.impactStats.length > 0 ? data.impactStats : FALLBACK_IMPACT_DATA;
   const slides = data?.founderStories && data.founderStories.length > 0 ? data.founderStories : FALLBACK_SLIDES;
 
-  // 🛑 GLITCH FIX: Replaced glitchy pixel math tracking with a stable parent ref
+  // Scroll-based animation for vertical lines - reverses on scroll up/down
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress: impactProgress } = useScroll({
     target: wrapperRef,
-    // Widened offset slows the animation down drastically so it isn't an instant flash
-    offset: ["start 0.9", "start 0.3"], 
+    offset: ["start 0.8", "start 0.2"],
   });
   
-  // Applies a gentle spring so the lines animate flawlessly in both directions
-  const lineScale = useSpring(impactProgress, { stiffness: 80, damping: 20 });
+  const lineScale = useSpring(impactProgress, { stiffness: 60, damping: 20 });
 
   return (
     <div ref={wrapperRef} className="relative w-full bg-[#FBF7F0]">
@@ -563,14 +582,14 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
           </motion.h2>
 
           <div
-            className="grid w-full max-md:!grid-cols-2"
+            className="grid max-md:!grid-cols-2"
             style={{
               gridTemplateColumns: "repeat(3, 1fr)",
-              // 🛑 ALIGNMENT FIX: Explicitly set left/right padding to perfectly match Their Stories
-              paddingLeft: BORDER_PADDING,
-              paddingRight: BORDER_PADDING,
-              columnGap: STORY_GAP,
-              rowGap: "min(3.47vw, 5.37vh)",
+              maxWidth: "90%",
+              paddingLeft: IMPACT_CELL_PADDING,
+              paddingRight: IMPACT_CELL_PADDING,
+              columnGap: IMPACT_COL_GAP,
+              rowGap: IMPACT_ROW_GAP,
             }}
           >
             {impactData.map((stat, i) => (
