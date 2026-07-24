@@ -49,72 +49,74 @@ const SPRING = { stiffness: 60, damping: 20, mass: 0.5 };
 /* ─────────────────────────────────────────────────────────
    Dimension Calculations
    ───────────────────────────────────────────────────────── */
-function computeDims() {
-  if (typeof window === "undefined") {
-    return { winW: 1512, winH: 982, cardW: 452, cardH: 513, gap: 32, photoW: 1356 };
-  }
+   const FALLBACK_DIMS = { winW: 1512, winH: 982, cardW: 452, cardH: 513, gap: 32, photoW: 1356 };
+   const FALLBACK_MOBILE_DIMS = { winW: 390, winH: 844, cardW: 340, cardH: 220, gap: 16, photoH: 660 };
+   
+   function computeDims() {
+     if (typeof window === "undefined") return FALLBACK_DIMS;
+   
+     const winW = window.innerWidth;
+     const winH = window.innerHeight;
+   
+     const targetW = 452;
+     const targetH = 513;
+   
+     const scale = Math.min(winW / 1512, winH / 982, 1.2);
+     const cardW = Math.max(280, Math.round(targetW * Math.min(scale, 1)));
+     const cardH = Math.max(380, Math.round(targetH * Math.min(scale, 1)));
+   
+     const gap = Math.round(winW * 0.02);
+     const photoW = 3 * cardW;
+   
+     return { winW, winH, cardW, cardH, gap, photoW };
+   }
+   
+   function computeMobileDims() {
+     if (typeof window === "undefined") return FALLBACK_MOBILE_DIMS;
+   
+     const winW = window.innerWidth;
+     const winH = window.innerHeight;
+   
+     const cardW = Math.min(winW * 0.88, 360);
+     const cardH = Math.min(winH * 0.26, 240);
+     const gap = 16;
+     const photoH = 3 * cardH;
+   
+     return { winW, winH, cardW, cardH, gap, photoH };
+   }
+   
+   export default function WhatWeBelieveClient({
+     data,
+   }: {
+     data?: WhatWeBelieveData | null;
+   }) {
+     const heading = data?.heading || HEADING;
+     const beliefs = data?.beliefs && data.beliefs.length === 3 ? data.beliefs : BELIEFS;
+   
+     const sectionRef = useRef<HTMLElement>(null);
+   
+     const { scrollYProgress } = useScroll({
+       target: sectionRef,
+       offset: ["start start", "end end"],
+     });
+     const p = useSpring(scrollYProgress, SPRING);
+   
+     // 🛑 FIX: Start strictly with fallbacks to match the server HTML
+     const [dims, setDims] = useState(FALLBACK_DIMS);
+     const [mobileDims, setMobileDims] = useState(FALLBACK_MOBILE_DIMS);
+   
+     const handleResize = useCallback(() => {
+       setDims(computeDims());
+       setMobileDims(computeMobileDims());
+     }, []);
+   
+     useEffect(() => {
+       // 🛑 FIX: Calculate real dimensions immediately after mounting
+       handleResize();
+       window.addEventListener("resize", handleResize);
+       return () => window.removeEventListener("resize", handleResize);
+     }, [handleResize]);
 
-  const winW = window.innerWidth;
-  const winH = window.innerHeight;
-
-  const targetW = 452;
-  const targetH = 513;
-
-  const scale = Math.min(winW / 1512, winH / 982, 1.2);
-  const cardW = Math.max(280, Math.round(targetW * Math.min(scale, 1)));
-  const cardH = Math.max(380, Math.round(targetH * Math.min(scale, 1)));
-
-  const gap = Math.round(winW * 0.02);
-  const photoW = 3 * cardW;
-
-  return { winW, winH, cardW, cardH, gap, photoW };
-}
-
-function computeMobileDims() {
-  if (typeof window === "undefined") {
-    return { winW: 390, winH: 844, cardW: 340, cardH: 220, gap: 16, photoH: 660 };
-  }
-
-  const winW = window.innerWidth;
-  const winH = window.innerHeight;
-
-  const cardW = Math.min(winW * 0.88, 360);
-  const cardH = Math.min(winH * 0.26, 240);
-  const gap = 16;
-  const photoH = 3 * cardH;
-
-  return { winW, winH, cardW, cardH, gap, photoH };
-}
-
-export default function WhatWeBelieveClient({
-  data,
-}: {
-  data?: WhatWeBelieveData | null;
-}) {
-  const heading = data?.heading || HEADING;
-  const beliefs = data?.beliefs && data.beliefs.length === 3 ? data.beliefs : BELIEFS;
-
-  const sectionRef = useRef<HTMLElement>(null);
-
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end end"],
-  });
-  const p = useSpring(scrollYProgress, SPRING);
-
-  const [dims, setDims] = useState(computeDims);
-  const [mobileDims, setMobileDims] = useState(computeMobileDims);
-
-  const handleResize = useCallback(() => {
-    setDims(computeDims());
-    setMobileDims(computeMobileDims());
-  }, []);
-
-  useEffect(() => {
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [handleResize]);
 
   /* ─────────────────────────────────────────────────────────
      ANIMATION TIMING & TRANSFORMS

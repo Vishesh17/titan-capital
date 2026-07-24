@@ -25,11 +25,8 @@ export interface HeroFounder {
   role: string;
   image: string;
   isLogo?: boolean;
-  /** Scale factor for image sizing (e.g., 1.2 = 20% larger, 0.8 = 20% smaller) */
   scaleFactor?: number;
-  /** Horizontal position offset in pixels (positive = right, negative = left) */
   positionX?: number;
-  /** Vertical position offset in pixels (positive = down, negative = up) */
   positionY?: number;
 }
 
@@ -76,15 +73,11 @@ const IMG_STYLE: React.CSSProperties = {
   objectPosition: "top center",
 };
 
-/* Portrait photo slot spans the ENDURING / IMPACT rows */
 const SLOT_W = "min(23.1vw, 35.8vh)";
 
-/* Viewport-derived px dims for the stack / line stages */
 function computeDims(w: number, h: number) {
   const isMobile = w < 768;
-  const cardW = isMobile
-    ? w * 0.20
-    : Math.min(0.072 * w, 0.115 * h);
+  const cardW = isMobile ? w * 0.20 : Math.min(0.072 * w, 0.115 * h);
   const cardH = cardW; 
   return {
     cardW,
@@ -104,134 +97,124 @@ interface Slot {
 }
 const FALLBACK_SLOT: Slot = { cx: 0, cy: 0, w: 145, h: 207 };
 
-/* Clamp scale factor to safe bounds (prevent overflow/underflow) */
 function clampScale(scale?: number): number {
   const s = scale ?? 1;
   return Math.max(0.5, Math.min(s, 2.0));
 }
 
-const GRAIN =
-  "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ";
 /* ─────────────────────────────────────────────────────────
-   Hero Glows (Optimized CSS Version - Increased Movement)
+   Hero Glows
    ───────────────────────────────────────────────────────── */
-   function HeroGlow() {
-    const mouseX = useMotionValue(0);
-    const mouseY = useMotionValue(0);
-    const normX = useMotionValue(0);
-    const normY = useMotionValue(0);
-  
-    const cursorSpring = { damping: 25, stiffness: 250, mass: 0.3 };
-    const smoothX = useSpring(mouseX, cursorSpring);
-    const smoothY = useSpring(mouseY, cursorSpring);
-  
-    const ambientSpring = { damping: 30, stiffness: 70, mass: 1 };
-    const smoothNormX = useSpring(normX, ambientSpring);
-    const smoothNormY = useSpring(normY, ambientSpring);
-  
-    useEffect(() => {
-      if (typeof window !== "undefined") {
-        mouseX.set(window.innerWidth / 2);
-        mouseY.set(window.innerHeight / 2);
-      }
-  
-      const handleMouseMove = (e: MouseEvent) => {
-        mouseX.set(e.pageX);
-        mouseY.set(e.pageY);
-        normX.set((e.clientX / window.innerWidth) * 2 - 1);
-        normY.set((e.clientY / window.innerHeight) * 2 - 1);
-      };
-  
-      window.addEventListener("mousemove", handleMouseMove);
-      return () => window.removeEventListener("mousemove", handleMouseMove);
-    }, [mouseX, mouseY, normX, normY]);
-  
-    // Expanded the mouse parallax range slightly for more responsiveness
-    const leftX = useTransform(smoothNormX, [-1, 1], ["-8%", "8%"]);
-    const leftY = useTransform(smoothNormY, [-1, 1], ["-8%", "8%"]);
-    const rightX = useTransform(smoothNormX, [-1, 1], ["8%", "-8%"]);
-    const rightY = useTransform(smoothNormY, [-1, 1], ["8%", "-8%"]);
-  
-    return (
-      <>
-        {/* 1. LEFT BLOB */}
+function HeroGlow() {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const normX = useMotionValue(0);
+  const normY = useMotionValue(0);
+
+  const cursorSpring = { damping: 25, stiffness: 250, mass: 0.3 };
+  const smoothX = useSpring(mouseX, cursorSpring);
+  const smoothY = useSpring(mouseY, cursorSpring);
+
+  const ambientSpring = { damping: 30, stiffness: 70, mass: 1 };
+  const smoothNormX = useSpring(normX, ambientSpring);
+  const smoothNormY = useSpring(normY, ambientSpring);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      mouseX.set(window.innerWidth / 2);
+      mouseY.set(window.innerHeight / 2);
+    }
+
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseX.set(e.pageX);
+      mouseY.set(e.pageY);
+      normX.set((e.clientX / window.innerWidth) * 2 - 1);
+      normY.set((e.clientY / window.innerHeight) * 2 - 1);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [mouseX, mouseY, normX, normY]);
+
+  const leftX = useTransform(smoothNormX, [-1, 1], ["-8%", "8%"]);
+  const leftY = useTransform(smoothNormY, [-1, 1], ["-8%", "8%"]);
+  const rightX = useTransform(smoothNormX, [-1, 1], ["8%", "-8%"]);
+  const rightY = useTransform(smoothNormY, [-1, 1], ["8%", "-8%"]);
+
+  return (
+    <>
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute"
+        style={{ 
+          left: "-25%", 
+          top: "-25%", 
+          width: "min(75vw, 100vh)", 
+          height: "min(75vw, 100vh)", 
+          zIndex: 0, 
+          x: leftX, 
+          y: leftY, 
+          willChange: "transform" 
+        }}
+      >
         <motion.div
-          aria-hidden
-          className="pointer-events-none absolute"
-          style={{ 
-            left: "-25%", 
-            top: "-25%", 
-            width: "min(75vw, 100vh)", 
-            height: "min(75vw, 100vh)", 
-            zIndex: 0, 
-            x: leftX, 
-            y: leftY, 
-            willChange: "transform" 
+          className="w-full h-full rounded-full blur-[120px]"
+          style={{ background: "radial-gradient(circle, #5054B5 0%, #054EB6 40%, #022250 80%, transparent 100%)", opacity: 0.6 }}
+          animate={{ 
+            x: ["0%", "35%", "-15%", "25%", "0%"], 
+            y: ["0%", "25%", "-10%", "35%", "0%"], 
+            scale: [1, 1.15, 0.85, 1.1, 1] 
           }}
-        >
-          <motion.div
-            className="w-full h-full rounded-full blur-[120px]"
-            style={{ background: "radial-gradient(circle, #5054B5 0%, #054EB6 40%, #022250 80%, transparent 100%)", opacity: 0.6 }}
-            // Expanded wandering sequence
-            animate={{ 
-              x: ["0%", "35%", "-15%", "25%", "0%"], 
-              y: ["0%", "25%", "-10%", "35%", "0%"], 
-              scale: [1, 1.15, 0.85, 1.1, 1] 
-            }}
-            transition={{ duration: 18, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
-          />
-        </motion.div>
-  
-        {/* 2. RIGHT BLOB */}
-        <motion.div
-          aria-hidden
-          className="pointer-events-none absolute"
-          style={{ 
-            right: "-25%", 
-            bottom: "-25%", 
-            width: "min(70vw, 90vh)", 
-            height: "min(70vw, 90vh)", 
-            zIndex: 0, 
-            x: rightX, 
-            y: rightY, 
-            willChange: "transform" 
-          }}
-        >
-          <motion.div
-            className="w-full h-full rounded-full blur-[120px]"
-            style={{ background: "radial-gradient(circle, #AC71C6 0%, #033699 50%, #001A4D 80%, transparent 100%)", opacity: 0.5 }}
-            // Expanded wandering sequence
-            animate={{ 
-              x: ["0%", "-35%", "15%", "-25%", "0%"], 
-              y: ["0%", "-25%", "10%", "-35%", "0%"], 
-              scale: [1, 1.15, 0.85, 1.1, 1] 
-            }}
-            transition={{ duration: 21, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
-          />
-        </motion.div>
-  
-        {/* 3. 3D CURSOR BLOB (Smaller + Matches Left Blob Colors) */}
-        <motion.div
-          aria-hidden
-          className="pointer-events-none absolute top-0 left-0 rounded-full blur-[60px]"
-          style={{
-            width: "25vw", // Reduced from 40vw to make it smaller
-            height: "25vw", // Reduced from 40vw to make it smaller
-            zIndex: 5, 
-            x: smoothX, 
-            y: smoothY,
-            translateX: "-50%", 
-            translateY: "-50%", 
-            opacity: 0.4, 
-            /* Matches the Left Blob's Indigo/Blue colors */
-            background: "radial-gradient(circle, rgba(80,84,181,0.85) 0%, rgba(5,78,182,0.5) 40%, rgba(2,34,80,0.2) 70%, transparent 100%)",
-            willChange: "transform", 
-            z: 0 
-          }}
+          transition={{ duration: 18, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
         />
-      </>
-    );
-  }
+      </motion.div>
+
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute"
+        style={{ 
+          right: "-25%", 
+          bottom: "-25%", 
+          width: "min(70vw, 90vh)", 
+          height: "min(70vw, 90vh)", 
+          zIndex: 0, 
+          x: rightX, 
+          y: rightY, 
+          willChange: "transform" 
+        }}
+      >
+        <motion.div
+          className="w-full h-full rounded-full blur-[120px]"
+          style={{ background: "radial-gradient(circle, #AC71C6 0%, #033699 50%, #001A4D 80%, transparent 100%)", opacity: 0.5 }}
+          animate={{ 
+            x: ["0%", "-35%", "15%", "-25%", "0%"], 
+            y: ["0%", "-25%", "10%", "-35%", "0%"], 
+            scale: [1, 1.15, 0.85, 1.1, 1] 
+          }}
+          transition={{ duration: 21, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
+        />
+      </motion.div>
+
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute top-0 left-0 rounded-full blur-[60px]"
+        style={{
+          width: "25vw", 
+          height: "25vw", 
+          zIndex: 5, 
+          x: smoothX, 
+          y: smoothY,
+          translateX: "-50%", 
+          translateY: "-50%", 
+          opacity: 0.4, 
+          background: "radial-gradient(circle, rgba(80,84,181,0.85) 0%, rgba(5,78,182,0.5) 40%, rgba(2,34,80,0.2) 70%, transparent 100%)",
+          willChange: "transform", 
+          z: 0 
+        }}
+      />
+    </>
+  );
+}
 
 /* ─────────────────────────────────────────────────────────
    Main Hero Component
@@ -245,7 +228,6 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     return FALLBACK_FOUNDERS;
   })();
 
-  // CHANGED: We now actively seek the Titan Capital Logo to make it the flying anchor card
   const heroIndex = (() => {
     const idx = founders.findIndex(f => f.isLogo || f.name.includes("Titan"));
     return idx !== -1 ? idx : Math.ceil((founders.length - 1) / 2);
@@ -255,7 +237,6 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   const progress = useMotionValue(0);
   const [stage, setStage] = useState<"slideshow" | "animate">("slideshow");
 
-  // Filter out logo founders for slideshow - only show founder photos
   const slideshowFounders = founders.filter(f => !f.isLogo);
   const [slideIndex, setSlideIndex] = useState(0);
 
@@ -287,32 +268,49 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
   const [dims, setDims] = useState<Dims>(FALLBACK_DIMS);
   const [slot, setSlot] = useState<Slot>(FALLBACK_SLOT);
+  
+  const sectionRef = useRef<HTMLElement>(null);
   const slotRef = useRef<HTMLSpanElement>(null);
   const mobileSlotRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const measure = () => {
-      setDims(computeDims(window.innerWidth, window.innerHeight));
-      const isMobile = window.innerWidth < 768;
+      if (typeof window === "undefined") return;
+      
+      const winW = document.documentElement.clientWidth; 
+      const winH = window.innerHeight;
+      
+      setDims(computeDims(winW, winH));
+
+      const isMobile = winW < 768;
       const el = isMobile ? mobileSlotRef.current : slotRef.current;
-      if (!el) return;
-      const r = el.getBoundingClientRect();
+      const sectionEl = sectionRef.current;
+      
+      if (!el || !sectionEl) return;
+
+      const sRect = el.getBoundingClientRect();
+      const cRect = sectionEl.getBoundingClientRect();
+
       setSlot({
-        cx: r.left + r.width / 2 - window.innerWidth / 2,
-        cy: r.top + r.height / 2 - window.innerHeight / 2,
-        w: r.width,
-        h: r.height,
+        cx: (sRect.left + sRect.width / 2) - (cRect.left + cRect.width / 2),
+        cy: (sRect.top + sRect.height / 2) - (cRect.top + cRect.height / 2),
+        w: sRect.width,
+        h: sRect.height,
       });
+
       setReady(true);
     };
+
     measure();
     const t = setTimeout(measure, 300);
     let cancelled = false;
+    
     if (typeof document !== "undefined" && document.fonts?.ready) {
       document.fonts.ready.then(() => {
         if (!cancelled) measure();
       });
     }
+    
     window.addEventListener("resize", measure);
     return () => {
       cancelled = true;
@@ -332,12 +330,8 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   const [headingReady, setHeadingReady] = useState(false);
   const [headingTick, setHeadingTick] = useState(0);
   
-  // Logo founder (appears only once at start)
   const logoFounder = founders.find(f => f.isLogo);
-  // Non-logo founders for rotation (after logo has shown)
   const nonLogoFounders = founders.filter(f => !f.isLogo);
-  
-  // First tick shows logo, subsequent ticks cycle through non-logo founders
   const headingFounder = headingTick === 0 && logoFounder 
     ? logoFounder 
     : nonLogoFounders[(headingTick - 1) % nonLogoFounders.length];
@@ -354,19 +348,14 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     };
   }, [progress, headingReady]);
 
-  const sectionRef = useRef<HTMLElement>(null);
   const heroInView = useInView(sectionRef);
 
-  // CHANGED: Timer logic to stay 4 seconds on the first image, then 2.6s for all others
   useEffect(() => {
     if (!headingReady || !heroInView) return;
-    
     const delay = headingTick === 0 ? 4000 : 2600;
-    
     const timer = setTimeout(() => {
       setHeadingTick((t) => t + 1);
     }, delay);
-    
     return () => clearTimeout(timer);
   }, [headingReady, heroInView, headingTick]);
 
@@ -376,9 +365,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
         className="relative flex h-screen w-full items-center justify-center overflow-hidden"
         style={{ background: "transparent" }}
       >
-        <HeroGlow  />
-
-        {/* Removed Side Labels FOUNDER-FIRST and ENDURING-VALUE entirely */}
+        <HeroGlow />
 
         <motion.p
           style={{ opacity: subtitleBottomOpacity, maxWidth: "min(52vw, 900px)" }}
@@ -435,10 +422,8 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
         </AnimatePresence>
 
         {stage === "animate" && (
-          <div
-            className="absolute inset-0 z-10 flex items-center justify-center max-md:!z-30"
-            style={{ left: "50%", transform: "translateX(-50%)" }}
-          >
+          /* 🛑 Removed flex/justify classes to perfectly eradicate layout thrashing */
+          <div className="absolute inset-0 z-10 pointer-events-none max-md:!z-30">
             {founders.map((founder, i) => (
               <FounderCard
                 key={founder.name}
@@ -581,7 +566,7 @@ function CursorFillButton({ href, label }: { href: string; label: string }) {
 }
 
 /* ─────────────────────────────────────────────────────────
-   HeadingPhoto (Color Bloom Box)
+   HeadingPhoto
    ───────────────────────────────────────────────────────── */
 function HeadingPhoto({
   founder,
@@ -633,7 +618,7 @@ function HeadingPhoto({
 }
 
 /* ─────────────────────────────────────────────────────────
-   RevealLine (Exact Cappen 3D GSAP Physics)
+   RevealLine
    ───────────────────────────────────────────────────────── */
 const CHAR_STAGGER = 0.035;
 function RevealLine({
@@ -692,7 +677,7 @@ function RevealLine({
 }
 
 /* ─────────────────────────────────────────────────────────
-   FounderCard (With Cappen Shuffle Math)
+   FounderCard
    ───────────────────────────────────────────────────────── */
 const DECK_ENLARGE = 1.38;
 
@@ -715,7 +700,6 @@ function FounderCard({
 }) {
   const isHero = index === heroIndex;
 
-  /* EXACT CAPPEN PHYSICS */
   const cappenEase = cubicBezier(0.76, 0, 0.24, 1);
   const linear = (t: number) => t;
 
@@ -723,7 +707,6 @@ function FounderCard({
   const deckScale = Math.max(0.58, 1 - index * 0.06) * DECK_ENLARGE;
   const stripY = ((total - 1) / 2 - index) * dims.filmStep;
 
-  //* CAPPEN STAGGER TIMING */
   const stagger = index * 0.015;
   const invertedStagger = ((total - 1) - index) * 0.015;
 
@@ -732,11 +715,12 @@ function FounderCard({
   const openStart = 0.28 + invertedStagger; 
   const openEnd = 0.50 + invertedStagger;
 
-  /* The hero flies forward strictly in this window */
   const flightStart = 0.65;
   const flightEnd = 0.82;
 
-  const y = useTransform(
+  // Raw MotionValues mapping progress to pixel offsets from center
+  const xOffset = useTransform(progress, [flightStart, flightEnd], [0, isHero ? slot.cx : 0], { ease: cappenEase });
+  const yOffset = useTransform(
     progress,
     isHero
       ? [dealStart, dealEnd, openStart, openEnd, flightStart, flightEnd]
@@ -748,6 +732,11 @@ function FounderCard({
       ? { ease: [cappenEase, linear, cappenEase, linear, cappenEase] }
       : { ease: [cappenEase, linear, cappenEase] }
   );
+
+  // 🛑 The Magic Fix: Using CSS calc() inside x and y directly offsets by exact pixel amounts
+  // while centering the element precisely at 50% 50% via the GPU, skipping Flexbox completely.
+  const translateX = useTransform(xOffset, (val) => `calc(-50% + ${val}px)`);
+  const translateY = useTransform(yOffset, (val) => `calc(-50% + ${val}px)`);
 
   const scale = useTransform(
     progress,
@@ -762,7 +751,6 @@ function FounderCard({
       : { ease: [cappenEase, linear, cappenEase] }
   );
 
-  // Use width/height ONLY for hero flight, keeping scale at 1 to avoid conflict
   const heroWidth = useTransform(
     progress, 
     [flightStart, flightEnd], 
@@ -775,7 +763,6 @@ function FounderCard({
     [dims.cardH, slot.h], 
     { ease: cappenEase }
   );
-  const x = useTransform(progress, [flightStart, flightEnd], [0, isHero ? slot.cx : 0], { ease: cappenEase });
 
   const zIndex = useTransform(progress, (v) =>
     isHero && v >= flightStart - 0.01 ? 60 : 40 - index
@@ -790,18 +777,16 @@ function FounderCard({
   const grayscaleMV = useTransform(progress, [flightStart, flightEnd], [0.9, 0]);
   const heroFilter = useMotionTemplate`grayscale(${grayscaleMV})`;
 
-  const imageScale = clampScale(founder.scaleFactor);
-  const imageOffsetX = founder.positionX ?? 0;
-  const imageOffsetY = founder.positionY ?? 0;
-
   return (
     <motion.div
-      className="absolute bg-white"
+      className="absolute bg-white pointer-events-auto"
       style={{
+        left: "50%",
+        top: "50%",
+        x: translateX,
+        y: translateY,
         width: isHero ? heroWidth : dims.cardW,
         height: isHero ? heroHeight : dims.cardH,
-        x,
-        y,
         scale,
         opacity,
         zIndex,
