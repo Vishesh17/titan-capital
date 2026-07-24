@@ -79,9 +79,9 @@ const STORY_GAP = "calc(var(--section-px-wide) * 0.4)";
 const BORDER_PADDING = "calc(var(--section-px-wide) * 0.2)";
 
 // Impact section specific tokens - more spread out cells
-const IMPACT_CELL_PADDING = "calc(var(--section-px-wide) * 0.2)";
-const IMPACT_COL_GAP = "calc(var(--section-px-wide) * 1.2)"
-const IMPACT_ROW_GAP = "calc(var(--section-px-wide) * 0.5)";
+const IMPACT_CELL_PADDING = "calc(var(--section-px-wide) * 0)";
+const IMPACT_COL_GAP = "calc(var(--section-px-wide) * 1.5)"
+const IMPACT_ROW_GAP = "calc(var(--section-px-wide) * 0.9)";
 
 function cdnImageSrc(url: string, width: number): string {
   if (url.startsWith("https://cdn.sanity.io/")) {
@@ -585,7 +585,7 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
             className="grid max-md:!grid-cols-2"
             style={{
               gridTemplateColumns: "repeat(3, 1fr)",
-              maxWidth: "90%",
+              maxWidth: "80%",
               paddingLeft: IMPACT_CELL_PADDING,
               paddingRight: IMPACT_CELL_PADDING,
               columnGap: IMPACT_COL_GAP,

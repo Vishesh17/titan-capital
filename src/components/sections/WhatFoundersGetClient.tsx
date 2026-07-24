@@ -80,18 +80,16 @@ function InViewDivider({
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, {
     margin: "0px 0px -15% 0px",
-    once: false,
+    once: true,
   });
 
   return (
     <motion.div
       ref={ref}
-      // 🛑 FIX: Added shrink-0 to prevent flex compression
       className={`origin-left bg-black shrink-0 ${className ?? ""}`}
       initial={{ scaleX: 0 }}
       animate={{ scaleX: isInView ? 1 : 0 }}
       transition={{ duration: 1.2, ease: EASE }}
-      // 🛑 FIX: Added minHeight to ensure crisp 1px rendering
       style={{ minHeight: "1px", ...style }}
     />
   );
