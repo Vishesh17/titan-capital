@@ -567,7 +567,6 @@ export default function FoundersTestimonialClient({
 function TypingText({ text, delay = 0 }: { text: string; delay?: number }) {
   const [displayedText, setDisplayedText] = useState("");
   const [started, setStarted] = useState(false);
-  const [cursorVisible, setCursorVisible] = useState(true);
 
   useEffect(() => {
     const startTimer = setTimeout(() => setStarted(true), delay * 1000);
@@ -599,28 +598,9 @@ function TypingText({ text, delay = 0 }: { text: string; delay?: number }) {
     return () => clearTimeout(timeoutId);
   }, [started, text]);
 
-  // Cursor blink
-  useEffect(() => {
-    const blinkInterval = setInterval(() => {
-      setCursorVisible((v) => !v);
-    }, 530);
-    return () => clearInterval(blinkInterval);
-  }, []);
-
   return (
     <span className="relative inline-block">
       <span className="relative">{displayedText}</span>
-      <span
-        style={{
-          display: "inline-block",
-          width: "3px",
-          height: "0.9em",
-          background: "black",
-          marginLeft: "1px",
-          verticalAlign: "baseline",
-          opacity: cursorVisible ? 1 : 0,
-        }}
-      />
     </span>
   );
 }

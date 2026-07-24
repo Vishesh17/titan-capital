@@ -121,7 +121,7 @@ const GRAIN =
     const normX = useMotionValue(0);
     const normY = useMotionValue(0);
   
-    const cursorSpring = { damping: 25, stiffness: 60, mass: 0.4 };
+    const cursorSpring = { damping: 25, stiffness: 250, mass: 0.3 };
     const smoothX = useSpring(mouseX, cursorSpring);
     const smoothY = useSpring(mouseY, cursorSpring);
   
