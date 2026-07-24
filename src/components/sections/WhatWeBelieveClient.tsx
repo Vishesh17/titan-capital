@@ -49,74 +49,71 @@ const SPRING = { stiffness: 60, damping: 20, mass: 0.5 };
 /* ─────────────────────────────────────────────────────────
    Dimension Calculations
    ───────────────────────────────────────────────────────── */
-   const FALLBACK_DIMS = { winW: 1512, winH: 982, cardW: 452, cardH: 513, gap: 32, photoW: 1356 };
-   const FALLBACK_MOBILE_DIMS = { winW: 390, winH: 844, cardW: 340, cardH: 220, gap: 16, photoH: 660 };
-   
-   function computeDims() {
-     if (typeof window === "undefined") return FALLBACK_DIMS;
-   
-     const winW = window.innerWidth;
-     const winH = window.innerHeight;
-   
-     const targetW = 452;
-     const targetH = 513;
-   
-     const scale = Math.min(winW / 1512, winH / 982, 1.2);
-     const cardW = Math.max(280, Math.round(targetW * Math.min(scale, 1)));
-     const cardH = Math.max(380, Math.round(targetH * Math.min(scale, 1)));
-   
-     const gap = Math.round(winW * 0.02);
-     const photoW = 3 * cardW;
-   
-     return { winW, winH, cardW, cardH, gap, photoW };
-   }
-   
-   function computeMobileDims() {
-     if (typeof window === "undefined") return FALLBACK_MOBILE_DIMS;
-   
-     const winW = window.innerWidth;
-     const winH = window.innerHeight;
-   
-     const cardW = Math.min(winW * 0.88, 360);
-     const cardH = Math.min(winH * 0.26, 240);
-     const gap = 16;
-     const photoH = 3 * cardH;
-   
-     return { winW, winH, cardW, cardH, gap, photoH };
-   }
-   
-   export default function WhatWeBelieveClient({
-     data,
-   }: {
-     data?: WhatWeBelieveData | null;
-   }) {
-     const heading = data?.heading || HEADING;
-     const beliefs = data?.beliefs && data.beliefs.length === 3 ? data.beliefs : BELIEFS;
-   
-     const sectionRef = useRef<HTMLElement>(null);
-   
-     const { scrollYProgress } = useScroll({
-       target: sectionRef,
-       offset: ["start start", "end end"],
-     });
-     const p = useSpring(scrollYProgress, SPRING);
-   
-     // 🛑 FIX: Start strictly with fallbacks to match the server HTML
-     const [dims, setDims] = useState(FALLBACK_DIMS);
-     const [mobileDims, setMobileDims] = useState(FALLBACK_MOBILE_DIMS);
-   
-     const handleResize = useCallback(() => {
-       setDims(computeDims());
-       setMobileDims(computeMobileDims());
-     }, []);
-   
-     useEffect(() => {
-       // 🛑 FIX: Calculate real dimensions immediately after mounting
-       handleResize();
-       window.addEventListener("resize", handleResize);
-       return () => window.removeEventListener("resize", handleResize);
-     }, [handleResize]);
+const FALLBACK_DIMS = { winW: 1512, winH: 982, cardW: 452, cardH: 513, gap: 32, photoW: 1356 };
+const FALLBACK_MOBILE_DIMS = { winW: 390, winH: 844, cardW: 340, cardH: 220, gap: 16, photoH: 660 };
 
+function computeDims() {
+  if (typeof window === "undefined") return FALLBACK_DIMS;
+
+  const winW = window.innerWidth;
+  const winH = window.innerHeight;
+
+  const targetW = 452;
+  const targetH = 513;
+
+  const scale = Math.min(winW / 1512, winH / 982, 1.2);
+  const cardW = Math.max(280, Math.round(targetW * Math.min(scale, 1)));
+  const cardH = Math.max(380, Math.round(targetH * Math.min(scale, 1)));
+
+  const gap = Math.round(winW * 0.02);
+  const photoW = 3 * cardW;
+
+  return { winW, winH, cardW, cardH, gap, photoW };
+}
+
+function computeMobileDims() {
+  if (typeof window === "undefined") return FALLBACK_MOBILE_DIMS;
+
+  const winW = window.innerWidth;
+  const winH = window.innerHeight;
+
+  const cardW = Math.min(winW * 0.88, 360);
+  const cardH = Math.min(winH * 0.26, 240);
+  const gap = 16;
+  const photoH = 3 * cardH;
+
+  return { winW, winH, cardW, cardH, gap, photoH };
+}
+
+export default function WhatWeBelieveClient({
+  data,
+}: {
+  data?: WhatWeBelieveData | null;
+}) {
+  const heading = data?.heading || HEADING;
+  const beliefs = data?.beliefs && data.beliefs.length === 3 ? data.beliefs : BELIEFS;
+
+  const sectionRef = useRef<HTMLElement>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end end"],
+  });
+  const p = useSpring(scrollYProgress, SPRING);
+
+  const [dims, setDims] = useState(FALLBACK_DIMS);
+  const [mobileDims, setMobileDims] = useState(FALLBACK_MOBILE_DIMS);
+
+  const handleResize = useCallback(() => {
+    setDims(computeDims());
+    setMobileDims(computeMobileDims());
+  }, []);
+
+  useEffect(() => {
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [handleResize]);
 
   /* ─────────────────────────────────────────────────────────
      ANIMATION TIMING & TRANSFORMS
@@ -129,12 +126,8 @@ const SPRING = { stiffness: 60, damping: 20, mass: 0.5 };
   const desktopHeight = useTransform(p, [0, SHRINK_END], [dims.winH, dims.cardH]);
 
   const headingScale = useTransform(p, [0, SHRINK_END], [1, dims.photoW / dims.winW]);
-  
-  // 🛑 Fades out BEFORE the card shrink finishes (0.4)
   const headingOpacity = useTransform(p, [0.15, 0.35], [1, 0]);
-
   const lineOpacity = useTransform(p, [SHRINK_END, 0.5], [0, 1]);
-  
   const splitX = useTransform(p, [SHRINK_END, SPLIT_END], [0, dims.gap]);
   const flip = useTransform(p, [SHRINK_END, SPLIT_END], [0, 180]);
   const radius = useTransform(p, [0.3, SHRINK_END], [0, 2]);
@@ -144,10 +137,7 @@ const SPRING = { stiffness: 60, damping: 20, mass: 0.5 };
   const mobileHeight = useTransform(p, [0, SHRINK_END], [mobileDims.winH, mobileDims.photoH]);
 
   const mHeadingScale = useTransform(p, [0, SHRINK_END], [1, mobileDims.cardW / mobileDims.winW]);
-  
-  // 🛑 Fades out BEFORE the card shrink finishes (0.4)
   const mHeadingOpacity = useTransform(p, [0.15, 0.35], [1, 0]);
-
   const mSplitY = useTransform(p, [SHRINK_END, SPLIT_END], [0, mobileDims.gap]);
   const mFlip = useTransform(p, [SHRINK_END, SPLIT_END], [0, 180]);
   const mRadius = useTransform(p, [0.3, SHRINK_END], [0, 2]);
@@ -156,7 +146,7 @@ const SPRING = { stiffness: 60, damping: 20, mass: 0.5 };
     <section
       ref={sectionRef}
       className="relative w-full bg-[#FBF7F0]"
-      style={{ height: "250vh" }}
+      style={{ height: "175vh" }}
     >
       <div className="sticky top-0 z-10 h-screen w-full overflow-hidden flex items-center justify-center">
         
@@ -364,25 +354,28 @@ function DesktopCardSlice({
           backgroundColor: "#FFFFFF",
           boxShadow: "0px 10px 30px rgba(0,0,0,0.04)",
         }}
-        className="flex flex-col justify-between p-8 text-center"
+        className="flex flex-col items-center h-full pt-12 pb-10 px-6"
       >
-        <div className="flex h-1/2 items-center justify-center">
-          <h3 className="font-['Poppins',_sans-serif] text-[clamp(1.25rem,1.8vw,1.75rem)] font-medium text-black leading-snug capitalize">
+        <div className="flex items-start justify-center w-[90%]">
+          <h3 className="font-['Poppins',_sans-serif] text-[clamp(1.75rem,2.5vw,2.5rem)] font-semibold text-black leading-snug capitalize text-center">
             {belief.title}
           </h3>
         </div>
 
-        <div className="relative w-full flex justify-center items-center my-2">
-          <motion.div
-            style={{ scaleX: hrScale, transformOrigin: "center" }}
-            className="w-4/5 h-[1px] bg-black/80"
-          />
-        </div>
+        {/* 🛑 Pushes hr and desc completely to the end & guarantees alignment */}
+        <div className="w-[90%] flex flex-col mt-auto">
+          <div className="w-full mb-6">
+            <motion.div
+              style={{ scaleX: hrScale, transformOrigin: "center" }}
+              className="w-full h-[1px] bg-black/80"
+            />
+          </div>
 
-        <div className="flex h-1/2 items-start justify-center pt-4">
-          <p className="font-['Poppins',_sans-serif] text-[clamp(0.825rem,1.05vw,1rem)] font-normal text-[#323232] leading-relaxed">
-            {belief.description}
-          </p>
+          <div className="w-full min-h-[9rem] flex items-start justify-center">
+            <p className="w-full font-['Poppins',_sans-serif] text-[clamp(0.85rem,1vw,1rem)] font-normal text-[#323232] leading-relaxed text-center">
+              {belief.description}
+            </p>
+          </div>
         </div>
       </motion.div>
     </motion.div>
@@ -450,6 +443,7 @@ function MobileCardSlice({
         )}
       </motion.div>
 
+      {/* Back Side Content Card */}
       <motion.div
         style={{
           position: "absolute",
@@ -462,25 +456,28 @@ function MobileCardSlice({
           backgroundColor: "#FFFFFF",
           boxShadow: "0px 4px 16px rgba(0,0,0,0.06)",
         }}
-        className="flex flex-col justify-between p-4 text-center"
+        className="flex flex-col items-center h-full pt-6 pb-4 px-4"
       >
-        <div className="flex h-2/5 items-center justify-center">
-          <h3 className="font-['Poppins',_sans-serif] text-base font-medium text-black leading-tight capitalize">
+        <div className="flex items-start justify-center w-[95%]">
+          <h3 className="font-['Poppins',_sans-serif] text-[22px] font-semibold text-black leading-tight capitalize text-center">
             {belief.title}
           </h3>
         </div>
 
-        <div className="relative w-full flex justify-center items-center my-1">
-          <motion.div
-            style={{ scaleX: hrScale, transformOrigin: "center" }}
-            className="w-11/12 h-[1px] bg-black/80"
-          />
-        </div>
+        {/* 🛑 Pushes hr and desc completely to the end & guarantees alignment */}
+        <div className="w-[95%] flex flex-col mt-auto">
+          <div className="w-full mb-3">
+            <motion.div
+              style={{ scaleX: hrScale, transformOrigin: "center" }}
+              className="w-full h-[1px] bg-black/80"
+            />
+          </div>
 
-        <div className="flex h-3/5 items-start justify-center pt-2">
-          <p className="font-['Poppins',_sans-serif] text-xs font-normal text-[#323232] leading-snug">
-            {belief.description}
-          </p>
+          <div className="w-full min-h-[6.5rem] flex items-start justify-center">
+            <p className="w-full font-['Poppins',_sans-serif] text-[13px] font-normal text-[#323232] leading-snug text-center">
+              {belief.description}
+            </p>
+          </div>
         </div>
       </motion.div>
     </motion.div>
