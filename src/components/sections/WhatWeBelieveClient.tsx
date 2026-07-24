@@ -280,6 +280,52 @@ export default function WhatWeBelieveClient({
 }
 
 /* ─────────────────────────────────────────────────────────
+   Card Blobs Texture (Moving Royal & White Blobs)
+   ───────────────────────────────────────────────────────── */
+function CardBlobs() {
+  return (
+    <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+      {/* Moving Royal Blue Blob */}
+      <motion.div
+        className="absolute rounded-full blur-[45px]"
+        style={{
+          bottom: "-20%",
+          left: "-25%",
+          width: "120%",
+          height: "100%",
+          background: "radial-gradient(circle, #5054B5 0%, #054EB6 40%, transparent 80%)",
+          opacity: 0.5,
+        }}
+        animate={{
+          x: ["0%", "15%", "-5%", "10%", "0%"],
+          y: ["0%", "-10%", "5%", "-10%", "0%"],
+          scale: [1, 1.1, 0.9, 1.05, 1],
+        }}
+        transition={{ duration: 12, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
+      />
+      {/* Moving White Blob */}
+      <motion.div
+        className="absolute rounded-full blur-[50px]"
+        style={{
+          bottom: "-25%",
+          right: "-25%",
+          width: "120%",
+          height: "100%",
+          background: "radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 40%, transparent 80%)",
+          opacity: 0.7,
+        }}
+        animate={{
+          x: ["0%", "-15%", "10%", "-5%", "0%"],
+          y: ["0%", "-10%", "15%", "-5%", "0%"],
+          scale: [1, 1.15, 0.85, 1.1, 1],
+        }}
+        transition={{ duration: 15, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
+      />
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
    Desktop Card Slice
    ───────────────────────────────────────────────────────── */
 function DesktopCardSlice({
@@ -351,30 +397,33 @@ function DesktopCardSlice({
           rotateY: 180,
           borderRadius: "2px",
           overflow: "hidden",
-          backgroundColor: "#FFFFFF",
-          boxShadow: "0px 10px 30px rgba(0,0,0,0.04)",
+          backgroundColor: "#001A4D",
+          boxShadow: "0px 10px 30px rgba(0,0,0,0.2)",
         }}
-        className="flex flex-col items-center h-full pt-12 pb-10 px-6"
+        className="relative"
       >
-        <div className="flex items-start justify-center w-[90%]">
-          <h3 className="font-['Poppins',_sans-serif] text-[clamp(1.75rem,2.5vw,2.5rem)] font-semibold text-black leading-snug capitalize text-center">
-            {belief.title}
-          </h3>
-        </div>
+        <CardBlobs />
 
-        {/* 🛑 Pushes hr and desc completely to the end & guarantees alignment */}
-        <div className="w-[90%] flex flex-col mt-auto">
-          <div className="w-full mb-6">
-            <motion.div
-              style={{ scaleX: hrScale, transformOrigin: "center" }}
-              className="w-full h-[1px] bg-black/80"
-            />
+        <div className="relative z-10 flex flex-col items-center h-full pt-12 pb-10 px-6">
+          <div className="flex items-start justify-center w-[90%]">
+            <h3 className="font-['Poppins',_sans-serif] text-[clamp(1.75rem,2.5vw,2.5rem)] font-semibold text-white leading-snug capitalize text-center">
+              {belief.title}
+            </h3>
           </div>
 
-          <div className="w-full min-h-[9rem] flex items-start justify-center">
-            <p className="w-full font-['Poppins',_sans-serif] text-[clamp(0.85rem,1vw,1rem)] font-normal text-[#323232] leading-relaxed text-center">
-              {belief.description}
-            </p>
+          <div className="w-[90%] flex flex-col mt-auto">
+            <div className="w-full mb-6">
+              <motion.div
+                style={{ scaleX: hrScale, transformOrigin: "center" }}
+                className="w-full h-[1px] bg-white/80"
+              />
+            </div>
+
+            <div className="w-full min-h-[9rem] flex items-start justify-center">
+              <p className="w-full font-['Poppins',_sans-serif] text-[clamp(0.85rem,1vw,1rem)] font-normal text-white/90 leading-relaxed text-center">
+                {belief.description}
+              </p>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -453,30 +502,33 @@ function MobileCardSlice({
           rotateX: 180,
           borderRadius: "2px",
           overflow: "hidden",
-          backgroundColor: "#FFFFFF",
-          boxShadow: "0px 4px 16px rgba(0,0,0,0.06)",
+          backgroundColor: "#001A4D", 
+          boxShadow: "0px 4px 16px rgba(0,0,0,0.15)",
         }}
-        className="flex flex-col items-center h-full pt-6 pb-4 px-4"
+        className="relative"
       >
-        <div className="flex items-start justify-center w-[95%]">
-          <h3 className="font-['Poppins',_sans-serif] text-[22px] font-semibold text-black leading-tight capitalize text-center">
-            {belief.title}
-          </h3>
-        </div>
+        <CardBlobs />
 
-        {/* 🛑 Pushes hr and desc completely to the end & guarantees alignment */}
-        <div className="w-[95%] flex flex-col mt-auto">
-          <div className="w-full mb-3">
-            <motion.div
-              style={{ scaleX: hrScale, transformOrigin: "center" }}
-              className="w-full h-[1px] bg-black/80"
-            />
+        <div className="relative z-10 flex flex-col items-center h-full pt-6 pb-4 px-4">
+          <div className="flex items-start justify-center w-[95%]">
+            <h3 className="font-['Poppins',_sans-serif] text-[22px] font-semibold text-white leading-tight capitalize text-center">
+              {belief.title}
+            </h3>
           </div>
 
-          <div className="w-full min-h-[6.5rem] flex items-start justify-center">
-            <p className="w-full font-['Poppins',_sans-serif] text-[13px] font-normal text-[#323232] leading-snug text-center">
-              {belief.description}
-            </p>
+          <div className="w-[95%] flex flex-col mt-auto">
+            <div className="w-full mb-3">
+              <motion.div
+                style={{ scaleX: hrScale, transformOrigin: "center" }}
+                className="w-full h-[1px] bg-white/80"
+              />
+            </div>
+
+            <div className="w-full min-h-[6.5rem] flex items-start justify-center">
+              <p className="w-full font-['Poppins',_sans-serif] text-[13px] font-normal text-white/90 leading-snug text-center">
+                {belief.description}
+              </p>
+            </div>
           </div>
         </div>
       </motion.div>
