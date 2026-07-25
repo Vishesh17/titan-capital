@@ -149,7 +149,6 @@ export default function WhatWeBelieveClient({
   return (
     <section
       ref={sectionRef}
-      // FIXED: Added negative margin and compensating padding to seamlessly eat the gap from the previous section
       className="relative w-full bg-[#FBF7F0] max-md:-mt-[60px] max-md:pt-[60px]"
       style={{ height: "250vh" }}
     >
@@ -393,12 +392,10 @@ function MobileCardsContainer({
           style={{
             scale: mHeadingScale,
             transformOrigin: "center top",
-            // FIXED: Matched exact heading placement from screenshot
             marginTop: "clamp(24px, 5dvh, 40px)",
             textShadow: "0px 4px 16px rgba(0,0,0,0.05)",
             willChange: "transform",
           }}
-          // FIXED: Adjusted font size and weight to perfectly match the screenshot design
           className="m-0 text-center font-['Poppins',_sans-serif] text-[clamp(28px,8vw,36px)] font-medium text-black leading-[120%]"
         >
           {heading}
@@ -488,7 +485,17 @@ function DesktopCardSlice({
   mouseY: MotionValue<number>;
 }) {
   const x = useTransform(splitX, (v) => v * direction);
-  const hrScale = useTransform(progress, [0.75, 0.95], [0, 1]);
+  
+  // NEW: Triggers immediately as the flip completes, detached from exact scroll bounds
+  const [isFlipped, setIsFlipped] = useState(false);
+  useEffect(() => {
+    const unsubscribe = progress.on("change", (latest) => {
+      // The flip completes completely at 0.50. We trigger it natively right as it resolves.
+      if (latest >= 0.45) setIsFlipped(true);
+      else setIsFlipped(false);
+    });
+    return () => unsubscribe();
+  }, [progress]);
 
   return (
     <motion.div
@@ -518,10 +525,11 @@ function DesktopCardSlice({
           backgroundRepeat: "no-repeat",
         }}
       >
+        {/* FIXED: Uses borderRight instead of width: 1px to prevent GPU fractional bleed */}
         {index < 2 && (
           <motion.div 
-            style={{ opacity: lineOpacity }}
-            className="absolute right-0 top-0 bottom-0 w-[1px] bg-black/40 z-20 pointer-events-none" 
+            style={{ opacity: lineOpacity, borderRight: "1px solid rgba(0,0,0,0.4)" }}
+            className="absolute right-0 top-0 bottom-0 w-0 z-20 pointer-events-none" 
           />
         )}
       </motion.div>
@@ -554,9 +562,13 @@ function DesktopCardSlice({
 
           <div className="flex flex-col mt-auto" style={{ marginBottom: "min(1.85vw, 2.86vh)" }}>
             <div className="w-full">
+              {/* FIXED: Switched to a border implementation to prevent blur, and driven automatically by state */}
               <motion.div
-                style={{ scaleX: hrScale, transformOrigin: "center" }}
-                className="w-full h-[1px] bg-white/80"
+                initial={false}
+                animate={{ scaleX: isFlipped ? 1 : 0 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: isFlipped ? 0.15 : 0 }}
+                style={{ transformOrigin: "center", borderTop: "1px solid rgba(255,255,255,0.8)" }}
+                className="w-full h-0"
               />
             </div>
           </div>
@@ -602,7 +614,17 @@ function MobileCardSlice({
   mouseY: MotionValue<number>;
 }) {
   const y = useTransform(splitY, (v) => v * direction);
-  const hrScale = useTransform(progress, [0.75, 0.95], [0, 1]);
+  
+  // NEW: Triggers immediately as the flip completes, detached from exact scroll bounds
+  const [isFlipped, setIsFlipped] = useState(false);
+  useEffect(() => {
+    const unsubscribe = progress.on("change", (latest) => {
+      // The flip completes completely at 0.50. We trigger it natively right as it resolves.
+      if (latest >= 0.45) setIsFlipped(true);
+      else setIsFlipped(false);
+    });
+    return () => unsubscribe();
+  }, [progress]);
 
   return (
     <motion.div
@@ -627,17 +649,16 @@ function MobileCardSlice({
           borderRadius: radius,
           overflow: "hidden",
           backgroundImage: `url(${IMAGE_SRC})`,
-          // FIXED: Changed from 100% 300% to auto 300%. This accurately crops the panoramic 
-          // desktop image into a perfectly proportioned portrait center-crop for mobile.
           backgroundSize: "auto 300%",
           backgroundPosition: `center ${index * 50}%`,
           backgroundRepeat: "no-repeat",
         }}
       >
+        {/* FIXED: Uses borderBottom instead of height: 1px to prevent GPU fractional bleed */}
         {index < 2 && (
           <motion.div 
-            style={{ opacity: lineOpacity }}
-            className="absolute left-0 right-0 bottom-0 h-[1px] bg-black/40 z-20 pointer-events-none" 
+            style={{ opacity: lineOpacity, borderBottom: "1px solid rgba(0,0,0,0.4)" }}
+            className="absolute left-0 right-0 bottom-0 h-0 z-20 pointer-events-none" 
           />
         )}
       </motion.div>
@@ -671,9 +692,13 @@ function MobileCardSlice({
 
           <div className="flex flex-col mt-auto" style={{ marginBottom: "min(1.85vw, 2.86vh)" }}>
             <div className="w-full">
+              {/* FIXED: Switched to a border implementation to prevent blur, and driven automatically by state */}
               <motion.div
-                style={{ scaleX: hrScale, transformOrigin: "center" }}
-                className="w-full h-[1px] bg-white/80"
+                initial={false}
+                animate={{ scaleX: isFlipped ? 1 : 0 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: isFlipped ? 0.15 : 0 }}
+                style={{ transformOrigin: "center", borderTop: "1px solid rgba(255,255,255,0.8)" }}
+                className="w-full h-0"
               />
             </div>
           </div>
