@@ -76,7 +76,7 @@ const BORDER_PADDING = "calc(var(--section-px-wide) * 0.2)";
 
 const IMPACT_CELL_PADDING = "calc(var(--section-px-wide) * 0.01)";
 const IMPACT_COL_GAP = "calc(var(--section-px-wide) * 1.4)"
-const IMPACT_ROW_GAP = "calc(var(--section-px-wide) * 0.9)";
+const IMPACT_ROW_GAP = "calc(var(--section-px-wide) * 1.2)";
 
 function cdnImageSrc(url: string, width: number): string {
   if (url.startsWith("https://cdn.sanity.io/")) {
@@ -156,7 +156,7 @@ function ImpactStatCell({
 }) {
   return (
     <motion.div
-      className="flex flex-row items-start max-md:!gap-[12px]"
+      className="flex flex-row items-start max-md:!gap-[10px]"
       style={{ gap: "min(1.85vw, 2.86vh)", paddingLeft: IMPACT_CELL_PADDING }}
       variants={{
         hidden: { opacity: 0, y: 20 },
@@ -168,7 +168,7 @@ function ImpactStatCell({
       }}
     >
       <motion.div
-        className="shrink-0 bg-black max-md:!h-[70px]"
+        className="shrink-0 bg-black max-md:!h-[80px]"
         style={{
           width: "1px",
           height: "min(13.89vw, 21.49vh)",
@@ -176,15 +176,15 @@ function ImpactStatCell({
           transformOrigin: "top",
         }}
       />
-      <div className="flex flex-col justify-start">
+      <div className="flex flex-col">
         <span
-          className="font-['Poppins',_sans-serif] font-medium text-black max-md:!text-[26px]"
-          style={{ fontSize: "min(6.48vw, 10.03vh)", lineHeight: "110%" }}
+          className="font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[26px]"
+          style={{ fontSize: "min(6.48vw, 10.03vh)", lineHeight: "150%" }}
         >
           <RollingNumber value={stat.num} />
         </span>
         <span
-          className="font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[14px] whitespace-pre-line"
+          className="whitespace-nowrap font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[14px]"
           style={{
             fontSize: "min(2.55vw, 3.94vh)",
             lineHeight: "120%",
@@ -456,25 +456,26 @@ function StoriesSection({
             aria-hidden
             className="pointer-events-none absolute max-md:!hidden z-20"
             style={{
-              top: "calc(50% - 0.5px)",
+              top: "50%",
               left: "var(--bp)",
               width: "calc(50% - var(--bp))",
-              height: "1px",
-              background: "#000",
+              height: 0,
+              borderTop: "1px solid #000",
               transformOrigin: "left",
               scaleX: hRuleScale,
             }}
           />
+        
 
           <motion.div
             aria-hidden
             className="pointer-events-none absolute max-md:!hidden z-20"
             style={{
-              top: "calc(50% - 0.5px)",
+              top: "50%",
               right: "var(--bp)",
               width: "calc(50% - var(--bp))",
-              height: "1px",
-              background: "#000",
+              height: 0,
+              borderTop: "1px solid #000",
               transformOrigin: "right",
               scaleX: hRuleScale,
             }}
@@ -483,13 +484,13 @@ function StoriesSection({
           <motion.div
             aria-hidden
             className="pointer-events-none absolute max-md:!hidden z-20"
-            style={{ top: "var(--bp)", left: "calc(33.3333% - 0.5px)", width: "1px", height: "calc(100% - 2 * var(--bp))", background: "#000", transformOrigin: "top", scaleY: vRuleScale }}
+            style={{ top: "var(--bp)", left: "33.3333%", width: 0, borderLeft: "1px solid #000", height: "calc(100% - 2 * var(--bp))", transformOrigin: "top", scaleY: vRuleScale }}
           />
 
           <motion.div
             aria-hidden
             className="pointer-events-none absolute max-md:!hidden z-20"
-            style={{ top: "var(--bp)", left: "calc(66.6666% - 0.5px)", width: "1px", height: "calc(100% - 2 * var(--bp))", background: "#000", transformOrigin: "top", scaleY: vRuleScale }}
+            style={{ top: "var(--bp)", left: "66.6666%", width: 0, borderLeft: "1px solid #000", height: "calc(100% - 2 * var(--bp))", transformOrigin: "top", scaleY: vRuleScale }}
           />
         </div>
 
@@ -527,7 +528,7 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
   return (
     <div ref={wrapperRef} className="relative w-full bg-[#FBF7F0]">
       <section
-        className="relative w-full bg-[#FBF7F0] max-md:!h-[100vh] max-md:!py-[40px]"
+        className="relative w-full bg-[#FBF7F0] max-md:!h-[100vh] max-md:!py-[70px]"
         style={{
           position: "sticky",
           top: 0,
@@ -559,11 +560,11 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
               hidden: { opacity: 0, y: 30 },
               visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
             }}
-            className="m-0 text-center font-['Poppins',_sans-serif] font-medium text-black max-md:!text-[28px] max-md:!leading-[120%] max-md:!mb-[clamp(48px,8dvh,80px)]"
+            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[28px] max-md:!leading-[120%] max-md:!mb-[clamp(48px,8dvh,80px)]"
             style={{
               fontSize: "min(4.51vw, 6.98vh)",
               lineHeight: "150%",
-              marginBottom: "min(1.5vw, 2.5vh)",
+              marginBottom: "min(5.5vw, 10.5vh)",
             }}
           >
             {`${impactHeadingFirst} ${impactHeadingSecond}`}

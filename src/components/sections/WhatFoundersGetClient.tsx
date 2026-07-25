@@ -70,6 +70,8 @@ const sectionVariants: Variants = {
   },
 };
 
+/* FIXED: Uses border-t to prevent fractional pixel bleed.
+   RESTORED: once: false ensures the line retracts (reverses) when scrolling up. */
 function InViewDivider({
   className,
   style,
@@ -80,17 +82,17 @@ function InViewDivider({
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, {
     margin: "0px 0px -15% 0px",
-    once: true,
+    once: false,
   });
 
   return (
     <motion.div
       ref={ref}
-      className={`origin-left bg-black shrink-0 ${className ?? ""}`}
+      className={`origin-left border-t border-black shrink-0 ${className ?? ""}`}
       initial={{ scaleX: 0 }}
       animate={{ scaleX: isInView ? 1 : 0 }}
       transition={{ duration: 1.2, ease: EASE }}
-      style={{ minHeight: "1px", ...style }}
+      style={{ height: 0, ...style }}
     />
   );
 }
@@ -384,13 +386,15 @@ function OpenedRow({
             </span>
           </div>
 
+          {/* RESTORED: exit animation gracefully retracts the line when closing */}
           <motion.div
             aria-hidden
             initial={{ scaleY: 0 }}
             animate={{ scaleY: 1 }}
+            exit={{ scaleY: 0, transition: { duration: 0.3, ease: EASE } }}
             transition={{ duration: 1.0, ease: EASE, delay: 0.2 }}
-            className="absolute right-0 top-0 h-full bg-black shrink-0"
-            style={{ width: "1px", minWidth: "1px", transformOrigin: "top" }}
+            className="absolute right-0 top-0 h-full border-r border-black shrink-0"
+            style={{ width: 0, transformOrigin: "top" }}
           />
         </div>
 
@@ -419,15 +423,16 @@ function OpenedRow({
               {row.longDesc}
             </p>
 
+            {/* RESTORED: exit animation gracefully retracts the line when closing */}
             <motion.div
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}
+              exit={{ scaleX: 0, transition: { duration: 0.3, ease: EASE } }}
               transition={{ duration: 1.0, ease: EASE, delay: 0.2 }}
-              className="origin-left bg-black shrink-0"
+              className="origin-left border-t border-black shrink-0"
               style={{
                 width: "100%",
-                height: "1px",
-                minHeight: "1px",
+                height: 0,
                 marginTop: SZ.rowInnerGap,
                 marginBottom: SZ.rowInnerGap,
               }}
@@ -471,7 +476,7 @@ function OpenedRow({
         </div>
       </motion.div>
 
-      {/* ─── MOBILE LAYOUT (New, matches screenshots exactly) ─── */}
+      {/* ─── MOBILE LAYOUT ─── */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{
@@ -481,7 +486,6 @@ function OpenedRow({
         exit={{ opacity: 0, transition: { duration: 0.3, ease: EASE } }}
         className="flex md:hidden w-full flex-col text-left"
       >
-        {/* Underlined 'BACK' link */}
         <button
           type="button"
           onClick={(e) => {
@@ -493,7 +497,6 @@ function OpenedRow({
           Back
         </button>
 
-        {/* Huge normal-orientation heading */}
         <h2
           className="m-0 mt-[24px] mb-[24px] font-['Poppins',_sans-serif] font-normal text-black"
           style={{ fontSize: "clamp(40px, 12vw, 56px)", lineHeight: "110%" }}
@@ -501,39 +504,40 @@ function OpenedRow({
           {row.title}
         </h2>
 
-        {/* Animated Horizontal Divider */}
+        {/* RESTORED: exit animation gracefully retracts the line when closing */}
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
+          exit={{ scaleX: 0, transition: { duration: 0.3, ease: EASE } }}
           transition={{ duration: 1.0, ease: EASE, delay: 0.2 }}
-          className="origin-left bg-black shrink-0 w-full h-[1px] min-h-[1px]"
+          className="origin-left border-t border-black shrink-0 w-full h-0"
         />
 
-        {/* Uppercase Bold Subheading */}
-        <h4
-          className="m-0 mt-[32px] font-['Poppins',_sans-serif] font-bold uppercase text-black"
-          style={{ fontSize: "16px", letterSpacing: "0.5px", lineHeight: "140%" }}
-        >
-          {row.longHeading}
-        </h4>
+        <div className="flex flex-col py-[clamp(24px,6vw,32px)]">
+          <h4
+            className="m-0 font-['Poppins',_sans-serif] font-bold uppercase text-black"
+            style={{ fontSize: "16px", letterSpacing: "0.5px", lineHeight: "140%" }}
+          >
+            {row.longHeading}
+          </h4>
 
-        {/* Paragraph Description */}
-        <p
-          className="m-0 mt-[16px] font-['Poppins',_sans-serif] font-normal text-[#1a1a1a]"
-          style={{ fontSize: "16px", lineHeight: "150%" }}
-        >
-          {row.longDesc}
-        </p>
+          <p
+            className="m-0 mt-[16px] font-['Poppins',_sans-serif] font-normal text-[#1a1a1a]"
+            style={{ fontSize: "16px", lineHeight: "150%" }}
+          >
+            {row.longDesc}
+          </p>
+        </div>
 
-        {/* Second Animated Horizontal Divider */}
+        {/* RESTORED: exit animation gracefully retracts the line when closing */}
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
+          exit={{ scaleX: 0, transition: { duration: 0.3, ease: EASE } }}
           transition={{ duration: 1.0, ease: EASE, delay: 0.3 }}
-          className="origin-left bg-black shrink-0 w-full h-[1px] min-h-[1px] mt-[32px] mb-[32px]"
+          className="origin-left border-t border-black shrink-0 w-full h-0 mt-[32px] mb-[32px]"
         />
 
-        {/* Bullet List */}
         <ul className="m-0 flex list-none flex-col p-0 gap-[16px]">
           {row.valueBullets.map((bullet, i) => (
             <li
@@ -581,7 +585,7 @@ function MobileRow({
       >
         <MobileClosedRow row={row} />
       </div>
-      {showDivider && <div className="h-[1px] min-h-[1px] w-full bg-black shrink-0" />}
+      {showDivider && <div className="h-0 w-full border-t border-black shrink-0" />}
     </div>
   );
 }
@@ -614,7 +618,7 @@ function Row({
       >
         <ClosedRow row={row} />
       </div>
-      {showDivider && <InViewDivider style={{ width: SZ.divider, height: "1px" }} />}
+      {showDivider && <InViewDivider style={{ width: SZ.divider }} />}
     </div>
   );
 }
@@ -658,7 +662,6 @@ function FullPageCard({
         y: 12,
         transition: { duration: 0.3, ease: EASE },
       }}
-      // Fixed: Mobile becomes a scrolling block, desktop remains vertically centered flex
       className="fixed inset-0 z-50 flex items-center justify-center max-md:!block max-md:overflow-y-auto max-md:!pt-[100px] max-md:!px-[24px] max-md:!pb-[40px]"
       style={{
         transformOrigin: "center",
@@ -708,7 +711,8 @@ export default function WhatFoundersGetClient({
         variants={sectionVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.15 }}
+        // RESTORED: once: false ensures the whole section animates back out when scrolling away
+        viewport={{ once: false, amount: 0.15 }}
       >
         <h2
           className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px] max-md:!font-normal max-md:!leading-[120%]"
@@ -722,7 +726,7 @@ export default function WhatFoundersGetClient({
 
         <div className="max-md:hidden" style={{ height: SZ.headingToDivider }} />
 
-        <div className="hidden max-md:block w-full h-[1px] bg-black shrink-0 mt-[32px]" />
+        <div className="hidden max-md:block w-full h-0 border-t border-black shrink-0 mt-[32px]" />
 
         {/* Rows — Desktop (hidden on mobile) */}
         <div className="hidden md:flex w-full flex-col items-center">

@@ -28,6 +28,9 @@ export interface HeroFounder {
   scaleFactor?: number;
   positionX?: number;
   positionY?: number;
+  squareScaleFactor?: number;
+  squarePositionX?: number;
+  squarePositionY?: number;
 }
 
 export interface HeroData {
@@ -44,14 +47,14 @@ export interface HeroData {
    Fallback data
    ───────────────────────────────────────────────────────── */
 const FALLBACK_FOUNDERS: HeroFounder[] = [
-  { name: "Abhiraj Singh Bhal",  role: "Co-Founder, Urban Company",     image: "/images/herosection/3. Varun Khaitan  1.png", scaleFactor: 1, positionX: 0, positionY: 10 },
-  { name: "Ashutosh Valani",     role: "Co-Founder, RENÉE Cosmetics",   image: "/images/herosection/4. Ghazal 1.png", scaleFactor: 1.3, positionX: 0, positionY: 5 },
-  { name: "Abhishek Bansal",     role: "Co-Founder, Shadowfax",         image: "/images/herosection/6. Ashtosh Valani 1.png", scaleFactor: 1, positionX: 0, positionY: 2 },
-  { name: "Titan Capital",       role: "",                              image: "/images/hero_founders_images/titan-capital.png",     isLogo: true, scaleFactor: 1, positionX: 0, positionY: 0 },
-  { name: "Varun Khaitan",       role: "Co-Founder, Urban Company",     image: "/images/herosection/Asish Mohapatra 1.png", scaleFactor: 0.9, positionX: -13, positionY: 20 },
-  { name: "Ishendra Agarwal",    role: "Co-Founder, GIVA",              image: "/images/herosection/image 177.png", scaleFactor: 1.3, positionX: -8, positionY: 40 },
-  { name: "Anand Agrawal",       role: "Co-Founder, Credgenics",        image: "/images/herosection/Rishabh 2.png", scaleFactor: 1, positionX: 10, positionY: 0 },
-  { name: "Ruchi Kalra",         role: "Co-Founder, Ofbusiness",        image: "/images/herosection/Aarti Gill 2.png", scaleFactor: 1.2, positionX: -20, positionY: 14 },
+  { name: "Abhiraj Singh Bhal",  role: "Co-Founder, Urban Company",     image: "/images/herosection/3. Varun Khaitan  1.png", scaleFactor: 1, positionX: 0, positionY: 10, squareScaleFactor: 0.9, squarePositionX: 0, squarePositionY: 7 },
+  { name: "Ashutosh Valani",     role: "Co-Founder, RENÉE Cosmetics",   image: "/images/herosection/4. Ghazal 1.png", scaleFactor: 1.3, positionX: 0, positionY: 5, squareScaleFactor: 0.9, squarePositionX: 0, squarePositionY: 7 },
+  { name: "Abhishek Bansal",     role: "Co-Founder, Shadowfax",         image: "/images/herosection/6. Ashtosh Valani 1.png", scaleFactor: 1, positionX: 0, positionY: 2, squareScaleFactor: 0.9, squarePositionX: 0, squarePositionY: 7 },
+  { name: "Titan Capital",       role: "",                              image: "/images/hero_founders_images/titan-capital.png",     isLogo: true, scaleFactor: 1, positionX: 0, positionY: 0, squareScaleFactor: 1, squarePositionX: 0, squarePositionY: 0 },
+  { name: "Varun Khaitan",       role: "Co-Founder, Urban Company",     image: "/images/herosection/Asish Mohapatra 1.png", scaleFactor: 0.9, positionX: -13, positionY: 20, squareScaleFactor: 0.9, squarePositionX: 0, squarePositionY: 7 },
+  { name: "Ishendra Agarwal",    role: "Co-Founder, GIVA",              image: "/images/herosection/image 177.png", scaleFactor: 1.3, positionX: -8, positionY: 40, squareScaleFactor: 1.2, squarePositionX: -2, squarePositionY: 18 },
+  { name: "Anand Agrawal",       role: "Co-Founder, Credgenics",        image: "/images/herosection/Rishabh 2.png", scaleFactor: 1, positionX: 10, positionY: 0, squareScaleFactor: 0.9, squarePositionX: 2, squarePositionY: 6 },
+  { name: "Ruchi Kalra",         role: "Co-Founder, Ofbusiness",        image: "/images/herosection/Aarti Gill 2.png", scaleFactor: 1.2, positionX: -20, positionY: 14, squareScaleFactor: 1, squarePositionX: -13, squarePositionY: 8 },
 ];
 
 const FALLBACK_SUBTITLE =
@@ -332,9 +335,9 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   
   const logoFounder = founders.find(f => f.isLogo);
   const nonLogoFounders = founders.filter(f => !f.isLogo);
-  const headingFounder = headingTick === 0 && logoFounder 
-    ? logoFounder 
-    : nonLogoFounders[(headingTick - 1) % nonLogoFounders.length];
+  const headingFounder = logoFounder
+    ? (headingTick === 0 ? logoFounder : nonLogoFounders[(headingTick - 1) % nonLogoFounders.length])
+    : nonLogoFounders[headingTick % nonLogoFounders.length];
 
   useEffect(() => {
     const unsub = progress.on("change", (v) => {
@@ -403,18 +406,27 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                   exit={{ opacity: 0, transition: { duration: 0 } }} 
                   transition={{ duration: 0.1, ease: "easeOut" }}
                 >
-                  <Image
-                    src={heroImageSrc(slideshowFounders[slideIndex % slideshowFounders.length].image, 600)}
-                    alt={slideshowFounders[slideIndex % slideshowFounders.length].name}
-                    fill
-                    sizes="(max-width: 768px) 50vw, 25vw"
-                    priority
-                    style={{
-                      ...IMG_STYLE,
-                      objectFit: "cover",
-                      filter: "grayscale(0.9)",
-                    }}
-                  />
+                  {(() => {
+                    const sf = slideshowFounders[slideIndex % slideshowFounders.length];
+                    return (
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          transform: `scale(${clampScale(sf.squareScaleFactor)}) translate(${sf.squarePositionX ?? 0}px, ${sf.squarePositionY ?? 0}px)`,
+                          transformOrigin: "center center",
+                        }}
+                      >
+                        <Image
+                          src={heroImageSrc(sf.image, 600)}
+                          alt={sf.name}
+                          fill
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                          priority
+                          style={{ objectFit: "cover", objectPosition: "center center", filter: "grayscale(0.9)" }}
+                        />
+                      </div>
+                    );
+                  })()}
                 </motion.div>
               </AnimatePresence>
             </motion.div>
@@ -766,7 +778,7 @@ function FounderCard({
 
   return (
     <motion.div
-      className="absolute bg-white pointer-events-auto"
+      className="absolute bg-white pointer-events-auto overflow-hidden"
       style={{
         left: "50%",
         top: "50%",
@@ -784,16 +796,24 @@ function FounderCard({
           : "transform, opacity",
       }}
     >
-      <Image
-        src={heroImageSrc(founder.image, 600)}
-        alt={founder.name}
-        fill
-        sizes="(max-width: 768px) 50vw, 25vw"
+        <div
+        className="absolute inset-0"
         style={{
-          ...IMG_STYLE,
-          objectFit: founder.isLogo ? "contain" : "cover",
+          transform: `scale(${clampScale(founder.squareScaleFactor)}) translate(${founder.squarePositionX ?? 0}px, ${founder.squarePositionY ?? 0}px)`,
+          transformOrigin: "center center",
         }}
-      />
+      >
+        <Image
+          src={heroImageSrc(founder.image, 600)}
+          alt={founder.name}
+          fill
+          sizes="(max-width: 768px) 50vw, 25vw"
+          style={{
+            objectFit: founder.isLogo ? "contain" : "cover",
+            objectPosition: "center center",
+          }}
+        />
+      </div>
     </motion.div>
   );
 }
