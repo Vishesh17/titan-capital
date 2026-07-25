@@ -77,13 +77,16 @@ function computeMobileDims() {
 
   const winW = window.innerWidth;
   const winH = window.innerHeight;
+  
+  // FIXED: Account for the 64px navbar offset so the top of the image aligns perfectly without gaps
+  const availH = winH - 64;
 
-  const cardW = Math.min(winW * 0.88, 360);
-  const cardH = Math.min(winH * 0.26, 240);
+  const cardW = Math.min(winW * 0.88, 380);
+  const cardH = Math.min(availH * 0.25, 220);
   const gap = 16;
   const photoH = 3 * cardH;
 
-  return { winW, winH, cardW, cardH, gap, photoH };
+  return { winW, winH: availH, cardW, cardH, gap, photoH };
 }
 
 export default function WhatWeBelieveClient({
@@ -146,7 +149,8 @@ export default function WhatWeBelieveClient({
   return (
     <section
       ref={sectionRef}
-      className="relative w-full bg-[#FBF7F0]"
+      // FIXED: Added negative margin and compensating padding to seamlessly eat the gap from the previous section
+      className="relative w-full bg-[#FBF7F0] max-md:-mt-[60px] max-md:pt-[60px]"
       style={{ height: "250vh" }}
     >
       <div className="sticky z-10 h-screen w-full overflow-hidden flex items-center justify-center" style={{ top: "64px", height: "calc(100vh - 64px)" }}>
@@ -389,11 +393,13 @@ function MobileCardsContainer({
           style={{
             scale: mHeadingScale,
             transformOrigin: "center top",
-            marginTop: "56px",
-            textShadow: "0px 4px 16px rgba(0,0,0,0.1)",
+            // FIXED: Matched exact heading placement from screenshot
+            marginTop: "clamp(24px, 5dvh, 40px)",
+            textShadow: "0px 4px 16px rgba(0,0,0,0.05)",
             willChange: "transform",
           }}
-          className="m-0 text-center font-['Poppins',_sans-serif] text-[36px] font-semibold text-black leading-[120%]"
+          // FIXED: Adjusted font size and weight to perfectly match the screenshot design
+          className="m-0 text-center font-['Poppins',_sans-serif] text-[clamp(28px,8vw,36px)] font-medium text-black leading-[120%]"
         >
           {heading}
         </motion.h2>
@@ -406,14 +412,12 @@ function MobileCardsContainer({
    Card Blobs Texture (Mouse-following fluid blobs)
    ───────────────────────────────────────────────────────── */
 function CardBlobs({ mouseX, mouseY }: { mouseX: MotionValue<number>; mouseY: MotionValue<number> }) {
-  // Spring-smoothed values for fluid cursor following
   const springConfig = { stiffness: 80, damping: 25, mass: 0.8 };
   const smoothMouseX = useSpring(mouseX, springConfig);
   const smoothMouseY = useSpring(mouseY, springConfig);
 
   return (
     <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-      {/* Main blob - follows cursor directly */}
       <motion.div
         className="absolute rounded-full blur-[60px]"
         style={{
@@ -427,7 +431,6 @@ function CardBlobs({ mouseX, mouseY }: { mouseX: MotionValue<number>; mouseY: Mo
           translateY: "-50%",
         }}
       />
-      {/* Secondary white blob - opposite direction */}
       <motion.div
         className="absolute rounded-full blur-[50px]"
         style={{
@@ -441,7 +444,6 @@ function CardBlobs({ mouseX, mouseY }: { mouseX: MotionValue<number>; mouseY: Mo
           translateY: "-50%",
         }}
       />
-      {/* Third accent blob - subtle follow */}
       <motion.div
         className="absolute rounded-full blur-[45px]"
         style={{
@@ -499,7 +501,6 @@ function DesktopCardSlice({
         willChange: "transform",
       }}
     >
-      {/* Front Side Image */}
       <motion.div
         style={{
           position: "absolute",
@@ -525,7 +526,6 @@ function DesktopCardSlice({
         )}
       </motion.div>
 
-      {/* Back Side Content Card */}
       <motion.div
         style={{
           position: "absolute",
@@ -542,32 +542,32 @@ function DesktopCardSlice({
       >
         <CardBlobs mouseX={mouseX} mouseY={mouseY} />
 
-        <div className="relative z-10 flex flex-col items-center h-full pt-12 pb-10 px-6">
-          <div className="flex items-start justify-center w-[90%]">
+        <div className="relative z-10 flex flex-col h-full" style={{ paddingTop: "min(3.47vw, 5.37vh)", paddingBottom: "min(2.78vw, 4.31vh)", paddingLeft: "min(2.08vw, 3.22vh)", paddingRight: "min(2.08vw, 3.22vh)" }}>
+          <div className="flex justify-center">
             <h3
-              className="font-['Poppins',_sans-serif] font-semibold text-white capitalize text-center max-md:!text-[18px]"
-              style={{ fontSize: "min(2.31vw, 3.57vh)", lineHeight: "120%" }}
+              className="font-['Poppins',_sans-serif] font-semibold text-white capitalize text-center max-md:!text-[20px]"
+              style={{ fontSize: "min(3.01vw, 4.66vh)", lineHeight: "120%" }}
             >
               {belief.title}
             </h3>
           </div>
 
-          <div className="w-[90%] flex flex-col mt-auto">
-            <div className="w-full mb-6">
+          <div className="flex flex-col mt-auto" style={{ marginBottom: "min(1.85vw, 2.86vh)" }}>
+            <div className="w-full">
               <motion.div
                 style={{ scaleX: hrScale, transformOrigin: "center" }}
                 className="w-full h-[1px] bg-white/80"
               />
             </div>
+          </div>
 
-            <div className="w-full min-h-[9rem] flex items-start justify-center">
-              <p
-                className="w-full font-['Poppins',_sans-serif] font-normal text-white/90 text-center max-md:!text-[13px]"
-                style={{ fontSize: "min(1.16vw, 1.79vh)", lineHeight: "155%" }}
-              >
-                {belief.description}
-              </p>
-            </div>
+          <div className="flex justify-center" style={{ minHeight: "min(12.67vw, 19.61vh)" }}>
+            <p
+              className="font-['Poppins',_sans-serif] font-normal text-white/90 text-center max-md:!text-[13px]"
+              style={{ fontSize: "min(1.16vw, 1.79vh)", lineHeight: "155%" }}
+            >
+              {belief.description}
+            </p>
           </div>
         </div>
       </motion.div>
@@ -627,7 +627,9 @@ function MobileCardSlice({
           borderRadius: radius,
           overflow: "hidden",
           backgroundImage: `url(${IMAGE_SRC})`,
-          backgroundSize: "100% 300%",
+          // FIXED: Changed from 100% 300% to auto 300%. This accurately crops the panoramic 
+          // desktop image into a perfectly proportioned portrait center-crop for mobile.
+          backgroundSize: "auto 300%",
           backgroundPosition: `center ${index * 50}%`,
           backgroundRepeat: "no-repeat",
         }}
@@ -657,32 +659,32 @@ function MobileCardSlice({
       >
         <CardBlobs mouseX={mouseX} mouseY={mouseY} />
 
-        <div className="relative z-10 flex flex-col items-center h-full pt-6 pb-4 px-4">
-          <div className="flex items-start justify-center w-[95%]">
+        <div className="relative z-10 flex flex-col h-full" style={{ paddingTop: "min(3.47vw, 5.37vh)", paddingBottom: "min(2.78vw, 4.31vh)", paddingLeft: "min(2.08vw, 3.22vh)", paddingRight: "min(2.08vw, 3.22vh)" }}>
+          <div className="flex justify-center">
             <h3
-              className="font-['Poppins',_sans-serif] font-semibold text-white capitalize text-center max-md:!text-[18px]"
-              style={{ fontSize: "min(2.31vw, 3.57vh)", lineHeight: "120%" }}
+              className="font-['Poppins',_sans-serif] font-semibold text-white capitalize text-center max-md:!text-[clamp(18px,5vw,22px)]"
+              style={{ fontSize: "min(3.01vw, 4.66vh)", lineHeight: "120%" }}
             >
               {belief.title}
             </h3>
           </div>
 
-          <div className="w-[95%] flex flex-col mt-auto">
-            <div className="w-full mb-3">
+          <div className="flex flex-col mt-auto" style={{ marginBottom: "min(1.85vw, 2.86vh)" }}>
+            <div className="w-full">
               <motion.div
                 style={{ scaleX: hrScale, transformOrigin: "center" }}
                 className="w-full h-[1px] bg-white/80"
               />
             </div>
+          </div>
 
-            <div className="w-full min-h-[6.5rem] flex items-start justify-center">
-              <p
-                className="w-full font-['Poppins',_sans-serif] font-normal text-white/90 text-center max-md:!text-[13px]"
-                style={{ fontSize: "min(1.16vw, 1.79vh)", lineHeight: "155%" }}
-              >
-                {belief.description}
-              </p>
-            </div>
+          <div className="flex justify-center" style={{ minHeight: "min(12.67vw, 19.61vh)" }}>
+            <p
+              className="font-['Poppins',_sans-serif] font-normal text-white/90 text-center max-md:!text-[clamp(12px,3.5vw,14px)]"
+              style={{ fontSize: "min(1.16vw, 1.79vh)", lineHeight: "155%" }}
+            >
+              {belief.description}
+            </p>
           </div>
         </div>
       </motion.div>

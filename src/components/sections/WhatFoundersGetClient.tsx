@@ -202,7 +202,7 @@ const FALLBACK_ROWS: HowWeShowUpRow[] = [
 ];
 
 /* ─────────────────────────────────────────────────────────
-   Arrow SVG
+   Arrow SVG (Desktop)
    ───────────────────────────────────────────────────────── */
 function ClosedArrow({ style }: { style?: React.CSSProperties }) {
   return (
@@ -229,31 +229,32 @@ function MobileClosedRow({ row }: { row: HowWeShowUpRow }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: 0.45, ease: EASE } }}
       exit={{ opacity: 0, transition: { duration: 0.25, ease: EASE } }}
-      className="flex w-full flex-col"
-      style={{ paddingTop: "16px", paddingBottom: "16px" }}
+      className="flex w-full flex-col text-left"
     >
-      <div className="flex w-full items-start justify-between" style={{ gap: "12px" }}>
+      <div className="flex w-full items-start justify-between gap-[16px]">
         <h3
-          className="m-0 font-['Poppins',_sans-serif] font-normal capitalize text-black"
-          style={{ fontSize: "clamp(22px, 6vw, 32px)", lineHeight: "115%" }}
+          className="m-0 font-['Poppins',_sans-serif] font-normal text-black"
+          style={{ fontSize: "28px", lineHeight: "120%" }}
         >
           {row.title}
         </h3>
-        <div className="shrink-0 pt-1">
-          <ClosedArrow style={{ width: "24px", height: "20px" }} />
+        <div className="shrink-0 mt-[4px]">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 18L18 6M8 6h10v10"/>
+          </svg>
         </div>
       </div>
 
       <h4
-        className="m-0 mt-2 font-['Poppins',_sans-serif] font-semibold text-black"
-        style={{ fontSize: "clamp(13px, 3.5vw, 16px)", lineHeight: "140%" }}
+        className="m-0 mt-[20px] font-['Poppins',_sans-serif] font-medium text-black"
+        style={{ fontSize: "16px", lineHeight: "140%" }}
       >
         {row.shortHeading}
       </h4>
 
       <p
-        className="m-0 mt-1 font-['Poppins',_sans-serif] font-normal text-[#323232]"
-        style={{ fontSize: "clamp(12px, 3.2vw, 14px)", lineHeight: "150%" }}
+        className="m-0 mt-[8px] font-['Poppins',_sans-serif] font-normal text-[#1a1a1a]"
+        style={{ fontSize: "14px", lineHeight: "150%" }}
       >
         {row.shortDesc}
       </p>
@@ -262,7 +263,7 @@ function MobileClosedRow({ row }: { row: HowWeShowUpRow }) {
 }
 
 /* ─────────────────────────────────────────────────────────
-   Closed-state row body
+   Closed-state row body (Desktop)
    ───────────────────────────────────────────────────────── */
 function ClosedRow({ row }: { row: HowWeShowUpRow }) {
   return (
@@ -333,142 +334,222 @@ function OpenedRow({
   onBack: () => void;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{
-        opacity: 1,
-        transition: { duration: 0.35, ease: EASE },
-      }}
-      exit={{ opacity: 0, transition: { duration: 0.3, ease: EASE } }}
-      className="grid w-full"
-      style={{
-        gridTemplateColumns: "auto 1fr",
-      }}
-    >
-      <div
-        className="relative grid grid-rows-[auto_1fr]"
+    <>
+      {/* ─── DESKTOP LAYOUT (Unchanged, hidden on mobile) ─── */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{
+          opacity: 1,
+          transition: { duration: 0.35, ease: EASE },
+        }}
+        exit={{ opacity: 0, transition: { duration: 0.3, ease: EASE } }}
+        className="hidden md:grid w-full"
         style={{
-          paddingRight: SZ.oGap,
+          gridTemplateColumns: "auto 1fr",
         }}
       >
+        <div
+          className="relative grid grid-rows-[auto_1fr]"
+          style={{
+            paddingRight: SZ.oGap,
+          }}
+        >
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onBack();
+            }}
+            className="cursor-pointer border-0 bg-transparent p-0 font-['Poppins',_sans-serif] font-normal text-black underline underline-offset-4 transition-opacity hover:opacity-60"
+            style={{
+              fontSize: SZ.backLink,
+              lineHeight: "150%",
+              textAlign: "center",
+            }}
+          >
+            Back
+          </button>
+
+          <div className="flex items-center justify-center">
+            <span
+              className="whitespace-nowrap text-center font-['Poppins',_sans-serif] font-normal capitalize text-black"
+              style={{
+                fontSize: SZ.rotTitle,
+                lineHeight: "120%",
+                writingMode: "vertical-rl",
+                rotate: "180deg",
+              }}
+            >
+              {row.title}
+            </span>
+          </div>
+
+          <motion.div
+            aria-hidden
+            initial={{ scaleY: 0 }}
+            animate={{ scaleY: 1 }}
+            transition={{ duration: 1.0, ease: EASE, delay: 0.2 }}
+            className="absolute right-0 top-0 h-full bg-black shrink-0"
+            style={{ width: "1px", minWidth: "1px", transformOrigin: "top" }}
+          />
+        </div>
+
+        <div style={{ paddingLeft: SZ.oGap }}>
+          <div
+            className="flex w-full flex-col"
+            style={{ gap: SZ.oGap }}
+          >
+            <h4
+              className="m-0 font-['Poppins',_sans-serif] font-medium text-[#0E0E0E]"
+              style={{
+                fontSize: SZ.oSubHeading,
+                lineHeight: "150%",
+              }}
+            >
+              {row.longHeading}
+            </h4>
+
+            <p
+              className="m-0 font-['Poppins',_sans-serif] font-normal text-[#323232]"
+              style={{
+                fontSize: SZ.oDesc,
+                lineHeight: "150%",
+              }}
+            >
+              {row.longDesc}
+            </p>
+
+            <motion.div
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ duration: 1.0, ease: EASE, delay: 0.2 }}
+              className="origin-left bg-black shrink-0"
+              style={{
+                width: "100%",
+                height: "1px",
+                minHeight: "1px",
+                marginTop: SZ.rowInnerGap,
+                marginBottom: SZ.rowInnerGap,
+              }}
+            />
+
+            <h5
+              className="m-0 text-left font-['Poppins',_sans-serif] font-medium text-black"
+              style={{
+                fontSize: SZ.oSubHeading,
+                lineHeight: "110%",
+              }}
+            >
+              {row.valueTitle}
+            </h5>
+
+            <ul
+              className="m-0 flex list-none flex-col p-0"
+              style={{ gap: SZ.rowInnerGap }}
+            >
+              {row.valueBullets.map((bullet, i) => (
+                <li
+                  key={i}
+                  className="relative font-['Poppins',_sans-serif] font-normal text-[#323232]"
+                  style={{
+                    fontSize: SZ.oDesc,
+                    lineHeight: "150%",
+                    paddingLeft: SZ.rowInnerGap,
+                  }}
+                >
+                  <span
+                    className="absolute left-0 top-0"
+                    style={{ fontSize: SZ.oDesc, lineHeight: "150%" }}
+                  >
+                    •
+                  </span>
+                  {bullet}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ─── MOBILE LAYOUT (New, matches screenshots exactly) ─── */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{
+          opacity: 1,
+          transition: { duration: 0.35, ease: EASE },
+        }}
+        exit={{ opacity: 0, transition: { duration: 0.3, ease: EASE } }}
+        className="flex md:hidden w-full flex-col text-left"
+      >
+        {/* Underlined 'BACK' link */}
         <button
           type="button"
           onClick={(e) => {
             e.stopPropagation();
             onBack();
           }}
-          className="cursor-pointer border-0 bg-transparent p-0 font-['Poppins',_sans-serif] font-normal text-black underline underline-offset-4 transition-opacity hover:opacity-60"
-          style={{
-            fontSize: SZ.backLink,
-            lineHeight: "150%",
-            textAlign: "center",
-          }}
+          className="self-start cursor-pointer border-0 bg-transparent p-0 font-['Poppins',_sans-serif] text-[12px] font-medium tracking-[0.1em] text-black uppercase underline underline-offset-4 transition-opacity hover:opacity-60"
         >
           Back
         </button>
 
-        <div className="flex items-center justify-center">
-          <span
-            className="whitespace-nowrap text-center font-['Poppins',_sans-serif] font-normal capitalize text-black"
-            style={{
-              fontSize: SZ.rotTitle,
-              lineHeight: "120%",
-              writingMode: "vertical-rl",
-              rotate: "180deg",
-            }}
-          >
-            {row.title}
-          </span>
-        </div>
-
-        {/* 🛑 FIX: Added shrink-0 and minWidth to ensure crisp rendering */}
-        <motion.div
-          aria-hidden
-          initial={{ scaleY: 0 }}
-          animate={{ scaleY: 1 }}
-          transition={{ duration: 1.0, ease: EASE, delay: 0.2 }}
-          className="absolute right-0 top-0 h-full bg-black shrink-0"
-          style={{ width: "1px", minWidth: "1px", transformOrigin: "top" }}
-        />
-      </div>
-
-      <div style={{ paddingLeft: SZ.oGap }}>
-        <div
-          className="flex w-full flex-col"
-          style={{ gap: SZ.oGap }}
+        {/* Huge normal-orientation heading */}
+        <h2
+          className="m-0 mt-[24px] mb-[24px] font-['Poppins',_sans-serif] font-normal text-black"
+          style={{ fontSize: "clamp(40px, 12vw, 56px)", lineHeight: "110%" }}
         >
-          <h4
-            className="m-0 font-['Poppins',_sans-serif] font-medium text-[#0E0E0E]"
-            style={{
-              fontSize: SZ.oSubHeading,
-              lineHeight: "150%",
-            }}
-          >
-            {row.longHeading}
-          </h4>
+          {row.title}
+        </h2>
 
-          <p
-            className="m-0 font-['Poppins',_sans-serif] font-normal text-[#323232]"
-            style={{
-              fontSize: SZ.oDesc,
-              lineHeight: "150%",
-            }}
-          >
-            {row.longDesc}
-          </p>
+        {/* Animated Horizontal Divider */}
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 1.0, ease: EASE, delay: 0.2 }}
+          className="origin-left bg-black shrink-0 w-full h-[1px] min-h-[1px]"
+        />
 
-          {/* 🛑 FIX: Added shrink-0 and minHeight to ensure crisp rendering */}
-          <motion.div
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 1.0, ease: EASE, delay: 0.2 }}
-            className="origin-left bg-black shrink-0"
-            style={{
-              width: "100%",
-              height: "1px",
-              minHeight: "1px",
-              marginTop: SZ.rowInnerGap,
-              marginBottom: SZ.rowInnerGap,
-            }}
-          />
+        {/* Uppercase Bold Subheading */}
+        <h4
+          className="m-0 mt-[32px] font-['Poppins',_sans-serif] font-bold uppercase text-black"
+          style={{ fontSize: "16px", letterSpacing: "0.5px", lineHeight: "140%" }}
+        >
+          {row.longHeading}
+        </h4>
 
-          <h5
-            className="m-0 text-left font-['Poppins',_sans-serif] font-medium text-black"
-            style={{
-              fontSize: SZ.oSubHeading,
-              lineHeight: "110%",
-            }}
-          >
-            {row.valueTitle}
-          </h5>
+        {/* Paragraph Description */}
+        <p
+          className="m-0 mt-[16px] font-['Poppins',_sans-serif] font-normal text-[#1a1a1a]"
+          style={{ fontSize: "16px", lineHeight: "150%" }}
+        >
+          {row.longDesc}
+        </p>
 
-          <ul
-            className="m-0 flex list-none flex-col p-0"
-            style={{ gap: SZ.rowInnerGap }}
-          >
-            {row.valueBullets.map((bullet, i) => (
-              <li
-                key={i}
-                className="relative font-['Poppins',_sans-serif] font-normal text-[#323232]"
-                style={{
-                  fontSize: SZ.oDesc,
-                  lineHeight: "150%",
-                  paddingLeft: SZ.rowInnerGap,
-                }}
-              >
-                <span
-                  className="absolute left-0 top-0"
-                  style={{ fontSize: SZ.oDesc, lineHeight: "150%" }}
-                >
-                  •
-                </span>
-                {bullet}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </motion.div>
+        {/* Second Animated Horizontal Divider */}
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 1.0, ease: EASE, delay: 0.3 }}
+          className="origin-left bg-black shrink-0 w-full h-[1px] min-h-[1px] mt-[32px] mb-[32px]"
+        />
+
+        {/* Bullet List */}
+        <ul className="m-0 flex list-none flex-col p-0 gap-[16px]">
+          {row.valueBullets.map((bullet, i) => (
+            <li
+              key={i}
+              className="relative font-['Poppins',_sans-serif] font-normal text-[#1a1a1a]"
+              style={{ fontSize: "16px", lineHeight: "150%", paddingLeft: "24px" }}
+            >
+              <span className="absolute left-0 top-[2px] text-[20px] leading-[1]">
+                •
+              </span>
+              {bullet}
+            </li>
+          ))}
+        </ul>
+      </motion.div>
+    </>
   );
 }
 
@@ -496,18 +577,17 @@ function MobileRow({
             onOpen();
           }
         }}
-        className="w-full cursor-pointer"
+        className="w-full cursor-pointer py-[24px]"
       >
         <MobileClosedRow row={row} />
       </div>
-      {/* 🛑 FIX: Added shrink-0 and min-h-[1px] to avoid squishing */}
       {showDivider && <div className="h-[1px] min-h-[1px] w-full bg-black shrink-0" />}
     </div>
   );
 }
 
 /* ─────────────────────────────────────────────────────────
-   Row wrapper
+   Row wrapper (Desktop)
    ───────────────────────────────────────────────────────── */
 function Row({
   row,
@@ -578,7 +658,8 @@ function FullPageCard({
         y: 12,
         transition: { duration: 0.3, ease: EASE },
       }}
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      // Fixed: Mobile becomes a scrolling block, desktop remains vertically centered flex
+      className="fixed inset-0 z-50 flex items-center justify-center max-md:!block max-md:overflow-y-auto max-md:!pt-[100px] max-md:!px-[24px] max-md:!pb-[40px]"
       style={{
         transformOrigin: "center",
         background: "#FBF7F0",
@@ -630,7 +711,7 @@ export default function WhatFoundersGetClient({
         viewport={{ once: true, amount: 0.15 }}
       >
         <h2
-          className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px] max-md:!leading-[120%]"
+          className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px] max-md:!font-normal max-md:!leading-[120%]"
           style={{
             fontSize: SZ.heading,
             lineHeight: "120%",
@@ -639,7 +720,9 @@ export default function WhatFoundersGetClient({
           {heading}
         </h2>
 
-        <div style={{ height: SZ.headingToDivider }} />
+        <div className="max-md:hidden" style={{ height: SZ.headingToDivider }} />
+
+        <div className="hidden max-md:block w-full h-[1px] bg-black shrink-0 mt-[32px]" />
 
         {/* Rows — Desktop (hidden on mobile) */}
         <div className="hidden md:flex w-full flex-col items-center">

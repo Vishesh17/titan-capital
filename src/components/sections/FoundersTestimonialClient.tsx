@@ -5,9 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, useInView, useMotionValue, useAnimationFrame } from "framer-motion";
 
-/* ─────────────────────────────────────────────────────────
-   Types
-   ───────────────────────────────────────────────────────── */
 export interface TestimonialItem {
   name: string;
   role: string;
@@ -30,9 +27,6 @@ export interface FoundersTestimonialData {
   testimonials?: TestimonialItem[];
 }
 
-/* ─────────────────────────────────────────────────────────
-   Fallback defaults
-   ───────────────────────────────────────────────────────── */
 const FALLBACK_TESTIMONIALS: TestimonialItem[] = [
   {
     name: "Abhiraj Bahl",
@@ -117,13 +111,13 @@ function deriveCompanyName(item: TestimonialItem): string {
   return parts.length > 1 ? parts.slice(1).join(",").trim() : item.role;
 }
 
-/* ─────────────────────────────────────────────────────────
-   VerticalLines
-   ───────────────────────────────────────────────────────── */
+// FIXED: Adjust gap dynamically on mobile so 4 to 5 vertical lines appear across the screen
 function computeLinePositions(): number[] {
+  if (typeof window === "undefined") return [];
   const w = window.innerWidth;
-  const gap = 200;
-  const count = Math.max(2, Math.round(w / gap));
+  const isMobile = w < 768;
+  const gap = isMobile ? 65 : 200; // Smaller gap on mobile yields 4-5 lines
+  const count = Math.max(isMobile ? 5 : 2, Math.round(w / gap));
   const spread = (count - 1) * gap;
   const startX = (w - spread) / 2;
   return Array.from({ length: count }, (_, i) => startX + i * gap);
@@ -141,13 +135,11 @@ function VerticalLines({ active }: { active: boolean }) {
 
   return (
     <motion.div
-      className="pointer-events-none absolute inset-0"
+      className="pointer-events-none absolute inset-0 overflow-hidden"
       aria-hidden="true"
       initial="hidden"
       animate={active ? "visible" : "hidden"}
       variants={{
-        /* Reverse the stagger on the way out so the lines retract in the
-           opposite order to how they drew in. */
         hidden: { transition: { staggerChildren: 0.12, staggerDirection: -1 } },
         visible: { transition: { staggerChildren: 0.18 } },
       }}
@@ -156,22 +148,10 @@ function VerticalLines({ active }: { active: boolean }) {
         <motion.div
           key={i}
           className="absolute top-0"
-          style={{
-            left: `${x}px`,
-            width: 1,
-            height: "100%",
-            background: "#D8D8D8",
-            transformOrigin: "top",
-          }}
+          style={{ left: `${x}px`, width: 1, height: "100%", background: "#D8D8D8", transformOrigin: "top" }}
           variants={{
-            hidden: {
-              scaleY: 0,
-              transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] },
-            },
-            visible: {
-              scaleY: 1,
-              transition: { duration: 2.6, ease: [0.22, 1, 0.36, 1] },
-            },
+            hidden: { scaleY: 0, transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } },
+            visible: { scaleY: 1, transition: { duration: 2.6, ease: [0.22, 1, 0.36, 1] } },
           }}
         />
       ))}
@@ -179,79 +159,51 @@ function VerticalLines({ active }: { active: boolean }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   FlipCard — shows photo by default, flips to text on hover.
-   ───────────────────────────────────────────────────────── */
 function FlipCard({ item }: { item: TestimonialItem }) {
   const companyName = deriveCompanyName(item);
+  const [isFlipped, setIsFlipped] = useState(false);
 
   const logoContent = item.companyLogo ? (
     <div
       className="relative"
       style={{
-        /* 30% larger than before (was 15vw / 6.47vw). */
-        width: "min(19.5vw, 26.64vh)",
-        height: "min(8.41vw, 13.48vh)",
-        filter: "grayscale(1)",
+        width: "min(19.5vw, 26.64vh)", height: "min(8.41vw, 13.48vh)", filter: "grayscale(1)",
       }}
     >
-      <Image
-        src={cdnImageSrc(item.companyLogo, 240)}
-        alt={companyName}
-        fill
-        sizes="120px"
-        style={{ objectFit: "contain", objectPosition: "center" }}
-      />
+      <Image src={cdnImageSrc(item.companyLogo, 240)} alt={companyName} fill sizes="120px" style={{ objectFit: "contain", objectPosition: "center" }} className="max-md:!scale-[1.8]" />
     </div>
   ) : null;
 
   return (
     <div className="flex flex-col items-center">
       <div
-        className="group relative shrink-0 max-md:!w-[42vw] max-md:!h-[52vw] max-md:!aspect-auto"
+        className="group relative shrink-0 max-md:!w-[clamp(240px,70vw,280px)] max-md:!aspect-[4/5] cursor-pointer"
         style={{
-          /* 3.5 cards per screen: card width = (content area minus the
-             3 in-between gaps of 3.5 cards) / 3.5. The half card peeks
-             from the right edge to hint at the marquee continuing.
-             Aspect ratio is unchanged so photos still fill edge-to-edge. */
-          width:
-            "calc((100vw - 2 * var(--section-px-wide) - 3 * min(1.85vw, 2.86vh)) / 3.5)",
-          /* 4:5 → after the top 20% logo band, the bottom 80% photo block
-             is a PERFECT SQUARE (= card width). So the 400×400 square
-             portfolio photos (uploaded via Sanity) fill it edge-to-edge
-             with zero crop and zero letterbox — scaled exactly as they are. */
+          width: "calc((100vw - 2 * var(--section-px-wide) - 3 * min(1.85vw, 2.86vh)) / 3.5)",
           aspectRatio: "4 / 5",
           perspective: "1000px",
         }}
+        onClick={() => setIsFlipped(!isFlipped)}
+        onMouseEnter={() => setIsFlipped(true)}
+        onMouseLeave={() => setIsFlipped(false)}
       >
         <div
-          className="relative h-full w-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:[transform:rotateY(180deg)]"
-          style={{ transformStyle: "preserve-3d" }}
+          className="relative h-full w-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          style={{ 
+            transformStyle: "preserve-3d",
+            transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)"
+          }}
         >
-          {/* FRONT — logo band (top 20%) + cutout photo (bottom 80%) */}
           <div
             className="absolute inset-0 overflow-hidden"
             style={{
-              backfaceVisibility: "hidden",
-              WebkitBackfaceVisibility: "hidden",
-              borderRadius: "2px",
+              backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", borderRadius: "2px",
               background: "linear-gradient(180deg, #FBF7F0 0%, #F3E6CF 100%)",
             }}
           >
-            {/* Logo band — top 26% of the card (roomier so the larger
-                logo never clips), logo centred. */}
-            <div
-              className="flex items-center justify-center"
-              style={{ height: "26%" }}
-            >
+            <div className="flex items-center justify-center" style={{ height: "26%" }}>
               {logoContent}
             </div>
-            {/* Photo — the bottom 74% of the card, 100% width (no padding).
-                Uniform block for every card; `cover` + TOP anchor keeps every
-                founder photo the same displayed size AND pins them all to the
-                same start (top) and end (block bottom) line, so faces are never
-                cropped out of frame regardless of the source photo's aspect
-                ratio (e.g. Zouk's taller portrait no longer runs off the top). */}
             <div className="relative" style={{ height: "74%", overflow: "hidden" }}>
               <div
                 className="absolute inset-0"
@@ -261,54 +213,31 @@ function FlipCard({ item }: { item: TestimonialItem }) {
                 }}
               >
                 {/* @ts-ignore */}
-                <img
-                  src={cdnImageSrc(item.image || "", 800)}
-                  alt={item.name}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "scale-down",
-                    filter: "grayscale(1)",
-                  }}
-                />
+                <img src={cdnImageSrc(item.image || "", 800)} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "scale-down", filter: "grayscale(1)" }} />
               </div>
             </div>
           </div>
 
-          {/* BACK — logo band (top 20%) + testimonial text (80%) */}
           <div
             className="absolute inset-0 flex flex-col overflow-hidden"
             style={{
-              backfaceVisibility: "hidden",
-              WebkitBackfaceVisibility: "hidden",
-              transform: "rotateY(180deg)",
-              borderRadius: "2px",
-              background: "linear-gradient(180deg, #EFF4FF 0%, #D3E2FF 100%)",
+              backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(180deg)",
+              borderRadius: "2px", background: "linear-gradient(180deg, #EFF4FF 0%, #D3E2FF 100%)",
             }}
           >
-            {/* Logo band — same 26% as the front so the flip lines up */}
-            <div
-              className="flex shrink-0 items-center justify-center"
-              style={{ height: "26%" }}
-            >
+            <div className="flex shrink-0 items-center justify-center" style={{ height: "26%" }}>
               {logoContent}
             </div>
             <div
-              className="flex items-start"
+              className="flex items-start max-md:!p-[16px]"
               style={{
-                height: "74%",
-                paddingTop: "min(0.6vw, 0.93vh)",
-                paddingBottom: "min(1.85vw, 2.86vh)",
-                paddingLeft: "min(1.85vw, 2.86vh)",
-                paddingRight: "min(1.85vw, 2.86vh)",
+                height: "74%", paddingTop: "min(0.6vw, 0.93vh)", paddingBottom: "min(1.85vw, 2.86vh)",
+                paddingLeft: "min(1.85vw, 2.86vh)", paddingRight: "min(1.85vw, 2.86vh)",
               }}
             >
               <p
-                className="m-0 font-['Poppins',_sans-serif] font-normal text-black"
-                style={{
-                  fontSize: "min(1.32vw, 2.01vh)",
-                  lineHeight: "150%",
-                }}
+                className="m-0 font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[13px] max-md:!leading-[1.6]"
+                style={{ fontSize: "min(1.32vw, 2.01vh)", lineHeight: "150%" }}
               >
                 {item.text}
               </p>
@@ -317,16 +246,15 @@ function FlipCard({ item }: { item: TestimonialItem }) {
         </div>
       </div>
 
-      {/* Name + role below card */}
-      <div className="mt-[min(1.16vw,1.79vh)] flex flex-col items-center text-center max-md:!mt-[8px]">
+      <div className="mt-[min(1.16vw,1.79vh)] flex flex-col items-center text-center max-md:!mt-[16px]">
         <p
-          className="m-0 font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[14px]"
+          className="m-0 font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[16px]"
           style={{ fontSize: "min(1.62vw, 2.51vh)", lineHeight: "130%" }}
         >
           {item.name}
         </p>
         <p
-          className="m-0 mt-[min(0.29vw,0.45vh)] font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[11px]"
+          className="m-0 mt-[min(0.29vw,0.45vh)] font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[12px]"
           style={{ fontSize: "min(0.93vw, 1.43vh)", lineHeight: "150%" }}
         >
           {item.role}
@@ -336,30 +264,24 @@ function FlipCard({ item }: { item: TestimonialItem }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   Marquee — infinite scroll, draggable, pauses on hover.
-   ───────────────────────────────────────────────────────── */
 function Marquee({ testimonials }: { testimonials: TestimonialItem[] }) {
   const x = useMotionValue(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const [contentWidth, setContentWidth] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const speed = 1.2; // px per frame
+  const speed = 1.2; 
 
   useEffect(() => {
     if (containerRef.current) {
-      // Width of one set of cards
       setContentWidth(containerRef.current.scrollWidth / 3);
     }
   }, [testimonials.length]);
 
-  // Auto-scroll animation frame
   useAnimationFrame(() => {
     if (isDragging || isHovered) return;
     const current = x.get();
     const next = current - speed;
-    // Seamless loop: wrap around when reaching the boundary
     if (contentWidth > 0) {
       if (next <= -contentWidth) {
         x.set(next + contentWidth);
@@ -374,37 +296,28 @@ function Marquee({ testimonials }: { testimonials: TestimonialItem[] }) {
   return (
     <div
       className="overflow-hidden"
-      style={{
-        marginLeft: "var(--section-px-wide)",
-        marginRight: "var(--section-px-wide)",
-      }}
+      style={{ marginLeft: "var(--section-px-wide)", marginRight: "var(--section-px-wide)" }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <motion.div
         ref={containerRef}
-        className="flex cursor-grab active:cursor-grabbing"
-        style={{
-          x,
-          gap: "min(1.85vw, 2.86vh)",
-        }}
+        className="flex cursor-grab active:cursor-grabbing max-md:!gap-[24px]"
+        style={{ x, gap: "min(1.85vw, 2.86vh)" }}
         drag="x"
         dragConstraints={{ left: -Infinity, right: Infinity }}
         dragElastic={0}
         onDragStart={() => setIsDragging(true)}
         onDragEnd={() => {
           setIsDragging(false);
-          // Seamless wrap after drag
           if (contentWidth > 0) {
             const current = x.get();
-            // Normalize position within one set width
             let newPos = current % contentWidth;
             if (newPos > 0) newPos -= contentWidth;
             x.set(newPos);
           }
         }}
       >
-        {/* Render 3 copies for seamless loop */}
         {[...testimonials, ...testimonials, ...testimonials].map((item, i) => (
           <FlipCard key={`${item.name}-${i}`} item={item} />
         ))}
@@ -413,33 +326,22 @@ function Marquee({ testimonials }: { testimonials: TestimonialItem[] }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   Main component
-   ───────────────────────────────────────────────────────── */
 export default function FoundersTestimonialClient({
   data,
 }: {
   data?: FoundersTestimonialData | null;
 }) {
-  const topHeading =
-    (data?.topHeadingFirst || FALLBACK_TOP_FIRST) +
-    (data?.topHeadingSecond ? ` ${data.topHeadingSecond}` : "");
-  const bottomHeadingSecond =
-    data?.bottomHeadingSecond || FALLBACK_BOTTOM_SECOND;
+  const topHeading = (data?.topHeadingFirst || FALLBACK_TOP_FIRST) + (data?.topHeadingSecond ? ` ${data.topHeadingSecond}` : "");
+  const bottomHeadingSecond = data?.bottomHeadingSecond || FALLBACK_BOTTOM_SECOND;
   const ctaLabel = data?.ctaLabel || FALLBACK_CTA;
-  const testimonials =
-    data?.testimonials && data.testimonials.length > 0
-      ? data.testimonials
-      : FALLBACK_TESTIMONIALS;
+  const testimonials = data?.testimonials && data.testimonials.length > 0 ? data.testimonials : FALLBACK_TESTIMONIALS;
 
   const bottomRef = useRef<HTMLDivElement>(null);
-  /* once:false so the lines retract when scrolled back up and redraw on
-     the way down again. */
   const bottomInView = useInView(bottomRef, { once: false, amount: 0.15 });
 
   return (
     <section
-      className="relative w-full"
+      className="relative w-full overflow-hidden"
       style={{
         background: "#FBF7F0",
         borderTopLeftRadius: "min(4.44vw, 7.30vh)",
@@ -453,24 +355,17 @@ export default function FoundersTestimonialClient({
 
       {/* ══════════ WHITE PILL — heading + marquee ══════════ */}
       <div
-        className="relative z-10 mx-auto flex w-full flex-col"
+        className="relative z-10 mx-auto flex w-full flex-col max-md:!mt-0 max-md:!pt-[80px]"
         style={{
-          background: "#FFF",
-          borderRadius: "min(6.66vw, 10.30vh)",
-          marginTop: "min(-6.66vw, -10.30vh)",
-          paddingTop: "min(5.79vw, 8.95vh)",
-          paddingBottom: "min(3.47vw, 5.37vh)",
+          background: "#FFF", borderRadius: "min(6.66vw, 10.30vh)",
+          marginTop: "min(-6.66vw, -10.30vh)", paddingTop: "min(5.79vw, 8.95vh)", paddingBottom: "min(3.47vw, 5.37vh)",
         }}
       >
-        {/* Heading */}
         <motion.h2
-          className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px] max-md:!leading-[120%] max-md:!px-[24px]"
+          className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,6.5vw,36px)] max-md:!leading-[120%] max-md:!px-[16px] max-md:!mb-[40px]"
           style={{
-            fontSize: "min(4.51vw, 6.98vh)",
-            lineHeight: "120%",
-            paddingLeft: "var(--section-px-wide)",
-            paddingRight: "var(--section-px-wide)",
-            marginBottom: "min(3.47vw, 5.37vh)",
+            fontSize: "min(4.51vw, 6.98vh)", lineHeight: "120%",
+            paddingLeft: "var(--section-px-wide)", paddingRight: "var(--section-px-wide)", marginBottom: "min(3.47vw, 5.37vh)",
           }}
           initial={{ opacity: 1 }}
           viewport={{ once: true, amount: 0.4 }}
@@ -478,43 +373,25 @@ export default function FoundersTestimonialClient({
           {topHeading}
         </motion.h2>
 
-        {/* Draggable marquee */}
         <Marquee testimonials={testimonials} />
       </div>
 
       {/* ══════════ CREAM BOTTOM — "You Build the Vision" + CTA ══════════ */}
+      {/* FIXED: Increased vertical padding and minimum height to expand the mobile layout drastically */}
       <div
         ref={bottomRef}
-        className="relative z-10 flex w-full flex-col items-center justify-center"
+        className="relative z-10 flex w-full flex-col items-center justify-center max-md:!gap-[56px] max-md:!py-[120px] max-md:!min-h-[70vh]"
         style={{
-          gap: "min(3.24vw, 5.01vh)",
-          paddingLeft: "var(--section-px-wide)",
-          paddingRight: "var(--section-px-wide)",
-          paddingTop: "min(8.68vw, 13.43vh)" /* ~150 px @ ref — bigger block */,
-          paddingBottom: "min(8.68vw, 13.43vh)",
+          gap: "min(3.24vw, 5.01vh)", paddingLeft: "var(--section-px-wide)", paddingRight: "var(--section-px-wide)",
+          paddingTop: "min(8.68vw, 13.43vh)", paddingBottom: "min(8.68vw, 13.43vh)",
         }}
       >
-        <motion.div
-          className="flex flex-col items-center justify-center text-center"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-        >
-          {/* First heading: You Build the Vision. */}
+        <motion.div className="flex flex-col items-center justify-center text-center max-md:!w-full" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }}>
+          {/* FIXED: Removed whitespace-nowrap and max-width added on mobile so it breaks into 3-4 clean lines */}
           <motion.h2
-            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px]"
-            style={{
-              fontSize: "min(4.51vw, 6.98vh)",
-              lineHeight: "130%",
-            }}
-            variants={{
-              hidden: { opacity: 0, x: -50 },
-              visible: {
-                opacity: 1,
-                x: 0,
-                transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
-              },
-            }}
+            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[50px] max-md:!leading-[125%] max-md:!max-w-[280px]"
+            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "130%" }}
+            variants={{ hidden: { opacity: 0, x: -50 }, visible: { opacity: 1, x: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } } }}
           >
             You Build the{" "}
             <span className="relative inline-block px-[8px] max-md:!px-[4px]">
@@ -522,36 +399,15 @@ export default function FoundersTestimonialClient({
                 aria-hidden="true"
                 className="absolute inset-0"
                 style={{ background: "#D3E2FF", transformOrigin: "left" }}
-                variants={{
-                  hidden: { scaleX: 0 },
-                  visible: {
-                    scaleX: 1,
-                    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.8 },
-                  },
-                }}
+                variants={{ hidden: { scaleX: 0 }, visible: { scaleX: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.8 } } }}
               />
               <TypingText text="Vision." delay={1.4} />
             </span>
           </motion.h2>
-          {/* Second heading: We Help You Scale It. */}
           <motion.h2
-            className="m-0 mt-[min(0.58vw,0.90vh)] text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px]"
-            style={{
-              fontSize: "min(4.51vw, 6.98vh)",
-              lineHeight: "130%",
-            }}
-            variants={{
-              hidden: { opacity: 0, x: 50 },
-              visible: {
-                opacity: 1,
-                x: 0,
-                transition: {
-                  duration: 0.8,
-                  ease: [0.22, 1, 0.36, 1],
-                  delay: 0.2,
-                },
-              },
-            }}
+            className="m-0 mt-[min(0.58vw,0.90vh)] text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[50px] max-md:!leading-[125%] max-md:!max-w-[340px] max-md:!mt-[8px]"
+            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "130%" }}
+            variants={{ hidden: { opacity: 0, x: 50 }, visible: { opacity: 1, x: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.2 } } }}
           >
             {bottomHeadingSecond}
           </motion.h2>
@@ -563,7 +419,6 @@ export default function FoundersTestimonialClient({
   );
 }
 
-/* ─── Typing Text Animation ─── */
 function TypingText({ text, delay = 0 }: { text: string; delay?: number }) {
   const [displayedText, setDisplayedText] = useState("");
   const [started, setStarted] = useState(false);
@@ -575,7 +430,6 @@ function TypingText({ text, delay = 0 }: { text: string; delay?: number }) {
 
   useEffect(() => {
     if (!started) return;
-    
     let index = 0;
     let timeoutId: NodeJS.Timeout;
     
@@ -583,9 +437,8 @@ function TypingText({ text, delay = 0 }: { text: string; delay?: number }) {
       if (index <= text.length) {
         setDisplayedText(text.slice(0, index));
         index++;
-        timeoutId = setTimeout(typeNext, 150); // Slower typing speed
+        timeoutId = setTimeout(typeNext, 150); 
       } else {
-        // Wait 2 seconds then restart
         timeoutId = setTimeout(() => {
           index = 0;
           setDisplayedText("");
@@ -605,7 +458,6 @@ function TypingText({ text, delay = 0 }: { text: string; delay?: number }) {
   );
 }
 
-/* ─── Cursor-origin fill button (navy pill → white fill, text turns navy) ─── */
 function CursorFillButtonTestimonial({ href, label }: { href: string; label: string }) {
   const [origin, setOrigin] = useState("50% 50%");
   const [hovered, setHovered] = useState(false);
@@ -626,23 +478,17 @@ function CursorFillButtonTestimonial({ href, label }: { href: string; label: str
       href={href}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="relative flex shrink-0 items-center justify-center overflow-hidden font-['Poppins',_sans-serif] font-medium leading-[107%] transition-colors duration-300"
+      className="relative flex shrink-0 items-center justify-center overflow-hidden font-['Poppins',_sans-serif] font-medium leading-[107%] transition-colors duration-300 max-md:!w-[clamp(160px,45vw,220px)] max-md:!h-[clamp(44px,6dvh,50px)] max-md:!text-[clamp(14px,3.5vw,16px)] max-md:!rounded-[25px] max-md:!px-0"
       style={{
         background: hovered ? "#FFF" : "#001A4D",
-        height: "min(4.4vw, 6.8vh)" /* ~76 px @ ref — bigger */,
-        padding: "0 min(3.24vw, 5.01vh)",
-        fontSize: "min(1.5vw, 2.32vh)" /* ~26 px @ ref */,
-        borderRadius: "min(2.2vw, 3.4vh)",
-        color: hovered ? "#001A4D" : "#FFF",
+        height: "min(4.4vw, 6.8vh)", padding: "0 min(3.24vw, 5.01vh)", fontSize: "min(1.5vw, 2.32vh)",
+        borderRadius: "min(2.2vw, 3.4vh)", color: hovered ? "#001A4D" : "#FFF",
       }}
     >
       <span
         className="absolute inset-0 transition-transform duration-400 ease-out"
         style={{
-          background: "#FFF",
-          transformOrigin: origin,
-          transform: hovered ? "scale(1)" : "scale(0)",
-          borderRadius: "inherit",
+          background: "#FFF", transformOrigin: origin, transform: hovered ? "scale(1)" : "scale(0)", borderRadius: "inherit",
         }}
       />
       <span className="relative z-10">{label}</span>

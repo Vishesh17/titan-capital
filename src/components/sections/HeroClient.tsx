@@ -360,7 +360,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   }, [headingReady, heroInView, headingTick]);
 
   return (
-    <section ref={sectionRef} className="relative h-screen w-full">
+    <section ref={sectionRef} className="relative h-screen w-full overflow-hidden max-md:overflow-x-hidden max-md:w-[100vw] max-md:ml-[calc(50%-50vw)] max-md:bg-[#00112E]">
       <div
         className="relative flex h-screen w-full items-center justify-center overflow-hidden"
         style={{ background: "transparent" }}
@@ -369,7 +369,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
         <motion.p
           style={{ opacity: subtitleBottomOpacity, maxWidth: "min(52vw, 900px)" }}
-          className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 text-center font-['Poppins',_sans-serif] text-[min(1.62vw,2.51vh)] font-normal leading-[145%] text-white/90 max-md:!bottom-[4vh] max-md:!text-[13px] max-md:!max-w-[85vw]"
+          className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 text-center font-['Poppins',_sans-serif] text-[min(1.62vw,2.51vh)] font-normal leading-[145%] text-white/90 max-md:!bottom-[clamp(16px,4dvh,32px)] max-md:!text-[clamp(11px,3vw,14px)] max-md:!w-[92vw] max-md:!max-w-[92vw]"
         >
           {subtitle}
         </motion.p>
@@ -422,7 +422,6 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
         </AnimatePresence>
 
         {stage === "animate" && (
-          /* 🛑 Removed flex/justify classes to perfectly eradicate layout thrashing */
           <div className="absolute inset-0 z-10 pointer-events-none max-md:!z-30">
             {founders.map((founder, i) => (
               <FounderCard
@@ -441,9 +440,10 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
         <motion.div
           style={{ opacity: headingOpacity }}
-          className="absolute inset-0 z-20 flex items-center justify-center px-[var(--section-px-wide)] max-md:!items-start max-md:!pt-[12vh]"
+          className="absolute inset-0 z-20 flex items-center justify-center px-[var(--section-px-wide)] max-md:!px-[24px] max-md:!pt-[clamp(64px,12dvh,100px)]"
         >
-          <div className="relative flex flex-col items-center max-md:!items-start max-md:!px-[24px]">
+          <div className="relative flex flex-col items-center">
+            
             <h1
               className="pointer-events-none m-0 hidden md:flex flex-col items-start text-left font-['Poppins',_sans-serif] font-black uppercase leading-[86%] text-white"
               style={{ fontSize: "min(10.4vw, 16.0vh)" }}
@@ -476,30 +476,31 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
             <h1
               className="pointer-events-none m-0 flex md:hidden flex-col items-start text-left font-['Poppins',_sans-serif] font-black uppercase text-white"
-              style={{ fontSize: "52px", lineHeight: "92%" }}
+              style={{ fontSize: "clamp(28px, 9.5vw, 44px)", lineHeight: "96%" }}
             >
               <RevealLine show={headingReady} delay={0}>Backing</RevealLine>
               <RevealLine show={headingReady} delay={0.3}>Founder</RevealLine>
               <RevealLine show={headingReady} delay={0.6}>For</RevealLine>
+              
               <span
-                className="relative inline-block shrink-0 overflow-hidden my-[4px]"
-                style={{ width: "55vw", height: "32vw", borderRadius: 2 }}
+                className="relative inline-block shrink-0 overflow-hidden my-[clamp(8px,2dvh,16px)]"
+                style={{ width: "min(70vw, 300px)", height: "min(52.5vw, 225px)", borderRadius: "4px" }}
                 ref={mobileSlotRef}
               >
                 <HeadingPhoto founder={headingFounder} tick={headingTick} show={headingReady} />
               </span>
+
               <RevealLine show={headingReady} delay={0.9}>Enduring</RevealLine>
               <RevealLine show={headingReady} delay={1.2}>Impact</RevealLine>
             </h1>
 
-            <div className="absolute left-1/2 top-full flex -translate-x-1/2 flex-col items-center mt-[min(4.63vw,7.16vh)] max-md:!static max-md:!translate-x-0 max-md:!mt-[32px] max-md:!items-start">
+            <div className="absolute left-1/2 top-full flex -translate-x-1/2 flex-col items-center mt-[min(4.63vw,7.16vh)] max-md:!static max-md:!translate-x-0 max-md:!mt-[clamp(16px,4dvh,32px)] max-md:!items-center max-md:!w-full">
               <div
-                className="pointer-events-auto flex items-center justify-center max-md:!gap-[16px]"
-                style={{ gap: "min(2.31vw, 3.58vh)" }}
+                className="pointer-events-auto flex items-center justify-center gap-[min(2.31vw,3.58vh)] max-md:!gap-[clamp(12px,4vw,24px)]"
               >
                 <Link
                   href="/portfolio"
-                  className="group relative whitespace-nowrap font-['Poppins',_sans-serif] text-[min(1.16vw,1.79vh)] font-normal text-white max-md:!text-[14px]"
+                  className="group relative whitespace-nowrap font-['Poppins',_sans-serif] text-[min(1.16vw,1.79vh)] font-normal text-white max-md:!text-[clamp(12px,3.5vw,15px)]"
                   style={{ lineHeight: "140%" }}
                 >
                   View Portfolio
@@ -508,6 +509,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 <CursorFillButton href="/getinvestment" label="Get Investment" />
               </div>
             </div>
+
           </div>
         </motion.div>
       </div>
@@ -515,9 +517,6 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   CursorFillButton
-   ───────────────────────────────────────────────────────── */
 function CursorFillButton({ href, label }: { href: string; label: string }) {
   const [origin, setOrigin] = useState("50% 50%");
   const [hovered, setHovered] = useState(false);
@@ -543,7 +542,7 @@ function CursorFillButton({ href, label }: { href: string; label: string }) {
       href={href}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="relative flex items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] text-[min(1.16vw,1.79vh)] font-normal transition-colors duration-300 max-md:!w-[160px] max-md:!h-[40px] max-md:!text-[13px]"
+      className="relative flex items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] text-[min(1.16vw,1.79vh)] font-normal transition-colors duration-300 max-md:!w-[clamp(130px,35vw,150px)] max-md:!h-[clamp(38px,6dvh,44px)] max-md:!text-[clamp(12px,3.5vw,15px)]"
       style={{
         width: "min(12.15vw, 18.8vh)",
         height: "min(3.36vw, 5.19vh)",
@@ -565,9 +564,6 @@ function CursorFillButton({ href, label }: { href: string; label: string }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   HeadingPhoto
-   ───────────────────────────────────────────────────────── */
 function HeadingPhoto({
   founder,
   tick,
@@ -617,9 +613,6 @@ function HeadingPhoto({
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   RevealLine
-   ───────────────────────────────────────────────────────── */
 const CHAR_STAGGER = 0.035;
 function RevealLine({
   children,
@@ -676,9 +669,6 @@ function RevealLine({
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   FounderCard
-   ───────────────────────────────────────────────────────── */
 const DECK_ENLARGE = 1.38;
 
 function FounderCard({
@@ -718,7 +708,6 @@ function FounderCard({
   const flightStart = 0.65;
   const flightEnd = 0.82;
 
-  // Raw MotionValues mapping progress to pixel offsets from center
   const xOffset = useTransform(progress, [flightStart, flightEnd], [0, isHero ? slot.cx : 0], { ease: cappenEase });
   const yOffset = useTransform(
     progress,
@@ -733,8 +722,6 @@ function FounderCard({
       : { ease: [cappenEase, linear, cappenEase] }
   );
 
-  // 🛑 The Magic Fix: Using CSS calc() inside x and y directly offsets by exact pixel amounts
-  // while centering the element precisely at 50% 50% via the GPU, skipping Flexbox completely.
   const translateX = useTransform(xOffset, (val) => `calc(-50% + ${val}px)`);
   const translateY = useTransform(yOffset, (val) => `calc(-50% + ${val}px)`);
 

@@ -5,16 +5,11 @@ import { motion, useAnimationFrame, useInView, useMotionValue, useTransform } fr
 import Image from "next/image";
 
 /* ─────────────────────────────────────────────────────────
-   Types — shared shape for both marquee rows.
-   `image` is the field that comes back from Sanity (asset->url string).
-   `logos_backuprc` is the legacy field name used by the hardcoded fallback.
-   Either populates `resolveLogoSrc` so the render loop is one path.
+   Types
    ───────────────────────────────────────────────────────── */
 export interface BackedBeforeLogo {
   name: string;
-  /** Resolved URL when data comes from Sanity */
   image?: string;
-  /** Local-path field used by the hardcoded fallback */
   logos_backuprc?: string;
   scaleClass?: string;
 }
@@ -27,8 +22,7 @@ export interface BackedBeforeData {
 }
 
 /* ─────────────────────────────────────────────────────────
-   Fallback defaults — keeps the page rendering exactly as today
-   if Sanity returns null or fields are missing.
+   Fallback defaults
    ───────────────────────────────────────────────────────── */
 const FALLBACK_HEADING_1 = "Backed Before";
 const FALLBACK_HEADING_2 = "Anyone Else Did";
@@ -62,8 +56,6 @@ const FALLBACK_ROW2: BackedBeforeLogo[] = [
   { name: "Zouk",       logos_backuprc: "/images/logos_backup/zouk_new_logo.webp",     scaleClass: "" },
 ];
 
-/* Append Sanity CDN transform params for served images. Local /images/...
-   URLs pass through unchanged so the fallback path keeps working. */
 function cdnImageSrc(url: string, width: number): string {
   if (url.startsWith("https://cdn.sanity.io/")) {
     return `${url}?w=${width}&auto=format&q=85`;
@@ -71,28 +63,15 @@ function cdnImageSrc(url: string, width: number): string {
   return url;
 }
 
-/** Logos from Sanity arrive as { image, ... }; fallback uses { logos_backuprc, ... }.
- *  Normalise both shapes here so the render loop is one path. */
 function resolveLogoSrc(logo: BackedBeforeLogo): string {
   return logo.image ?? logo.logos_backuprc ?? "";
 }
 
-/* Per-logo scale, CAPPED so a bad/over-large CMS value (e.g. Magma's
-   `scale-[2.4]`) can never overflow its box. The inner logo box is 62%
-   of the card height, so a scale much above ~1.6 pushes the logo past
-   the card edges. We parse the `scale-[N]` token and clamp it; combined
-   with `overflow-hidden` on the box, every logo stays inside a uniform
-   box regardless of what the CMS sends. */
-/* ─────────────────────────────────────────────────────────
-   UPDATED: Increased default scale and max cap to reduce whitespace
-   ───────────────────────────────────────────────────────── */
-   function clampLogoScale(scaleClass?: string): number {
-    const m = scaleClass?.match(/scale-\[([\d.]+)\]/);
-    // Default is now 1.3 (30% larger) instead of 1
-    const s = m ? parseFloat(m[1]) : 1.3; 
-    // Max cap increased to 2.0 to safely allow larger scaling
-    return Math.min(Number.isFinite(s) ? s : 1.3, 2.0);
-  }
+function clampLogoScale(scaleClass?: string): number {
+  const m = scaleClass?.match(/scale-\[([\d.]+)\]/);
+  const s = m ? parseFloat(m[1]) : 1.3; 
+  return Math.min(Number.isFinite(s) ? s : 1.3, 2.0);
+}
 
 // ---------------------------------------------------------
 // HELPER LOGIC FOR DRAGGABLE MARQUEE
@@ -116,33 +95,24 @@ function DraggableMarquee({
   const rawX = useMotionValue(0);
   const isDragging = useRef(false);
   const isHovered = useRef(false);
-  /* Pause the per-frame marquee loop whenever the row is off-screen —
-     otherwise both rows keep animating for the whole page and burn
-     frame budget while the user scrolls other sections. */
   const inView = useInView(containerRef);
 
-  // Measure the width of exactly 1/3 of the container to know exactly when to wrap seamlessly
-  // 🛑 FIX: Safe ResizeObserver implementation that avoids TypeScript/SSR errors
   useEffect(() => {
     if (typeof window === "undefined" || !containerRef.current) return;
 
     const measure = () => {
       if (containerRef.current) {
-        // Measure exactly 1/3 since we pass the array 3 times
         setContentWidth(containerRef.current.scrollWidth / 3);
       }
     };
 
-    // 1. Measure immediately on mount
     measure();
 
-    // 2. Watch for layout shifts (e.g., images loading late)
     const observer = new ResizeObserver(() => {
       measure();
     });
     observer.observe(containerRef.current);
 
-    // 3. Fallback for window resizing
     window.addEventListener("resize", measure);
 
     return () => {
@@ -153,12 +123,10 @@ function DraggableMarquee({
   useAnimationFrame((t, delta) => {
     if (!inView || contentWidth === 0 || isDragging.current || isHovered.current) return;
 
-    // Add movement per frame
     const moveBy = direction * speed * (delta / 1000);
     rawX.set(rawX.get() + moveBy);
   });
 
-  // Smoothly wrap the X coordinate between bounds so it repeats infinitely
   const smoothX = useTransform(rawX, (v) => {
     if (contentWidth === 0) return 0;
     return wrap(-contentWidth, 0, v);
@@ -167,7 +135,6 @@ function DraggableMarquee({
   return (
     <motion.div
       ref={containerRef}
-      // Replaced standard drag with manual pan gesture, touch-pan-y ensures vertical scrolling isn't blocked on mobile
       className="flex w-max gap-[14px] md:gap-[20px] items-center cursor-grab active:cursor-grabbing touch-pan-y"
       style={{ x: smoothX , willChange: "transform" }}
       onMouseEnter={() => { isHovered.current = true; }}
@@ -190,7 +157,6 @@ function DraggableMarquee({
             whileTap={{ scale: 1.12 }}
             transition={{ type: "spring", stiffness: 400, damping: 18 }}
           >
-            {/* 🛑 CHANGED: h-full w-full instead of 96% so it stretches closer to walls */}
             <div
               className="relative h-full w-full"
               style={{ transform: `scale(${clampLogoScale(company.scaleClass)})` }}
@@ -199,7 +165,7 @@ function DraggableMarquee({
                 src={cdnImageSrc(src, 320)}
                 alt={company.name}
                 fill
-                style={{ objectFit: "contain", padding: "6px" }} // Adding a tiny padding directly to objectFit boundary
+                style={{ objectFit: "contain", padding: "6px" }} 
                 sizes="(max-width: 768px) 120px, 144px"
                 priority={i < 10}
                 draggable={false}
@@ -220,7 +186,6 @@ export default function BackedBeforeClient({
 }: {
   data?: BackedBeforeData | null;
 }) {
-  /* Per-field fallback — partially-edited CMS doc still renders cleanly. */
   const heading1 = data?.heading1 || FALLBACK_HEADING_1;
   const heading2 = data?.heading2 || FALLBACK_HEADING_2;
   const row1 =
@@ -232,7 +197,6 @@ export default function BackedBeforeClient({
       ? data.marquet2
       : FALLBACK_ROW2;
 
-  // Triple the array so the marquee can loop seamlessly without a visible jump.
   const loopPoolRow1 = [...row1, ...row1, ...row1];
   const loopPoolRow2 = [...row2, ...row2, ...row2];
 
@@ -247,52 +211,6 @@ export default function BackedBeforeClient({
       }}
     >
 
-      {/* ANIMATED SCROLL HEADING SEQUENCE */}
-      {/* <div className="flex flex-col items-center w-full max-w-[1009px] px-4 mb-4 md:mb-8 mx-auto">
-        <motion.h2
-          className="text-[var(--Primary-Color,#001A4D)] text-center font-['Libre_Baskerville',_serif] text-[clamp(28px,5vw,var(--heading-xl))] italic font-semibold leading-[100%] md:leading-[120%]"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.8 }}
-        >
-          <motion.div
-            className="relative z-10 flex w-full max-w-[fit-content] p-[10px] justify-center items-center gap-[10px] mx-auto bg-transparent"
-            variants={{
-              hidden: { opacity: 0, x: -80 },
-              visible: {
-                opacity: 1,
-                x: 0,
-                transition: { duration: 0.9, ease: "easeOut" }
-              }
-            }}
-          >
-            <motion.div
-              className="absolute inset-0 bg-[#d3e2ff] z-0"
-              style={{ transformOrigin: "left" }}
-              variants={{
-                hidden: { scaleX: 0 },
-                visible: {
-                  scaleX: 1,
-                  transition: { duration: 0.9, ease: "easeInOut", delay: 0.35 }
-                }
-              }}
-            />
-            <span className="relative z-20 whitespace-nowrap">{heading1}</span>
-          </motion.div>
-        </motion.h2>
-
-        <motion.h2
-          className="self-stretch text-[var(--Primary-Color,#001A4D)] text-center font-['Libre_Baskerville',_serif] text-[clamp(28px,5vw,var(--heading-xl))] not-italic font-semibold leading-[100%] md:leading-[120%] mt-2 md:mt-0"
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.8 }}
-          transition={{ duration: 0.9, ease: "easeOut", delay: 0.7 }}
-        >
-          {heading2}
-        </motion.h2>
-      </div> */}
-
-      {/* TRACK ONE: Left to Right */}
       <div
         className="flex w-full overflow-hidden relative py-2 md:py-3 mt-2"
         style={{
@@ -300,11 +218,9 @@ export default function BackedBeforeClient({
           WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)"
         }}
       >
-        {/* 🛑 CHANGED: Increased speed from 60 to 100 */}
         <DraggableMarquee items={loopPoolRow1} direction={1} speed={100} />
       </div>
 
-      {/* TRACK TWO: Right to Left */}
       <div
         className="flex w-full overflow-hidden relative py-2 md:py-3 mt-0 md:-mt-2"
         style={{
@@ -312,7 +228,6 @@ export default function BackedBeforeClient({
           WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)"
         }}
       >
-        {/* 🛑 CHANGED: Increased speed from 50 to 85 */}
         <DraggableMarquee items={loopPoolRow2} direction={-1} speed={85} />
       </div>
     </section>

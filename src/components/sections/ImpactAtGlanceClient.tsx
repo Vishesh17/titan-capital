@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import { motion, useScroll, useTransform, type MotionValue, useSpring } from "framer-motion";
 
@@ -33,12 +33,12 @@ export interface ImpactAtGlanceData {
 }
 
 const FALLBACK_IMPACT_DATA: ImpactStat[] = [
-  { num: "300+", label: "Startup Backed" },
-  { num: "7",    label: "Unicorns $1B+" },
-  { num: "4",    label: "IPOs 2023-2026" },
-  { num: "15",   label: "Years Investing" },
-  { num: "40+",  label: "Values > $100M" },
-  { num: "250M+", label: "Lives Impacted" },
+  { num: "300+", label: "Startup\nBacked" },
+  { num: "7",    label: "Unicorns\n$1B+" },
+  { num: "4",    label: "IPOs\n2023-2026" },
+  { num: "15",   label: "Years\nInvesting" },
+  { num: "40+",  label: "Values\n> $100M" },
+  { num: "250M+", label: "Lives\nImpacted" },
 ];
 
 const FALLBACK_SLIDES: FounderStory[] = [
@@ -71,14 +71,8 @@ const FALLBACK_STORIES_HEADING_FIRST = "Their Stories,";
 const FALLBACK_STORIES_HEADING_SECOND = "Our Credentials";
 const FALLBACK_CTA_LABEL = "See More";
 
-/* ─────────────────────────────────────────────────────────
-   SHARED ALIGNMENT TOKENS
-   These guarantee all 3-column layouts on the page align perfectly.
-   ───────────────────────────────────────────────────────── */
 const STORY_GAP = "calc(var(--section-px-wide) * 0.4)";
 const BORDER_PADDING = "calc(var(--section-px-wide) * 0.2)";
-
-// Impact section specific tokens - more spread out cells
 const IMPACT_CELL_PADDING = "calc(var(--section-px-wide) * 0.01)";
 const IMPACT_COL_GAP = "calc(var(--section-px-wide) * 1.4)"
 const IMPACT_ROW_GAP = "calc(var(--section-px-wide) * 0.9)";
@@ -161,7 +155,7 @@ function ImpactStatCell({
 }) {
   return (
     <motion.div
-      className="flex flex-row items-start max-md:!gap-[10px]"
+      className="flex flex-row items-start max-md:!gap-[12px]"
       style={{ gap: "min(1.85vw, 2.86vh)", paddingLeft: IMPACT_CELL_PADDING }}
       variants={{
         hidden: { opacity: 0, y: 20 },
@@ -173,7 +167,7 @@ function ImpactStatCell({
       }}
     >
       <motion.div
-        className="shrink-0 bg-black max-md:!h-[80px]"
+        className="shrink-0 bg-black max-md:!h-[70px]"
         style={{
           width: "1px",
           height: "min(13.89vw, 21.49vh)",
@@ -181,22 +175,22 @@ function ImpactStatCell({
           transformOrigin: "top",
         }}
       />
-      <div className="flex flex-col">
+      <div className="flex flex-col justify-start">
         <span
-          className="font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[36px]"
-          style={{ fontSize: "min(6.48vw, 10.03vh)", lineHeight: "150%" }}
+          className="font-['Poppins',_sans-serif] font-medium text-black max-md:!text-[26px]"
+          style={{ fontSize: "min(6.48vw, 10.03vh)", lineHeight: "110%" }}
         >
           <RollingNumber value={stat.num} />
         </span>
         <span
-          className="whitespace-nowrap font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[14px]"
+          className="font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[14px] whitespace-pre-line"
           style={{
             fontSize: "min(2.55vw, 3.94vh)",
-            lineHeight: "98%",
+            lineHeight: "120%",
             marginTop: "min(1.16vw, 1.79vh)",
           }}
         >
-          {stat.label.replace(/\n/g, " ")} 
+          {stat.label.replace(/ /g, "\n")} 
         </span>
       </div>
     </motion.div>
@@ -389,15 +383,11 @@ function StoriesSection({
   slides: FounderStory[];
 }) {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const [isInView, setIsInView] = useState(false);
-
-  // Track scroll for reversible animation
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "end start"],
   });
 
-  // Animate lines based on viewport + scroll position
   const lineProgress = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
   const smoothLineProgress = useSpring(lineProgress, { stiffness: 40, damping: 25 });
   const vRuleScale = smoothLineProgress;
@@ -455,13 +445,12 @@ function StoriesSection({
           className="relative w-full"
           style={{ padding: BORDER_PADDING, "--bp": BORDER_PADDING } as React.CSSProperties}
         >
-          <div className="grid w-full grid-cols-3 max-md:!grid-cols-1" style={{ gap: STORY_GAP }}>
+          <div className="grid w-full grid-cols-3 max-md:!grid-cols-1 max-md:!gap-[24px]" style={{ gap: STORY_GAP }}>
             {padStories(slides, 6).map((story, i) => (
               <StoryCard key={`${story.name}-${i}`} story={story} />
             ))}
           </div>
 
-          {/* Horizontal divider - left half animates from left to center */}
           <motion.div
             aria-hidden
             className="pointer-events-none absolute max-md:!hidden z-20"
@@ -476,7 +465,6 @@ function StoriesSection({
             }}
           />
 
-          {/* Horizontal divider - right half animates from right to center */}
           <motion.div
             aria-hidden
             className="pointer-events-none absolute max-md:!hidden z-20"
@@ -491,7 +479,6 @@ function StoriesSection({
             }}
           />
 
-          {/* Vertical dividers between columns */}
           <motion.div
             aria-hidden
             className="pointer-events-none absolute max-md:!hidden z-20"
@@ -528,7 +515,6 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
   const impactData = data?.impactStats && data.impactStats.length > 0 ? data.impactStats : FALLBACK_IMPACT_DATA;
   const slides = data?.founderStories && data.founderStories.length > 0 ? data.founderStories : FALLBACK_SLIDES;
 
-  // Scroll-based animation for vertical lines - reverses on scroll up/down
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress: impactProgress } = useScroll({
     target: wrapperRef,
@@ -566,12 +552,13 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
             visible: { transition: { staggerChildren: 0.12, delayChildren: 0.15 } },
           }}
         >
+          {/* FIXED: Massive fluid margin bottom added for mobile to aggressively push the grid down away from the heading */}
           <motion.h2
             variants={{
               hidden: { opacity: 0, y: 30 },
               visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
             }}
-            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px] max-md:!leading-[120%]"
+            className="m-0 text-center font-['Poppins',_sans-serif] font-medium text-black max-md:!text-[28px] max-md:!leading-[120%] max-md:!mb-[clamp(48px,8dvh,80px)]"
             style={{
               fontSize: "min(4.51vw, 6.98vh)",
               lineHeight: "150%",
@@ -581,8 +568,9 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
             {`${impactHeadingFirst} ${impactHeadingSecond}`}
           </motion.h2>
 
+          {/* FIXED: Huge fluid row gap (gap-y) added for mobile to cleanly separate the stats */}
           <div
-            className="grid max-md:!grid-cols-2"
+            className="grid max-md:!grid-cols-2 max-md:!gap-x-[clamp(24px,5vw,40px)] max-md:!gap-y-[clamp(56px,10dvh,80px)] max-md:!max-w-full max-md:!px-[clamp(16px,5vw,32px)]"
             style={{
               gridTemplateColumns: "repeat(3, 1fr)",
               maxWidth: "85%",
@@ -599,7 +587,7 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
         </motion.div>
       </section>
 
-      <div aria-hidden className="h-[50vh] w-full" />
+      <div aria-hidden className="h-[50vh] w-full max-md:hidden" />
 
       <StoriesSection
         storiesHeadingFirst={storiesHeadingFirst}

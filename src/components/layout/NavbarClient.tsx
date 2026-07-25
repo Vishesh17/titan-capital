@@ -31,7 +31,7 @@ function NavCursorFillButton({ href, label }: { href: string; label: string }) {
       href={href}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="relative flex shrink-0 items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] text-[min(1.16vw,1.79vh)] font-normal transition-colors duration-300 max-md:!w-[160px] max-md:!h-[40px] max-md:!text-[13px]"
+      className="relative flex shrink-0 items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] text-[min(1.16vw,1.79vh)] font-normal transition-colors duration-300 max-md:!w-[clamp(130px,35vw,160px)] max-md:!h-[clamp(38px,6dvh,44px)] max-md:!text-[clamp(12px,3.5vw,14px)]"
       style={{
         width: "min(12.15vw, 18.8vh)",
         height: "min(3.36vw, 5.19vh)",
@@ -70,6 +70,7 @@ export type NavbarData = {
   ctaLabel?: string;
   ctaUrl?: string;
 };
+
 const FALLBACK_SECTIONS: NavbarSection[] = [
   {
     id: "for-founders",
@@ -108,7 +109,11 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
   const lenis = useLenis(); 
   const { scrollY } = useScroll(); 
 
-  // OPTIMIZATION: Syncs with Framer's animation loop, eliminating main-thread stutter
+  // Restored the missing variables here!
+  const sections = data?.sections?.length ? data.sections : FALLBACK_SECTIONS;
+  const ctaLabel = data?.ctaLabel || FALLBACK_CTA_LABEL;
+  const ctaUrl = data?.ctaUrl || FALLBACK_CTA_URL;
+
   useMotionValueEvent(scrollY, "change", (latest) => {
     const isScrolled = latest > 60;
     if (isScrolled !== scrolled) {
@@ -116,18 +121,13 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
     }
   });
 
-  const sections = data?.sections?.length ? data.sections : FALLBACK_SECTIONS;
-  const ctaLabel = data?.ctaLabel || FALLBACK_CTA_LABEL;
-  const ctaUrl = data?.ctaUrl || FALLBACK_CTA_URL;
-
-  // FIX: Safely pause/play Lenis instead of killing the native scrollbar
   useEffect(() => {
     if (isMenuOpen) {
       lenis?.stop(); 
       document.body.style.overflow = "hidden";
     } else {
       lenis?.start(); 
-      document.body.style.overflow = ""; // Use empty string to fall back to CSS, NOT "auto"
+      document.body.style.overflow = ""; 
       const timer = setTimeout(() => setActiveSubMenu(null), 500);
       return () => clearTimeout(timer);
     }
@@ -140,10 +140,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
 
   return (
     <>
-     {/* =========================================
-          MAIN TOP NAVBAR (Closed State)
-          ========================================= */}
-      <nav className={`site-navbar fixed left-0 top-0 z-[40] flex h-[clamp(65px,min(5.5vw,7vh),80px)] w-full items-center justify-between px-4 transition-[background-color,color,transform,opacity] duration-500 ease-out max-md:!h-[56px] max-md:!px-[16px] lg:px-[clamp(32px,4.3vw,62px)] ${
+      <nav className={`site-navbar fixed left-0 top-0 z-[40] flex h-[clamp(65px,min(5.5vw,7vh),80px)] w-full items-center justify-between px-4 transition-[background-color,color,transform,opacity] duration-500 ease-out max-md:!h-[clamp(56px,8dvh,64px)] max-md:!px-[clamp(16px,4vw,24px)] lg:px-[clamp(32px,4.3vw,62px)] ${
         scrolled ? "bg-[#001A4D]/95 shadow-lg backdrop-blur-md" : "bg-transparent"
       }`}>
 
@@ -164,7 +161,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
             width={98}
             height={32}
             priority
-            className="h-[32px] w-[98px] object-contain brightness-0 invert max-md:!h-[26px] max-md:!w-[80px]"
+            className="h-[32px] w-[98px] object-contain brightness-0 invert max-md:!h-[clamp(24px,4dvh,30px)] max-md:!w-[clamp(74px,12vw,92px)]"
           />
         </Link>
 
@@ -173,9 +170,6 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
         </div>
       </nav>
 
-     {/* =========================================
-          FULL-SCREEN MENU OVERLAY (Open State)
-          ========================================= */}
       <div
         className={`fixed inset-0 z-[50] flex ${
           isMenuOpen ? "pointer-events-auto" : "pointer-events-none"
@@ -194,8 +188,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
             isMenuOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-
-          <div className="relative flex min-h-[70px] w-full shrink-0 items-center justify-between bg-[#001A4D] px-[24px] lg:h-[var(--nav-height)] lg:px-[62px]">
+          <div className="relative flex min-h-[70px] max-md:!min-h-[clamp(60px,10dvh,70px)] w-full shrink-0 items-center justify-between bg-[#001A4D] px-[24px] max-md:!px-[clamp(16px,4vw,24px)] lg:h-[var(--nav-height)] lg:px-[62px]">
             <button
               onClick={() => setIsMenuOpen(false)}
               className="relative z-10 cursor-pointer transition-opacity hover:opacity-70"
@@ -213,7 +206,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
                   alt="Titan Capital"
                   width={100}
                   height={32}
-                  className="h-[32px] w-[100px] object-cover brightness-0 invert"
+                  className="h-[32px] w-[100px] object-cover brightness-0 invert max-md:!h-[clamp(24px,4dvh,30px)] max-md:!w-[clamp(74px,12vw,92px)]"
                 />
             </div>
 
@@ -232,7 +225,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
 
           <div className="flex flex-1 overflow-hidden bg-transparent">
 
-            <div className={`h-full shrink-0 flex-col overflow-y-auto bg-[#001A4D] pb-[98px] pt-[20px] w-full lg:w-[480px] ${
+            <div className={`h-full shrink-0 flex-col overflow-y-auto bg-[#001A4D] pb-[98px] pt-[20px] max-md:!pb-[clamp(60px,10dvh,98px)] max-md:!pt-[clamp(16px,3dvh,24px)] w-full lg:w-[480px] ${
                 activeSubMenu ? "hidden lg:flex" : "flex"
               }`}
             >
@@ -240,9 +233,9 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
                 <Link
                   href="/"
                   onClick={() => setIsMenuOpen(false)}
-                  className="group flex w-full items-center border-l-[3px] border-transparent px-[21px] py-[8px] transition-all duration-300 ease-out hover:border-l-[#4D8AFF] hover:bg-[#002868]/30 lg:px-[33px]"
+                  className="group flex w-full items-center border-l-[3px] border-transparent px-[21px] py-[8px] max-md:!px-[clamp(16px,4vw,24px)] max-md:!py-[clamp(8px,2dvh,12px)] transition-all duration-300 ease-out hover:border-l-[#4D8AFF] hover:bg-[#002868]/30 lg:px-[33px]"
                 >
-                  <span className="font-['Poppins',_sans-serif] text-[14px] font-medium tracking-wide text-white/80 transition-all duration-300 group-hover:text-white">
+                  <span className="font-['Poppins',_sans-serif] text-[14px] max-md:!text-[clamp(13px,3.5vw,15px)] font-medium tracking-wide text-white/80 transition-all duration-300 group-hover:text-white">
                     HOME
                   </span>
                 </Link>
@@ -254,13 +247,13 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
                     <button
                       key={item.id}
                       onClick={() => setActiveSubMenu(item.id === activeSubMenu ? null : item.id)}
-                      className={`group flex w-full cursor-pointer items-center justify-between border-l-[3px] px-[21px] py-[16px] transition-all duration-300 ease-out lg:px-[33px] ${
+                      className={`group flex w-full cursor-pointer items-center justify-between border-l-[3px] px-[21px] py-[16px] max-md:!px-[clamp(16px,4vw,24px)] max-md:!py-[clamp(12px,3dvh,20px)] transition-all duration-300 ease-out lg:px-[33px] ${
                         activeSubMenu === item.id
                           ? "border-l-[#4D8AFF] bg-[#002868]"
                           : "border-l-transparent hover:border-l-[#4D8AFF]/70 hover:bg-[#002868]/30"
                       }`}
                     >
-                      <span className={`font-['Poppins',_sans-serif] text-[22px] font-medium leading-[150%] transition-all duration-300 lg:text-[28px] ${
+                      <span className={`font-['Poppins',_sans-serif] text-[22px] max-md:!text-[clamp(18px,6vw,24px)] font-medium leading-[150%] transition-all duration-300 lg:text-[28px] ${
                         activeSubMenu === item.id ? "text-white" : "text-white/85 group-hover:text-white"
                       }`}>
                         {item.title}
@@ -280,9 +273,9 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
                       key={item.id}
                       href={item.directUrl || `/${item.id}`}
                       onClick={() => setIsMenuOpen(false)}
-                      className="group flex w-full cursor-pointer items-center justify-between border-l-[3px] border-transparent px-[21px] py-[16px] transition-all duration-300 ease-out hover:border-l-[#4D8AFF]/70 hover:bg-[#002868]/30 lg:px-[33px]"
+                      className="group flex w-full cursor-pointer items-center justify-between border-l-[3px] border-transparent px-[21px] py-[16px] max-md:!px-[clamp(16px,4vw,24px)] max-md:!py-[clamp(12px,3dvh,20px)] transition-all duration-300 ease-out hover:border-l-[#4D8AFF]/70 hover:bg-[#002868]/30 lg:px-[33px]"
                     >
-                      <span className="font-['Poppins',_sans-serif] text-[22px] font-medium leading-[150%] text-white/85 transition-all duration-300 group-hover:text-white lg:text-[28px]">
+                      <span className="font-['Poppins',_sans-serif] text-[22px] max-md:!text-[clamp(18px,6vw,24px)] font-medium leading-[150%] text-white/85 transition-all duration-300 group-hover:text-white lg:text-[28px]">
                         {item.title}
                       </span>
                     </Link>
@@ -297,8 +290,8 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
               }`}
               aria-hidden={!activeSubMenu}
             >
-              <div className="flex h-full w-[100vw] flex-col overflow-y-auto lg:w-[400px]">
-                <div className="flex flex-col items-stretch gap-[4px] px-[16px] pb-[40px] pt-[40px] lg:px-[28px] lg:pt-[60px]">
+              <div className="flex h-full w-full flex-col overflow-y-auto lg:w-[400px]">
+                <div className="flex flex-col items-stretch gap-[4px] px-[16px] pb-[40px] pt-[40px] max-md:!px-[clamp(16px,4vw,24px)] max-md:!pt-[clamp(24px,5dvh,40px)] lg:px-[28px] lg:pt-[60px]">
                   {sections
                     .find((m) => m.id === activeSubMenu)
                     ?.subItems?.map((subItem, idx) => (
@@ -306,7 +299,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
                         key={idx}
                         href={subItem.url || `/${subItem.label.toLowerCase().replace(/\s+/g, "-")}`}
                         onClick={() => setIsMenuOpen(false)}
-                        className="group flex items-center rounded-[10px] px-[12px] py-[12px] font-['Poppins',_sans-serif] text-[18px] font-normal leading-[150%] text-[#0E0E0E]/75 transition-all duration-300 ease-out hover:bg-[#001A4D]/[0.06] hover:text-[#001A4D] hover:translate-x-[4px] lg:text-[20px]"
+                        className="group flex items-center rounded-[10px] px-[12px] py-[12px] max-md:!px-[clamp(12px,3vw,16px)] max-md:!py-[clamp(10px,2.5dvh,14px)] font-['Poppins',_sans-serif] text-[18px] max-md:!text-[clamp(16px,5vw,20px)] font-normal leading-[150%] text-[#0E0E0E]/75 transition-all duration-300 ease-out hover:bg-[#001A4D]/[0.06] hover:text-[#001A4D] hover:translate-x-[4px] lg:text-[20px]"
                       >
                         {subItem.label}
                       </Link>
