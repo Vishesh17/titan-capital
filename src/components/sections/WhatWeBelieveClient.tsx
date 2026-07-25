@@ -6,6 +6,7 @@ import {
   useScroll,
   useTransform,
   useSpring,
+  useMotionValue,
   type MotionValue,
 } from "framer-motion";
 
@@ -118,15 +119,15 @@ export default function WhatWeBelieveClient({
   /* ─────────────────────────────────────────────────────────
      ANIMATION TIMING & TRANSFORMS
      ───────────────────────────────────────────────────────── */
-  const SHRINK_END = 0.4;
-  const SPLIT_END = 0.85;
+  const SHRINK_END = 0.25;
+  const SPLIT_END = 0.50;
 
   /* ═══ DESKTOP ═══ */
   const desktopWidth = useTransform(p, [0, SHRINK_END], [dims.winW, dims.photoW]);
   const desktopHeight = useTransform(p, [0, SHRINK_END], [dims.winH, dims.cardH]);
 
   const headingScale = useTransform(p, [0, SHRINK_END], [1, dims.photoW / dims.winW]);
-  const headingOpacity = useTransform(p, [0.15, 0.35], [1, 0]);
+  const headingOpacity = useTransform(p, [0.08, 0.20], [1, 0]);
   const lineOpacity = useTransform(p, [SHRINK_END, 0.5], [0, 1]);
   const splitX = useTransform(p, [SHRINK_END, SPLIT_END], [0, dims.gap]);
   const flip = useTransform(p, [SHRINK_END, SPLIT_END], [0, 180]);
@@ -146,9 +147,9 @@ export default function WhatWeBelieveClient({
     <section
       ref={sectionRef}
       className="relative w-full bg-[#FBF7F0]"
-      style={{ height: "175vh" }}
+      style={{ height: "250vh" }}
     >
-      <div className="sticky top-0 z-10 h-screen w-full overflow-hidden flex items-center justify-center">
+      <div className="sticky z-10 h-screen w-full overflow-hidden flex items-center justify-center" style={{ top: "64px", height: "calc(100vh - 64px)" }}>
         
         {/* ═══ DESKTOP DISPLAY ═══ */}
         <motion.div
@@ -159,59 +160,18 @@ export default function WhatWeBelieveClient({
             willChange: "width, height",
           }}
         >
-          {/* Slices Container */}
-          <div
-            className="flex h-full w-full items-center justify-center relative"
-            style={{ perspective: 2000 }}
-          >
-            {beliefs.map((belief, i) => {
-              const direction = i === 0 ? -1 : i === 2 ? 1 : 0;
-              return (
-                <DesktopCardSlice
-                  key={belief.title}
-                  belief={belief}
-                  index={i}
-                  direction={direction}
-                  splitX={splitX}
-                  flip={flip}
-                  radius={radius}
-                  lineOpacity={lineOpacity}
-                  progress={p}
-                />
-              );
-            })}
-
-            {/* Perfect 1:1 Scaled Heading Overlay */}
-            <motion.div
-              style={{
-                opacity: headingOpacity,
-                position: "absolute",
-                top: 0, 
-                left: 0, 
-                right: 0,
-                display: "flex",
-                justifyContent: "center",
-                zIndex: 30, 
-                pointerEvents: "none",
-                willChange: "opacity", 
-              }}
-            >
-              <motion.h2
-                style={{ 
-                  scale: headingScale, 
-                  transformOrigin: "center top",
-                  marginTop: "120px",
-                  fontSize: "min(4.51vw, 6.98vh)",
-                  lineHeight: "150%",
-                  textShadow: "0px 4px 20px rgba(0,0,0,0.1)", 
-                  willChange: "transform",
-                }}
-                className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black whitespace-nowrap"
-              >
-                {heading}
-              </motion.h2>
-            </motion.div>
-          </div>
+          {/* Slices Container - centered in viewport below navbar */}
+          <DesktopCardsContainer
+            beliefs={beliefs}
+            splitX={splitX}
+            flip={flip}
+            radius={radius}
+            lineOpacity={lineOpacity}
+            progress={p}
+            headingOpacity={headingOpacity}
+            headingScale={headingScale}
+            heading={heading}
+          />
         </motion.div>
 
         {/* ═══ MOBILE DISPLAY ═══ */}
@@ -223,56 +183,17 @@ export default function WhatWeBelieveClient({
             willChange: "width, height",
           }}
         >
-          <div
-            className="flex h-full w-full flex-col items-center justify-center relative"
-            style={{ perspective: 2000 }}
-          >
-            {beliefs.map((belief, i) => {
-              const direction = i === 0 ? -1 : i === 2 ? 1 : 0;
-              return (
-                <MobileCardSlice
-                  key={belief.title}
-                  belief={belief}
-                  index={i}
-                  direction={direction}
-                  splitY={mSplitY}
-                  flip={mFlip}
-                  radius={mRadius}
-                  lineOpacity={lineOpacity}
-                  progress={p}
-                />
-              );
-            })}
-
-            {/* Locked-in Mobile Heading */}
-            <motion.div
-              style={{
-                opacity: mHeadingOpacity,
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                display: "flex",
-                justifyContent: "center",
-                zIndex: 30,
-                pointerEvents: "none",
-                willChange: "opacity",
-              }}
-            >
-              <motion.h2
-                style={{ 
-                  scale: mHeadingScale, 
-                  transformOrigin: "center top",
-                  marginTop: "80px", 
-                  textShadow: "0px 4px 16px rgba(0,0,0,0.1)",
-                  willChange: "transform",
-                }}
-                className="m-0 text-center font-['Poppins',_sans-serif] text-[36px] font-semibold text-black leading-[120%]"
-              >
-                {heading}
-              </motion.h2>
-            </motion.div>
-          </div>
+          <MobileCardsContainer
+            beliefs={beliefs}
+            splitY={mSplitY}
+            flip={mFlip}
+            radius={mRadius}
+            lineOpacity={lineOpacity}
+            progress={p}
+            mHeadingOpacity={mHeadingOpacity}
+            mHeadingScale={mHeadingScale}
+            heading={heading}
+          />
         </motion.div>
       </div>
     </section>
@@ -280,46 +201,259 @@ export default function WhatWeBelieveClient({
 }
 
 /* ─────────────────────────────────────────────────────────
-   Card Blobs Texture (Moving Royal & White Blobs)
+   Desktop Cards Container - handles mouse position globally
    ───────────────────────────────────────────────────────── */
-function CardBlobs() {
+function DesktopCardsContainer({
+  beliefs,
+  splitX,
+  flip,
+  radius,
+  lineOpacity,
+  progress,
+  headingOpacity,
+  headingScale,
+  heading,
+}: {
+  beliefs: Belief[];
+  splitX: MotionValue<number>;
+  flip: MotionValue<number>;
+  radius: MotionValue<number>;
+  lineOpacity: MotionValue<number>;
+  progress: MotionValue<number>;
+  headingOpacity: MotionValue<number>;
+  headingScale: MotionValue<number>;
+  heading: string;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const mx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    const my = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    mouseX.set(mx);
+    mouseY.set(my);
+  }, [mouseX, mouseY]);
+
+  const handleMouseLeave = useCallback(() => {
+    mouseX.set(0);
+    mouseY.set(0);
+  }, [mouseX, mouseY]);
+
+  return (
+    <div
+      ref={containerRef}
+      className="flex h-full w-full items-center justify-center relative"
+      style={{ perspective: 2000 }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      {beliefs.map((belief, i) => {
+        const direction = i === 0 ? -1 : i === 2 ? 1 : 0;
+        return (
+          <DesktopCardSlice
+            key={belief.title}
+            belief={belief}
+            index={i}
+            direction={direction}
+            splitX={splitX}
+            flip={flip}
+            radius={radius}
+            lineOpacity={lineOpacity}
+            progress={progress}
+            mouseX={mouseX}
+            mouseY={mouseY}
+          />
+        );
+      })}
+
+      <motion.div
+        style={{
+          opacity: headingOpacity,
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          display: "flex",
+          justifyContent: "center",
+          zIndex: 30,
+          pointerEvents: "none",
+          willChange: "opacity",
+        }}
+      >
+        <motion.h2
+          style={{
+            scale: headingScale,
+            transformOrigin: "center top",
+            marginTop: "72px",
+            fontSize: "min(4.51vw, 6.98vh)",
+            lineHeight: "150%",
+            textShadow: "0px 4px 20px rgba(0,0,0,0.1)",
+            willChange: "transform",
+          }}
+          className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black whitespace-nowrap"
+        >
+          {heading}
+        </motion.h2>
+      </motion.div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   Mobile Cards Container - handles mouse position globally
+   ───────────────────────────────────────────────────────── */
+function MobileCardsContainer({
+  beliefs,
+  splitY,
+  flip,
+  radius,
+  lineOpacity,
+  progress,
+  mHeadingOpacity,
+  mHeadingScale,
+  heading,
+}: {
+  beliefs: Belief[];
+  splitY: MotionValue<number>;
+  flip: MotionValue<number>;
+  radius: MotionValue<number>;
+  lineOpacity: MotionValue<number>;
+  progress: MotionValue<number>;
+  mHeadingOpacity: MotionValue<number>;
+  mHeadingScale: MotionValue<number>;
+  heading: string;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const mx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    const my = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    mouseX.set(mx);
+    mouseY.set(my);
+  }, [mouseX, mouseY]);
+
+  const handleMouseLeave = useCallback(() => {
+    mouseX.set(0);
+    mouseY.set(0);
+  }, [mouseX, mouseY]);
+
+  return (
+    <div
+      ref={containerRef}
+      className="flex h-full w-full flex-col items-center justify-center relative"
+      style={{ perspective: 2000 }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      {beliefs.map((belief, i) => {
+        const direction = i === 0 ? -1 : i === 2 ? 1 : 0;
+        return (
+          <MobileCardSlice
+            key={belief.title}
+            belief={belief}
+            index={i}
+            direction={direction}
+            splitY={splitY}
+            flip={flip}
+            radius={radius}
+            lineOpacity={lineOpacity}
+            progress={progress}
+            mouseX={mouseX}
+            mouseY={mouseY}
+          />
+        );
+      })}
+
+      <motion.div
+        style={{
+          opacity: mHeadingOpacity,
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          display: "flex",
+          justifyContent: "center",
+          zIndex: 30,
+          pointerEvents: "none",
+          willChange: "opacity",
+        }}
+      >
+        <motion.h2
+          style={{
+            scale: mHeadingScale,
+            transformOrigin: "center top",
+            marginTop: "56px",
+            textShadow: "0px 4px 16px rgba(0,0,0,0.1)",
+            willChange: "transform",
+          }}
+          className="m-0 text-center font-['Poppins',_sans-serif] text-[36px] font-semibold text-black leading-[120%]"
+        >
+          {heading}
+        </motion.h2>
+      </motion.div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   Card Blobs Texture (Mouse-following fluid blobs)
+   ───────────────────────────────────────────────────────── */
+function CardBlobs({ mouseX, mouseY }: { mouseX: MotionValue<number>; mouseY: MotionValue<number> }) {
+  // Spring-smoothed values for fluid cursor following
+  const springConfig = { stiffness: 80, damping: 25, mass: 0.8 };
+  const smoothMouseX = useSpring(mouseX, springConfig);
+  const smoothMouseY = useSpring(mouseY, springConfig);
+
   return (
     <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-      {/* Moving Royal Blue Blob */}
+      {/* Main blob - follows cursor directly */}
       <motion.div
-        className="absolute rounded-full blur-[45px]"
+        className="absolute rounded-full blur-[60px]"
         style={{
-          bottom: "-20%",
-          left: "-25%",
-          width: "120%",
-          height: "100%",
-          background: "radial-gradient(circle, #5054B5 0%, #054EB6 40%, transparent 80%)",
-          opacity: 0.5,
+          width: "50%",
+          height: "60%",
+          background: "radial-gradient(circle, #5054B5 0%, #054EB6 30%, transparent 70%)",
+          opacity: 0.6,
+          left: useTransform(smoothMouseX, (v) => `${50 + v * 25}%`),
+          top: useTransform(smoothMouseY, (v) => `${50 + v * 25}%`),
+          translateX: "-50%",
+          translateY: "-50%",
         }}
-        animate={{
-          x: ["0%", "15%", "-5%", "10%", "0%"],
-          y: ["0%", "-10%", "5%", "-10%", "0%"],
-          scale: [1, 1.1, 0.9, 1.05, 1],
-        }}
-        transition={{ duration: 12, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
       />
-      {/* Moving White Blob */}
+      {/* Secondary white blob - opposite direction */}
       <motion.div
         className="absolute rounded-full blur-[50px]"
         style={{
-          bottom: "-25%",
-          right: "-25%",
-          width: "120%",
-          height: "100%",
-          background: "radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 40%, transparent 80%)",
+          width: "40%",
+          height: "50%",
+          background: "radial-gradient(circle, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.1) 30%, transparent 70%)",
           opacity: 0.7,
+          left: useTransform(smoothMouseX, (v) => `${50 - v * 20}%`),
+          top: useTransform(smoothMouseY, (v) => `${50 - v * 20}%`),
+          translateX: "-50%",
+          translateY: "-50%",
         }}
-        animate={{
-          x: ["0%", "-15%", "10%", "-5%", "0%"],
-          y: ["0%", "-10%", "15%", "-5%", "0%"],
-          scale: [1, 1.15, 0.85, 1.1, 1],
+      />
+      {/* Third accent blob - subtle follow */}
+      <motion.div
+        className="absolute rounded-full blur-[45px]"
+        style={{
+          width: "35%",
+          height: "40%",
+          background: "radial-gradient(circle, rgba(80,84,181,0.4) 0%, transparent 70%)",
+          opacity: 0.5,
+          left: useTransform(smoothMouseX, (v) => `${50 + v * 15}%`),
+          top: useTransform(smoothMouseY, (v) => `${50 - v * 15}%`),
+          translateX: "-50%",
+          translateY: "-50%",
         }}
-        transition={{ duration: 15, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
       />
     </div>
   );
@@ -337,6 +471,8 @@ function DesktopCardSlice({
   radius,
   lineOpacity,
   progress,
+  mouseX,
+  mouseY,
 }: {
   belief: Belief;
   index: number;
@@ -346,6 +482,8 @@ function DesktopCardSlice({
   radius: MotionValue<number>;
   lineOpacity: MotionValue<number>;
   progress: MotionValue<number>;
+  mouseX: MotionValue<number>;
+  mouseY: MotionValue<number>;
 }) {
   const x = useTransform(splitX, (v) => v * direction);
   const hrScale = useTransform(progress, [0.75, 0.95], [0, 1]);
@@ -402,11 +540,14 @@ function DesktopCardSlice({
         }}
         className="relative"
       >
-        <CardBlobs />
+        <CardBlobs mouseX={mouseX} mouseY={mouseY} />
 
         <div className="relative z-10 flex flex-col items-center h-full pt-12 pb-10 px-6">
           <div className="flex items-start justify-center w-[90%]">
-            <h3 className="font-['Poppins',_sans-serif] text-[clamp(1.75rem,2.5vw,2.5rem)] font-semibold text-white leading-snug capitalize text-center">
+            <h3
+              className="font-['Poppins',_sans-serif] font-semibold text-white capitalize text-center max-md:!text-[18px]"
+              style={{ fontSize: "min(2.31vw, 3.57vh)", lineHeight: "120%" }}
+            >
               {belief.title}
             </h3>
           </div>
@@ -420,7 +561,10 @@ function DesktopCardSlice({
             </div>
 
             <div className="w-full min-h-[9rem] flex items-start justify-center">
-              <p className="w-full font-['Poppins',_sans-serif] text-[clamp(0.85rem,1vw,1rem)] font-normal text-white/90 leading-relaxed text-center">
+              <p
+                className="w-full font-['Poppins',_sans-serif] font-normal text-white/90 text-center max-md:!text-[13px]"
+                style={{ fontSize: "min(1.16vw, 1.79vh)", lineHeight: "155%" }}
+              >
                 {belief.description}
               </p>
             </div>
@@ -443,6 +587,8 @@ function MobileCardSlice({
   radius,
   lineOpacity,
   progress,
+  mouseX,
+  mouseY,
 }: {
   belief: Belief;
   index: number;
@@ -452,6 +598,8 @@ function MobileCardSlice({
   radius: MotionValue<number>;
   lineOpacity: MotionValue<number>;
   progress: MotionValue<number>;
+  mouseX: MotionValue<number>;
+  mouseY: MotionValue<number>;
 }) {
   const y = useTransform(splitY, (v) => v * direction);
   const hrScale = useTransform(progress, [0.75, 0.95], [0, 1]);
@@ -507,11 +655,14 @@ function MobileCardSlice({
         }}
         className="relative"
       >
-        <CardBlobs />
+        <CardBlobs mouseX={mouseX} mouseY={mouseY} />
 
         <div className="relative z-10 flex flex-col items-center h-full pt-6 pb-4 px-4">
           <div className="flex items-start justify-center w-[95%]">
-            <h3 className="font-['Poppins',_sans-serif] text-[22px] font-semibold text-white leading-tight capitalize text-center">
+            <h3
+              className="font-['Poppins',_sans-serif] font-semibold text-white capitalize text-center max-md:!text-[18px]"
+              style={{ fontSize: "min(2.31vw, 3.57vh)", lineHeight: "120%" }}
+            >
               {belief.title}
             </h3>
           </div>
@@ -525,7 +676,10 @@ function MobileCardSlice({
             </div>
 
             <div className="w-full min-h-[6.5rem] flex items-start justify-center">
-              <p className="w-full font-['Poppins',_sans-serif] text-[13px] font-normal text-white/90 leading-snug text-center">
+              <p
+                className="w-full font-['Poppins',_sans-serif] font-normal text-white/90 text-center max-md:!text-[13px]"
+                style={{ fontSize: "min(1.16vw, 1.79vh)", lineHeight: "155%" }}
+              >
                 {belief.description}
               </p>
             </div>

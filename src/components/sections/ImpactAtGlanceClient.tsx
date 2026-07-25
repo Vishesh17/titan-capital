@@ -575,7 +575,7 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
             style={{
               fontSize: "min(4.51vw, 6.98vh)",
               lineHeight: "150%",
-              marginBottom: "min(4.05vw, 6.27vh)",
+              marginBottom: "min(1.5vw, 2.5vh)",
             }}
           >
             {`${impactHeadingFirst} ${impactHeadingSecond}`}
