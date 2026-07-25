@@ -362,7 +362,7 @@ export default function FoundersTestimonialClient({
         }}
       >
         <motion.h2
-          className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,6.5vw,36px)] max-md:!leading-[120%] max-md:!px-[16px] max-md:!mb-[40px]"
+          className="m-20 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,6.5vw,36px)] max-md:!leading-[120%] max-md:!px-[16px] max-md:!mb-[40px]"
           style={{
             fontSize: "min(4.51vw, 6.98vh)", lineHeight: "120%",
             paddingLeft: "var(--section-px-wide)", paddingRight: "var(--section-px-wide)", marginBottom: "min(3.47vw, 5.37vh)",
