@@ -73,6 +73,10 @@ export type NavbarData = {
 
 const FALLBACK_SECTIONS: NavbarSection[] = [
   {
+    id: "home",
+    title: "HOME",
+  },
+  {
     id: "for-founders",
     title: "FOR FOUNDERS",
     subItems: [
@@ -229,7 +233,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
                 activeSubMenu ? "hidden lg:flex" : "flex"
               }`}
             >
-              <div className="mb-[20px]">
+              {/* <div className="mb-[20px]">
                 <Link
                   href="/"
                   onClick={() => setIsMenuOpen(false)}
@@ -239,7 +243,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
                     HOME
                   </span>
                 </Link>
-              </div>
+              </div> */}
 
               <div className="flex w-full flex-col">
                 {sections.map((item) => (

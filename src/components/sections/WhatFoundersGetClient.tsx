@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   motion,
   AnimatePresence,
@@ -70,8 +71,6 @@ const sectionVariants: Variants = {
   },
 };
 
-/* FIXED: Uses border-t to prevent fractional pixel bleed.
-   RESTORED: once: false ensures the line retracts (reverses) when scrolling up. */
 function InViewDivider({
   className,
   style,
@@ -203,9 +202,6 @@ const FALLBACK_ROWS: HowWeShowUpRow[] = [
   },
 ];
 
-/* ─────────────────────────────────────────────────────────
-   Arrow SVG (Desktop)
-   ───────────────────────────────────────────────────────── */
 function ClosedArrow({ style }: { style?: React.CSSProperties }) {
   return (
     <svg
@@ -222,9 +218,6 @@ function ClosedArrow({ style }: { style?: React.CSSProperties }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   Mobile closed row
-   ───────────────────────────────────────────────────────── */
 function MobileClosedRow({ row }: { row: HowWeShowUpRow }) {
   return (
     <motion.div
@@ -236,7 +229,7 @@ function MobileClosedRow({ row }: { row: HowWeShowUpRow }) {
       <div className="flex w-full items-start justify-between gap-[16px]">
         <h3
           className="m-0 font-['Poppins',_sans-serif] font-normal text-black"
-          style={{ fontSize: "28px", lineHeight: "120%" }}
+          style={{ fontSize: "22px", lineHeight: "120%" }}
         >
           {row.title}
         </h3>
@@ -264,9 +257,6 @@ function MobileClosedRow({ row }: { row: HowWeShowUpRow }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   Closed-state row body (Desktop)
-   ───────────────────────────────────────────────────────── */
 function ClosedRow({ row }: { row: HowWeShowUpRow }) {
   return (
     <motion.div
@@ -325,9 +315,6 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   Opened-state row body
-   ───────────────────────────────────────────────────────── */
 function OpenedRow({
   row,
   onBack,
@@ -337,7 +324,7 @@ function OpenedRow({
 }) {
   return (
     <>
-      {/* ─── DESKTOP LAYOUT (Unchanged, hidden on mobile) ─── */}
+      {/* ─── DESKTOP LAYOUT ─── */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{
@@ -386,7 +373,6 @@ function OpenedRow({
             </span>
           </div>
 
-          {/* RESTORED: exit animation gracefully retracts the line when closing */}
           <motion.div
             aria-hidden
             initial={{ scaleY: 0 }}
@@ -423,7 +409,6 @@ function OpenedRow({
               {row.longDesc}
             </p>
 
-            {/* RESTORED: exit animation gracefully retracts the line when closing */}
             <motion.div
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}
@@ -498,13 +483,12 @@ function OpenedRow({
         </button>
 
         <h2
-          className="m-0 mt-[24px] mb-[24px] font-['Poppins',_sans-serif] font-normal text-black"
-          style={{ fontSize: "clamp(40px, 12vw, 56px)", lineHeight: "110%" }}
+          className="m-0 mt-[20px] mb-[16px] font-['Poppins',_sans-serif] font-normal text-black"
+          style={{ fontSize: "32px", lineHeight: "120%" }}
         >
           {row.title}
         </h2>
 
-        {/* RESTORED: exit animation gracefully retracts the line when closing */}
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
@@ -513,29 +497,28 @@ function OpenedRow({
           className="origin-left border-t border-black shrink-0 w-full h-0"
         />
 
-        <div className="flex flex-col py-[clamp(24px,6vw,32px)]">
+        <div className="flex flex-col py-[16px]">
           <h4
-            className="m-0 font-['Poppins',_sans-serif] font-bold uppercase text-black"
+            className="m-0 font-['Poppins',_sans-serif] font-bold text-black"
             style={{ fontSize: "16px", letterSpacing: "0.5px", lineHeight: "140%" }}
           >
             {row.longHeading}
           </h4>
 
           <p
-            className="m-0 mt-[16px] font-['Poppins',_sans-serif] font-normal text-[#1a1a1a]"
+            className="m-0 mt-[12px] font-['Poppins',_sans-serif] font-normal text-[#1a1a1a]"
             style={{ fontSize: "16px", lineHeight: "150%" }}
           >
             {row.longDesc}
           </p>
         </div>
 
-        {/* RESTORED: exit animation gracefully retracts the line when closing */}
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           exit={{ scaleX: 0, transition: { duration: 0.3, ease: EASE } }}
           transition={{ duration: 1.0, ease: EASE, delay: 0.3 }}
-          className="origin-left border-t border-black shrink-0 w-full h-0 mt-[32px] mb-[32px]"
+          className="origin-left border-t border-black shrink-0 w-full h-0 mt-[4px] mb-[20px]"
         />
 
         <ul className="m-0 flex list-none flex-col p-0 gap-[16px]">
@@ -557,9 +540,6 @@ function OpenedRow({
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   Mobile row wrapper
-   ───────────────────────────────────────────────────────── */
 function MobileRow({
   row,
   onOpen,
@@ -590,9 +570,6 @@ function MobileRow({
   );
 }
 
-/* ─────────────────────────────────────────────────────────
-   Row wrapper (Desktop)
-   ───────────────────────────────────────────────────────── */
 function Row({
   row,
   onOpen,
@@ -622,7 +599,6 @@ function Row({
     </div>
   );
 }
-
 function FullPageCard({
   row,
   onBack,
@@ -630,12 +606,10 @@ function FullPageCard({
   row: HowWeShowUpRow;
   onBack: () => void;
 }) {
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
+    setMounted(true);
   }, []);
 
   useEffect(() => {
@@ -646,7 +620,7 @@ function FullPageCard({
     return () => window.removeEventListener("keydown", onKey);
   }, [onBack]);
 
-  return (
+  const modalContent = (
     <motion.div
       key="fullpage"
       initial={{ opacity: 0, scale: 0.94, y: 24 }}
@@ -662,43 +636,75 @@ function FullPageCard({
         y: 12,
         transition: { duration: 0.3, ease: EASE },
       }}
-      className="fixed inset-0 z-50 flex items-center justify-center max-md:!block max-md:overflow-y-auto max-md:!pt-[100px] max-md:!px-[24px] max-md:!pb-[40px]"
+      className="fixed bottom-0 left-0 right-0 flex items-center justify-center max-md:!block max-md:w-screen max-md:overflow-y-auto max-md:overscroll-none max-md:!pt-[32px] max-md:!px-[24px] max-md:!pb-[40px] max-md:!bg-[#FBF7F0] max-md:!backdrop-filter-none"
       style={{
+        top: "var(--nav-height, 64px)", 
+        zIndex: 999999,
         transformOrigin: "center",
         background: "#FBF7F0",
         backdropFilter: "blur(32px) saturate(1.4)",
         WebkitBackdropFilter: "blur(32px) saturate(1.4)",
         boxShadow: "0 8px 40px rgba(0, 0, 0, 0.08)",
-        paddingTop: `calc(var(--nav-height) + ${SZ.oPadY})`,
-        paddingBottom: SZ.oPadY,
-        paddingLeft: "var(--section-px-wide)",
-        paddingRight: "var(--section-px-wide)",
+        padding: "var(--section-px-wide)",
       }}
       role="dialog"
       aria-modal="true"
     >
-      <div className="w-full">
+      <div className="w-full max-w-7xl mx-auto max-h-full overflow-y-auto scrollbar-hide">
         <OpenedRow row={row} onBack={onBack} />
       </div>
     </motion.div>
   );
+
+  if (!mounted) return null;
+  return createPortal(modalContent, document.body);
 }
 
-/* ─────────────────────────────────────────────────────────
-   Main component.
-   ───────────────────────────────────────────────────────── */
 export default function WhatFoundersGetClient({
   data,
 }: {
   data?: WhatFoundersGetData | null;
 }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  
+  // 1. Create a persistent reference to our timer so we can cancel it if timelines cross
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const heading = data?.heading || FALLBACK_HEADING;
   const rows = data?.rows?.length ? data.rows : FALLBACK_ROWS;
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if (openIndex === null) {
+      // CLOSING: Wait exactly 300ms (matching the Framer Motion exit duration) before unlocking
+      timerRef.current = setTimeout(() => {
+        document.body.style.removeProperty("overflow");
+        document.body.style.removeProperty("padding-right");
+        document.body.style.removeProperty("background-color");
+      }, 300);
+    } else {
+      // OPENING: Instantly clear any pending unlock timers so we don't accidentally unlock while open
+      if (timerRef.current) clearTimeout(timerRef.current);
+
+      // Calculate the exact scrollbar width to prevent the horizontal layout shift
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      
+      // Apply locks *only* to the body. Avoid documentElement (html) to prevent Safari repaints.
+      document.body.style.setProperty("overflow", "hidden", "important");
+      document.body.style.setProperty("padding-right", `${scrollbarWidth}px`, "important");
+      document.body.style.setProperty("background-color", "#FBF7F0", "important");
+    }
+
+    // Cleanup: clear the timer if the entire component unmounts
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [openIndex]);
+
   return (
     <section
-      className="relative w-full overflow-hidden"
+      className="relative w-full overflow-hidden bg-[#FBF7F0]"
       style={{
         paddingTop: "var(--section-py)",
         paddingBottom: "var(--section-py)",
@@ -711,11 +717,10 @@ export default function WhatFoundersGetClient({
         variants={sectionVariants}
         initial="hidden"
         whileInView="visible"
-        // RESTORED: once: false ensures the whole section animates back out when scrolling away
         viewport={{ once: false, amount: 0.15 }}
       >
         <h2
-          className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px] max-md:!font-normal max-md:!leading-[120%]"
+          className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
           style={{
             fontSize: SZ.heading,
             lineHeight: "120%",
@@ -728,7 +733,6 @@ export default function WhatFoundersGetClient({
 
         <div className="hidden max-md:block w-full h-0 border-t border-black shrink-0 mt-[32px]" />
 
-        {/* Rows — Desktop (hidden on mobile) */}
         <div className="hidden md:flex w-full flex-col items-center">
           {rows.map((row, i) => (
             <Row
@@ -740,7 +744,6 @@ export default function WhatFoundersGetClient({
           ))}
         </div>
 
-        {/* Rows — Mobile (hidden on desktop) */}
         <div className="flex md:hidden w-full flex-col">
           {rows.map((row, i) => (
             <MobileRow

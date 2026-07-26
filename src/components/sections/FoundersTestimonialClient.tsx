@@ -355,14 +355,14 @@ export default function FoundersTestimonialClient({
 
       {/* ══════════ WHITE PILL — heading + marquee ══════════ */}
       <div
-        className="relative z-10 mx-auto flex w-full flex-col max-md:!mt-0 max-md:!pt-[80px]"
+        className="relative z-10 mx-auto flex w-full flex-col max-md:!mt-0 max-md:!pt-[40px]"
         style={{
           background: "#FFF", borderRadius: "min(6.66vw, 10.30vh)",
           marginTop: "min(-6.66vw, -10.30vh)", paddingTop: "min(5.79vw, 8.95vh)", paddingBottom: "min(3.47vw, 5.37vh)",
         }}
       >
         <motion.h2
-          className="m-20 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,6.5vw,36px)] max-md:!leading-[120%] max-md:!px-[16px] max-md:!mb-[40px]"
+          className="m-20 flex-col text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!mx-0 max-md:!mt-0 max-md:!mb-[40px] max-md:!leading-[120%] max-md:!px-[16px]"
           style={{
             fontSize: "min(4.51vw, 6.98vh)", lineHeight: "120%",
             paddingLeft: "var(--section-px-wide)", paddingRight: "var(--section-px-wide)", marginBottom: "min(3.47vw, 5.37vh)",

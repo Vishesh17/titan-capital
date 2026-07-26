@@ -135,7 +135,8 @@ function DraggableMarquee({
   return (
     <motion.div
       ref={containerRef}
-      className="flex w-max gap-[14px] md:gap-[20px] items-center cursor-grab active:cursor-grabbing touch-pan-y"
+      // FIXED: Mobile gap strictly set to 1.5vw to ensure mathematical perfection for 5 boxes
+      className="flex w-max max-md:gap-[1.5vw] md:gap-[20px] items-center cursor-grab active:cursor-grabbing touch-pan-y"
       style={{ x: smoothX , willChange: "transform" }}
       onMouseEnter={() => { isHovered.current = true; }}
       onMouseLeave={() => { isHovered.current = false; }}
@@ -151,22 +152,24 @@ function DraggableMarquee({
         return (
           <motion.div
             key={`marquee-item-${company.name}-${i}`}
-            className="relative flex shrink-0 items-center justify-center overflow-hidden h-[64px] w-[130px] md:h-[80px] md:w-[160px] select-none"
+            // FIXED: Mobile width strictly bound to 18vw to guarantee 5 boxes fit within 100vw
+            className="relative flex shrink-0 items-center justify-center overflow-hidden max-md:w-[18vw] max-md:h-[10vw] md:h-[80px] md:w-[160px] select-none"
             style={{ borderRadius: "2px", background: "#FCFCFC" }}
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 1.12 }}
             transition={{ type: "spring", stiffness: 400, damping: 18 }}
           >
             <div
-              className="relative h-full w-full"
+              // FIXED: Reduced internal padding strictly for mobile to make logos appear tighter to the box edge
+              className="relative h-full w-full max-md:p-[3px] md:p-[6px]"
               style={{ transform: `scale(${clampLogoScale(company.scaleClass)})` }}
             >
               <Image
                 src={cdnImageSrc(src, 320)}
                 alt={company.name}
                 fill
-                style={{ objectFit: "contain", padding: "6px" }} 
-                sizes="(max-width: 768px) 120px, 144px"
+                style={{ objectFit: "contain" }} 
+                sizes="(max-width: 768px) 18vw, 160px"
                 priority={i < 10}
                 draggable={false}
               />

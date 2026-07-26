@@ -250,7 +250,7 @@ export default function IndicornSpotlightClient({
         <div className="relative">
           <div className="relative z-10 flex w-full flex-col items-start text-left max-md:!items-center max-md:!text-center">
             <h2
-              className="m-0 font-['Poppins',_sans-serif] font-semibold max-md:!whitespace-nowrap max-md:!text-[clamp(32px,9vw,48px)] max-md:!leading-[110%]"
+              className="m-0 font-['Poppins',_sans-serif] font-semibold max-md:!whitespace-nowrap max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
               style={{
                 color: "#FBF7F0",
                 fontSize: "min(4.51vw, 6.98vh)",

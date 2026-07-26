@@ -75,7 +75,7 @@ const STORY_GAP = "calc(var(--section-px-wide) * 0.4)";
 const BORDER_PADDING = "calc(var(--section-px-wide) * 0.2)";
 
 const IMPACT_CELL_PADDING = "calc(var(--section-px-wide) * 0.01)";
-const IMPACT_COL_GAP = "calc(var(--section-px-wide) * 1.4)"
+const IMPACT_COL_GAP = "calc(var(--section-px-wide) * 1.4)";
 const IMPACT_ROW_GAP = "calc(var(--section-px-wide) * 1.2)";
 
 function cdnImageSrc(url: string, width: number): string {
@@ -111,7 +111,7 @@ function RollingNumber({ value }: { value: string }) {
   };
 
   return (
-    <span className="inline-flex flex-row items-center leading-none tabular-nums">
+    <span className="inline-flex flex-row items-center leading-none tabular-nums justify-start">
       {prefix && <span>{prefix}</span>}
       <span className="inline-flex flex-row">
         {numberStr.split("").map((digit, i) => {
@@ -156,7 +156,7 @@ function ImpactStatCell({
 }) {
   return (
     <motion.div
-      className="flex flex-row items-start max-md:!gap-[10px]"
+      className="flex flex-row items-stretch justify-start max-md:!gap-[12px] max-md:!pl-0 max-md:w-full"
       style={{ gap: "min(1.85vw, 2.86vh)", paddingLeft: IMPACT_CELL_PADDING }}
       variants={{
         hidden: { opacity: 0, y: 20 },
@@ -168,7 +168,7 @@ function ImpactStatCell({
       }}
     >
       <motion.div
-        className="shrink-0 bg-black max-md:!h-[80px]"
+        className="shrink-0 bg-black max-md:!h-full max-md:!min-h-[80px]"
         style={{
           width: "1px",
           height: "min(13.89vw, 21.49vh)",
@@ -176,22 +176,22 @@ function ImpactStatCell({
           transformOrigin: "top",
         }}
       />
-      <div className="flex flex-col">
+      <div className="flex flex-col items-start text-left justify-center">
         <span
-          className="font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[26px]"
+          className="font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[36px] max-md:!leading-[105%]"
           style={{ fontSize: "min(6.48vw, 10.03vh)", lineHeight: "150%" }}
         >
           <RollingNumber value={stat.num} />
         </span>
         <span
-          className="whitespace-nowrap font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[14px]"
+          className="whitespace-pre-line font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[14px] max-md:!leading-[125%] max-md:!mt-[6px]"
           style={{
             fontSize: "min(2.55vw, 3.94vh)",
             lineHeight: "120%",
             marginTop: "min(1.16vw, 1.79vh)",
           }}
         >
-          {stat.label.replace(/ /g, "\n")} 
+          {stat.label} 
         </span>
       </div>
     </motion.div>
@@ -420,22 +420,23 @@ function StoriesSection({
           visible: { transition: { staggerChildren: 0.18, delayChildren: 0.45 } },
         }}
       >
+        {/* STORIES HEADING MARGIN FIXED: Same clamp(32px,6dvh,48px) spacing below heading */}
         <motion.div
           variants={{
             hidden: { opacity: 0, y: 40 },
             visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
           }}
-          className="flex flex-col items-center"
+          className="flex flex-col items-center max-md:!mb-[clamp(32px,6dvh,48px)]"
           style={{ marginBottom: "min(3.47vw, 5.37vh)" }}
         >
           <h2
-            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px] max-md:!leading-[120%]"
+            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
             style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
           >
             {storiesHeadingFirst}
           </h2>
           <h2
-            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[32px] max-md:!leading-[120%]"
+            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
             style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
           >
             {storiesHeadingSecond}
@@ -528,7 +529,7 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
   return (
     <div ref={wrapperRef} className="relative w-full bg-[#FBF7F0]">
       <section
-        className="relative w-full bg-[#FBF7F0] max-md:!h-[100vh] max-md:!py-[70px]"
+        className="relative w-full bg-[#FBF7F0] max-md:!h-auto max-md:!min-h-[100dvh] max-md:!pt-[50px] max-md:!pb-[50px] max-md:!px-0"
         style={{
           position: "sticky",
           top: 0,
@@ -545,7 +546,7 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
         }}
       >
         <motion.div
-          className="mx-auto flex w-full flex-col items-center"
+          className="mx-auto flex w-full flex-col items-center justify-center"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.15 }}
@@ -554,13 +555,13 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
             visible: { transition: { staggerChildren: 0.12, delayChildren: 0.15 } },
           }}
         >
-          {/* FIXED: Massive fluid margin bottom added for mobile to aggressively push the grid down away from the heading */}
+          {/* IMPACT HEADING MARGIN FIXED: Same clamp(32px,6dvh,48px) spacing below heading */}
           <motion.h2
             variants={{
               hidden: { opacity: 0, y: 30 },
               visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
             }}
-            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[28px] max-md:!leading-[120%] max-md:!mb-[clamp(48px,8dvh,80px)]"
+            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%] max-md:!mb-[clamp(32px,6dvh,48px)] max-md:whitespace-nowrap"
             style={{
               fontSize: "min(4.51vw, 6.98vh)",
               lineHeight: "150%",
@@ -570,9 +571,8 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
             {`${impactHeadingFirst} ${impactHeadingSecond}`}
           </motion.h2>
 
-          {/* FIXED: Huge fluid row gap (gap-y) added for mobile to cleanly separate the stats */}
           <div
-            className="grid max-md:!grid-cols-2 max-md:!gap-x-[clamp(24px,5vw,40px)] max-md:!gap-y-[clamp(70px,14dvh,100px)] max-md:!max-w-full max-md:!px-[clamp(16px,5vw,32px)]"
+            className="grid max-md:!grid-cols-2 max-md:!gap-x-[24px] max-md:!gap-y-[40px] max-md:!w-full max-md:!pl-[24px] max-md:!pr-[16px] max-md:!justify-items-start"
             style={{
               gridTemplateColumns: "repeat(3, 1fr)",
               maxWidth: "85%",

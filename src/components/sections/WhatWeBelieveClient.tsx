@@ -78,11 +78,12 @@ function computeMobileDims() {
   const winW = window.innerWidth;
   const winH = window.innerHeight;
   
-  // FIXED: Account for the 64px navbar offset so the top of the image aligns perfectly without gaps
+  // Account for the 64px navbar offset so the top of the image aligns perfectly without gaps
   const availH = winH - 64;
 
   const cardW = Math.min(winW * 0.88, 380);
-  const cardH = Math.min(availH * 0.25, 220);
+  // FIXED: Increased height multiplier and maximum height just for mobile cards
+  const cardH = Math.min(availH * 0.28, 250);
   const gap = 16;
   const photoH = 3 * cardH;
 
@@ -149,7 +150,7 @@ export default function WhatWeBelieveClient({
   return (
     <section
       ref={sectionRef}
-      className="relative w-full bg-[#FBF7F0] max-md:-mt-[60px] max-md:pt-[60px]"
+      className="relative w-full bg-[#FBF7F0] max-md:-mt-[60px] max-md:pt-[60px] max-md:!h-[180vh]"
       style={{ height: "250vh" }}
     >
       <div className="sticky z-10 h-screen w-full overflow-hidden flex items-center justify-center" style={{ top: "64px", height: "calc(100vh - 64px)" }}>
@@ -296,7 +297,7 @@ function DesktopCardsContainer({
             textShadow: "0px 4px 20px rgba(0,0,0,0.1)",
             willChange: "transform",
           }}
-          className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black whitespace-nowrap"
+          className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black whitespace-nowrap max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
         >
           {heading}
         </motion.h2>
@@ -396,7 +397,7 @@ function MobileCardsContainer({
             textShadow: "0px 4px 16px rgba(0,0,0,0.05)",
             willChange: "transform",
           }}
-          className="m-0 text-center font-['Poppins',_sans-serif] text-[clamp(28px,8vw,36px)] font-medium text-black leading-[120%]"
+          className="m-0 text-center font-['Poppins',_sans-serif] text-[clamp(24px,7vw,28px)] font-semibold text-black leading-[120%]"
         >
           {heading}
         </motion.h2>
@@ -586,133 +587,138 @@ function DesktopCardSlice({
     </motion.div>
   );
 }
-
 /* ─────────────────────────────────────────────────────────
    Mobile Card Slice
    ───────────────────────────────────────────────────────── */
-function MobileCardSlice({
-  belief,
-  index,
-  direction,
-  splitY,
-  flip,
-  radius,
-  lineOpacity,
-  progress,
-  mouseX,
-  mouseY,
-}: {
-  belief: Belief;
-  index: number;
-  direction: number;
-  splitY: MotionValue<number>;
-  flip: MotionValue<number>;
-  radius: MotionValue<number>;
-  lineOpacity: MotionValue<number>;
-  progress: MotionValue<number>;
-  mouseX: MotionValue<number>;
-  mouseY: MotionValue<number>;
-}) {
-  const y = useTransform(splitY, (v) => v * direction);
+   function MobileCardSlice({
+    belief,
+    index,
+    direction,
+    splitY,
+    flip,
+    radius,
+    lineOpacity,
+    progress,
+    mouseX,
+    mouseY,
+  }: {
+    belief: Belief;
+    index: number;
+    direction: number;
+    splitY: MotionValue<number>;
+    flip: MotionValue<number>;
+    radius: MotionValue<number>;
+    lineOpacity: MotionValue<number>;
+    progress: MotionValue<number>;
+    mouseX: MotionValue<number>;
+    mouseY: MotionValue<number>;
+  }) {
+    const y = useTransform(splitY, (v) => v * direction);
+    
+    const [isFlipped, setIsFlipped] = useState(false);
+    useEffect(() => {
+      const unsubscribe = progress.on("change", (latest) => {
+        if (latest >= 0.45) setIsFlipped(true);
+        else setIsFlipped(false);
+      });
+      return () => unsubscribe();
+    }, [progress]);
   
-  // NEW: Triggers immediately as the flip completes, detached from exact scroll bounds
-  const [isFlipped, setIsFlipped] = useState(false);
-  useEffect(() => {
-    const unsubscribe = progress.on("change", (latest) => {
-      // The flip completes completely at 0.50. We trigger it natively right as it resolves.
-      if (latest >= 0.45) setIsFlipped(true);
-      else setIsFlipped(false);
-    });
-    return () => unsubscribe();
-  }, [progress]);
-
-  return (
-    <motion.div
-      className="w-full relative flex-1"
-      style={{
-        y,
-        rotateX: flip,
-        transformStyle: "preserve-3d",
-        WebkitTransformStyle: "preserve-3d",
-        willChange: "transform",
-      }}
-    >
+    return (
       <motion.div
+        className="w-full relative flex-1"
         style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          top: index === 0 ? 0 : "-1px",
-          bottom: index === 2 ? 0 : "-1px",
-          backfaceVisibility: "hidden",
-          WebkitBackfaceVisibility: "hidden",
-          borderRadius: radius,
-          overflow: "hidden",
-          backgroundImage: `url(${IMAGE_SRC})`,
-          backgroundSize: "auto 300%",
-          backgroundPosition: `center ${index * 50}%`,
-          backgroundRepeat: "no-repeat",
+          y,
+          rotateX: flip,
+          transformStyle: "preserve-3d",
+          WebkitTransformStyle: "preserve-3d",
+          willChange: "transform",
         }}
       >
-        {/* FIXED: Uses borderBottom instead of height: 1px to prevent GPU fractional bleed */}
-        {index < 2 && (
-          <motion.div 
-            style={{ opacity: lineOpacity, borderBottom: "1px solid rgba(0,0,0,0.4)" }}
-            className="absolute left-0 right-0 bottom-0 h-0 z-20 pointer-events-none" 
-          />
-        )}
-      </motion.div>
-
-      {/* Back Side Content Card */}
-      <motion.div
-        style={{
-          position: "absolute",
-          inset: 0,
-          backfaceVisibility: "hidden",
-          WebkitBackfaceVisibility: "hidden",
-          rotateX: 180,
-          borderRadius: "2px",
-          overflow: "hidden",
-          backgroundColor: "#001A4D", 
-          boxShadow: "0px 4px 16px rgba(0,0,0,0.15)",
-        }}
-        className="relative"
-      >
-        <CardBlobs mouseX={mouseX} mouseY={mouseY} />
-
-        <div className="relative z-10 flex flex-col h-full" style={{ paddingTop: "min(3.47vw, 5.37vh)", paddingBottom: "min(2.78vw, 4.31vh)", paddingLeft: "min(2.08vw, 3.22vh)", paddingRight: "min(2.08vw, 3.22vh)" }}>
-          <div className="flex justify-center">
-            <h3
-              className="font-['Poppins',_sans-serif] font-semibold text-white capitalize text-center max-md:!text-[clamp(18px,5vw,22px)]"
-              style={{ fontSize: "min(3.01vw, 4.66vh)", lineHeight: "120%" }}
-            >
-              {belief.title}
-            </h3>
-          </div>
-
-          <div className="flex flex-col mt-auto" style={{ marginBottom: "min(1.85vw, 2.86vh)" }}>
-            <div className="w-full">
-              {/* FIXED: Switched to a border implementation to prevent blur, and driven automatically by state */}
-              <motion.div
-                initial={false}
-                animate={{ scaleX: isFlipped ? 1 : 0 }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: isFlipped ? 0.15 : 0 }}
-                style={{ transformOrigin: "center", borderTop: "1px solid rgba(255,255,255,0.8)" }}
-                className="w-full h-0"
-              />
+        <motion.div
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: index === 0 ? 0 : "-1px",
+            bottom: index === 2 ? 0 : "-1px",
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
+            borderRadius: radius,
+            overflow: "hidden",
+            backgroundImage: `url(${IMAGE_SRC})`,
+            backgroundSize: "auto 300%",
+            backgroundPosition: `center ${index * 50}%`,
+            backgroundRepeat: "no-repeat",
+          }}
+        >
+          {index < 2 && (
+            <motion.div 
+              style={{ opacity: lineOpacity, borderBottom: "1px solid rgba(0,0,0,0.4)" }}
+              className="absolute left-0 right-0 bottom-0 h-0 z-20 pointer-events-none" 
+            />
+          )}
+        </motion.div>
+  
+        {/* Back Side Content Card */}
+        <motion.div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
+            rotateX: 180,
+            borderRadius: "2px",
+            overflow: "hidden",
+            backgroundColor: "#001A4D", 
+            boxShadow: "0px 4px 16px rgba(0,0,0,0.15)",
+          }}
+          className="relative"
+        >
+          <CardBlobs mouseX={mouseX} mouseY={mouseY} />
+  
+          {/* FIXED: Overrode inner mobile padding via max-md:!p-[20px_16px] for consistent framing */}
+          <div 
+            className="relative z-10 flex flex-col h-full max-md:!p-[20px_16px]" 
+            style={{ paddingTop: "min(3.47vw, 5.37vh)", paddingBottom: "min(2.78vw, 4.31vh)", paddingLeft: "min(2.08vw, 3.22vh)", paddingRight: "min(2.08vw, 3.22vh)" }}
+          >
+            <div className="flex justify-center">
+              {/* Reduced Title Size slightly on mobile to accommodate smaller cards if needed */}
+              <h3
+                className="font-['Poppins',_sans-serif] font-semibold text-white capitalize text-center max-md:!text-[clamp(16px,4.5vw,20px)]"
+                style={{ fontSize: "min(3.01vw, 4.66vh)", lineHeight: "120%" }}
+              >
+                {belief.title}
+              </h3>
+            </div>
+  
+            {/* FIXED: Added explicit mobile bottom margin to the HR wrapper */}
+            <div className="flex flex-col mt-auto max-md:!mb-[12px]" style={{ marginBottom: "min(1.85vw, 2.86vh)" }}>
+              <div className="w-full">
+                <motion.div
+                  initial={false}
+                  animate={{ scaleX: isFlipped ? 1 : 0 }}
+                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: isFlipped ? 0.15 : 0 }}
+                  style={{ transformOrigin: "center", borderTop: "1px solid rgba(255,255,255,0.8)" }}
+                  className="w-full h-0"
+                />
+              </div>
+            </div>
+  
+            {/* FIXED: 
+                1. Locked min-height to 105px on mobile to guarantee HR alignment across cards.
+                2. Reduced font size (clamp 10px to 12px) and adjusted leading for mobile readability. 
+            */}
+            <div className="flex justify-center max-md:!min-h-[105px] max-md:items-center" style={{ minHeight: "min(12.67vw, 19.61vh)" }}>
+              <p
+                className="font-['Poppins',_sans-serif] font-normal text-white/90 text-center max-md:!text-[clamp(10px,2.8vw,12px)] max-md:!leading-[140%]"
+                style={{ fontSize: "min(1.16vw, 1.79vh)", lineHeight: "155%" }}
+              >
+                {belief.description}
+              </p>
             </div>
           </div>
-
-          <div className="flex justify-center" style={{ minHeight: "min(12.67vw, 19.61vh)" }}>
-            <p
-              className="font-['Poppins',_sans-serif] font-normal text-white/90 text-center max-md:!text-[clamp(12px,3.5vw,14px)]"
-              style={{ fontSize: "min(1.16vw, 1.79vh)", lineHeight: "155%" }}
-            >
-              {belief.description}
-            </p>
-          </div>
-        </div>
+        </motion.div>
       </motion.div>
-    </motion.div>
-  );
-}
+    );
+  }

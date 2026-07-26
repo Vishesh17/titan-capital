@@ -372,7 +372,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
         <motion.p
           style={{ opacity: subtitleBottomOpacity, maxWidth: "min(52vw, 900px)" }}
-          className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 text-center font-['Poppins',_sans-serif] text-[min(1.62vw,2.51vh)] font-normal leading-[145%] text-white/90 max-md:!bottom-[clamp(16px,4dvh,32px)] max-md:!text-[clamp(11px,3vw,14px)] max-md:!w-[92vw] max-md:!max-w-[92vw]"
+          className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 text-center font-['Poppins',_sans-serif] text-[min(1.62vw,2.51vh)] font-normal leading-[145%] text-white/90 max-md:!bottom-[clamp(16px,4dvh,32px)] max-md:!text-[clamp(11px,3vw,14px)] max-md:!w-[75vw] max-md:!max-w-[75vw]"
         >
           {subtitle}
         </motion.p>
@@ -452,7 +452,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
         <motion.div
           style={{ opacity: headingOpacity }}
-          className="absolute inset-0 z-20 flex items-center justify-center px-[var(--section-px-wide)] max-md:!px-[24px] max-md:!pt-[clamp(64px,12dvh,100px)]"
+          className="absolute inset-0 z-20 flex items-center justify-center px-[var(--section-px-wide)] max-md:!px-[24px] max-md:!items-start max-md:!pt-[clamp(80px,12dvh,120px)]"
         >
           <div className="relative flex flex-col items-center">
             
@@ -488,7 +488,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
             <h1
               className="pointer-events-none m-0 flex md:hidden flex-col items-start text-left font-['Poppins',_sans-serif] font-black uppercase text-white"
-              style={{ fontSize: "clamp(28px, 9.5vw, 44px)", lineHeight: "96%" }}
+              style={{ fontSize: "clamp(36px, 12vw, 50px)", lineHeight: "110%" }}
             >
               <RevealLine show={headingReady} delay={0}>Backing</RevealLine>
               <RevealLine show={headingReady} delay={0.3}>Founder</RevealLine>

@@ -86,11 +86,11 @@ function CursorFillButton({
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="relative flex items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] font-normal transition-colors duration-300 disabled:opacity-60"
+      className={`relative flex items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] font-normal transition-colors duration-300 disabled:opacity-60 ${variant === "mobile" ? "shrink-0" : ""}`}
       style={
         variant === "mobile"
           ? {
-              width: "clamp(100px, 28vw, 140px)",
+              width: "clamp(68px, 18vw, 85px)",
               height: "clamp(24px, 6.5vw, 32px)",
               borderRadius: "53px",
               border: "1px solid transparent",
@@ -220,7 +220,7 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
         >
           Stay close to what founders are building and where markets are moving - with Titan Capital.
         </p>
-        <div className="flex w-full flex-col" style={{ gap: "3px" }}>
+        <div className="flex w-full flex-row items-center" style={{ gap: "4px" }}>
           <input
             type="email"
             value={email}
@@ -238,9 +238,10 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
             placeholder="Email Id"
             aria-label="Email address"
             disabled={submitting}
-            className={`w-full bg-white outline-none placeholder:text-[#323232] ${ringClass}`}
+            className={`min-w-0 flex-1 bg-white outline-none placeholder:text-[#323232] ${ringClass}`}
             style={{
               padding: "5px 8px",
+              height: "clamp(24px, 6.5vw, 32px)",
               borderRadius: "4px",
               fontFamily: "Poppins",
               fontSize: "clamp(8px, 1.8vw, 11px)",
@@ -249,30 +250,36 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
               transition: "box-shadow 0.2s",
             }}
           />
-          {(submitError || liveStatus === "invalid") && (
-            <p
-              className="font-poppins text-[#C53030]"
-              style={{ fontSize: "clamp(7px, 1.6vw, 10px)" }}
-            >
-              {submitError || "Please enter a valid email address"}
-            </p>
-          )}
-          {submitted && !submitError && (
-            <p
-              className="font-poppins text-[#16a34a]"
-              style={{ fontSize: "clamp(7px, 1.6vw, 10px)" }}
-            >
-              Thanks for subscribing!
-            </p>
-          )}
+          <CursorFillButton
+            type="submit"
+            disabled={submitting}
+            onClick={() => {}}
+            label={submitting ? (
+              <motion.span
+                className="inline-block h-[8px] w-[8px] rounded-full border-2 border-white/30 border-t-white"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+              />
+            ) : submitted ? "Done" : "Subscribe"}
+            variant="mobile"
+          />
         </div>
-        <CursorFillButton
-          type="submit"
-          disabled={submitting}
-          onClick={() => {}}
-          label={buttonContent}
-          variant="mobile"
-        />
+        {(submitError || liveStatus === "invalid") && (
+          <p
+            className="font-poppins text-[#C53030]"
+            style={{ fontSize: "clamp(7px, 1.6vw, 10px)" }}
+          >
+            {submitError || "Please enter a valid email address"}
+          </p>
+        )}
+        {submitted && !submitError && (
+          <p
+            className="font-poppins text-[#16a34a]"
+            style={{ fontSize: "clamp(7px, 1.6vw, 10px)" }}
+          >
+            Thanks for subscribing!
+          </p>
+        )}
       </form>
     );
   }
