@@ -1,415 +1,254 @@
 "use client";
 
-import Image from "next/image";
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 
-/*
-  JoinPortfolioCTA — "Want to join our portfolio?"
-*/
+/* ─────────────────────────────────────────────────────────
+   Hero Glow Background (With Local Cursor Tracking)
+   ───────────────────────────────────────────────────────── */
+function HeroGlow({ sectionRef }: { sectionRef: React.RefObject<HTMLElement | null> }) {
+  // Initial values far off-screen so the blob doesn't jump on load
+  const mouseX = useMotionValue(-1000);
+  const mouseY = useMotionValue(-1000);
+  const normX = useMotionValue(0);
+  const normY = useMotionValue(0);
 
-/* ── Logo type ── */
-type Logo = { src: string; alt: string; scaleClass: string };
+  const cursorSpring = { damping: 25, stiffness: 250, mass: 0.3 };
+  const smoothX = useSpring(mouseX, cursorSpring);
+  const smoothY = useSpring(mouseY, cursorSpring);
 
-/* ═══════════════════════════════════════════════════════
-   DESKTOP — 3 columns × 6 logos each
-   ═══════════════════════════════════════════════════════ */
-const DESKTOP_COLUMNS: Logo[][] = [
-  [
-    { src: "/images/logos/ola.svg", alt: "OLA", scaleClass: "scale-[0.8]" },
-    { src: "/images/logos/mamaearthpng-logo.webp", alt: "Mamaearth", scaleClass: "scale-[1.2]" },
-    { src: "/images/logos/Bewakoof.svg", alt: "Bewakoof", scaleClass: "scale-[1.2]" },
-    { src: "/images/logos/Credgenics.svg", alt: "Credgenics", scaleClass: "scale-[1.2]" },
-    { src: "/images/logos/zouk_new_logo.webp", alt: "Zouk", scaleClass: "" },
-    { src: "/images/logos/GIVA.webp", alt: "GIVA", scaleClass: "scale-[1]" },
-  ],
-  [
-    { src: "/images/logos/Razorpay-logo.webp", alt: "Razorpay", scaleClass: "scale-[1.1]" },
-    { src: "/images/logos/Shadowfax.svg", alt: "Shadowfax", scaleClass: "scale-[1.2]" },
-    { src: "/images/logos/bira-91-logo.webp", alt: "Bira 91", scaleClass: "scale-[1.2]" },
-    { src: "/images/logos/Headout.svg", alt: "Headout", scaleClass: "" },
-    { src: "/images/logos/MoEngage.svg", alt: "MoEngage", scaleClass: "" },
-    { src: "/images/logos/anveshan.webp", alt: "Anveshan", scaleClass: "" },
-  ],
-  [
-    { src: "/images/logos/Urban Company.webp", alt: "Urban Company", scaleClass: "scale-[1.2]" },
-    { src: "/images/logos/snapdeal-company-1-logo.webp", alt: "Snapdeal", scaleClass: "scale-[1]" },
-    { src: "/images/logos/PARK+logo.webp", alt: "Park+", scaleClass: "scale-[0.7]" },
-    { src: "/images/logos/mitigata-logo.webp", alt: "Mitigata", scaleClass: "" },
-    { src: "/images/logos/mekr-logo.webp", alt: "MEKR", scaleClass: "" },
-    { src: "/images/logos/bobabhai-logo.webp", alt: "Boba Bhai", scaleClass: "" },
-  ],
-];
+  const ambientSpring = { damping: 30, stiffness: 70, mass: 1 };
+  const smoothNormX = useSpring(normX, ambientSpring);
+  const smoothNormY = useSpring(normY, ambientSpring);
 
-/* ═══════════════════════════════════════════════════════
-   MOBILE — 5 columns × 6 logos each (slot machine, not static grid)
-   ═══════════════════════════════════════════════════════ */
-const MOBILE_COLUMNS: Logo[][] = [
-  [
-    { src: "/images/logos/ola.svg", alt: "OLA", scaleClass: "scale-[0.7]" },
-    { src: "/images/logos/mamaearthpng-logo.webp", alt: "Mamaearth", scaleClass: "scale-[1]" },
-    { src: "/images/logos/Bewakoof.svg", alt: "Bewakoof", scaleClass: "" },
-    { src: "/images/logos/Credgenics.svg", alt: "Credgenics", scaleClass: "scale-[1.3]" },
-    { src: "/images/logos/zouk_new_logo.webp", alt: "Zouk", scaleClass: "scale-[0.8]" },
-    { src: "/images/logos/GIVA.webp", alt: "GIVA", scaleClass: "scale-[0.8]" },
-  ],
-  [
-    { src: "/images/logos/Razorpay-logo.webp", alt: "Razorpay", scaleClass: "scale-[1]" },
-    { src: "/images/logos/Shadowfax.svg", alt: "Shadowfax", scaleClass: "scale-[1.2]" },
-    { src: "/images/logos/bira-91-logo.webp", alt: "Bira 91", scaleClass: "" },
-    { src: "/images/logos/Headout.svg", alt: "Headout", scaleClass: "" },
-    { src: "/images/logos/MoEngage.svg", alt: "MoEngage", scaleClass: "" },
-    { src: "/images/logos/anveshan.webp", alt: "Anveshan", scaleClass: "" },
-  ],
-  [
-    { src: "/images/logos/Urban Company.webp", alt: "Urban Company", scaleClass: "" },
-    { src: "/images/logos/snapdeal-company-1-logo.webp", alt: "Snapdeal", scaleClass: "scale-[1.3]" },
-    { src: "/images/logos/Park+.webp", alt: "Park+", scaleClass: "scale-[0.7]" },
-    { src: "/images/logos/mitigata-logo.webp", alt: "Mitigata", scaleClass: "" },
-    { src: "/images/logos/mekr-logo.webp", alt: "MEKR", scaleClass: "" },
-    { src: "/images/logos/bobabhai-logo.webp", alt: "Boba Bhai", scaleClass: "" },
-  ],
-  [
-    { src: "/images/logos/Supertails.webp", alt: "Supertails", scaleClass: "" },
-    { src: "/images/logos/BECO.webp", alt: "BECO", scaleClass: "" },
-    { src: "/images/logos/Simplismart.webp", alt: "Simplismart", scaleClass: "" },
-    { src: "/images/logos/invideo.svg", alt: "InVideo", scaleClass: "scale-[0.8]" },
-    { src: "/images/logos/RENEE.svg", alt: "Renee", scaleClass: "scale-[0.7]" },
-    { src: "/images/logos/Ofbusiness.webp", alt: "Ofbusiness", scaleClass: "" },
-  ],
-  [
-    { src: "/images/logos/homerun1.webp", alt: "Homerun", scaleClass: "" },
-    { src: "/images/logos/Cart.com.webp", alt: "Cart.com", scaleClass: "" },
-    { src: "/images/logos/unicommerce-logo.svg", alt: "Unicommerce", scaleClass: "" },
-    { src: "/images/logos/ola.svg", alt: "OLA", scaleClass: "scale-[0.7]" },
-    { src: "/images/logos/Razorpay-logo.webp", alt: "Razorpay", scaleClass: "scale-[1]" },
-    { src: "/images/logos/Shadowfax.svg", alt: "Shadowfax", scaleClass: "scale-[1.2]" },
-  ],
-];
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (sectionRef.current) {
+        // Calculate the mouse position strictly relative to THIS section
+        // so the blob doesn't get pushed out of bounds by page scrolling.
+        const rect = sectionRef.current.getBoundingClientRect();
+        mouseX.set(e.clientX - rect.left);
+        mouseY.set(e.clientY - rect.top);
+      }
+      normX.set((e.clientX / window.innerWidth) * 2 - 1);
+      normY.set((e.clientY / window.innerHeight) * 2 - 1);
+    };
 
-/* ── Keyframes ── */
-const SLOT_CSS = `
-@keyframes slot-down {
-  0%   { transform: translateY(0); }
-  100% { transform: translateY(-50%); }
-}
-@keyframes slot-up {
-  0%   { transform: translateY(-50%); }
-  100% { transform: translateY(0); }
-}
-`;
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [mouseX, mouseY, normX, normY, sectionRef]);
 
-/* ═══════════════════════════════════════════════════════
-   SlotColumn
-   ═══════════════════════════════════════════════════════ */
-function SlotColumn({
-  logos,
-  reverse,
-  cellSize,
-  verticalGap,
-  duration,
-}: {
-  logos: Logo[];
-  reverse: boolean;
-  cellSize: string;
-  verticalGap: string;
-  duration: number;
-}) {
-  const renderSet = (keyPrefix: string) =>
-    logos.map((logo, i) => (
-      <div
-        key={`${keyPrefix}-${i}`}
-        className="flex shrink-0 items-center justify-center"
-        style={{ width: cellSize, height: cellSize }}
-      >
-        <div
-          className={`relative ${logo.scaleClass}`}
-          style={{ width: "80%", height: "47%" }}
-        >
-          <Image
-            src={logo.src}
-            alt={logo.alt}
-            fill
-            sizes="120px"
-            className="object-contain"
-          />
-        </div>
-      </div>
-    ));
+  const leftX = useTransform(smoothNormX, [-1, 1], ["-8%", "8%"]);
+  const leftY = useTransform(smoothNormY, [-1, 1], ["-8%", "8%"]);
+  const rightX = useTransform(smoothNormX, [-1, 1], ["8%", "-8%"]);
+  const rightY = useTransform(smoothNormY, [-1, 1], ["8%", "-8%"]);
 
   return (
-    <div className="overflow-hidden" style={{ height: "100%" }}>
-      <div
-        className="flex flex-col items-center"
+    <>
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute"
         style={{
-          gap: verticalGap,
-          animation: `${reverse ? "slot-up" : "slot-down"} ${duration}s linear infinite`,
+          left: "-25%",
+          top: "-25%",
+          width: "min(75vw, 100vh)",
+          height: "min(75vw, 100vh)",
+          zIndex: 0,
+          x: leftX,
+          y: leftY,
+          willChange: "transform",
         }}
       >
-        {renderSet("a")}
-        {renderSet("b")}
-      </div>
-    </div>
-  );
-}
+        <motion.div
+          className="w-full h-full rounded-full blur-[120px]"
+          style={{
+            background:
+              "radial-gradient(circle, #5054B5 0%, #054EB6 40%, #022250 80%, transparent 100%)",
+            opacity: 0.6,
+          }}
+          animate={{
+            x: ["0%", "35%", "-15%", "25%", "0%"],
+            y: ["0%", "25%", "-10%", "35%", "0%"],
+            scale: [1, 1.15, 0.85, 1.1, 1],
+          }}
+          transition={{
+            duration: 18,
+            repeat: Infinity,
+            repeatType: "loop",
+            ease: "easeInOut",
+          }}
+        />
+      </motion.div>
 
-/* ═══════════════════════════════════════════════════════
-   SlotMachineBox
-   ═══════════════════════════════════════════════════════ */
-function SlotMachineBox({
-  columns,
-  cellSize,
-  height,
-  brandSize,
-}: {
-  columns: Logo[][];
-  cellSize: string;
-  height: string;
-  brandSize: string;
-}) {
-  return (
-    <div
-      className="relative flex w-full max-w-[497px] items-center justify-center overflow-hidden rounded-[clamp(8px,0.8vw,12px)]"
-      style={{ height, backgroundColor: "#FFF" }}
-    >
-      {/* UPDATED: justify-between spreads the columns out, with generous L/R padding */}
-      <div
-        className="absolute inset-0 z-0 flex flex-row items-center justify-between"
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute"
         style={{
-          paddingLeft: "clamp(24px, 7%, 52px)",
-          paddingRight: "clamp(24px, 7%, 52px)",
-          maskImage:
-            "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
-          WebkitMaskImage:
-            "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
+          right: "-25%",
+          bottom: "-25%",
+          width: "min(70vw, 90vh)",
+          height: "min(70vw, 90vh)",
+          zIndex: 0,
+          x: rightX,
+          y: rightY,
+          willChange: "transform",
         }}
       >
-        {columns.map((col, colIdx) => (
-          <div key={colIdx} className="h-full">
-            <SlotColumn
-              logos={col}
-              reverse={colIdx % 2 === 1}
-              cellSize={cellSize}
-              verticalGap="clamp(12px, 1.5vw, 24px)" // Vertical spacing between logos in the same strip
-              duration={colIdx % 2 === 1 ? 32 : 36}
-            />
-          </div>
-        ))}
-      </div>
+        <motion.div
+          className="w-full h-full rounded-full blur-[120px]"
+          style={{
+            background:
+              "radial-gradient(circle, #AC71C6 0%, #033699 50%, #001A4D 80%, transparent 100%)",
+            opacity: 0.5,
+          }}
+          animate={{
+            x: ["0%", "-35%", "15%", "-25%", "0%"],
+            y: ["0%", "-25%", "10%", "-35%", "0%"],
+            scale: [1, 1.15, 0.85, 1.1, 1],
+          }}
+          transition={{
+            duration: 21,
+            repeat: Infinity,
+            repeatType: "loop",
+            ease: "easeInOut",
+          }}
+        />
+      </motion.div>
 
-      <div
-        className="pointer-events-none absolute inset-0 z-10"
+      {/* ── This is the Cursor Blob flashlight effect ── */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute top-0 left-0 rounded-full blur-[60px]"
         style={{
-          background: `radial-gradient(circle at 50% 50%,
-            #D3E2FF 0%,
-            #D3E2FF 20%,      /* Solid blue core */
-            #FFFFFF 25%,      /* White halo ring */
-            rgba(255,255,255,0.9) 32%,
-            rgba(255,255,255,0.7) 40%,
-            rgba(255,255,255,0.4) 48%,
-            rgba(255,255,255,0.1) 58%,
-            rgba(255,255,255,0) 65% /* Fully transparent edges */
-          )`,
-        }}
-      />
-
-      <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
-        <span
-          className="font-['Libre_Baskerville',_serif] font-semibold text-[#001A4D]"
-          style={{ fontSize: brandSize }}
-        >
-          Titan Capital
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════
-   Spotlight hover button
-   ═══════════════════════════════════════════════════════ */
-function SpotlightButton({ wide = false }: { wide?: boolean }) {
-  return (
-    <button
-      className="group relative flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-[9px] border-none bg-[#001A4D] font-['Libre_Baskerville',_serif] font-semibold text-white transition-all duration-300 ease-in-out"
-      style={{
-        height: wide
-          ? "clamp(44px, min(7vw, 5vh), 56px)"
-          : "clamp(44px, min(3.75vw, 5.5vh), 54px)",
-        width: wide
-          ? "clamp(200px, 45vw, 320px)"
-          : "clamp(160px, min(13.9vw, 20.4vh), 200px)",
-        fontSize: wide
-          ? "clamp(13px, min(3vw, 2vh), 18px)"
-          : "clamp(12px, min(1.11vw, 1.63vh), 16px)",
-        padding: "10px",
-      }}
-      onMouseMove={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        e.currentTarget.style.setProperty(
-          "--mouse-x",
-          `${e.clientX - rect.left}px`
-        );
-        e.currentTarget.style.setProperty(
-          "--mouse-y",
-          `${e.clientY - rect.top}px`
-        );
-      }}
-    >
-      <div
-        className="pointer-events-none absolute inset-0 z-0 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100"
-        style={{
+          width: "25vw",
+          height: "25vw",
+          zIndex: 5,
+          x: smoothX,
+          y: smoothY,
+          translateX: "-50%",
+          translateY: "-50%",
+          opacity: 0.4,
           background:
-            "radial-gradient(circle 80px at var(--mouse-x, 50%) var(--mouse-y, 50%), #003CB3 0%, transparent 100%)",
+            "radial-gradient(circle, rgba(80,84,181,0.85) 0%, rgba(5,78,182,0.5) 40%, rgba(2,34,80,0.2) 70%, transparent 100%)",
+          willChange: "transform",
         }}
       />
-      <span className="relative z-10 text-center">Get Investment</span>
-    </button>
+    </>
   );
 }
 
-/* ═══════════════════════════════════════════════════════
+/* ─────────────────────────────────────────────────────────
+   Cursor-origin fill button
+   ───────────────────────────────────────────────────────── */
+function CursorFillButton({ href, label }: { href: string; label: string }) {
+  const [origin, setOrigin] = useState("50% 50%");
+  const [hovered, setHovered] = useState(false);
+
+  const handleMouseEnter = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setOrigin(`${x}% ${y}%`);
+    setHovered(true);
+  };
+
+  const handleMouseLeave = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setOrigin(`${x}% ${y}%`);
+    setHovered(false);
+  };
+
+  return (
+    <Link
+      href={href}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className="relative flex items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] text-[min(1.16vw,1.79vh)] font-normal transition-colors duration-300 max-md:!w-[clamp(150px,45vw,200px)] max-md:!h-[clamp(44px,7dvh,52px)] max-md:!text-[clamp(14px,3.5vw,16px)]"
+      style={{
+        width: "clamp(160px, min(14vw, 20vh), 220px)",
+        height: "clamp(48px, min(4.5vw, 6vh), 60px)",
+        borderRadius: "53px",
+        border: "1px solid #FFFFFF",
+        color: hovered ? "#001A4D" : "white",
+        fontSize: "clamp(15px, min(1.2vw, 1.8vh), 18px)",
+      }}
+    >
+      <span
+        className="absolute inset-0 bg-white transition-transform duration-400 ease-out"
+        style={{
+          transformOrigin: origin,
+          transform: hovered ? "scale(1)" : "scale(0)",
+          borderRadius: "inherit",
+        }}
+      />
+      <span className="relative z-10">{label}</span>
+    </Link>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
    Main Component
-   ═══════════════════════════════════════════════════════ */
+   ───────────────────────────────────────────────────────── */
 export default function JoinPortfolioCTA() {
+  const sectionRef = useRef<HTMLElement>(null);
+
   return (
     <section
-      className="relative flex w-full flex-col items-center justify-center overflow-hidden bg-white"
+      ref={sectionRef}
+      className="relative flex w-full flex-col items-center justify-center overflow-hidden bg-[#00112E]"
       style={{
-        paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
-        paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
+        paddingTop: "clamp(80px, min(12vw, 16vh), 160px)",
+        paddingBottom: "clamp(80px, min(12vw, 16vh), 160px)",
         paddingLeft: "var(--section-px-wide)",
         paddingRight: "var(--section-px-wide)",
       }}
     >
-      <style>{SLOT_CSS}</style>
+      {/* ── BACKGROUND GLOWS ── */}
+      <HeroGlow sectionRef={sectionRef} />
 
       <motion.div
+        className="relative z-10 flex w-full max-w-[800px] flex-col items-center text-center"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.25 }}
+        viewport={{ once: true, amount: 0.5 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative w-full max-w-[1440px] overflow-hidden"
-        style={{
-          borderRadius: "clamp(10px, min(1.1vw, 1.6vh), 16px)",
-          background:
-            "linear-gradient(89deg, #F9F4EC 12.62%, #FBF7F0 79.35%)",
-        }}
       >
-        {/* ╔══════════════════════════════════════════════╗
-            ║  DESKTOP  (lg+)                             ║
-            ╚══════════════════════════════════════════════╝ */}
-        {/* UPDATED: Outer layout is balanced again */}
-        <div className="hidden w-full lg:flex lg:justify-between lg:min-h-[clamp(400px,min(38.3vw,56.2vh),552px)]">
-          
-          {/* ── Left: text ── */}
-          <div
-            className="flex flex-1 flex-col justify-center"
-            style={{
-              paddingLeft: "clamp(40px, min(5.56vw, 8.15vh), 80px)",
-              paddingRight: "clamp(20px, min(2.78vw, 4.07vh), 40px)",
-            }}
-          >
-            <h2
-              className="font-['Libre_Baskerville',_serif] font-semibold text-[#000]"
-              style={{
-                fontSize: "clamp(36px, min(4.44vw, 6.52vh), 64px)",
-                lineHeight: "131%",
-                marginBottom: "clamp(12px, min(1.39vw, 2.04vh), 20px)",
-              }}
-            >
-              Want to join
-              <br />
-              our portfolio?
-            </h2>
-            <p
-              className="font-['Poppins',_sans-serif] font-normal text-[#323232]"
-              style={{
-                fontSize: "clamp(16px, min(1.67vw, 2.44vh), 24px)",
-                lineHeight: "150%",
-                maxWidth: "450px",
-                marginBottom: "clamp(24px, min(2.78vw, 4.07vh), 40px)",
-              }}
-            >
-              It is never to late to be part of the
-              <br />
-              Titan Capital
-            </p>
-            <SpotlightButton />
-          </div>
+        {/* ── HEADING ── */}
+        <h2
+          className="m-0 font-['Poppins',_sans-serif] font-medium text-white max-md:!text-[36px] max-md:!leading-[120%]"
+          style={{
+            fontSize: "clamp(36px, 5.5vw, 72px)",
+            lineHeight: "120%",
+            marginBottom: "clamp(16px, 2vw, 24px)",
+          }}
+        >
+          Want To Join <br className="hidden md:block" />
+          Our Portfolio?
+        </h2>
 
-          {/* ── Right: slot machine ── */}
-          <div
-            className="relative flex flex-1 items-center justify-center"
-            style={{
-              paddingTop: "clamp(24px, min(2.78vw, 4.07vh), 40px)",
-              paddingBottom: "clamp(24px, min(2.78vw, 4.07vh), 40px)",
-              paddingLeft: "clamp(20px, min(2.78vw, 4.07vh), 40px)",
-              paddingRight: "clamp(40px, min(5.56vw, 8.15vh), 80px)",
-            }}
-          >
-            <SlotMachineBox
-              columns={DESKTOP_COLUMNS}
-              cellSize="clamp(60px, min(7.6vw, 11.2vh), 110px)"
-              height="clamp(320px, min(38vw, 55vh), 559px)" 
-              brandSize="clamp(16px, min(1.53vw, 2.24vh), 24px)" 
-            />
-          </div>
-        </div>
+        {/* ── SUBTITLE ── */}
+        <p
+          className="font-['Poppins',_sans-serif] font-normal text-white/90 max-md:!text-[16px]"
+          style={{
+            fontSize: "clamp(16px, 1.8vw, 22px)",
+            lineHeight: "160%",
+            marginBottom: "clamp(32px, 4vw, 48px)",
+          }}
+        >
+          It is never to late to be part of the <br className="hidden md:block" />
+          Titan Capital
+        </p>
 
-        {/* ╔══════════════════════════════════════════════╗
-            ║  MOBILE  (<lg)                              ║
-            ╚══════════════════════════════════════════════╝ */}
-        <div className="flex flex-col items-center lg:hidden">
-          <div
-            className="flex w-full flex-col items-center text-center"
-            style={{
-              paddingTop: "clamp(40px, min(8vw, 11.7vh), 70px)",
-              paddingBottom: "clamp(28px, min(5vw, 7.3vh), 48px)",
-              paddingLeft: "clamp(20px, 5vw, 40px)",
-              paddingRight: "clamp(20px, 5vw, 40px)",
-            }}
-          >
-            <h2
-              className="font-['Libre_Baskerville',_serif] font-semibold text-[#000]"
-              style={{
-                maxWidth: "283px",
-                fontSize: "20px",
-                lineHeight: "131%",
-                marginBottom: "clamp(10px, min(2vw, 1.4vh), 16px)",
-              }}
-            >
-              Want to join our portfolio?
-            </h2>
-            <p
-              className="font-['Poppins',_sans-serif] font-normal text-[#323232] text-center"
-              style={{
-                maxWidth: "283px",
-                fontSize: "16px",
-                lineHeight: "150%",
-                marginBottom: "clamp(20px, min(4vw, 2.8vh), 32px)",
-              }}
-            >
-              It is never to late to be part of the Titan Capital
-            </p>
-            <SpotlightButton wide />
-          </div>
-
-          <div
-            className="flex w-full justify-center"
-            style={{
-              paddingLeft: "clamp(12px, 3vw, 24px)",
-              paddingRight: "clamp(12px, 3vw, 24px)",
-              paddingBottom: "clamp(16px, 3vw, 28px)",
-            }}
-          >
-            <SlotMachineBox
-              columns={MOBILE_COLUMNS}
-              cellSize="clamp(44px, 13vw, 80px)"
-              height="clamp(220px, 55vw, 380px)"
-              brandSize="clamp(11px, 3.2vw, 16px)"
-            />
-          </div>
-        </div>
+        {/* ── BUTTON ── */}
+        <CursorFillButton href="/getinvestment" label="Get Investment" />
       </motion.div>
     </section>
   );

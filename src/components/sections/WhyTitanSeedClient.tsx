@@ -1,10 +1,122 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { motion, useInView, Variants } from "framer-motion";
+import { useRef, useEffect } from "react";
+import Image from "next/image";
+import { 
+  motion, 
+  useMotionValue, 
+  useSpring, 
+  useTransform 
+} from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────
-   Types — shared with the server wrapper (WhyTitanSeed.tsx).
+   Animation Variants
+   ───────────────────────────────────────────────────────── */
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: (delay: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut" as const, delay },
+  }),
+};
+
+/* ─────────────────────────────────────────────────────────
+   Container Glow Background
+   ───────────────────────────────────────────────────────── */
+function ContainerGlow({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
+  const mouseX = useMotionValue(-1000);
+  const mouseY = useMotionValue(-1000);
+  const normX = useMotionValue(0);
+  const normY = useMotionValue(0);
+
+  const cursorSpring = { damping: 25, stiffness: 250, mass: 0.3 };
+  const smoothX = useSpring(mouseX, cursorSpring);
+  const smoothY = useSpring(mouseY, cursorSpring);
+
+  const ambientSpring = { damping: 30, stiffness: 70, mass: 1 };
+  const smoothNormX = useSpring(normX, ambientSpring);
+  const smoothNormY = useSpring(normY, ambientSpring);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        mouseX.set(e.clientX - rect.left);
+        mouseY.set(e.clientY - rect.top);
+      }
+      normX.set((e.clientX / window.innerWidth) * 2 - 1);
+      normY.set((e.clientY / window.innerHeight) * 2 - 1);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [mouseX, mouseY, normX, normY, containerRef]);
+
+  const leftX = useTransform(smoothNormX, [-1, 1], ["-10%", "10%"]);
+  const leftY = useTransform(smoothNormY, [-1, 1], ["-10%", "10%"]);
+
+  return (
+    <>
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute"
+        style={{
+          left: "-10%",
+          top: "-10%",
+          width: "120%",
+          height: "120%",
+          zIndex: 0,
+          x: leftX,
+          y: leftY,
+          willChange: "transform",
+        }}
+      >
+        <motion.div
+          className="w-full h-full rounded-full blur-[40px]"
+          style={{
+            background:
+              "radial-gradient(circle, #5054B5 0%, #054EB6 40%, #022250 80%, transparent 100%)",
+            opacity: 0.6,
+          }}
+          animate={{
+            x: ["0%", "35%", "-15%", "25%", "0%"],
+            y: ["0%", "25%", "-10%", "35%", "0%"],
+            scale: [1, 1.15, 0.85, 1.1, 1],
+          }}
+          transition={{
+            duration: 18,
+            repeat: Infinity,
+            repeatType: "loop",
+            ease: "easeInOut",
+          }}
+        />
+      </motion.div>
+
+      {/* Cursor tracking blob */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute top-0 left-0 rounded-full blur-[24px]"
+        style={{
+          width: "150px",
+          height: "150px",
+          zIndex: 5,
+          x: smoothX,
+          y: smoothY,
+          translateX: "-50%",
+          translateY: "-50%",
+          opacity: 0.4,
+          background:
+            "radial-gradient(circle, rgba(80,84,181,0.85) 0%, rgba(5,78,182,0.5) 40%, rgba(2,34,80,0.2) 70%, transparent 100%)",
+          willChange: "transform",
+        }}
+      />
+    </>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   Types
    ───────────────────────────────────────────────────────── */
 export interface WhyTitanSeedCard {
   title: string;
@@ -39,6 +151,9 @@ const FALLBACK_CARDS_DATA: WhyTitanSeedCard[] = [
   },
 ];
 
+/* ─────────────────────────────────────────────────────────
+   Main Component
+   ───────────────────────────────────────────────────────── */
 export default function WhyTitanSeedClient({
   data,
 }: {
@@ -47,270 +162,143 @@ export default function WhyTitanSeedClient({
   const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
   const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
   const cardsData =
-    data?.cards && data.cards.length === 4 ? data.cards : FALLBACK_CARDS_DATA;
+    data?.cards && data.cards.length > 0 ? data.cards : FALLBACK_CARDS_DATA;
 
-  const sectionRef = useRef<HTMLElement>(null);
-  const cardsRef = useRef<HTMLDivElement>(null);
-  const mobileRef = useRef<HTMLDivElement>(null);
-
-  /* ── Reversible in-view detection ──
-     Cards area triggers spread/contract.
-     Heading stays once: true (text shouldn't re-animate). */
-  const isCardsInView = useInView(sectionRef, { amount: 0.7 });
-  const isMobileInView = useInView(sectionRef, { amount: 0.6 });
-
-  /* Small delay before spreading so the section has time to settle */
-  const [isSpread, setIsSpread] = useState(false);
-  useEffect(() => {
-    if (isCardsInView) {
-      const timer = setTimeout(() => setIsSpread(true), 150);
-      return () => clearTimeout(timer);
-    }
-    // Contract back immediately when scrolled out
-    setIsSpread(false);
-  }, [isCardsInView]);
-
-  const smoothSpring = {
-    type: "spring" as const,
-    stiffness: 80,
-    damping: 14,
-    mass: 1,
-  };
-
-  /* Contract spring is slightly faster / snappier */
-  const contractSpring = {
-    type: "spring" as const,
-    stiffness: 100,
-    damping: 18,
-    mass: 0.9,
-  };
-
-  const cardVariants: Variants = {
-    clustered: (i: number) => {
-      const positions = [
-        { x: "-25%", y: "125%", rotate: -12, zIndex: 1 },
-        { x: "25%",  y: "125%", rotate: 12,  zIndex: 2 },
-        { x: "-20%", y: "130%",  rotate: 6,   zIndex: 3 },
-        { x: "30%",  y: "130%",  rotate: -7,  zIndex: 4 },
-      ];
-      return {
-        x: positions[i].x,
-        y: positions[i].y,
-        rotate: positions[i].rotate,
-        zIndex: positions[i].zIndex,
-        transition: contractSpring,
-      };
-    },
-    spread: (i: number) => {
-      const positions = [
-        { x: "-75%", y: "38%" },
-        { x: "45%",  y: "38%" },
-        { x: "-85%", y: "148%" },
-        { x: "35%",  y: "158%" },
-      ];
-      return {
-        x: positions[i].x,
-        y: positions[i].y,
-        rotate: 0,
-        zIndex: 5,
-        transition: { ...smoothSpring, delay: i * 0.07 },
-      };
-    },
-  };
+  const rightColRef = useRef<HTMLDivElement>(null);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
 
   return (
     <section
-      ref={sectionRef}
-      className="relative flex w-full flex-col items-center justify-start lg:flex-row lg:items-start lg:justify-center lg:gap-[clamp(20px,3vw,60px)] overflow-hidden bg-white"
+      className="relative flex w-full flex-col items-center bg-[#FBF7F0]"
       style={{
-        minHeight: "clamp(500px, 78svh, 750px)",
-        paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
-        paddingBottom: "clamp(16px, min(2vw, 3vh), 40px)",
+        paddingBottom: "clamp(60px, min(8vw, 12vh), 120px)",
         paddingLeft: "var(--section-px-wide)",
         paddingRight: "var(--section-px-wide)",
       }}
     >
-      {/* ── HEADING ── */}
-      <div className="mx-auto mb-[20px] md:mb-[clamp(60px,10vh,120px)] lg:mb-0 lg:shrink-0 lg:w-auto flex w-full max-w-[1440px] shrink-0 flex-col">
-        <motion.div
-          className="flex w-full flex-row items-center max-lg:justify-center lg:flex-col lg:items-start"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.05 }}
-        >
-          <motion.h2
-            className="m-0 mr-2 mb-2 whitespace-nowrap font-['Libre_Baskerville',_serif] text-[clamp(28px,4vw,var(--heading-xl))] font-semibold not-italic leading-[110%] text-[#001A4D] md:mr-3"
-            variants={{
-              hidden: { opacity: 0, x: -40 },
-              visible: { opacity: 1, x: 0, transition: { duration: 0.9, ease: "easeOut" } }
-            }}
-          >
-            {headingFirst}
-          </motion.h2>
-
-          <motion.div
-            className="relative inline-flex items-center justify-center overflow-hidden bg-transparent px-[4px] py-[8px] md:px-[6px] md:py-[10px]"
-            variants={{
-              hidden: { opacity: 0, x: -40 },
-              visible: { opacity: 1, x: 0, transition: { duration: 0.9, ease: "easeOut", delay: 0.2 } }
-            }}
-          >
-            <motion.span
-              className="absolute inset-0 z-0 h-full w-full bg-[#D3E2FF]"
-              style={{ transformOrigin: "left" }}
-              variants={{
-                hidden: { scaleX: 0 },
-                visible: { scaleX: 1, transition: { duration: 0.6, ease: "easeInOut", delay: 0.7 } }
-              }}
-            />
-            <span className="relative z-10 whitespace-nowrap font-['Libre_Baskerville',_serif] text-[clamp(28px,4vw,var(--heading-xl))] font-semibold italic leading-none text-[#001A4D]">
-              {headingSecond}
-            </span>
-          </motion.div>
-        </motion.div>
-      </div>
-
-      {/* ── DESKTOP: CARDS ── */}
-      <div
-        ref={cardsRef}
-        className="relative hidden w-full max-w-[1100px] flex-1 items-center justify-center lg:flex"
-      >
-        {cardsData.map((card, i) => (
-          <motion.div
-            key={i}
-            custom={i}
-            variants={cardVariants}
-            initial="clustered"
-            animate={isSpread ? "spread" : "clustered"}
-            whileHover={{ scale: 1.05, zIndex: 10, transition: { type: "spring", stiffness: 300, damping: 20 } }}
-            className="absolute flex cursor-pointer flex-col items-center justify-center bg-white"
-            style={{
-              width: "clamp(190px, 20vw, 290px)",
-              height: "clamp(160px, 18vw, 230px)",
-              padding: "clamp(6px, 1vw, 12px)",
-              borderRadius: "clamp(14px, 2vw, 28px)",
-              boxShadow: "10px 12px 20px 0px rgba(233,233,233,0.8)",
-              left: "50%",
-              top: "50%",
-              marginLeft: "calc(clamp(190px, 20vw, 290px) / -2)",
-              marginTop: "calc(clamp(160px, 18vw, 230px) / -2)",
-            }}
-          >
-            <div
-              className="relative flex h-full w-full flex-col items-center overflow-hidden bg-[#D3E2FF]"
-              style={{ borderRadius: "clamp(10px, 1.5vw, 20px)" }}
-            >
-              <div className="absolute top-[clamp(6px,1vw,10px)] flex w-full justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" style={{ width: "clamp(14px, 1.5vw, 18px)", height: "clamp(14px, 1.5vw, 18px)" }} viewBox="0 0 36 35" fill="none">
-                  <g filter="url(#filter0_d_2413_230)">
-                    <circle cx="13.0808" cy="13.0812" r="13.0782" transform="rotate(-22.4299 13.0808 13.0812)" fill="white"/>
-                  </g>
-                  <defs>
-                    <filter id="filter0_d_2413_230" x="0" y="0" width="35.1621" height="34.1631" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-                      <feFlood floodOpacity="0" result="BackgroundImageFix"/>
-                      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                      <feOffset dx="5" dy="4"/>
-                      <feGaussianBlur stdDeviation="2"/>
-                      <feComposite in2="hardAlpha" operator="out"/>
-                      <feColorMatrix type="matrix" values="0 0 0 0 0.660958 0 0 0 0 0.775439 0 0 0 0 1 0 0 0 1 0"/>
-                      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_2413_230"/>
-                      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_2413_230" result="shape"/>
-                    </filter>
-                  </defs>
-                </svg>
-              </div>
-              <div
-                className="flex w-full items-center justify-center bg-[#001A4D] px-2 py-2"
-                style={{ marginTop: "clamp(20px, 3vw, 32px)", minHeight: "clamp(30px, 4vw, 40px)" }}
-              >
-                <h3
-                  className="text-center font-['Libre_Baskerville',_serif] font-semibold leading-[105%] text-white"
-                  style={{ fontSize: "clamp(11px, 1vw, 14px)" }}
-                >
-                  {card.title}
-                </h3>
-              </div>
-              <div className="flex flex-1 items-center justify-center px-3 py-2" style={{ padding: "clamp(12px, 2.5vw, 24px)" }}>
-                <p
-                  className="text-center font-['Poppins',_sans-serif] font-normal leading-[135%] text-black"
-                  style={{ fontSize: "clamp(10px, 0.9vw, 12px)" }}
-                >
-                  {card.desc}
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* ── TABLET / MOBILE: RESPONSIVE GRID ── */}
+      {/* ── STICKY HEADING & SUBTITLE ── */}
       <motion.div
-        ref={mobileRef}
-        className="mt-[10px] md:mt-[20px] grid w-full max-w-[800px] grid-cols-1 gap-[20px] md:grid-cols-2 md:gap-[32px] lg:hidden"
-        initial="hidden"
-        animate={isMobileInView ? "visible" : "hidden"}
-        variants={{
-          hidden: { transition: { staggerChildren: 0.06, staggerDirection: -1 } },
-          visible: { transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
+        className="w-full flex flex-col items-center text-center z-20 lg:sticky"
+        style={{
+          top: "var(--nav-height)",
+          paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
+          paddingBottom: "clamp(20px, 3vw, 32px)",
+          backgroundColor: "#FBF7F0",
         }}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.5 }}
       >
-        {cardsData.map((card, i) => (
-          <motion.div
-            key={i}
-            variants={{
-              hidden: {
-                opacity: 0,
-                y: 40,
-                scale: 0.88,
-                transition: { duration: 0.35, ease: "easeIn" },
-              },
-              visible: {
-                opacity: 1,
-                y: 0,
-                scale: 1,
-                transition: { duration: 0.5, ease: "easeOut" },
-              },
-            }}
-            className="mx-auto flex w-full max-w-[320px] flex-col items-center justify-center rounded-[24px] bg-white p-[10px]"
-            style={{ boxShadow: "10px 12px 20px 0px rgba(233,233,233,0.8)", height: "230px" }}
-          >
-            <div className="relative flex h-full w-full flex-col items-center overflow-hidden rounded-[18px] bg-[#D3E2FF]">
-              {/* Pin */}
-              <div className="flex w-full justify-center pt-[12px]">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 36 35" fill="none">
-                  <g filter="url(#filter0_m)">
-                    <circle cx="13.0808" cy="13.0812" r="13.0782" transform="rotate(-22.4299 13.0808 13.0812)" fill="white"/>
-                  </g>
-                  <defs>
-                    <filter id="filter0_m" x="0" y="0" width="35.1621" height="34.1631" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-                      <feFlood floodOpacity="0" result="BackgroundImageFix"/>
-                      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                      <feOffset dx="5" dy="4"/>
-                      <feGaussianBlur stdDeviation="2"/>
-                      <feComposite in2="hardAlpha" operator="out"/>
-                      <feColorMatrix type="matrix" values="0 0 0 0 0.660958 0 0 0 0 0.775439 0 0 0 0 1 0 0 0 1 0"/>
-                      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
-                      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
-                    </filter>
-                  </defs>
-                </svg>
-              </div>
-              {/* Title banner */}
-              <div className="mt-[10px] flex w-full min-h-[44px] items-center justify-center bg-[#001A4D] px-4 py-[8px]">
-                <h3 className="text-center font-['Libre_Baskerville',_serif] text-[15px] font-semibold leading-[115%] text-white">
-                  {card.title}
-                </h3>
-              </div>
-              {/* Description */}
-              <div className="flex flex-1 items-center justify-center px-[20px] pb-[12px]">
-                <p className="text-center font-['Poppins',_sans-serif] text-[13px] font-normal leading-[140%] text-black">
-                  {card.desc}
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        ))}
+        <motion.h2
+          className="m-0 max-w-[794px] font-['Poppins',_sans-serif] font-normal capitalize text-[#000] max-md:!text-[32px] max-md:!leading-[120%]"
+          style={{ fontSize: "clamp(32px, 4vw, 56px)", lineHeight: "120%" }}
+          custom={0}
+          variants={fadeUp}
+        >
+          {headingFirst} {headingSecond}
+        </motion.h2>
+
+        <motion.p
+          className="mt-[clamp(16px,min(2vw,3vh),24px)] max-w-[800px] font-['Poppins',_sans-serif] font-normal text-[#323232] max-md:!text-[16px] max-md:!leading-[140%]"
+          style={{ fontSize: "clamp(16px, 1.5vw, 22px)", lineHeight: "150%" }}
+          custom={0.2}
+          variants={fadeUp}
+        >
+          500+ founder community with shared playbooks, templates, learnings
+        </motion.p>
       </motion.div>
+
+      {/* ── TWO COLUMN LAYOUT ── */}
+      <div className="flex w-full max-w-[1440px] flex-col lg:flex-row items-start justify-between gap-[clamp(40px,5vw,80px)] relative z-10">
+        
+        {/* ── LEFT: Sticky Image Container ── */}
+        <div 
+          className="w-full lg:w-[45%] shrink-0 lg:sticky self-start z-10"
+          style={{ top: "calc(var(--nav-height) + clamp(150px, 20vw, 220px))" }}
+        >
+          <div 
+            ref={imageContainerRef}
+            className="w-full overflow-hidden bg-[#00112E] relative"
+            style={{
+              borderRadius: "2px",
+              height: "clamp(220px, 28vw, 400px)",
+              maxWidth: "540px",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.05)"
+            }}
+          >
+            {/* ── Container Ambient Background ── */}
+            <ContainerGlow containerRef={imageContainerRef} />
+
+            {/* Next.js Image Component */}
+            <Image
+              src="/images/titanseedfund/whytitanseed.png"
+              alt="Why Titan Seed"
+              fill
+              className="object-cover z-10"
+              sizes="(max-width: 1024px) 100vw, 45vw"
+            />
+          </div>
+        </div>
+
+        {/* ── RIGHT: Scrolling Reel ── */}
+        <div 
+          ref={rightColRef}
+          className="w-full lg:w-[50%] relative flex flex-col pt-[16px] lg:pt-0"
+        >
+          {/* Animated Vertical Line */}
+          <motion.div
+            className="absolute left-0 top-0 bottom-0 w-[1px] bg-[#000]/20"
+            style={{ transformOrigin: "top" }}
+            initial={{ scaleY: 0 }}
+            whileInView={{ scaleY: 1 }}
+            viewport={{ once: true, amount: 0.1 }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+          />
+
+          {/* List Items */}
+          {cardsData.map((card, idx) => (
+            <motion.div
+              key={idx}
+              className="relative w-full flex flex-col justify-center border-t border-[#000]/20"
+              style={{
+                paddingTop: "clamp(36px, 6vw, 72px)",
+                paddingBottom: "clamp(36px, 6vw, 72px)",
+                paddingLeft: "clamp(24px, 3vw, 40px)",
+              }}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-10%" }}
+              custom={0.1}
+              variants={fadeUp}
+            >
+              {/* Number */}
+              <span 
+                className="font-['Poppins',_sans-serif] font-medium text-[#000] mb-[12px]" 
+                style={{ fontSize: "clamp(18px, 2vw, 24px)" }}
+              >
+                {String(idx + 1).padStart(2, '0')}
+              </span>
+
+              {/* Title */}
+              <h3 
+                className="m-0 font-['Poppins',_sans-serif] font-medium text-[#000] mb-[16px]" 
+                style={{ fontSize: "clamp(24px, 3vw, 40px)", lineHeight: "120%" }}
+              >
+                {card.title}
+              </h3>
+
+              {/* Description */}
+              <p 
+                className="m-0 font-['Poppins',_sans-serif] font-normal text-[#323232]" 
+                style={{ fontSize: "clamp(16px, 1.5vw, 20px)", lineHeight: "150%" }}
+              >
+                {card.desc}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+
+      </div>
     </section>
   );
 }

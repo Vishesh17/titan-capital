@@ -17,8 +17,8 @@ export interface GetInvestmentHeroData {
   subtitle?: string;
 }
 
-const FALLBACK_HEADING_FIRST = "We";
-const FALLBACK_HEADING_SECOND = "Invest Early";
+const FALLBACK_HEADING_FIRST = "We Invest Early";
+
 const FALLBACK_SUBTITLE =
   "If you’re building something that matters, a company you believe in enough to give the next decade of your life to, we would want to hear about it.";
 
@@ -293,7 +293,6 @@ export default function GetInvestmentHeroClient({
   data?: GetInvestmentHeroData | null;
 }) {
   const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
-  const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
   const subtitle = data?.subtitle || FALLBACK_SUBTITLE;
 
   return (
@@ -331,7 +330,6 @@ export default function GetInvestmentHeroClient({
             }}
           >
             <span>{headingFirst}</span>
-            <span>{headingSecond}</span>
           </motion.h1>
 
           <motion.p

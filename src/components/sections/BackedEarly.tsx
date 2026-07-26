@@ -2,7 +2,14 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useCallback, useState } from "react";
-import { motion, Variants, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  Variants,
+  AnimatePresence,
+  useMotionValue,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 
 /*
   "Backed Early. Built to last"
@@ -17,9 +24,141 @@ const MARQUEE_CSS = `
 }
 `;
 
-/* ═══════════════════════════════════════════════════════
-   AnimatedGrid — canvas grid with cursor-follow wave distortion
-   ═══════════════════════════════════════════════════════ */
+/* ─────────────────────────────────────────────────────────
+   Hero Glow Background
+   ───────────────────────────────────────────────────────── */
+function HeroGlow() {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const normX = useMotionValue(0);
+  const normY = useMotionValue(0);
+
+  const cursorSpring = { damping: 25, stiffness: 250, mass: 0.3 };
+  const smoothX = useSpring(mouseX, cursorSpring);
+  const smoothY = useSpring(mouseY, cursorSpring);
+
+  const ambientSpring = { damping: 30, stiffness: 70, mass: 1 };
+  const smoothNormX = useSpring(normX, ambientSpring);
+  const smoothNormY = useSpring(normY, ambientSpring);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      mouseX.set(window.innerWidth / 2);
+      mouseY.set(window.innerHeight / 2);
+    }
+
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseX.set(e.pageX);
+      mouseY.set(e.pageY);
+      normX.set((e.clientX / window.innerWidth) * 2 - 1);
+      normY.set((e.clientY / window.innerHeight) * 2 - 1);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [mouseX, mouseY, normX, normY]);
+
+  const leftX = useTransform(smoothNormX, [-1, 1], ["-8%", "8%"]);
+  const leftY = useTransform(smoothNormY, [-1, 1], ["-8%", "8%"]);
+  const rightX = useTransform(smoothNormX, [-1, 1], ["8%", "-8%"]);
+  const rightY = useTransform(smoothNormY, [-1, 1], ["8%", "-8%"]);
+
+  return (
+    <>
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute"
+        style={{
+          left: "-25%",
+          top: "-25%",
+          width: "min(75vw, 100vh)",
+          height: "min(75vw, 100vh)",
+          zIndex: 0,
+          x: leftX,
+          y: leftY,
+          willChange: "transform",
+        }}
+      >
+        <motion.div
+          className="w-full h-full rounded-full blur-[120px]"
+          style={{
+            background:
+              "radial-gradient(circle, #5054B5 0%, #054EB6 40%, #022250 80%, transparent 100%)",
+            opacity: 0.6,
+          }}
+          animate={{
+            x: ["0%", "35%", "-15%", "25%", "0%"],
+            y: ["0%", "25%", "-10%", "35%", "0%"],
+            scale: [1, 1.15, 0.85, 1.1, 1],
+          }}
+          transition={{
+            duration: 18,
+            repeat: Infinity,
+            repeatType: "loop",
+            ease: "easeInOut",
+          }}
+        />
+      </motion.div>
+
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute"
+        style={{
+          right: "-25%",
+          bottom: "-25%",
+          width: "min(70vw, 90vh)",
+          height: "min(70vw, 90vh)",
+          zIndex: 0,
+          x: rightX,
+          y: rightY,
+          willChange: "transform",
+        }}
+      >
+        <motion.div
+          className="w-full h-full rounded-full blur-[120px]"
+          style={{
+            background:
+              "radial-gradient(circle, #AC71C6 0%, #033699 50%, #001A4D 80%, transparent 100%)",
+            opacity: 0.5,
+          }}
+          animate={{
+            x: ["0%", "-35%", "15%", "-25%", "0%"],
+            y: ["0%", "-25%", "10%", "-35%", "0%"],
+            scale: [1, 1.15, 0.85, 1.1, 1],
+          }}
+          transition={{
+            duration: 21,
+            repeat: Infinity,
+            repeatType: "loop",
+            ease: "easeInOut",
+          }}
+        />
+      </motion.div>
+
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute top-0 left-0 rounded-full blur-[60px]"
+        style={{
+          width: "25vw",
+          height: "25vw",
+          zIndex: 5,
+          x: smoothX,
+          y: smoothY,
+          translateX: "-50%",
+          translateY: "-50%",
+          opacity: 0.4,
+          background:
+            "radial-gradient(circle, rgba(80,84,181,0.85) 0%, rgba(5,78,182,0.5) 40%, rgba(2,34,80,0.2) 70%, transparent 100%)",
+          willChange: "transform",
+        }}
+      />
+    </>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   Animated Grid — canvas with cursor-follow wave distortion
+   ───────────────────────────────────────────────────────── */
 function AnimatedGrid() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: -9999, y: -9999 });
@@ -28,10 +167,7 @@ function AnimatedGrid() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
-    mouseRef.current = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    };
+    mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }, []);
 
   const onMouseLeave = useCallback(() => {
@@ -61,12 +197,11 @@ function AnimatedGrid() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
-    const isMobile = canvas.getBoundingClientRect().width < 768;
-    const GRID_SIZE = isMobile ? 60 : 90;
-    const BASE_ALPHA = isMobile ? 0.03 : 0.06;
+    const GRID_SIZE = Math.round(canvas.getBoundingClientRect().width / 8);
+    const BASE_ALPHA = 0.06;
     const CURSOR_RADIUS = 180;
-    const WAVE_AMP = isMobile ? 4 : 6;
-    const WAVE_BOOST = isMobile ? 0.05 : 0.10;
+    const WAVE_AMP = 6;
+    const WAVE_BOOST = 0.10;
 
     const draw = (now: number) => {
       const elapsed = (now - startTime) / 1000;
@@ -117,23 +252,10 @@ function AnimatedGrid() {
         let started = false;
         for (let y = 0; y <= h; y += 4) {
           const { offset, alpha } = getWave(x, y);
-          ctx.strokeStyle = `rgba(0, 0, 0, ${alpha})`;
+          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
           const dx = x + offset;
           if (!started) { ctx.moveTo(dx, y); started = true; }
           else { ctx.lineTo(dx, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(dx, y); }
-        }
-        ctx.stroke();
-      }
-
-      for (let y = 0; y <= h; y += GRID_SIZE) {
-        ctx.beginPath();
-        let started = false;
-        for (let x = 0; x <= w; x += 4) {
-          const { offset, alpha } = getWave(x, y);
-          ctx.strokeStyle = `rgba(0, 0, 0, ${alpha})`;
-          const dy = y + offset;
-          if (!started) { ctx.moveTo(x, dy); started = true; }
-          else { ctx.lineTo(x, dy); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, dy); }
         }
         ctx.stroke();
       }
@@ -159,7 +281,7 @@ function AnimatedGrid() {
     <canvas
       ref={canvasRef}
       className="pointer-events-none absolute inset-0 h-full w-full"
-      style={{ zIndex: 0 }}
+      style={{ zIndex: 1 }}
     />
   );
 }
@@ -193,16 +315,17 @@ function CompanyCard({ company, mode = "marquee" }: { company: (typeof companies
   const w = LOGO_W * scale;
   const h = LOGO_H * scale;
 
+  // Cards reduced in size while keeping aspect ratio 1:1
   const modeStyles = mode === "marquee" ? {
-    width: "clamp(180px, 22vw, 320px)",
-    height: "clamp(180px, 22vw, 320px)",
-    borderRadius: "clamp(8px, 0.83vw, 12px)",
-    boxShadow: "0 0 14px 8px rgba(166, 166, 166, 0.25)",
+    width: "clamp(130px, 16vw, 240px)",
+    height: "clamp(130px, 16vw, 240px)",
+    borderRadius: "clamp(2px, 0.83vw, 2px)",
+    boxShadow: "0 0 14px 8px rgba(0, 0, 0, 0.4)",
   } : {
     width: "100%",
     aspectRatio: "1/1",
     borderRadius: "8px",
-    boxShadow: "0 4px 10px 4px rgba(166, 166, 166, 0.15)",
+    boxShadow: "0 4px 10px 4px rgba(0, 0, 0, 0.3)",
   };
 
   const isMarquee = mode === "marquee";
@@ -211,8 +334,8 @@ function CompanyCard({ company, mode = "marquee" }: { company: (typeof companies
     <div
       className={`group/card relative shrink-0 overflow-hidden bg-[#0e1120] ${
         isMarquee
-          ? "pointer-events-none"                                       // no hover effects in marquee — drag handled by parent
-          : "cursor-pointer transition-all duration-300 ease-out hover:scale-105 hover:shadow-[0_0_20px_10px_rgba(166,166,166,0.3)]"
+          ? "pointer-events-none"                                       
+          : "cursor-pointer transition-all duration-300 ease-out hover:scale-105 hover:shadow-[0_0_20px_10px_rgba(0,0,0,0.5)]"
       }`}
       style={modeStyles}
     >
@@ -229,7 +352,7 @@ function CompanyCard({ company, mode = "marquee" }: { company: (typeof companies
         className="pointer-events-none absolute inset-x-0 bottom-0 z-[1]"
         style={{
           height: "45%",
-          background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 100%)",
+          background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%)",
         }}
       />
 
@@ -262,58 +385,34 @@ function CompanyCard({ company, mode = "marquee" }: { company: (typeof companies
 
 /* ═══════════════════════════════════════════════════════
    CardMarquee (Desktop Only)
-   ─ Pauses on hover
-   ─ Click-and-drag to slide
-   ─ Momentum coast after fast swipe
-   ─ Seamless infinite loop (content is doubled)
    ═══════════════════════════════════════════════════════ */
 function CardMarquee() {
-  const doubled = [...companies, ...companies];    // two copies for seamless loop
-  const trackRef = useRef<HTMLDivElement>(null);    // the sliding strip
-  const [isDragging, setIsDragging] = useState(false); // only for cursor style
+  const doubled = [...companies, ...companies];    
+  const trackRef = useRef<HTMLDivElement>(null);    
+  const [isDragging, setIsDragging] = useState(false); 
 
-  /* ── All animation numbers live here (never cause re-renders) ── */
   const s = useRef({
-    x: 0,              // current translateX position (px, always ≤ 0)
-    halfWidth: 0,      // width of ONE set of cards — our loop boundary
-    lastTime: 0,       // timestamp of previous frame (for delta-time)
-    hovered: false,     // is the mouse inside the marquee?
-    dragging: false,    // is the user currently dragging?
-    dragStartX: 0,      // clientX when drag began
-    dragStartScrollX: 0,// x position when drag began
-    velocity: 0,        // px/frame after drag release (for momentum)
-    lastPointerX: 0,    // previous clientX during drag (for velocity calc)
-    lastPointerTime: 0, // previous timestamp during drag
+    x: 0,              
+    halfWidth: 0,      
+    lastTime: 0,       
+    hovered: false,     
+    dragging: false,    
+    dragStartX: 0,      
+    dragStartScrollX: 0,
+    velocity: 0,        
+    lastPointerX: 0,    
+    lastPointerTime: 0, 
   });
 
-  /*
-   * SPEED: one full loop takes 55 seconds.
-   * The strip is `halfWidth` pixels wide, so each millisecond
-   * we move halfWidth / 55000 pixels to the left.
-   */
   const SPEED = 1 / 55000;
-
-  /*
-   * MOMENTUM: after a fast drag-release the strip keeps
-   * sliding and slows down gradually (multiplied by FRICTION
-   * every frame). Stops when below MIN_VEL.
-   */
   const FRICTION = 0.92;
   const MIN_VEL  = 0.3;
-
-  /*
-   * MAX_DT: if the browser tab was hidden and comes back,
-   * `dt` could be 5+ seconds → huge jump. We cap it at 33ms
-   * (≈ 2 frames at 60fps) so it never jumps.
-   */
   const MAX_DT = 33;
 
-  /* ── The animation loop (runs every frame ≈ 60×/sec) ── */
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
 
-    /* Measure how wide one set of cards is */
     const measure = () => { s.current.halfWidth = track.scrollWidth / 2; };
     requestAnimationFrame(measure);
     window.addEventListener("resize", measure);
@@ -323,42 +422,27 @@ function CardMarquee() {
     const tick = (now: number) => {
       const st = s.current;
 
-      /* First frame: just save the time, don't move */
       if (!st.lastTime) { st.lastTime = now; rafId = requestAnimationFrame(tick); return; }
 
-      /* Delta time (ms since last frame), capped to avoid big jumps */
       const dt = Math.min(now - st.lastTime, MAX_DT);
       st.lastTime = now;
 
       if (st.halfWidth > 0 && !st.dragging) {
-        /*
-         * STATE 1 — Momentum (right after a drag-release)
-         * The strip coasts in the swipe direction, slowing down each frame.
-         */
         if (Math.abs(st.velocity) > MIN_VEL) {
           st.x += st.velocity;
           st.velocity *= FRICTION;
           if (Math.abs(st.velocity) <= MIN_VEL) st.velocity = 0;
         }
-        /*
-         * STATE 2 — Auto-scroll (normal idle movement)
-         * Only runs when NOT hovered and momentum is done.
-         */
         else if (!st.hovered) {
           st.x -= st.halfWidth * SPEED * dt;
         }
-        /* STATE 3 — Hovered & no momentum → do nothing (paused) */
       }
 
-      /* ── Seamless wrap ──
-       * If we've scrolled past one full copy, jump back.
-       * The user can't see this because both copies look identical. */
       if (st.halfWidth > 0) {
         if (st.x < -st.halfWidth) st.x += st.halfWidth;
         if (st.x > 0)            st.x -= st.halfWidth;
       }
 
-      /* Apply the position (translate3d uses the GPU → buttery smooth) */
       track.style.transform = `translate3d(${st.x}px,0,0)`;
       rafId = requestAnimationFrame(tick);
     };
@@ -367,19 +451,16 @@ function CardMarquee() {
     return () => { cancelAnimationFrame(rafId); window.removeEventListener("resize", measure); };
   }, []);
 
-  /* ── Hover handlers (pause / resume) ── */
   const onMouseEnter = useCallback(() => { s.current.hovered = true; }, []);
   const onMouseLeave = useCallback(() => {
     s.current.hovered = false;
-    /* If mouse leaves mid-drag, release it */
     if (s.current.dragging) { s.current.dragging = false; s.current.velocity = 0; setIsDragging(false); }
   }, []);
 
-  /* ── Drag handlers ── */
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     const st = s.current;
     st.dragging = true;
-    st.velocity = 0;                          // kill leftover momentum
+    st.velocity = 0;                          
     st.dragStartX = e.clientX;
     st.dragStartScrollX = st.x;
     st.lastPointerX = e.clientX;
@@ -392,13 +473,11 @@ function CardMarquee() {
     const st = s.current;
     if (!st.dragging) return;
 
-    /* Move the strip so it follows the finger/cursor exactly */
     st.x = st.dragStartScrollX + (e.clientX - st.dragStartX);
 
-    /* Track how fast the pointer is moving (for momentum after release) */
     const now = performance.now();
     const dtMs = now - st.lastPointerTime;
-    if (dtMs > 4) {                           // ignore tiny intervals
+    if (dtMs > 4) {                           
       st.velocity = (e.clientX - st.lastPointerX) * (16 / dtMs);
       st.lastPointerX = e.clientX;
       st.lastPointerTime = now;
@@ -408,8 +487,6 @@ function CardMarquee() {
   const onPointerUp = useCallback(() => {
     s.current.dragging = false;
     setIsDragging(false);
-    /* velocity is already set from the last pointer-move →
-       the tick() loop picks it up and coasts with momentum */
   }, []);
 
   return (
@@ -422,9 +499,9 @@ function CardMarquee() {
       onPointerUp={onPointerUp}
       onPointerLeave={onPointerUp}
     >
-      {/* Left/right fade overlays */}
-      <div className="absolute left-0 top-0 z-10 h-full w-[4%] bg-gradient-to-r from-[#FBF7F0]/60 via-[#FBF7F0]/20 to-transparent pointer-events-none" />
-      <div className="absolute right-0 top-0 z-10 h-full w-[4%] bg-gradient-to-l from-[#FBF7F0]/60 via-[#FBF7F0]/20 to-transparent pointer-events-none" />
+      {/* Dark theme left/right fade overlays */}
+      <div className="absolute left-0 top-0 z-10 h-full w-[4%] bg-gradient-to-r from-[#00112E]/90 via-[#00112E]/40 to-transparent pointer-events-none" />
+      <div className="absolute right-0 top-0 z-10 h-full w-[4%] bg-gradient-to-l from-[#00112E]/90 via-[#00112E]/40 to-transparent pointer-events-none" />
 
       {/* The sliding track */}
       <div
@@ -473,7 +550,7 @@ function MobileFadingGrid() {
 
   return (
     <div 
-      className="w-full px-[var(--section-px-wide)] md:hidden"
+      className="w-full px-[var(--section-px-wide)] md:hidden z-10"
       style={{ perspective: "1200px" }}
     >
       <AnimatePresence mode="wait">
@@ -504,87 +581,77 @@ function MobileFadingGrid() {
 }
 
 /* ═══════════════════════════════════════════════════════
-   Heading entrance animation variants
-   ═══════════════════════════════════════════════════════ */
-const headingVariants: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.7, ease: "easeOut" },
-  },
-};
-
-const subtitleVariants: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: "easeOut", delay: 0.2 },
-  },
-};
-
-/* ═══════════════════════════════════════════════════════
    Main Component
    ═══════════════════════════════════════════════════════ */
 export default function BackedEarly() {
   return (
     <section
-      className="relative flex w-full items-center justify-center overflow-hidden bg-[#FBF7F0] min-h-[calc(100svh-var(--nav-height)-110px)] lg:min-h-[calc(100svh-var(--nav-height))]"
+      className="relative flex w-full flex-col overflow-hidden max-md:overflow-x-hidden max-md:w-[100vw] max-md:ml-[calc(50%-50vw)] bg-[#00112E] min-h-[100svh]"
       style={{
-        marginTop: "var(--nav-height)",
-        paddingTop: "clamp(28px, min(6.94vw, 10.18vh), 100px)",
-        paddingBottom: "clamp(20px, min(6.94vw, 10.18vh), 100px)",
+        // Padding top is calculated here to stretch behind the transparent nav bar without margin gaps.
+        paddingTop: "calc(var(--nav-height) + clamp(20px, min(4vw, 6vh), 60px))",
+        paddingBottom: "clamp(20px, min(4vw, 6vh), 60px)",
       }}
     >
       <style>{MARQUEE_CSS}</style>
+      
+      {/* ── BACKGROUND GLOWS & GRID ── */}
+      <HeroGlow />
       <AnimatedGrid />
 
-      <div className="relative z-10 flex w-full flex-col items-center">
+      <div className="relative z-10 flex w-full flex-1 flex-col items-center justify-between">
 
-        {/* ── HEADING ── */}
-        <motion.div
-          className="mb-[clamp(28px,min(4vw,6vh),56px)] flex flex-col items-center"
-          style={{ paddingLeft: "var(--section-px-wide)", paddingRight: "var(--section-px-wide)" }}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.5 }}
-        >
-          <motion.h2
-            className="m-0 font-['Libre_Baskerville',_serif] text-[length:var(--heading-xl)] max-md:!text-[28px] font-semibold not-italic leading-[115%] text-[#001A4D]"
-            variants={headingVariants}
-          >
-            Backed Early.
-          </motion.h2>
-
+        {/* ── TOP/CENTER: HEADING & SUBTITLE ── */}
+        <div className="flex w-full flex-1 flex-col items-center justify-center mb-[clamp(32px,min(4vw,6vh),60px)]">
           <motion.div
-            className="relative mt-[clamp(4px,0.5vw,8px)] inline-flex items-center justify-center overflow-hidden bg-transparent px-[4px] py-[8px] md:px-[6px] md:py-[10px]"
-            variants={subtitleVariants}
+            className="flex flex-col items-center"
+            style={{ paddingLeft: "var(--section-px-wide)", paddingRight: "var(--section-px-wide)" }}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.5 }}
           >
-            <motion.span
-              className="absolute inset-0 z-0 h-full w-full bg-[#D3E2FF]"
-              style={{ transformOrigin: "left" }}
+            <motion.h2
+              className="m-0 flex flex-col items-center justify-center font-['Poppins',_sans-serif] font-black uppercase text-white max-md:!text-[32px] text-center"
+              style={{
+                fontSize: "clamp(40px, 6vw, 96px)",
+                lineHeight: "105%",
+                letterSpacing: "-0.02em",
+              }}
               variants={{
-                hidden: { scaleX: 0 },
+                hidden: { opacity: 0, y: 30 },
                 visible: {
-                  scaleX: 1,
-                  transition: { duration: 0.6, ease: "easeInOut", delay: 0.6 },
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.8, ease: "easeOut" },
                 },
               }}
-            />
-            <span
-              className="relative z-10 font-['Libre_Baskerville',_serif] text-[length:var(--heading-xl)] max-md:!text-[28px] font-semibold italic leading-[115%] text-[#001A4D]"
             >
-              Built To Last
-            </span>
+              <span>Backed Early</span>
+              <span>Built To Last</span>
+            </motion.h2>
+
+            <motion.p
+              className="mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[800px] font-['Poppins',_sans-serif] font-normal leading-[1.6] text-white/90 text-center"
+              style={{ fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)" }}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.8, ease: "easeOut", delay: 0.2 },
+                },
+              }}
+            >
+              We partner with entrepreneurs from day one. We invest conviction, not just capital, and stay by their side through every stage of their journey.
+            </motion.p>
           </motion.div>
-        </motion.div>
+        </div>
 
-        {/* ── CONTINUOUS MARQUEE (DESKTOP) ── */}
-        <CardMarquee />
-
-        {/* ── 2x2 FADING CROSSFADE GRID (MOBILE) ── */}
-        <MobileFadingGrid />
+        {/* ── BOTTOM: MARQUEE (DESKTOP) / GRID (MOBILE) ── */}
+        <div className="w-full shrink-0">
+          <CardMarquee />
+          <MobileFadingGrid />
+        </div>
 
       </div>
     </section>

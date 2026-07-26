@@ -208,21 +208,27 @@ function FundAccordionItem({
       <button
         onClick={onToggle}
         className="flex w-full cursor-pointer items-center justify-between border-none bg-transparent text-left"
-        style={{ padding: "clamp(14px, min(1.6vw, 2.3vh), 22px) clamp(16px, min(2vw, 3vh), 28px)" }}
+        style={{ padding: "clamp(16px, min(2vw, 2.5vh), 24px) clamp(20px, min(2.5vw, 3.5vh), 32px)" }}
       >
         <span
-          className="font-['Poppins',_sans-serif] font-medium text-[#001A4D]"
-          style={{ fontSize: "clamp(14px, min(1.39vw, 2.04vh), 20px)" }}
+          className="font-['Poppins',_sans-serif] font-normal text-[#000]"
+          style={{ fontSize: "clamp(18px, 2vw, 24px)", lineHeight: "140%" }}
         >
           {fund.title}
         </span>
         <motion.span
-          className="flex items-center justify-center text-[#001A4D] select-none"
-          style={{ fontSize: "clamp(18px, min(1.8vw, 2.6vh), 26px)" }}
-          animate={{ rotate: isOpen ? 45 : 0 }}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
+          className="ml-4 flex shrink-0 items-center justify-center select-none text-[#000]"
+          style={{ width: "clamp(24px, 2vw, 32px)", height: "clamp(24px, 2vw, 32px)" }}
         >
-          +
+          {isOpen ? (
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 36 36" fill="none">
+              <path d="M4 17.5H31" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 36 36" fill="none">
+              <path d="M4 17.5H31M17.5 4V31" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
         </motion.span>
       </button>
 
@@ -232,12 +238,12 @@ function FundAccordionItem({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
+            transition={{ duration: 0.35, ease: "easeInOut" }}
             className="overflow-hidden"
           >
             <div
               style={{
-                padding: "clamp(4px, 0.6vw, 10px) clamp(16px, min(2vw, 3vh), 28px) clamp(16px, min(2vw, 3vh), 28px)",
+                padding: "clamp(4px, 0.6vw, 10px) clamp(20px, min(2.5vw, 3.5vh), 32px) clamp(20px, min(2.5vw, 3.5vh), 32px)",
               }}
             >
               <FundCard info={fund} />
@@ -258,9 +264,10 @@ export default function FundDetailsClient({
   const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
   const funds = data?.funds?.length ? data.funds : FALLBACK_FUNDS;
 
+  const [isExpanded, setIsExpanded] = useState(false);
   const [openIds, setOpenIds] = useState<Set<number>>(new Set());
 
-  const toggle = (idx: number) => {
+  const toggleAccordion = (idx: number) => {
     setOpenIds((prev) => {
       const next = new Set(prev);
       if (next.has(idx)) next.delete(idx);
@@ -271,7 +278,7 @@ export default function FundDetailsClient({
 
   return (
     <section
-      className="relative flex w-full items-start overflow-hidden bg-white"
+      className="relative flex w-full flex-col items-center overflow-hidden bg-white"
       style={{
         paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
         paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
@@ -279,71 +286,103 @@ export default function FundDetailsClient({
         paddingRight: "var(--section-px-wide)",
       }}
     >
-      <div className="mx-auto flex w-full max-w-[1440px] flex-col">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center">
+        
+        {/* ── TOP ANIMATED HORIZONTAL LINE ── */}
+        <motion.div
+          className="w-full h-[1px] bg-[#000]/20"
+          style={{ transformOrigin: "center" }}
+          initial={{ scaleX: 0 }}
+          whileInView={{ scaleX: 1 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 1.2, ease: "easeInOut" }}
+        />
+
         {/* ── HEADING ── */}
         <motion.div
-          className="mb-[clamp(28px,min(4vw,6vh),56px)] flex flex-row flex-wrap items-center gap-x-3 max-md:gap-x-2"
-          initial="hidden"
-          whileInView="visible"
+          className="py-[clamp(24px,3.5vw,48px)] flex flex-col items-center text-center"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          <motion.h2
-            className="m-0 font-['Libre_Baskerville',_serif] text-[length:var(--heading-xl)] max-md:!text-[28px] font-semibold not-italic leading-none text-[#001A4D]"
-            variants={{
-              hidden: { opacity: 0, x: -40 },
-              visible: { opacity: 1, x: 0, transition: { duration: 0.9, ease: "easeOut" } },
-            }}
+          <h2
+            className="m-0 font-['Poppins',_sans-serif] font-normal capitalize text-[#000] max-md:!text-[32px] max-md:!leading-[120%]"
+            style={{ fontSize: "clamp(32px, 4vw, 56px)", lineHeight: "120%" }}
           >
-            {headingFirst}
-          </motion.h2>
-          <motion.span
-            className="relative inline-flex items-center justify-center overflow-hidden bg-transparent px-[4px] py-[8px] md:px-[6px] md:py-[10px]"
-            variants={{
-              hidden: { opacity: 0, x: -80 },
-              visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut", delay: 0.3 } },
-            }}
-          >
-            <motion.span
-              className="absolute inset-0 z-0 h-full w-full bg-[#D3E2FF]"
-              style={{ transformOrigin: "left" }}
-              variants={{
-                hidden: { scaleX: 0 },
-                visible: { scaleX: 1, transition: { duration: 0.6, ease: "easeInOut", delay: 0.7 } },
-              }}
-            />
-            <span className="relative z-10 font-['Libre_Baskerville',_serif] text-[length:var(--heading-xl)] max-md:!text-[28px] font-semibold italic leading-none text-[#001A4D]">
-              {headingSecond}
-            </span>
-          </motion.span>
+            {headingFirst} {headingSecond}
+          </h2>
         </motion.div>
 
-        {/* ── FUND ACCORDIONS ── */}
-        <motion.div
-          className="flex w-full flex-col gap-[clamp(12px,1.5vw,20px)]"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          variants={{
-            hidden: {},
-            visible: { transition: { staggerChildren: 0.15, delayChildren: 0.3 } },
-          }}
-        >
-          {funds.map((fund, idx) => (
+        {/* ── EXPANDABLE CONTENT SECTION ── */}
+        <AnimatePresence>
+          {isExpanded && (
             <motion.div
-              key={idx}
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
-              }}
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+              className="w-full overflow-hidden mb-[clamp(24px,3.5vw,48px)]"
             >
-              <FundAccordionItem
-                fund={fund}
-                isOpen={openIds.has(idx)}
-                onToggle={() => toggle(idx)}
-              />
+              <div className="flex w-full flex-col gap-[clamp(12px,1.5vw,20px)] pt-[8px]">
+                {funds.map((fund, idx) => (
+                  <FundAccordionItem
+                    key={idx}
+                    fund={fund}
+                    isOpen={openIds.has(idx)}
+                    onToggle={() => toggleAccordion(idx)}
+                  />
+                ))}
+              </div>
             </motion.div>
-          ))}
-        </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── BOTTOM ANIMATED HORIZONTAL LINE ── */}
+        <motion.div
+          className="w-full h-[1px] bg-[#000]/20"
+          style={{ transformOrigin: "center" }}
+          initial={{ scaleX: 0 }}
+          whileInView={{ scaleX: 1 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 1.2, ease: "easeInOut" }}
+        />
+
+        {/* ── TOGGLE BUTTON WITH SVG ARROW ── */}
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="mt-[clamp(20px,3vw,40px)] border-none bg-transparent cursor-pointer p-0 focus:outline-none"
+          aria-label={isExpanded ? "Collapse Fund Details" : "Expand Fund Details"}
+        >
+          <motion.div
+            className="relative flex items-center justify-center rounded-full"
+            style={{
+              width: "clamp(56px, 6vw, 84px)",
+              height: "clamp(56px, 6vw, 84px)",
+              backgroundColor: "#FBF7F0",
+            }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <motion.svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-[clamp(20px,2vw,28px)] h-[clamp(20px,2vw,28px)]"
+              viewBox="0 0 24 24"
+              fill="none"
+              animate={{ rotate: isExpanded ? 180 : 0 }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+            >
+              <path
+                d="M6 9L12 15L18 9"
+                stroke="black"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </motion.svg>
+          </motion.div>
+        </button>
+
       </div>
     </section>
   );

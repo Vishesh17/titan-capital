@@ -109,7 +109,7 @@ export default function PortfolioStats() {
     >
       <motion.div
         className="flex w-full flex-row items-center justify-center"
-        style={{ gap: "clamp(16px, min(8.26vw, 12.12vh), 119px)" }}
+        style={{ gap: "clamp(10px, min(5.26vw, 7.12vh), 50px)" }}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.5 }}
@@ -135,7 +135,7 @@ export default function PortfolioStats() {
             }}
           >
             <div
-              className="font-['Libre_Baskerville',_serif] font-medium text-[#001A4D]"
+              className="font-['Poppins',_serif] font-medium text-[#001A4D]"
               style={{
                 fontSize: "clamp(28px, min(4.44vw, 6.52vh), 64px)",
                 textAlign: "center",

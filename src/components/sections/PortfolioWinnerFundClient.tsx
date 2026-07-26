@@ -20,8 +20,8 @@ export interface PortfolioWinnerFundData {
 }
 
 /* ── Fallbacks ── */
-const FALLBACK_HEADING_FIRST = "Winners Fund";
-const FALLBACK_HEADING_SECOND = "Portfolio Companies";
+const FALLBACK_HEADING_FIRST = "Portfolio Company";
+const FALLBACK_HEADING_SECOND = "Winner Fund";
 const FALLBACK_COMPANIES: PortfolioCompany[] = [
   { name: "Anveshan", logo: "/images/logos_backup/anveshan.webp", category: "A traceable, traditional and completely natural food products", logoW: "65%", logoH: "18%" },
   { name: "BECO", logo: "/images/logos_backup/BECO.webp", category: "Eco-friendly D2C brand offering sustainable alternatives to everyday essentials at an affordable price", logoW: "48%", logoH: "80%" },
@@ -35,16 +35,6 @@ const FALLBACK_COMPANIES: PortfolioCompany[] = [
   { name: "Zouk", logo: "/images/logos_backup/zouk_new_logo.webp", category: "100% Vegan Indian bags and accessories brand", logoW: "40%", logoH: "15%" },
 ];
 
-/**
- * Brands whose logo doesn't survive a plain `brightness(0) invert(1)`
- * filter (monogram-style: filled tile + glyph on top — invert turns
- * everything white including the glyph). For these we ship a
- * pre-rendered "flipped variant" PNG with the white silhouette +
- * transparent glyph baked in, and cross-fade to it on hover instead
- * of applying the CSS filter.
- *
- * Key = company.name normalized (lowercase, no whitespace).
- */
 const FLIPPED_VARIANTS: Record<string, string> = {
   "homerun": "/images/portfolio_grid_flipped/homerun.png",
 };
@@ -53,12 +43,7 @@ function flippedVariantFor(name: string): string | undefined {
   return FLIPPED_VARIANTS[name.toLowerCase().replace(/\s+/g, "")];
 }
 
-/* ── Card component ──
-   Default: white card, colored logo centred, nothing else.
-   Hover  : navy bg, logo glides to top-left corner (slightly bigger
-            than before), description + READ link fade in below.
-   Position is animated with CSS `transition-all` on absolute top/left/
-   transform so every property tweens smoothly — no discrete snap. */
+/* ── Card component ── */
 function PortfolioCard({ company, index }: { company: PortfolioCompany; index: number }) {
   const [isActive, setIsActive] = useState(false);
   const flippedSrc = flippedVariantFor(company.name);
@@ -85,23 +70,17 @@ function PortfolioCard({ company, index }: { company: PortfolioCompany; index: n
       style={{
         boxShadow: "0 2px 12px 0 rgba(0,0,0,0.04)",
         width: "100%",
-        aspectRatio: "1 / 1",
+        aspectRatio: "1.3 / 1",
+        borderRadius: "2px",
         backgroundColor: isActive ? "#001A4D" : "#FFFFFF",
         transition: "background-color 0.55s ease-in-out",
       }}
     >
-      {/* ── LOGO wrapper — shrinks vertically on hover to make room
-             for the description. 54% keeps the logo 1.2× larger than
-             the original 45%. ── */}
       <motion.div
         className="relative w-full shrink-0 overflow-hidden"
         animate={{ height: isActive ? "54%" : "100%" }}
         transition={{ duration: 0.55, ease: "easeInOut" }}
       >
-        {/* Logo box — absolutely positioned, Framer Motion animates
-            BOTH wrapper height AND box position so they stay in sync.
-            Every animated property is a percentage so tweening is
-            smooth with zero snapping. */}
         <motion.div
           className="absolute"
           initial={false}
@@ -115,7 +94,6 @@ function PortfolioCard({ company, index }: { company: PortfolioCompany; index: n
           style={{ width: company.logoW, height: company.logoH }}
         >
           {flippedSrc ? (
-            /* Brands with a pre-baked flipped variant — cross-fade. */
             <>
               <Image
                 src={company.logo}
@@ -138,7 +116,6 @@ function PortfolioCard({ company, index }: { company: PortfolioCompany; index: n
               />
             </>
           ) : (
-            /* Standard logos — CSS invert filter. */
             <div
               className={`relative h-full w-full transition-[filter] duration-[550ms] ease-in-out ${
                 isActive ? "[filter:brightness(0)_invert(1)]" : ""
@@ -160,7 +137,6 @@ function PortfolioCard({ company, index }: { company: PortfolioCompany; index: n
         </motion.div>
       </motion.div>
 
-      {/* ── DESCRIPTION + READ — only on hover ── */}
       <motion.div
         className="flex min-h-0 w-full flex-1 flex-col justify-between overflow-hidden text-white"
         style={{ padding: "clamp(12px, 0.5vw, 22px)" }}
@@ -214,70 +190,118 @@ export default function PortfolioWinnerFundClient({
   const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
   const companies = data?.companies?.length ? data.companies : FALLBACK_COMPANIES;
 
+  const rowsCount = Math.ceil(companies.length / 4);
+
   return (
     <section
-      className="relative flex w-full flex-col items-center overflow-hidden bg-[#FBF7F0]"
+      className="relative flex w-full flex-col items-center overflow-hidden bg-white"
       style={{
-        paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
-        paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
+        paddingTop: "clamp(60px, min(8vw, 10vh), 120px)",
+        paddingBottom: "clamp(60px, min(8vw, 10vh), 120px)",
         paddingLeft: "var(--section-px-wide)",
         paddingRight: "var(--section-px-wide)",
       }}
     >
       <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center">
+        
         {/* ── HEADING ── */}
         <motion.div
-          className="mb-[clamp(28px,min(4vw,6vh),56px)] flex flex-col items-center"
+          className="mb-[clamp(40px,6vw,80px)] flex flex-col items-center text-center"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.5 }}
         >
-          <motion.div
-            className="relative inline-flex items-center justify-center overflow-hidden bg-transparent px-[6px] py-[8px] md:px-[8px] md:py-[10px]"
-            variants={{
-              hidden: { opacity: 0, y: 40 },
-              visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
-            }}
-          >
-            <motion.span
-              className="absolute inset-0 z-0 h-full w-full bg-[#D3E2FF]"
-              style={{ transformOrigin: "left" }}
-              variants={{
-                hidden: { scaleX: 0 },
-                visible: { scaleX: 1, transition: { duration: 0.6, ease: "easeInOut", delay: 0.5 } },
-              }}
-            />
-            <span
-              className="relative z-10 font-['Libre_Baskerville',_serif] font-semibold italic leading-[110%] text-[#001A4D] max-md:!text-[28px]"
-              style={{ fontSize: "var(--heading-xl)" }}
-            >
-              {headingFirst}
-            </span>
-          </motion.div>
-
           <motion.h2
-            className="mt-[clamp(4px,0.5vw,8px)] m-0 font-['Libre_Baskerville',_serif] font-semibold leading-[110%] text-[#001A4D] max-md:!text-[28px]"
-            style={{ fontSize: "var(--heading-xl)" }}
+            className="m-0 font-['Poppins',_sans-serif] text-[clamp(32px,4vw,56px)] font-normal capitalize leading-[120%] text-[#000]"
             variants={{
-              hidden: { opacity: 0, y: 40 },
-              visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut", delay: 0.2 } },
+              hidden: { opacity: 0, y: 30 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
             }}
           >
-            {headingSecond}
+            {headingFirst} <br /> {headingSecond}
           </motion.h2>
         </motion.div>
 
-        {/* ── CARD GRID ── */}
+        {/* ── CARD GRID (4, 4, 2 Layout) ── */}
         <motion.div
-          className="grid w-full grid-cols-2 gap-[clamp(12px,1.5vw,20px)] md:grid-cols-3 lg:grid-cols-5"
+          className="relative w-full"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
         >
-          {companies.map((company, i) => (
-            <PortfolioCard key={company.name} company={company} index={i} />
-          ))}
+          {/* DESKTOP 4-COLUMN GRID */}
+          <div className="hidden md:grid grid-cols-4 relative w-full">
+            
+            {/* Vertical Divider 1 */}
+            <motion.div
+              className="absolute left-[25%] top-0 bottom-0 w-[1px] bg-[#000]/15"
+              style={{ transformOrigin: "top" }}
+              initial={{ scaleY: 0 }}
+              whileInView={{ scaleY: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.5, ease: "easeInOut" }}
+            />
+
+            {/* Vertical Divider 2 */}
+            <motion.div
+              className="absolute left-[50%] top-0 bottom-0 w-[1px] bg-[#000]/15"
+              style={{ transformOrigin: "top" }}
+              initial={{ scaleY: 0 }}
+              whileInView={{ scaleY: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.5, ease: "easeInOut" }}
+            />
+
+            {/* Vertical Divider 3 */}
+            <motion.div
+              className="absolute left-[75%] top-0 bottom-0 w-[1px] bg-[#000]/15"
+              style={{ transformOrigin: "top" }}
+              initial={{ scaleY: 0 }}
+              whileInView={{ scaleY: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.5, ease: "easeInOut" }}
+            />
+
+            {/* Grid Items with Separate Animating Horizontal Lines */}
+            {companies.map((company, i) => {
+              const rowIndex = Math.floor(i / 4);
+              const isLastRow = rowIndex === rowsCount - 1;
+
+              return (
+                <div
+                  key={company.name}
+                  className="relative flex items-center justify-center p-[clamp(12px,1.5vw,20px)]"
+                >
+                  <PortfolioCard company={company} index={i} />
+
+                  {/* Separate Horizontal Line per Cell (Doesn't touch vertical lines) */}
+                  {!isLastRow && (
+                    <motion.div
+                      className="absolute bottom-0 left-[clamp(12px,1.5vw,20px)] right-[clamp(12px,1.5vw,20px)] h-[1px] bg-[#000]/15"
+                      style={{ transformOrigin: "left" }}
+                      initial={{ scaleX: 0 }}
+                      whileInView={{ scaleX: 1 }}
+                      viewport={{ once: true }}
+                      transition={{
+                        duration: 1.2,
+                        ease: "easeInOut",
+                        delay: rowIndex * 0.05 + (i % 4) * 0.1,
+                      }}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* MOBILE 2-COLUMN GRID */}
+          <div className="grid grid-cols-2 gap-3 md:hidden">
+            {companies.map((company, i) => (
+              <PortfolioCard key={`mob-${company.name}`} company={company} index={i} />
+            ))}
+          </div>
         </motion.div>
+
       </div>
     </section>
   );
