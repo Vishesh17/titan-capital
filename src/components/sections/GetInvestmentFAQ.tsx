@@ -9,7 +9,7 @@ import { sanityFetch } from "@/sanity/lib/client";
 import { getInvestmentFAQQuery } from "@/sanity/lib/queries";
 import GetInvestmentFAQClient, {
   type GetInvestmentFAQData,
-} from "./GetInvestmentFormClient";
+} from "./GetInvestmentFAQClient";
 
 async function getGetInvestmentFAQ(): Promise<GetInvestmentFAQData | null> {
   try {

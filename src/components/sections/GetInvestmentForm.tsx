@@ -148,7 +148,7 @@ function FieldLabel({
   return (
     <label
       htmlFor={htmlFor}
-      className="mb-[clamp(8px,0.8vw,12px)] block font-['Poppins',_sans-serif] font-medium text-[#1D2939]"
+      className="mb-[clamp(8px,0.8vw,12px)] block font-['Poppins',_sans-serif] font-normal text-[#1D2939]"
       style={{ fontSize: "clamp(14px, min(1.25vw, 1.85vh), 18px)" }}
     >
       {children}
@@ -774,16 +774,20 @@ function SectionHeading({
   subtitle: string;
 }) {
   return (
-    <div className="mb-[clamp(24px,min(2.5vw,3.7vh),40px)]">
-      <p
-        className="mb-[clamp(4px,0.4vw,8px)] font-['Poppins',_sans-serif] font-normal text-[#667085]"
-        style={{ fontSize: "clamp(13px, min(1.1vw, 1.6vh), 16px)" }}
+    <div className="mb-[clamp(32px,min(3.5vw,5vh),56px)]">
+      <div
+        className="mb-[clamp(12px,1.5vw,20px)] flex items-center justify-center gap-[10px] rounded-[39px] bg-[#D3E2FF] text-[#000]"
+        style={{
+          width: "fit-content",
+          padding: "6px 20px",
+          fontSize: "clamp(14px, 1vw, 16px)",
+        }}
       >
         {label}
-      </p>
+      </div>
       <h3
-        className="mb-[clamp(6px,0.6vw,10px)] font-['Libre_Baskerville',_serif] font-semibold text-[#001A4D]"
-        style={{ fontSize: "clamp(22px, min(2.2vw, 3.3vh), 32px)" }}
+        className="mb-[clamp(8px,1vw,12px)] max-w-[421px] font-['Poppins',_sans-serif] font-medium text-[#0E0E0E] max-md:!text-[24px] max-md:!leading-[120%]"
+        style={{ fontSize: "clamp(22px, min(2.2vw, 3.3vh), 32px)", lineHeight: "140%" }}
       >
         {title}
       </h3>
@@ -796,6 +800,70 @@ function SectionHeading({
     </div>
   );
 }
+/* ═══════════════════════════════════════════════════════
+   Submit Form Button
+   ═══════════════════════════════════════════════════════ */
+
+   function SubmitButton({ submitting, label }: { submitting: boolean; label: string }) {
+    const [origin, setOrigin] = useState("50% 50%");
+    const [hovered, setHovered] = useState(false);
+  
+    const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      setOrigin(`${x}% ${y}%`);
+      setHovered(true);
+    };
+  
+    const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      setOrigin(`${x}% ${y}%`);
+      setHovered(false);
+    };
+  
+    return (
+      <button
+        type="submit"
+        disabled={submitting}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className="relative flex items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] text-[min(1.16vw,1.79vh)] font-normal transition-colors duration-300 max-md:!w-[clamp(130px,35vw,160px)] max-md:!h-[clamp(38px,6dvh,44px)] max-md:!text-[clamp(12px,3.5vw,14px)] disabled:opacity-60 bg-[#001A4D]"
+        style={{
+          width: "min(12.15vw, 18.8vh)",
+          height: "min(3.36vw, 5.19vh)",
+          borderRadius: "53px",
+          border: "1px solid #001A4D",
+          color: hovered && !submitting ? "#001A4D" : "white",
+        }}
+      >
+        <span
+          className="absolute inset-0 bg-white transition-transform duration-400 ease-out"
+          style={{
+            transformOrigin: origin,
+            transform: hovered && !submitting ? "scale(1)" : "scale(0)",
+            borderRadius: "inherit",
+          }}
+        />
+        <span className="relative z-10 flex items-center justify-center gap-2">
+          {submitting ? (
+            <>
+              <motion.span
+                className="inline-block h-[16px] w-[16px] rounded-full border-2 border-[#001A4D]/30 border-t-[#001A4D]"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+              />
+              Submitting…
+            </>
+          ) : (
+            label
+          )}
+        </span>
+      </button>
+    );
+  }
 
 /* ═══════════════════════════════════════════════════════
    Main form component
@@ -822,11 +890,12 @@ export default function GetInvestmentForm({
   const section1Title = data?.section1Title || "The Founder";
   const section1Subtitle = data?.section1Subtitle || "We invest in people first. Tell us who you are.";
   const section2Label = data?.section2Label || "The Company";
-  const section2Title = data?.section2Title || "What Are You Building?";
+  const section2Title = data?.section2Title || "What You Are Building?";
   const section2Subtitle = data?.section2Subtitle || "";
   const submitButtonLabel = data?.submitButtonLabel || "Submit Application";
   const successTitle = data?.successTitle || "Application submitted";
   const successMessage = data?.successMessage || "We read every application. You'll hear from us soon.";
+  
   /* ── Form state ── */
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -965,7 +1034,7 @@ export default function GetInvestmentForm({
 
   return (
     <section
-      className="relative flex w-full flex-col items-center overflow-hidden bg-[#F9FAFB]"
+      className="relative flex w-full flex-col items-center overflow-hidden bg-[#FBF7F0]"
       style={{
         paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
         paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
@@ -975,57 +1044,37 @@ export default function GetInvestmentForm({
     >
       <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center">
 
-        {/* <motion.div
-          className="mb-[clamp(36px,min(4.5vw,6.5vh),64px)] flex flex-col items-center text-center"
+        {/* ── Main Section Heading ── */}
+        <motion.div
+          className="mb-[clamp(32px,min(4.5vw,6.5vh),64px)] flex flex-col items-center text-center"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.5 }}
         >
           <motion.h2
-            className="m-0 font-['Libre_Baskerville',_serif] font-semibold leading-[115%] text-[#001A4D] max-md:!text-[28px]"
-            style={{ fontSize: "var(--heading-xl)" }}
+            className="m-0 max-w-[794px] font-['Poppins',_sans-serif] font-normal capitalize text-[#000] max-md:!text-[32px] max-md:!leading-[120%]"
+            style={{ fontSize: "clamp(32px, 4vw, 56px)", lineHeight: "120%" }}
             custom={0}
             variants={fadeUp}
           >
-            Build Something
+            Build Something<br />The World Needs
           </motion.h2>
 
-          <motion.div
-            className="relative mt-[clamp(4px,0.5vw,8px)] inline-flex items-center justify-center overflow-hidden bg-transparent px-[4px] py-[8px] md:px-[6px] md:py-[10px]"
+          <motion.p
+            className="mt-[clamp(12px,min(1.5vw,2vh),20px)] max-w-[1043px] font-['Poppins',_sans-serif] font-normal text-[#0E0E0E] max-md:!text-[16px] max-md:!leading-[140%]"
+            style={{ fontSize: "clamp(16px, 1.5vw, 22px)", lineHeight: "150%" }}
             custom={0.2}
             variants={fadeUp}
           >
-            <motion.span
-              className="absolute inset-0 z-0 h-full w-full bg-[#D3E2FF]"
-              style={{ transformOrigin: "left" }}
-              initial={{ scaleX: 0 }}
-              whileInView={{ scaleX: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, ease: "easeInOut", delay: 0.8 }}
-            />
-            <span
-              className="relative z-10 font-['Libre_Baskerville',_serif] font-semibold italic leading-[115%] text-[#001A4D] max-md:!text-[28px]"
-              style={{ fontSize: "var(--heading-xl)" }}
-            >
-              The World Needs.
-            </span>
-          </motion.div>
-
-          <motion.p
-            className="mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[600px] font-['Poppins',_sans-serif] font-normal leading-[1.6] text-[#323232] text-center"
-            style={{ fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)" }}
-            custom={0.4}
-            variants={fadeUp}
-          >
-            We back founders at the earliest stage — before the playbook exists. Tell us about what you&apos;re building. Takes about 10 minutes.
+            500+ founder community with shared playbooks, templates, learnings
           </motion.p>
-        </motion.div> */}
+        </motion.div>
 
         {submitted ? (
           <motion.div
-            className="flex w-full max-w-[940px] flex-col items-center rounded-[clamp(12px,1.2vw,20px)] border border-[#E4E7EC] bg-white text-center"
+            className="flex w-full flex-col items-center rounded-[clamp(12px,1.2vw,20px)] border border-[#E4E7EC] bg-white text-center"
             style={{
-              padding: "clamp(48px, min(6vw, 9vh), 96px) clamp(24px, min(3.5vw, 5vh), 56px)",
+              padding: "clamp(48px, min(6vw, 9vh), 96px) clamp(16px, min(2vw, 3vh), 32px)",
             }}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -1035,7 +1084,7 @@ export default function GetInvestmentForm({
               <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <h3
-              className="font-['Libre_Baskerville',_serif] font-semibold text-[#001A4D]"
+              className="font-['Poppins',_sans-serif] font-medium text-[#001A4D]"
               style={{ fontSize: "clamp(22px, min(2.2vw, 3.3vh), 32px)" }}
             >
               {successTitle}
@@ -1051,10 +1100,10 @@ export default function GetInvestmentForm({
 
         <motion.form
           onSubmit={handleSubmit}
-          className="w-full max-w-[940px] rounded-[clamp(12px,1.2vw,20px)] border border-[#E4E7EC]/60 bg-white"
+          className="w-full rounded-[clamp(12px,1.2vw,20px)] border border-[#E4E7EC]/60 bg-white"
           style={{
             padding:
-              "clamp(32px, min(4vw, 6vh), 64px) clamp(24px, min(3.5vw, 5vh), 56px)",
+              "clamp(32px, min(4vw, 6vh), 64px) clamp(16px, min(2.5vw, 3.5vh), 40px)",
             boxShadow: "0 8px 40px rgba(0, 26, 77, 0.07), 0 1.5px 6px rgba(0, 26, 77, 0.04)",
           }}
           initial={{ opacity: 0, y: 40 }}
@@ -1278,44 +1327,7 @@ export default function GetInvestmentForm({
 
           {/* ── Submit button ── */}
           <motion.div className="flex flex-col items-center" variants={fieldSlideUp}>
-            <motion.button
-              type="submit"
-              disabled={submitting}
-              className="group relative overflow-hidden rounded-[clamp(7px,0.625vw,9px)] bg-[#001A4D] font-['Libre_Baskerville',_serif] font-semibold leading-[107%] text-[#F5F0E8] transition-all disabled:opacity-60"
-              style={{
-                height: "clamp(48px, min(5vw, 7vh), 64px)",
-                width: "clamp(220px, min(20vw, 28vh), 280px)",
-                fontSize: "clamp(15px, min(1.4vw, 2vh), 20px)",
-              }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: "spring", stiffness: 400, damping: 20 }}
-              onMouseMove={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
-                e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
-              }}
-            >
-              <div
-                className="absolute inset-0 z-0 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100"
-                style={{
-                  background: 'radial-gradient(circle 80px at var(--mouse-x, 50%) var(--mouse-y, 50%), #003CB3 0%, transparent 100%)',
-                }}
-              />
-              {submitting ? (
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  <motion.span
-                    className="inline-block h-[16px] w-[16px] rounded-full border-2 border-white/30 border-t-white"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-                  />
-                  Submitting…
-                </span>
-              ) : (
-                <span className="relative z-10">{submitButtonLabel}</span>
-              )}
-            </motion.button>
+            <SubmitButton submitting={submitting} label={submitButtonLabel} />
 
             <motion.div
               className="mt-[clamp(24px,min(2.5vw,3.7vh),40px)] text-center"
@@ -1325,7 +1337,7 @@ export default function GetInvestmentForm({
               transition={{ delay: 0.5, duration: 0.6 }}
             >
               <p
-                className="font-['Poppins',_sans-serif] font-semibold text-[#1D2939]"
+                className="font-['Poppins',_sans-serif] font-medium text-[#1D2939]"
                 style={{ fontSize: "clamp(14px, min(1.25vw, 1.85vh), 18px)" }}
               >
                 We read every application.
@@ -1344,7 +1356,7 @@ export default function GetInvestmentForm({
 
         {submitError && (
           <motion.div
-            className="mt-[16px] w-full max-w-[940px] rounded-[10px] border border-[#FCA5A5] bg-[#FEF2F2] px-[20px] py-[14px] font-['Poppins',_sans-serif] text-[14px] text-[#991B1B]"
+            className="mt-[16px] w-full max-w-[1020px] rounded-[10px] border border-[#FCA5A5] bg-[#FEF2F2] px-[20px] py-[14px] font-['Poppins',_sans-serif] text-[14px] text-[#991B1B]"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >

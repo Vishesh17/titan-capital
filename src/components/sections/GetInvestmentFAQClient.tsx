@@ -7,19 +7,28 @@ import { motion, AnimatePresence } from "framer-motion";
    FAQ data
    ═══════════════════════════════════════════════════════ */
 
-   export interface GetInvestmentFAQItem {
-    id: string;
-    question: string;
-    answer: string;
-   }
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: (delay: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut" as const, delay },
+  }),
+};
 
-   export interface GetInvestmentFAQData {
-    headingFirst?: string;
-    headingSecond?: string;
-    items?: GetInvestmentFAQItem[];
-  }
+export interface GetInvestmentFAQItem {
+  id: string;
+  question: string;
+  answer: string;
+}
 
-  const FALLBACK_HEADING_FIRST = "You&apos;ve Got Questions";
+export interface GetInvestmentFAQData {
+  headingFirst?: string;
+  headingSecond?: string;
+  items?: GetInvestmentFAQItem[];
+}
+
+const FALLBACK_HEADING_FIRST = "You&apos;ve Got Questions";
 const FALLBACK_HEADING_SECOND = "We&apos;ve Got Answers";
 
 const FALLBACK_FAQ: GetInvestmentFAQItem[] = [
@@ -51,7 +60,6 @@ const FALLBACK_FAQ: GetInvestmentFAQItem[] = [
 
 /* ═══════════════════════════════════════════════════════
    Single FAQ accordion item
-   (mirrors FundAccordionItem from FundDetails.tsx)
    ═══════════════════════════════════════════════════════ */
 
 function FAQItem({
@@ -65,35 +73,70 @@ function FAQItem({
 }) {
   return (
     <div
-      className="w-full overflow-hidden bg-white"
+      className="w-full bg-white flex flex-col justify-center items-start overflow-hidden"
       style={{
         borderRadius: "clamp(8px, 1vw, 12px)",
+        // Reduced padding and removed minHeight entirely for a much more compact card
+        padding: "clamp(20px, 2.5vw, 28px)",
+        alignSelf: "stretch",
       }}
     >
       {/* Header */}
       <button
         onClick={onToggle}
-        className="flex w-full cursor-pointer items-center justify-between border-none bg-transparent text-left"
-        style={{
-          padding:
-            "clamp(16px, min(1.8vw, 2.6vh), 24px) clamp(18px, min(2.2vw, 3.2vh), 32px)",
-        }}
+        className="flex w-full cursor-pointer items-center justify-between border-none bg-transparent text-left p-0 m-0"
       >
         <span
-          className="font-['Poppins',_sans-serif] font-medium text-[#1D2939]"
-          style={{ fontSize: "clamp(14px, min(1.39vw, 2.04vh), 20px)" }}
+          className="font-['Poppins',_sans-serif] font-normal text-[#000]"
+          // Decreased question font size
+          style={{ fontSize: "clamp(18px, 2vw, 24px)", lineHeight: "140%" }}
         >
           {faq.question}
         </span>
 
-        <motion.span
-          className="ml-4 flex shrink-0 items-center justify-center select-none text-[#1D2939]"
-          style={{ fontSize: "clamp(20px, min(2vw, 2.8vh), 28px)" }}
-          animate={{ rotate: isOpen ? 45 : 0 }}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
+        <span
+          className="ml-4 flex shrink-0 items-center justify-center select-none"
+          // Slightly decreased icon size to match smaller text
+          style={{
+            width: "clamp(28px, 2vw, 32px)",
+            height: "clamp(28px, 2vw, 32px)",
+            aspectRatio: "1/1",
+          }}
         >
-          +
-        </motion.span>
+          {isOpen ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="100%"
+              height="100%"
+              viewBox="0 0 36 36"
+              fill="none"
+            >
+              <path
+                d="M4 17.5H17.5H31"
+                stroke="black"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="100%"
+              height="100%"
+              viewBox="0 0 36 36"
+              fill="none"
+            >
+              <path
+                d="M4 17.5H17.5M17.5 17.5H31M17.5 17.5V4M17.5 17.5V31"
+                stroke="black"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
+        </span>
       </button>
 
       {/* Expandable answer */}
@@ -104,18 +147,21 @@ function FAQItem({
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.35, ease: "easeInOut" }}
-            className="overflow-hidden"
+            className="overflow-hidden w-full"
           >
-            <p
-              className="font-['Poppins',_sans-serif] font-normal leading-[1.65] text-[#667085]"
-              style={{
-                fontSize: "clamp(13px, min(1.18vw, 1.74vh), 17px)",
-                padding:
-                  "0 clamp(18px, min(2.2vw, 3.2vh), 32px) clamp(16px, min(1.8vw, 2.6vh), 24px)",
-              }}
-            >
-              {faq.answer}
-            </p>
+            {/* Reduced top margin to keep it compact */}
+            <div style={{ marginTop: "16px" }}>
+              <p
+                className="font-['Poppins',_sans-serif] font-normal text-[#323232] m-0 p-0"
+                // Decreased answer font size
+                style={{
+                  fontSize: "clamp(15px, 1.5vw, 18px)",
+                  lineHeight: "150%",
+                }}
+              >
+                {faq.answer}
+              </p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -153,63 +199,33 @@ export default function GetInvestmentFAQClient({
       }}
     >
       <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center">
-
         {/* ── HEADING ── */}
         <motion.div
-          className="mb-[clamp(32px,min(4.5vw,6.5vh),64px)] flex flex-col items-center text-center"
+          className="mb-[clamp(32px,min(3.5vw,5vh),56px)] flex flex-col items-center text-center"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.5 }}
         >
           <motion.h2
-            className="m-0 font-['Libre_Baskerville',_serif] font-semibold leading-[115%] text-[#001A4D] max-md:!text-[28px]"
-            style={{ fontSize: "var(--heading-xl)" }}
-            variants={{
-              hidden: { opacity: 0, y: 40 },
-              visible: {
-                opacity: 1,
-                y: 0,
-                transition: { duration: 0.6, ease: "easeOut" as const },
-              },
-            }}
-          >
-            {headingFirst}
-          </motion.h2>
+            className="m-0 max-w-[794px] font-['Poppins',_sans-serif] font-normal capitalize text-[#000] max-md:!text-[32px] max-md:!leading-[120%]"
+            style={{ fontSize: "clamp(32px, 4vw, 56px)", lineHeight: "120%" }}
+            custom={0}
+            variants={fadeUp}
+            dangerouslySetInnerHTML={{ __html: headingFirst }}
+          />
 
-          <motion.div
-            className="relative mt-[clamp(4px,0.5vw,8px)] inline-flex items-center justify-center overflow-hidden bg-transparent px-[6px] py-[8px] md:px-[8px] md:py-[10px]"
-            variants={{
-              hidden: { opacity: 0, y: 40 },
-              visible: {
-                opacity: 1,
-                y: 0,
-                transition: { duration: 0.6, ease: "easeOut" as const, delay: 0.3 },
-              },
-            }}
-          >
-            <motion.span
-              className="absolute inset-0 z-0 h-full w-full bg-[#D3E2FF]"
-              style={{ transformOrigin: "left" }}
-              variants={{
-                hidden: { scaleX: 0 },
-                visible: {
-                  scaleX: 1,
-                  transition: { duration: 0.6, ease: "easeInOut" as const, delay: 0.8 },
-                },
-              }}
-            />
-            <span
-              className="relative z-10 font-['Libre_Baskerville',_serif] font-semibold italic leading-[115%] text-[#001A4D] max-md:!text-[28px]"
-              style={{ fontSize: "var(--heading-xl)" }}
-            >
-              {headingSecond}
-            </span>
-          </motion.div>
+          <motion.h2
+            className="m-0 max-w-[794px] font-['Poppins',_sans-serif] font-normal capitalize text-[#000] max-md:!text-[32px] max-md:!leading-[120%]"
+            style={{ fontSize: "clamp(32px, 4vw, 56px)", lineHeight: "120%" }}
+            custom={0}
+            variants={fadeUp}
+            dangerouslySetInnerHTML={{ __html: headingSecond }}
+          />
         </motion.div>
 
         {/* ── FAQ ACCORDIONS ── */}
         <motion.div
-          className="flex w-full max-w-[940px] flex-col gap-[clamp(12px,1.5vw,20px)]"
+          className="flex w-full flex-col gap-[clamp(12px,1.5vw,20px)]"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.15 }}
@@ -240,7 +256,6 @@ export default function GetInvestmentFAQClient({
             </motion.div>
           ))}
         </motion.div>
-
       </div>
     </section>
   );
