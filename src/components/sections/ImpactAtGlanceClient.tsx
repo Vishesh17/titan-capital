@@ -33,12 +33,12 @@ export interface ImpactAtGlanceData {
 }
 
 const FALLBACK_IMPACT_DATA: ImpactStat[] = [
-  { num: "300+", label: "Startup\nBacked" },
-  { num: "7",    label: "Unicorns\n$1B+" },
-  { num: "4",    label: "IPOs\n2023-2026" },
-  { num: "15",   label: "Years\nInvesting" },
-  { num: "40+",  label: "Values\n> $100M" },
-  { num: "250M+", label: "Lives\nImpacted" },
+  { num: "300+", label: "Startup Backed" },
+  { num: "7",    label: "Unicorns $1B+" },
+  { num: "4",    label: "IPOs 2023-2026" },
+  { num: "15",   label: "Years Investing" },
+  { num: "40+",  label: "Values > $100M" },
+  { num: "250M+", label: "Lives Impacted" },
 ];
 
 const FALLBACK_SLIDES: FounderStory[] = [
@@ -184,14 +184,14 @@ function ImpactStatCell({
           <RollingNumber value={stat.num} />
         </span>
         <span
-          className="whitespace-pre-line font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[14px] max-md:!leading-[125%] max-md:!mt-[6px]"
+          className="whitespace-nowrap font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[14px] max-md:!leading-[125%] max-md:!mt-[6px]"
           style={{
             fontSize: "min(2.55vw, 3.94vh)",
             lineHeight: "120%",
             marginTop: "min(1.16vw, 1.79vh)",
           }}
         >
-          {stat.label} 
+          {stat.label.replace(/\n/g, ' ')} 
         </span>
       </div>
     </motion.div>
@@ -572,7 +572,7 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
           </motion.h2>
 
           <div
-            className="grid max-md:!grid-cols-2 max-md:!gap-x-[24px] max-md:!gap-y-[40px] max-md:!w-full max-md:!pl-[24px] max-md:!pr-[16px] max-md:!justify-items-start"
+            className="grid max-md:!grid-cols-2 max-md:!gap-x-[24px] max-md:!gap-y-[70px] max-md:!w-full max-md:!pl-[24px] max-md:!pr-[16px] max-md:!justify-items-start"
             style={{
               gridTemplateColumns: "repeat(3, 1fr)",
               maxWidth: "85%",

@@ -1,81 +1,334 @@
-import Image from 'next/image';
+"use client";
 
-export default function BackedEarlySection() {
-  const portfolio = [
-    { id: 1, logo: '/images/logos/Shadowfax.svg', bg: '/images/portfolio/shadowfax_bg.webp', name: 'Shadowfax' },
-    { id: 2, logo: '/images/logos/Credgenics.svg', bg: '/images/portfolio/credgenics_bg.webp', name: 'Credgenics' },
-    { id: 3, logo: '/images/logos/ola.svg', bg: '/images/portfolio/ola_bg.webp', name: 'OLA' },
-  ];
+import { useEffect, useRef, useCallback } from "react";
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+} from "framer-motion";
+
+/* ─────────────────────────────────────────────────────────
+   Hero Glow Background
+   ───────────────────────────────────────────────────────── */
+function HeroGlow() {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const normX = useMotionValue(0);
+  const normY = useMotionValue(0);
+
+  const cursorSpring = { damping: 25, stiffness: 250, mass: 0.3 };
+  const smoothX = useSpring(mouseX, cursorSpring);
+  const smoothY = useSpring(mouseY, cursorSpring);
+
+  const ambientSpring = { damping: 30, stiffness: 70, mass: 1 };
+  const smoothNormX = useSpring(normX, ambientSpring);
+  const smoothNormY = useSpring(normY, ambientSpring);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      mouseX.set(window.innerWidth / 2);
+      mouseY.set(window.innerHeight / 2);
+    }
+
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseX.set(e.pageX);
+      mouseY.set(e.pageY);
+      normX.set((e.clientX / window.innerWidth) * 2 - 1);
+      normY.set((e.clientY / window.innerHeight) * 2 - 1);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [mouseX, mouseY, normX, normY]);
+
+  const leftX = useTransform(smoothNormX, [-1, 1], ["-8%", "8%"]);
+  const leftY = useTransform(smoothNormY, [-1, 1], ["-8%", "8%"]);
+  const rightX = useTransform(smoothNormX, [-1, 1], ["8%", "-8%"]);
+  const rightY = useTransform(smoothNormY, [-1, 1], ["8%", "-8%"]);
 
   return (
-    <section 
-      className="relative flex w-full flex-col items-center justify-center bg-[var(--background,#ffffff)] overflow-hidden"
-      style={{
-        marginTop: "var(--nav-height)",
-        minHeight: "calc(100svh - var(--nav-height))",
-        paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
-        paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
-        // Applied the exact wide gutter variables used in your Hero & Footer
-        paddingLeft: "var(--section-px-wide, 5%)",
-        paddingRight: "var(--section-px-wide, 5%)",
-      }}
-    >
-      
-      {/* Inner wrapper to match your global 1440px container width */}
-      <div className="relative flex w-full max-w-[1440px] flex-col items-center mx-auto">
-        
-        {/* --- HEADING SECTION --- */}
-        <div 
-          className="flex flex-col items-center justify-center w-full"
-          style={{ marginBottom: "clamp(32px, min(5vw, 7vh), 64px)" }}
+    <>
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute"
+        style={{
+          left: "-25%",
+          top: "-25%",
+          width: "min(75vw, 100vh)",
+          height: "min(75vw, 100vh)",
+          zIndex: 0,
+          x: leftX,
+          y: leftY,
+          willChange: "transform",
+        }}
+      >
+        <motion.div
+          className="w-full h-full rounded-full blur-[120px]"
+          style={{
+            background:
+              "radial-gradient(circle, #5054B5 0%, #054EB6 40%, #022250 80%, transparent 100%)",
+            opacity: 0.6,
+          }}
+          animate={{
+            x: ["0%", "35%", "-15%", "25%", "0%"],
+            y: ["0%", "25%", "-10%", "35%", "0%"],
+            scale: [1, 1.15, 0.85, 1.1, 1],
+          }}
+          transition={{
+            duration: 18,
+            repeat: Infinity,
+            repeatType: "loop",
+            ease: "easeInOut",
+          }}
+        />
+      </motion.div>
+
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute"
+        style={{
+          right: "-25%",
+          bottom: "-25%",
+          width: "min(70vw, 90vh)",
+          height: "min(70vw, 90vh)",
+          zIndex: 0,
+          x: rightX,
+          y: rightY,
+          willChange: "transform",
+        }}
+      >
+        <motion.div
+          className="w-full h-full rounded-full blur-[120px]"
+          style={{
+            background:
+              "radial-gradient(circle, #AC71C6 0%, #033699 50%, #001A4D 80%, transparent 100%)",
+            opacity: 0.5,
+          }}
+          animate={{
+            x: ["0%", "-35%", "15%", "-25%", "0%"],
+            y: ["0%", "-25%", "10%", "-35%", "0%"],
+            scale: [1, 1.15, 0.85, 1.1, 1],
+          }}
+          transition={{
+            duration: 21,
+            repeat: Infinity,
+            repeatType: "loop",
+            ease: "easeInOut",
+          }}
+        />
+      </motion.div>
+
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute top-0 left-0 rounded-full blur-[60px]"
+        style={{
+          width: "25vw",
+          height: "25vw",
+          zIndex: 5,
+          x: smoothX,
+          y: smoothY,
+          translateX: "-50%",
+          translateY: "-50%",
+          opacity: 0.4,
+          background:
+            "radial-gradient(circle, rgba(80,84,181,0.85) 0%, rgba(5,78,182,0.5) 40%, rgba(2,34,80,0.2) 70%, transparent 100%)",
+          willChange: "transform",
+        }}
+      />
+    </>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   Animated Grid — canvas with cursor-follow wave distortion
+   ───────────────────────────────────────────────────────── */
+function AnimatedGrid() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const mouseRef = useRef({ x: -9999, y: -9999 });
+
+  const onMouseMove = useCallback((e: MouseEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }, []);
+
+  const onMouseLeave = useCallback(() => {
+    mouseRef.current = { x: -9999, y: -9999 };
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const section = canvas.parentElement;
+    if (section) {
+      section.addEventListener("mousemove", onMouseMove);
+      section.addEventListener("mouseleave", onMouseLeave);
+    }
+
+    let animationId: number;
+    const startTime = performance.now();
+
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    const GRID_SIZE = Math.round(canvas.getBoundingClientRect().width / 8);
+    const BASE_ALPHA = 0.06;
+    const CURSOR_RADIUS = 180;
+    const WAVE_AMP = 6;
+    const WAVE_BOOST = 0.10;
+
+    const draw = (now: number) => {
+      const elapsed = (now - startTime) / 1000;
+      const w = canvas.getBoundingClientRect().width;
+      const h = canvas.getBoundingClientRect().height;
+      const mx = mouseRef.current.x;
+      const my = mouseRef.current.y;
+      const cx = w / 2;
+      const cy = h / 2;
+      const maxDist = Math.sqrt(cx * cx + cy * cy);
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.lineWidth = 1;
+
+      const waves = [
+        { speed: 110, width: 200 },
+        { speed: 75, width: 280 },
+      ];
+
+      const getRadialBoost = (px: number, py: number) => {
+        const dist = Math.sqrt((px - cx) ** 2 + (py - cy) ** 2);
+        let boost = 0;
+        for (const wave of waves) {
+          const wavePos = (elapsed * wave.speed) % (maxDist + wave.width);
+          const delta = Math.abs(dist - wavePos);
+          if (delta < wave.width) {
+            boost += (1 - delta / wave.width) * WAVE_BOOST;
+          }
+        }
+        return Math.min(boost, WAVE_BOOST * 1.5);
+      };
+
+      const getWave = (px: number, py: number) => {
+        const radialBoost = getRadialBoost(px, py);
+        const dist = Math.sqrt((px - mx) ** 2 + (py - my) ** 2);
+        if (dist > CURSOR_RADIUS) {
+          return { offset: 0, alpha: BASE_ALPHA + radialBoost };
+        }
+        const proximity = 1 - dist / CURSOR_RADIUS;
+        const smooth = proximity * proximity;
+        const offset = Math.sin(elapsed * 3 + dist * 0.04) * WAVE_AMP * smooth;
+        const alpha = BASE_ALPHA + radialBoost + smooth * 0.14;
+        return { offset, alpha };
+      };
+
+      for (let x = 0; x <= w; x += GRID_SIZE) {
+        ctx.beginPath();
+        let started = false;
+        for (let y = 0; y <= h; y += 4) {
+          const { offset, alpha } = getWave(x, y);
+          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+          const dx = x + offset;
+          if (!started) { ctx.moveTo(dx, y); started = true; }
+          else { ctx.lineTo(dx, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(dx, y); }
+        }
+        ctx.stroke();
+      }
+
+      animationId = requestAnimationFrame(draw);
+    };
+
+    resize();
+    animationId = requestAnimationFrame(draw);
+    window.addEventListener("resize", resize);
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      cancelAnimationFrame(animationId);
+      if (section) {
+        section.removeEventListener("mousemove", onMouseMove);
+        section.removeEventListener("mouseleave", onMouseLeave);
+      }
+    };
+  }, [onMouseMove, onMouseLeave]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      style={{ zIndex: 1 }}
+    />
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   Main Component
+   ───────────────────────────────────────────────────────── */
+export default function BackedEarlySection() {
+  return (
+    <section className="relative h-screen w-full overflow-hidden max-md:overflow-x-hidden max-md:w-[100vw] max-md:ml-[calc(50%-50vw)] bg-[#00112E]">
+      <div
+        className="relative flex h-screen w-full items-center justify-center overflow-hidden"
+        style={{
+          paddingLeft: "var(--section-px-wide)",
+          paddingRight: "var(--section-px-wide)",
+        }}
+      >
+        <HeroGlow />
+        <AnimatedGrid />
+
+        <motion.div
+          className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col items-center justify-center text-center"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.5 }}
         >
-          <h2 className="text-[var(--primary-dark,#001A4D)] font-libre font-semibold text-[58px] leading-[110%] m-0 text-center">
-            Backed Early.
-          </h2>
-          {/* Highlight Box */}
-          <div className="flex flex-col justify-center items-center w-[408px] p-[10px] bg-[var(--home-btn-bg,#D3E2FF)] mt-2">
-            <span className="text-[var(--primary-dark,#001A4D)] font-libre italic font-semibold text-[58px] leading-[110%] m-0 text-center">
-              Built to last
-            </span>
-          </div>
-        </div>
+          <motion.h1
+            className="m-0 flex flex-col items-center justify-center font-['Poppins',_sans-serif] font-black uppercase text-white max-md:!text-[32px]"
+            style={{
+              fontSize: "clamp(40px, 6vw, 96px)",
+              lineHeight: "105%",
+              letterSpacing: "-0.02em",
+            }}
+            variants={{
+              hidden: { opacity: 0, y: 30 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: { duration: 0.8, ease: "easeOut" },
+              },
+            }}
+          >
+            <span>Backed Early</span>
+            <span>Built To Last</span>
+          </motion.h1>
 
-        {/* --- CARDS GRID --- */}
-        <div className="w-full grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-          {portfolio.map((item) => (
-            <div 
-              key={item.id} 
-              className="relative w-full aspect-square rounded-[12px] overflow-hidden shadow-[0_0_14px_8px_rgba(166,166,166,0.25)] group"
-            >
-              {/* Next.js Optimized Background Image */}
-              <Image 
-                src={item.bg} 
-                alt={`${item.name} background`}
-                fill
-                sizes="(max-width: 1024px) 50vw, 25vw"
-                priority={item.id <= 2}
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              
-              {/* Dark gradient overlay */}
-              <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none" />
-
-              {/* Bleached White Logo Box */}
-              <div className="absolute inset-x-0 bottom-8 flex justify-center items-center px-6">
-                <div className="relative w-full max-w-[241px] aspect-[5/1]">
-                  <Image 
-                    src={item.logo} 
-                    alt={`${item.name} logo`}
-                    fill
-                    className="object-contain brightness-0 invert pointer-events-none"
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+          <motion.p
+            className="mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[800px] font-['Poppins',_sans-serif] font-normal leading-[1.6] text-white/90 text-center"
+            style={{ fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)" }}
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: { duration: 0.8, ease: "easeOut", delay: 0.2 },
+              },
+            }}
+          >
+            We identify exceptional founders before the world does, and stay by
+            their side as they build companies that define categories.
+          </motion.p>
+        </motion.div>
       </div>
-
     </section>
   );
 }

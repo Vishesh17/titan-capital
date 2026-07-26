@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import {
   motion,
   useMotionValue,
@@ -23,7 +23,7 @@ const FALLBACK_SUBTITLE =
   "We partner with entrepreneurs from day one. We invest conviction, not just capital, and stay by their side through every stage of their journey.";
 
 /* ─────────────────────────────────────────────────────────
-   Hero Glow Background (Adapted from Source 1)
+   Hero Glow Background
    ───────────────────────────────────────────────────────── */
 function HeroGlow() {
   const mouseX = useMotionValue(0);
@@ -155,39 +155,132 @@ function HeroGlow() {
 }
 
 /* ─────────────────────────────────────────────────────────
-   Static Grid Lines
+   Animated Grid — canvas with cursor-follow wave distortion
    ───────────────────────────────────────────────────────── */
-function StaticGridLines() {
-  // Creating an array to map out multiple background lines evenly
-  const lines = Array.from({ length: 7 });
+function AnimatedGrid() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const mouseRef = useRef({ x: -9999, y: -9999 });
+
+  const onMouseMove = useCallback((e: MouseEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }, []);
+
+  const onMouseLeave = useCallback(() => {
+    mouseRef.current = { x: -9999, y: -9999 };
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const section = canvas.parentElement;
+    if (section) {
+      section.addEventListener("mousemove", onMouseMove);
+      section.addEventListener("mouseleave", onMouseLeave);
+    }
+
+    let animationId: number;
+    const startTime = performance.now();
+
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    const GRID_SIZE = Math.round(canvas.getBoundingClientRect().width / 8);
+    const BASE_ALPHA = 0.06;
+    const CURSOR_RADIUS = 180;
+    const WAVE_AMP = 6;
+    const WAVE_BOOST = 0.10;
+
+    const draw = (now: number) => {
+      const elapsed = (now - startTime) / 1000;
+      const w = canvas.getBoundingClientRect().width;
+      const h = canvas.getBoundingClientRect().height;
+      const mx = mouseRef.current.x;
+      const my = mouseRef.current.y;
+      const cx = w / 2;
+      const cy = h / 2;
+      const maxDist = Math.sqrt(cx * cx + cy * cy);
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.lineWidth = 1;
+
+      const waves = [
+        { speed: 110, width: 200 },
+        { speed: 75, width: 280 },
+      ];
+
+      const getRadialBoost = (px: number, py: number) => {
+        const dist = Math.sqrt((px - cx) ** 2 + (py - cy) ** 2);
+        let boost = 0;
+        for (const wave of waves) {
+          const wavePos = (elapsed * wave.speed) % (maxDist + wave.width);
+          const delta = Math.abs(dist - wavePos);
+          if (delta < wave.width) {
+            boost += (1 - delta / wave.width) * WAVE_BOOST;
+          }
+        }
+        return Math.min(boost, WAVE_BOOST * 1.5);
+      };
+
+      const getWave = (px: number, py: number) => {
+        const radialBoost = getRadialBoost(px, py);
+        const dist = Math.sqrt((px - mx) ** 2 + (py - my) ** 2);
+        if (dist > CURSOR_RADIUS) {
+          return { offset: 0, alpha: BASE_ALPHA + radialBoost };
+        }
+        const proximity = 1 - dist / CURSOR_RADIUS;
+        const smooth = proximity * proximity;
+        const offset = Math.sin(elapsed * 3 + dist * 0.04) * WAVE_AMP * smooth;
+        const alpha = BASE_ALPHA + radialBoost + smooth * 0.14;
+        return { offset, alpha };
+      };
+
+      for (let x = 0; x <= w; x += GRID_SIZE) {
+        ctx.beginPath();
+        let started = false;
+        for (let y = 0; y <= h; y += 4) {
+          const { offset, alpha } = getWave(x, y);
+          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+          const dx = x + offset;
+          if (!started) { ctx.moveTo(dx, y); started = true; }
+          else { ctx.lineTo(dx, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(dx, y); }
+        }
+        ctx.stroke();
+      }
+
+      animationId = requestAnimationFrame(draw);
+    };
+
+    resize();
+    animationId = requestAnimationFrame(draw);
+    window.addEventListener("resize", resize);
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      cancelAnimationFrame(animationId);
+      if (section) {
+        section.removeEventListener("mousemove", onMouseMove);
+        section.removeEventListener("mouseleave", onMouseLeave);
+      }
+    };
+  }, [onMouseMove, onMouseLeave]);
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-[1] flex w-full justify-evenly overflow-hidden opacity-60 mix-blend-screen">
-      {lines.map((_, i) => (
-        <div key={i} className="relative h-full flex items-center justify-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="2"
-            height="662"
-            viewBox="0 0 2 662"
-            fill="none"
-            style={{
-              height: "100%",
-              width: "2px",
-              transform: "rotate(0.086deg)",
-              strokeWidth: "1px",
-              stroke: "rgba(131, 131, 131, 0.23)",
-            }}
-          >
-            <path
-              d="M1.49463 0.00130463L0.994631 -3.63099e-07L5.74226e-05 662L0.500056 662.001L1.00005 662.003L1.99463 0.00260962L1.49463 0.00130463Z"
-              fill="#838383"
-              fillOpacity="0.23"
-            />
-          </svg>
-        </div>
-      ))}
-    </div>
+    <canvas
+      ref={canvasRef}
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      style={{ zIndex: 1 }}
+    />
   );
 }
 
@@ -212,9 +305,9 @@ export default function TitanSeedHeroClient({
           paddingRight: "var(--section-px-wide)",
         }}
       >
-        {/* ── BACKGROUND GLOWS & LINES ── */}
+        {/* ── BACKGROUND GLOWS & GRID ── */}
         <HeroGlow />
-        <StaticGridLines />
+        <AnimatedGrid />
 
         {/* ── CONTENT ── */}
         <motion.div
