@@ -1,10 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
-import { motion } from "framer-motion";
+import { useEffect } from "react";
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────
-   Types — shared with the server wrapper (TitanSeedHero.tsx).
+   Types
    ───────────────────────────────────────────────────────── */
 export interface TitanSeedHeroData {
   headingFirst?: string;
@@ -15,153 +20,180 @@ export interface TitanSeedHeroData {
 const FALLBACK_HEADING_FIRST = "We Are Your";
 const FALLBACK_HEADING_SECOND = "First Believer";
 const FALLBACK_SUBTITLE =
-  "We back founders when belief matters the most, before the headlines, before the scale, before everyone else catches on.";
+  "We partner with entrepreneurs from day one. We invest conviction, not just capital, and stay by their side through every stage of their journey.";
 
-/*
-  ANIMATED GRID BACKGROUND
-  Draws a grid on canvas. Grid lines near the cursor get a wavy
-  sine-wave distortion + brightness boost — effect is localised
-  to the cursor area only. Rest of the grid stays static.
-*/
-function AnimatedGrid() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const mouseRef = useRef({ x: -9999, y: -9999 });
+/* ─────────────────────────────────────────────────────────
+   Hero Glow Background (Adapted from Source 1)
+   ───────────────────────────────────────────────────────── */
+function HeroGlow() {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const normX = useMotionValue(0);
+  const normY = useMotionValue(0);
 
-  const onMouseMove = useCallback((e: MouseEvent) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    mouseRef.current = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    };
-  }, []);
+  const cursorSpring = { damping: 25, stiffness: 250, mass: 0.3 };
+  const smoothX = useSpring(mouseX, cursorSpring);
+  const smoothY = useSpring(mouseY, cursorSpring);
 
-  const onMouseLeave = useCallback(() => {
-    mouseRef.current = { x: -9999, y: -9999 };
-  }, []);
+  const ambientSpring = { damping: 30, stiffness: 70, mass: 1 };
+  const smoothNormX = useSpring(normX, ambientSpring);
+  const smoothNormY = useSpring(normY, ambientSpring);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    // Attach mouse listeners to the PARENT section (canvas is pointer-events-none)
-    const section = canvas.parentElement;
-    if (section) {
-      section.addEventListener("mousemove", onMouseMove);
-      section.addEventListener("mouseleave", onMouseLeave);
+    if (typeof window !== "undefined") {
+      mouseX.set(window.innerWidth / 2);
+      mouseY.set(window.innerHeight / 2);
     }
 
-    let animationId: number;
-    const startTime = performance.now();
-
-    const resize = () => {
-      const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseX.set(e.pageX);
+      mouseY.set(e.pageY);
+      normX.set((e.clientX / window.innerWidth) * 2 - 1);
+      normY.set((e.clientY / window.innerHeight) * 2 - 1);
     };
 
-    const GRID_SIZE = 90;
-    const BASE_ALPHA = 0.06;
-    const CURSOR_RADIUS = 180;
-    const WAVE_AMP = 6;
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [mouseX, mouseY, normX, normY]);
 
-    const draw = (now: number) => {
-      const elapsed = (now - startTime) / 1000;
-      const w = canvas.getBoundingClientRect().width;
-      const h = canvas.getBoundingClientRect().height;
-      const mx = mouseRef.current.x;
-      const my = mouseRef.current.y;
-
-      ctx.clearRect(0, 0, w, h);
-      ctx.lineWidth = 1;
-
-      // Helper: wave offset + alpha boost based on distance to cursor
-      const getWave = (px: number, py: number) => {
-        const dist = Math.sqrt((px - mx) ** 2 + (py - my) ** 2);
-        if (dist > CURSOR_RADIUS) return { offset: 0, alpha: BASE_ALPHA };
-
-        const proximity = 1 - dist / CURSOR_RADIUS;
-        const smooth = proximity * proximity;
-        const offset = Math.sin(elapsed * 3 + dist * 0.04) * WAVE_AMP * smooth;
-        const alpha = BASE_ALPHA + smooth * 0.14;
-
-        return { offset, alpha };
-      };
-
-      // ── VERTICAL LINES (displaced horizontally by wave near cursor) ──
-      for (let x = 0; x <= w; x += GRID_SIZE) {
-        ctx.beginPath();
-        let started = false;
-        for (let y = 0; y <= h; y += 4) {
-          const { offset, alpha } = getWave(x, y);
-          ctx.strokeStyle = `rgba(0, 0, 0, ${alpha})`;
-          const dx = x + offset;
-          if (!started) {
-            ctx.moveTo(dx, y);
-            started = true;
-          } else {
-            ctx.lineTo(dx, y);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(dx, y);
-          }
-        }
-        ctx.stroke();
-      }
-
-      // ── HORIZONTAL LINES (displaced vertically by wave near cursor) ──
-      for (let y = 0; y <= h; y += GRID_SIZE) {
-        ctx.beginPath();
-        let started = false;
-        for (let x = 0; x <= w; x += 4) {
-          const { offset, alpha } = getWave(x, y);
-          ctx.strokeStyle = `rgba(0, 0, 0, ${alpha})`;
-          const dy = y + offset;
-          if (!started) {
-            ctx.moveTo(x, dy);
-            started = true;
-          } else {
-            ctx.lineTo(x, dy);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x, dy);
-          }
-        }
-        ctx.stroke();
-      }
-
-      animationId = requestAnimationFrame(draw);
-    };
-
-    resize();
-    animationId = requestAnimationFrame(draw);
-
-    window.addEventListener("resize", resize);
-    return () => {
-      window.removeEventListener("resize", resize);
-      cancelAnimationFrame(animationId);
-      if (section) {
-        section.removeEventListener("mousemove", onMouseMove);
-        section.removeEventListener("mouseleave", onMouseLeave);
-      }
-    };
-  }, [onMouseMove, onMouseLeave]);
+  const leftX = useTransform(smoothNormX, [-1, 1], ["-8%", "8%"]);
+  const leftY = useTransform(smoothNormY, [-1, 1], ["-8%", "8%"]);
+  const rightX = useTransform(smoothNormX, [-1, 1], ["8%", "-8%"]);
+  const rightY = useTransform(smoothNormY, [-1, 1], ["8%", "-8%"]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="pointer-events-none absolute inset-0 h-full w-full"
-      style={{ zIndex: 0 }}
-    />
+    <>
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute"
+        style={{
+          left: "-25%",
+          top: "-25%",
+          width: "min(75vw, 100vh)",
+          height: "min(75vw, 100vh)",
+          zIndex: 0,
+          x: leftX,
+          y: leftY,
+          willChange: "transform",
+        }}
+      >
+        <motion.div
+          className="w-full h-full rounded-full blur-[120px]"
+          style={{
+            background:
+              "radial-gradient(circle, #5054B5 0%, #054EB6 40%, #022250 80%, transparent 100%)",
+            opacity: 0.6,
+          }}
+          animate={{
+            x: ["0%", "35%", "-15%", "25%", "0%"],
+            y: ["0%", "25%", "-10%", "35%", "0%"],
+            scale: [1, 1.15, 0.85, 1.1, 1],
+          }}
+          transition={{
+            duration: 18,
+            repeat: Infinity,
+            repeatType: "loop",
+            ease: "easeInOut",
+          }}
+        />
+      </motion.div>
+
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute"
+        style={{
+          right: "-25%",
+          bottom: "-25%",
+          width: "min(70vw, 90vh)",
+          height: "min(70vw, 90vh)",
+          zIndex: 0,
+          x: rightX,
+          y: rightY,
+          willChange: "transform",
+        }}
+      >
+        <motion.div
+          className="w-full h-full rounded-full blur-[120px]"
+          style={{
+            background:
+              "radial-gradient(circle, #AC71C6 0%, #033699 50%, #001A4D 80%, transparent 100%)",
+            opacity: 0.5,
+          }}
+          animate={{
+            x: ["0%", "-35%", "15%", "-25%", "0%"],
+            y: ["0%", "-25%", "10%", "-35%", "0%"],
+            scale: [1, 1.15, 0.85, 1.1, 1],
+          }}
+          transition={{
+            duration: 21,
+            repeat: Infinity,
+            repeatType: "loop",
+            ease: "easeInOut",
+          }}
+        />
+      </motion.div>
+
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute top-0 left-0 rounded-full blur-[60px]"
+        style={{
+          width: "25vw",
+          height: "25vw",
+          zIndex: 5,
+          x: smoothX,
+          y: smoothY,
+          translateX: "-50%",
+          translateY: "-50%",
+          opacity: 0.4,
+          background:
+            "radial-gradient(circle, rgba(80,84,181,0.85) 0%, rgba(5,78,182,0.5) 40%, rgba(2,34,80,0.2) 70%, transparent 100%)",
+          willChange: "transform",
+        }}
+      />
+    </>
   );
 }
 
+/* ─────────────────────────────────────────────────────────
+   Static Grid Lines
+   ───────────────────────────────────────────────────────── */
+function StaticGridLines() {
+  // Creating an array to map out multiple background lines evenly
+  const lines = Array.from({ length: 7 });
+
+  return (
+    <div className="pointer-events-none absolute inset-0 z-[1] flex w-full justify-evenly overflow-hidden opacity-60 mix-blend-screen">
+      {lines.map((_, i) => (
+        <div key={i} className="relative h-full flex items-center justify-center">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="2"
+            height="662"
+            viewBox="0 0 2 662"
+            fill="none"
+            style={{
+              height: "100%",
+              width: "2px",
+              transform: "rotate(0.086deg)",
+              strokeWidth: "1px",
+              stroke: "rgba(131, 131, 131, 0.23)",
+            }}
+          >
+            <path
+              d="M1.49463 0.00130463L0.994631 -3.63099e-07L5.74226e-05 662L0.500056 662.001L1.00005 662.003L1.99463 0.00260962L1.49463 0.00130463Z"
+              fill="#838383"
+              fillOpacity="0.23"
+            />
+          </svg>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   Main Component
+   ───────────────────────────────────────────────────────── */
 export default function TitanSeedHeroClient({
   data,
 }: {
@@ -172,73 +204,63 @@ export default function TitanSeedHeroClient({
   const subtitle = data?.subtitle || FALLBACK_SUBTITLE;
 
   return (
-    <section
-      className="relative flex w-full items-center justify-center overflow-hidden bg-[#FBF7F0] max-md:h-[50svh]"
-      style={{
-        marginTop: "var(--nav-height)",
-        height: "clamp(320px, 52vh, 520px)",
-        paddingTop: "clamp(20px, min(3vw, 4vh), 60px)",
-        paddingBottom: "clamp(20px, min(3vw, 4vh), 60px)",
-        paddingLeft: "var(--section-px-wide)",
-        paddingRight: "var(--section-px-wide)",
-      }}
-    >
-
-      {/* ── ANIMATED GRID BACKGROUND ── */}
-      <AnimatedGrid />
-
-      {/* ── CONTENT ── */}
-      <motion.div
-        className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col items-center justify-center text-center"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.5 }}
+    <section className="relative h-screen w-full overflow-hidden max-md:overflow-x-hidden max-md:w-[100vw] max-md:ml-[calc(50%-50vw)] bg-[#00112E]">
+      <div
+        className="relative flex h-screen w-full items-center justify-center overflow-hidden"
+        style={{
+          paddingLeft: "var(--section-px-wide)",
+          paddingRight: "var(--section-px-wide)",
+        }}
       >
+        {/* ── BACKGROUND GLOWS & LINES ── */}
+        <HeroGlow />
+        <StaticGridLines />
 
-        {/* ── HEADING: "We Are Your" + "first believer" on same line ── */}
-        <motion.h1
-          className="m-0 flex flex-row flex-wrap items-center justify-center gap-x-3 max-md:gap-x-2 font-['Libre_Baskerville',_serif] font-semibold leading-[110%] text-[#001A4D] max-md:!text-[28px]"
-          style={{ fontSize: "var(--heading-xl)" }}
-          variants={{
-            hidden: { opacity: 0, y: 40 },
-            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
-          }}
+        {/* ── CONTENT ── */}
+        <motion.div
+          className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col items-center justify-center text-center"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.5 }}
         >
-          <span>{headingFirst}</span>
-          <motion.span
-            className="relative inline-flex items-center justify-center overflow-hidden px-[4px] py-[6px] md:px-[6px] md:py-[8px] bg-transparent"
+          {/* ── HEADING ── */}
+          <motion.h1
+            className="m-0 flex flex-col items-center justify-center font-['Poppins',_sans-serif] font-black uppercase text-white max-md:!text-[32px]"
+            style={{
+              fontSize: "clamp(40px, 6vw, 96px)",
+              lineHeight: "105%",
+              letterSpacing: "-0.02em",
+            }}
             variants={{
-              hidden: { opacity: 0, x: -40 },
-              visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut", delay: 0.3 } }
+              hidden: { opacity: 0, y: 30 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: { duration: 0.8, ease: "easeOut" },
+              },
             }}
           >
-            <motion.span
-              className="absolute inset-0 z-0 bg-[#D3E2FF] h-full w-full"
-              style={{ transformOrigin: "left" }}
-              variants={{
-                hidden: { scaleX: 0 },
-                visible: { scaleX: 1, transition: { duration: 0.6, ease: "easeInOut", delay: 0.8 } }
-              }}
-            />
-            <span className="relative z-10 italic">
-              {headingSecond}
-            </span>
-          </motion.span>
-        </motion.h1>
+            <span>{headingFirst}</span>
+            <span>{headingSecond}</span>
+          </motion.h1>
 
-        {/* ── SUBTITLE ── */}
-        <motion.p
-          className="mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[600px] font-['Poppins',_sans-serif] font-normal leading-[1.6] text-[#323232] text-center"
-          style={{ fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)" }}
-          variants={{
-            hidden: { opacity: 0, y: 30 },
-            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut", delay: 0.6 } }
-          }}
-        >
-          {subtitle}
-        </motion.p>
-
-      </motion.div>
+          {/* ── SUBTITLE ── */}
+          <motion.p
+            className="mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[800px] font-['Poppins',_sans-serif] font-normal leading-[1.6] text-white/90 text-center"
+            style={{ fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)" }}
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: { duration: 0.8, ease: "easeOut", delay: 0.2 },
+              },
+            }}
+          >
+            {subtitle}
+          </motion.p>
+        </motion.div>
+      </div>
     </section>
   );
 }

@@ -565,7 +565,7 @@ function MobileRow({
       >
         <MobileClosedRow row={row} />
       </div>
-      {showDivider && <div className="h-0 w-full border-t border-black shrink-0" />}
+      {showDivider && <InViewDivider style={{ width: "100%" }} />}
     </div>
   );
 }
