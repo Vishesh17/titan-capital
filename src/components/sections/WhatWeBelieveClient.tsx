@@ -410,49 +410,91 @@ function MobileCardsContainer({
    Card Blobs Texture (Mouse-following fluid blobs)
    ───────────────────────────────────────────────────────── */
 function CardBlobs({ mouseX, mouseY }: { mouseX: MotionValue<number>; mouseY: MotionValue<number> }) {
-  const springConfig = { stiffness: 80, damping: 25, mass: 0.8 };
-  const smoothMouseX = useSpring(mouseX, springConfig);
-  const smoothMouseY = useSpring(mouseY, springConfig);
+  // Use the exact spring config from Hero for the cursor
+  const cursorSpring = { damping: 25, stiffness: 250, mass: 0.3 };
+  const smoothMouseX = useSpring(mouseX, cursorSpring);
+  const smoothMouseY = useSpring(mouseY, cursorSpring);
+
+  // Parallax ambient spring for the background blobs
+  const ambientSpring = { damping: 30, stiffness: 70, mass: 1 };
+  const smoothNormX = useSpring(mouseX, ambientSpring);
+  const smoothNormY = useSpring(mouseY, ambientSpring);
+
+  // Ambient blobs shift slightly opposite to mouse direction
+  const leftX = useTransform(smoothNormX, [-1, 1], ["-8%", "8%"]);
+  const leftY = useTransform(smoothNormY, [-1, 1], ["-8%", "8%"]);
+  const rightX = useTransform(smoothNormX, [-1, 1], ["8%", "-8%"]);
+  const rightY = useTransform(smoothNormY, [-1, 1], ["8%", "-8%"]);
+
+  // Map -1 to 1 range perfectly onto 0% to 100% of the card bounds
+  const cursorLeft = useTransform(smoothMouseX, (v) => `${50 + v * 50}%`);
+  const cursorTop = useTransform(smoothMouseY, (v) => `${50 + v * 50}%`);
 
   return (
     <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+      
+      {/* 1. Ambient Blob (Mimicking Hero Left Blob at exact 75% ratio) */}
       <motion.div
-        className="absolute rounded-full blur-[60px]"
+        className="absolute"
         style={{
-          width: "50%",
-          height: "60%",
-          background: "radial-gradient(circle, #5054B5 0%, #054EB6 30%, transparent 70%)",
-          opacity: 0.6,
-          left: useTransform(smoothMouseX, (v) => `${50 + v * 25}%`),
-          top: useTransform(smoothMouseY, (v) => `${50 + v * 25}%`),
-          translateX: "-50%",
-          translateY: "-50%",
+          left: "-25%",
+          top: "-25%",
+          width: "75%",
+          height: "75%",
+          x: leftX,
+          y: leftY,
+          willChange: "transform",
         }}
-      />
+      >
+        <motion.div
+          className="w-full h-full rounded-full blur-[40px] max-md:blur-[25px]"
+          style={{ background: "radial-gradient(circle, #5054B5 0%, #054EB6 40%, #022250 80%, transparent 100%)", opacity: 0.6 }}
+          animate={{
+            x: ["0%", "35%", "-15%", "25%", "0%"],
+            y: ["0%", "25%", "-10%", "35%", "0%"],
+            scale: [1, 1.15, 0.85, 1.1, 1],
+          }}
+          transition={{ duration: 18, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
+        />
+      </motion.div>
+
+      {/* 2. Ambient Blob (Mimicking Hero Right Blob at exact 70% ratio) */}
       <motion.div
-        className="absolute rounded-full blur-[50px]"
+        className="absolute"
         style={{
-          width: "40%",
-          height: "50%",
-          background: "radial-gradient(circle, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.1) 30%, transparent 70%)",
-          opacity: 0.7,
-          left: useTransform(smoothMouseX, (v) => `${50 - v * 20}%`),
-          top: useTransform(smoothMouseY, (v) => `${50 - v * 20}%`),
-          translateX: "-50%",
-          translateY: "-50%",
+          right: "-25%",
+          bottom: "-25%",
+          width: "70%",
+          height: "70%",
+          x: rightX,
+          y: rightY,
+          willChange: "transform",
         }}
-      />
+      >
+        <motion.div
+          className="w-full h-full rounded-full blur-[40px] max-md:blur-[25px]"
+          style={{ background: "radial-gradient(circle, #AC71C6 0%, #033699 50%, #001A4D 80%, transparent 100%)", opacity: 0.5 }}
+          animate={{
+            x: ["0%", "-35%", "15%", "-25%", "0%"],
+            y: ["0%", "-25%", "10%", "-35%", "0%"],
+            scale: [1, 1.15, 0.85, 1.1, 1],
+          }}
+          transition={{ duration: 21, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
+        />
+      </motion.div>
+
+      {/* 3. Mouse Hover Blob (Scaled properly to 25% card width) */}
       <motion.div
-        className="absolute rounded-full blur-[45px]"
+        className="absolute rounded-full aspect-square blur-[30px] max-md:blur-[20px]"
         style={{
-          width: "35%",
-          height: "40%",
-          background: "radial-gradient(circle, rgba(80,84,181,0.4) 0%, transparent 70%)",
-          opacity: 0.5,
-          left: useTransform(smoothMouseX, (v) => `${50 + v * 15}%`),
-          top: useTransform(smoothMouseY, (v) => `${50 - v * 15}%`),
+          width: "25%", // This perfectly scales the 25vw logic down to the individual card
+          background: "radial-gradient(circle, rgba(80,84,181,0.85) 0%, rgba(5,78,182,0.5) 40%, rgba(2,34,80,0.2) 70%, transparent 100%)",
+          opacity: 0.4,
+          left: cursorLeft,
+          top: cursorTop,
           translateX: "-50%",
           translateY: "-50%",
+          willChange: "transform",
         }}
       />
     </div>
@@ -551,7 +593,7 @@ function DesktopCardSlice({
       >
         <CardBlobs mouseX={mouseX} mouseY={mouseY} />
 
-        <div className="relative z-10 flex flex-col h-full" style={{ paddingTop: "min(3.47vw, 5.37vh)", paddingBottom: "min(2.78vw, 4.31vh)", paddingLeft: "min(2.08vw, 3.22vh)", paddingRight: "min(2.08vw, 3.22vh)" }}>
+        <div className="relative z-10 flex flex-col h-full" style={{ paddingTop: "min(3.47vw, 5.37vh)", paddingBottom: "min(2.78vw, 4.31vh)", paddingLeft: "min(2.08vw, 3.22vh)", paddingRight: "min(2.08vw, 3.22vh)", gap: "min(1.85vw, 2.86vh)" }}>
           <div className="flex justify-center">
             <h3
               className="font-['Poppins',_sans-serif] font-semibold text-white capitalize text-center max-md:!text-[20px]"
@@ -561,23 +603,20 @@ function DesktopCardSlice({
             </h3>
           </div>
 
-          <div className="flex flex-col mt-auto" style={{ marginBottom: "min(1.85vw, 2.86vh)" }}>
-            <div className="w-full">
-              {/* FIXED: Switched to a border implementation to prevent blur, and driven automatically by state */}
-              <motion.div
-                initial={false}
-                animate={{ scaleX: isFlipped ? 1 : 0 }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: isFlipped ? 0.15 : 0 }}
-                style={{ transformOrigin: "center", borderTop: "1px solid rgba(255,255,255,0.8)" }}
-                className="w-full h-0"
-              />
-            </div>
+          <div className="w-full">
+            <motion.div
+              initial={false}
+              animate={{ scaleX: isFlipped ? 1 : 0 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: isFlipped ? 0.15 : 0 }}
+              style={{ transformOrigin: "center", borderTop: "1px solid rgba(255,255,255,0.8)" }}
+              className="w-full h-0"
+            />
           </div>
 
-          <div className="flex justify-center" style={{ minHeight: "min(12.67vw, 19.61vh)" }}>
+          <div className="flex justify-center">
             <p
               className="font-['Poppins',_sans-serif] font-normal text-white/90 text-center max-md:!text-[13px]"
-              style={{ fontSize: "min(1.16vw, 1.79vh)", lineHeight: "155%" }}
+              style={{ fontSize: "min(1.39vw, 2.15vh)", lineHeight: "155%" }}
             >
               {belief.description}
             </p>
@@ -587,138 +626,131 @@ function DesktopCardSlice({
     </motion.div>
   );
 }
+
 /* ─────────────────────────────────────────────────────────
    Mobile Card Slice
    ───────────────────────────────────────────────────────── */
-   function MobileCardSlice({
-    belief,
-    index,
-    direction,
-    splitY,
-    flip,
-    radius,
-    lineOpacity,
-    progress,
-    mouseX,
-    mouseY,
-  }: {
-    belief: Belief;
-    index: number;
-    direction: number;
-    splitY: MotionValue<number>;
-    flip: MotionValue<number>;
-    radius: MotionValue<number>;
-    lineOpacity: MotionValue<number>;
-    progress: MotionValue<number>;
-    mouseX: MotionValue<number>;
-    mouseY: MotionValue<number>;
-  }) {
-    const y = useTransform(splitY, (v) => v * direction);
-    
-    const [isFlipped, setIsFlipped] = useState(false);
-    useEffect(() => {
-      const unsubscribe = progress.on("change", (latest) => {
-        if (latest >= 0.45) setIsFlipped(true);
-        else setIsFlipped(false);
-      });
-      return () => unsubscribe();
-    }, [progress]);
+function MobileCardSlice({
+  belief,
+  index,
+  direction,
+  splitY,
+  flip,
+  radius,
+  lineOpacity,
+  progress,
+  mouseX,
+  mouseY,
+}: {
+  belief: Belief;
+  index: number;
+  direction: number;
+  splitY: MotionValue<number>;
+  flip: MotionValue<number>;
+  radius: MotionValue<number>;
+  lineOpacity: MotionValue<number>;
+  progress: MotionValue<number>;
+  mouseX: MotionValue<number>;
+  mouseY: MotionValue<number>;
+}) {
+  const y = useTransform(splitY, (v) => v * direction);
   
-    return (
+  const [isFlipped, setIsFlipped] = useState(false);
+  useEffect(() => {
+    const unsubscribe = progress.on("change", (latest) => {
+      if (latest >= 0.45) setIsFlipped(true);
+      else setIsFlipped(false);
+    });
+    return () => unsubscribe();
+  }, [progress]);
+
+  return (
+    <motion.div
+      className="w-full relative flex-1"
+      style={{
+        y,
+        rotateX: flip,
+        transformStyle: "preserve-3d",
+        WebkitTransformStyle: "preserve-3d",
+        willChange: "transform",
+      }}
+    >
       <motion.div
-        className="w-full relative flex-1"
         style={{
-          y,
-          rotateX: flip,
-          transformStyle: "preserve-3d",
-          WebkitTransformStyle: "preserve-3d",
-          willChange: "transform",
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: index === 0 ? 0 : "-1px",
+          bottom: index === 2 ? 0 : "-1px",
+          backfaceVisibility: "hidden",
+          WebkitBackfaceVisibility: "hidden",
+          borderRadius: radius,
+          overflow: "hidden",
+          backgroundImage: `url(${IMAGE_SRC})`,
+          backgroundSize: "auto 300%",
+          backgroundPosition: `center ${index * 50}%`,
+          backgroundRepeat: "no-repeat",
         }}
       >
-        <motion.div
-          style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            top: index === 0 ? 0 : "-1px",
-            bottom: index === 2 ? 0 : "-1px",
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden",
-            borderRadius: radius,
-            overflow: "hidden",
-            backgroundImage: `url(${IMAGE_SRC})`,
-            backgroundSize: "auto 300%",
-            backgroundPosition: `center ${index * 50}%`,
-            backgroundRepeat: "no-repeat",
-          }}
-        >
-          {index < 2 && (
-            <motion.div 
-              style={{ opacity: lineOpacity, borderBottom: "1px solid rgba(0,0,0,0.4)" }}
-              className="absolute left-0 right-0 bottom-0 h-0 z-20 pointer-events-none" 
-            />
-          )}
-        </motion.div>
-  
-        {/* Back Side Content Card */}
-        <motion.div
-          style={{
-            position: "absolute",
-            inset: 0,
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden",
-            rotateX: 180,
-            borderRadius: "2px",
-            overflow: "hidden",
-            backgroundColor: "#001A4D", 
-            boxShadow: "0px 4px 16px rgba(0,0,0,0.15)",
-          }}
-          className="relative"
-        >
-          <CardBlobs mouseX={mouseX} mouseY={mouseY} />
-  
-          {/* FIXED: Overrode inner mobile padding via max-md:!p-[20px_16px] for consistent framing */}
-          <div 
-            className="relative z-10 flex flex-col h-full max-md:!p-[20px_16px]" 
-            style={{ paddingTop: "min(3.47vw, 5.37vh)", paddingBottom: "min(2.78vw, 4.31vh)", paddingLeft: "min(2.08vw, 3.22vh)", paddingRight: "min(2.08vw, 3.22vh)" }}
-          >
-            <div className="flex justify-center">
-              {/* Reduced Title Size slightly on mobile to accommodate smaller cards if needed */}
-              <h3
-                className="font-['Poppins',_sans-serif] font-semibold text-white capitalize text-center max-md:!text-[clamp(16px,4.5vw,20px)]"
-                style={{ fontSize: "min(3.01vw, 4.66vh)", lineHeight: "120%" }}
-              >
-                {belief.title}
-              </h3>
-            </div>
-  
-            {/* FIXED: Added explicit mobile bottom margin to the HR wrapper */}
-            <div className="flex flex-col mt-auto max-md:!mb-[12px]" style={{ marginBottom: "min(1.85vw, 2.86vh)" }}>
-              <div className="w-full">
-                <motion.div
-                  initial={false}
-                  animate={{ scaleX: isFlipped ? 1 : 0 }}
-                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: isFlipped ? 0.15 : 0 }}
-                  style={{ transformOrigin: "center", borderTop: "1px solid rgba(255,255,255,0.8)" }}
-                  className="w-full h-0"
-                />
-              </div>
-            </div>
-  
-            {/* FIXED: 
-                1. Locked min-height to 105px on mobile to guarantee HR alignment across cards.
-                2. Reduced font size (clamp 10px to 12px) and adjusted leading for mobile readability. 
-            */}
-            <div className="flex justify-center max-md:!min-h-[105px] max-md:items-center" style={{ minHeight: "min(12.67vw, 19.61vh)" }}>
-              <p
-                className="font-['Poppins',_sans-serif] font-normal text-white/90 text-center max-md:!text-[clamp(10px,2.8vw,12px)] max-md:!leading-[140%]"
-                style={{ fontSize: "min(1.16vw, 1.79vh)", lineHeight: "155%" }}
-              >
-                {belief.description}
-              </p>
-            </div>
-          </div>
-        </motion.div>
+        {index < 2 && (
+          <motion.div 
+            style={{ opacity: lineOpacity, borderBottom: "1px solid rgba(0,0,0,0.4)" }}
+            className="absolute left-0 right-0 bottom-0 h-0 z-20 pointer-events-none" 
+          />
+        )}
       </motion.div>
-    );
-  }
+
+      {/* Back Side Content Card */}
+      <motion.div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backfaceVisibility: "hidden",
+          WebkitBackfaceVisibility: "hidden",
+          rotateX: 180,
+          borderRadius: "2px",
+          overflow: "hidden",
+          backgroundColor: "#001A4D", 
+          boxShadow: "0px 4px 16px rgba(0,0,0,0.15)",
+        }}
+        className="relative"
+      >
+        <CardBlobs mouseX={mouseX} mouseY={mouseY} />
+
+        {/* FIXED: Overrode inner mobile padding via max-md:!p-[20px_16px] for consistent framing */}
+        <div
+          className="relative z-10 flex flex-col h-full max-md:!p-[20px_16px] max-md:!gap-[12px]"
+          style={{ paddingTop: "min(3.47vw, 5.37vh)", paddingBottom: "min(2.78vw, 4.31vh)", paddingLeft: "min(2.08vw, 3.22vh)", paddingRight: "min(2.08vw, 3.22vh)", gap: "min(1.85vw, 2.86vh)" }}
+        >
+          <div className="flex justify-center">
+            <h3
+              className="font-['Poppins',_sans-serif] font-semibold text-white capitalize text-center max-md:!text-[clamp(16px,4.5vw,20px)]"
+              style={{ fontSize: "min(3.01vw, 4.66vh)", lineHeight: "120%" }}
+            >
+              {belief.title}
+            </h3>
+          </div>
+
+          <div className="w-full">
+            <motion.div
+              initial={false}
+              animate={{ scaleX: isFlipped ? 1 : 0 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: isFlipped ? 0.15 : 0 }}
+              style={{ transformOrigin: "center", borderTop: "1px solid rgba(255,255,255,0.8)" }}
+              className="w-full h-0"
+            />
+          </div>
+
+          <div className="flex justify-center">
+            <p
+              className="font-['Poppins',_sans-serif] font-normal text-white/90 text-center max-md:!text-[clamp(10px,2.8vw,12px)] max-md:!leading-[140%]"
+              style={{ fontSize: "min(1.39vw, 2.15vh)", lineHeight: "155%" }}
+            >
+              {belief.description}
+            </p>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}

@@ -143,6 +143,13 @@ export const impactAtGlance = defineType({
               rows: 3,
               validation: (r) => r.required(),
             }),
+            defineField({
+              name: "tag",
+              title: "Tag (top-left pill)",
+              description:
+                'Optional short label shown in a white pill on the top-left of the card. e.g. "Unicorn", "Recent Investment", "IPO 2024". Leave empty to hide the tag.',
+              type: "string",
+            }),
           ],
           preview: {
             select: { title: "name", subtitle: "role", media: "image" },

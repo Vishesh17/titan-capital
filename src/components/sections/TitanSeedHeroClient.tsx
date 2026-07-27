@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import {
   motion,
   useMotionValue,
   useSpring,
   useTransform,
+  useInView,
+  type TargetAndTransition,
 } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────
@@ -285,6 +287,63 @@ function AnimatedGrid() {
 }
 
 /* ─────────────────────────────────────────────────────────
+   RevealLine — per-character 3D flip animation
+   ───────────────────────────────────────────────────────── */
+const CHAR_STAGGER = 0.035;
+function RevealLine({
+  children,
+  show,
+  delay = 0,
+}: {
+  children: string;
+  show: boolean;
+  delay?: number;
+}) {
+  const chars = children.split("");
+
+  return (
+    <span
+      className="inline-flex whitespace-nowrap"
+      aria-label={children}
+      style={{ perspective: "500px", transformStyle: "preserve-3d" }}
+    >
+      {chars.map((ch, i) => (
+        <motion.span
+          key={i}
+          aria-hidden
+          className="inline-flex"
+          style={{
+            transformOrigin: "center center",
+            backfaceVisibility: "hidden",
+            transformStyle: "preserve-3d",
+            willChange: "transform",
+            transform:
+              "translateZ(-0.85em) rotateX(var(--rotateX)) scaleY(var(--scaleY)) translateZ(0.85em)",
+          }}
+          initial={{
+            "--rotateX": "-90deg",
+            "--scaleY": 1.5,
+            opacity: 0,
+          } as TargetAndTransition}
+          animate={{
+            "--rotateX": show ? "0deg" : "-90deg",
+            "--scaleY": show ? 1 : 1.5,
+            opacity: show ? 1 : 0,
+          } as TargetAndTransition}
+          transition={{
+            duration: 1.1,
+            ease: [0.76, 0, 0.24, 1],
+            delay: delay + i * CHAR_STAGGER,
+          }}
+        >
+          <span style={{width: ch === " " ? "0.3em" : "auto"}}>{ch === " " ? " " : ch}</span>
+        </motion.span>
+      ))}
+    </span>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
    Main Component
    ───────────────────────────────────────────────────────── */
 export default function TitanSeedHeroClient({
@@ -296,63 +355,48 @@ export default function TitanSeedHeroClient({
   const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
   const subtitle = data?.subtitle || FALLBACK_SUBTITLE;
 
+  const sectionRef = useRef<HTMLElement>(null);
+  const inView = useInView(sectionRef, { once: true, amount: 0.3 });
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    if (inView) setShow(true);
+  }, [inView]);
+
   return (
-    <section className="relative h-screen w-full overflow-hidden max-md:overflow-x-hidden max-md:w-[100vw] max-md:ml-[calc(50%-50vw)] bg-[#00112E]">
+    <section ref={sectionRef} className="relative w-full overflow-hidden max-md:overflow-x-hidden max-md:w-[100vw] max-md:ml-[calc(50%-50vw)] bg-[#00112E]" style={{ height: "70svh" }}>
       <div
-        className="relative flex h-screen w-full items-center justify-center overflow-hidden"
+        className="relative flex h-full w-full items-center justify-center overflow-hidden"
         style={{
           paddingLeft: "var(--section-px-wide)",
           paddingRight: "var(--section-px-wide)",
         }}
       >
-        {/* ── BACKGROUND GLOWS & GRID ── */}
         <HeroGlow />
         <AnimatedGrid />
 
-        {/* ── CONTENT ── */}
-        <motion.div
-          className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col items-center justify-center text-center"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.5 }}
-        >
-          {/* ── HEADING ── */}
-          <motion.h1
+        <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col items-center justify-center text-center">
+          <h1
             className="m-0 flex flex-col items-center justify-center font-['Poppins',_sans-serif] font-black uppercase text-white max-md:!text-[32px]"
             style={{
-              fontSize: "clamp(40px, 6vw, 96px)",
-              lineHeight: "105%",
-              letterSpacing: "-0.02em",
-            }}
-            variants={{
-              hidden: { opacity: 0, y: 30 },
-              visible: {
-                opacity: 1,
-                y: 0,
-                transition: { duration: 0.8, ease: "easeOut" },
-              },
+              fontSize: "min(9.88vw, 15.2vh)",
+              lineHeight: "86%",
             }}
           >
-            <span>{headingFirst}</span>
-            <span>{headingSecond}</span>
-          </motion.h1>
+            <RevealLine show={show} delay={0}>{headingFirst}</RevealLine>
+            <RevealLine show={show} delay={0.5}>{headingSecond}</RevealLine>
+          </h1>
 
-          {/* ── SUBTITLE ── */}
           <motion.p
             className="mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[800px] font-['Poppins',_sans-serif] font-normal leading-[1.6] text-white/90 text-center"
             style={{ fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)" }}
-            variants={{
-              hidden: { opacity: 0, y: 20 },
-              visible: {
-                opacity: 1,
-                y: 0,
-                transition: { duration: 0.8, ease: "easeOut", delay: 0.2 },
-              },
-            }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={show ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 1.2 }}
           >
             {subtitle}
           </motion.p>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

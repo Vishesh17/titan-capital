@@ -223,10 +223,10 @@ export default function JoinPortfolioCTA() {
       >
         {/* ── HEADING ── */}
         <h2
-          className="m-0 font-['Poppins',_sans-serif] font-medium text-white max-md:!text-[36px] max-md:!leading-[120%]"
+          className="m-0 font-['Poppins',_sans-serif] font-semibold text-white max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
           style={{
-            fontSize: "clamp(36px, 5.5vw, 72px)",
-            lineHeight: "120%",
+            fontSize: "min(4.51vw, 6.98vh)",
+            lineHeight: "150%",
             marginBottom: "clamp(16px, 2vw, 24px)",
           }}
         >

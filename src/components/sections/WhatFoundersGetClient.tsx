@@ -29,34 +29,34 @@ export interface WhatFoundersGetData {
 
 const SZ = {
   // typography
-  heading: "min(4.51vw, 6.98vh)",       
-  rowTitle: "min(3.01vw, 4.65vh)",      
-  subHeading: "min(1.85vw, 2.86vh)",    
-  desc: "min(1.62vw, 2.51vh)",          
-  rotTitle: "min(2.78vw, 4.30vh)",      
-  backLink: "min(1.51vw, 2.33vh)",      
+  heading: "min(4.51vw, 6.98vh)",
+  rowTitle: "min(2.08vw, 3.22vh)",
+  subHeading: "min(1.27vw, 1.97vh)",
+  desc: "min(1.16vw, 1.79vh)",
+  rotTitle: "min(2.78vw, 4.30vh)",
+  backLink: "min(1.51vw, 2.33vh)",
 
-  oSubHeading: "min(1.85vw, 2.86vh)",   
-  oDesc: "min(1.62vw, 2.51vh)",         
-  oGap: "min(3.42vw, 5.28vh)",          
-  oPadY: "min(2.31vw, 3.58vh)",         
+  oSubHeading: "min(1.85vw, 2.86vh)",
+  oDesc: "min(1.62vw, 2.51vh)",
+  oGap: "min(3.42vw, 5.28vh)",
+  oPadY: "min(2.31vw, 3.58vh)",
 
   divider: "100%",
   openedDivider: "100%",
-  descBox: "55vw",                      
-  rowTitleBox: "22.57vw",               
-  openedContentBox: "65.22vw",          
+  descBox: "55vw",
+  rowTitleBox: "18vw",
+  openedContentBox: "65.22vw",
 
-  headingToDivider: "min(3.47vw, 5.37vh)", 
-  rowPaddingY: "min(1.68vw, 2.60vh)",   
-  rowInnerGap: "min(1.62vw, 2.51vh)",   
-  openedGap: "min(3.47vw, 5.37vh)",     
-                                        
+  headingToDivider: "min(2.31vw, 3.58vh)",
+  rowPaddingY: "min(1.04vw, 1.61vh)",
+  rowInnerGap: "min(0.93vw, 1.43vh)",
+  openedGap: "min(2.31vw, 3.58vh)",
+
   // arrows — actual SVG dimensions
-  closedArrowW: "min(3.24vw, 4.21vh)",  
-  closedArrowH: "min(2.72vw, 4.21vh)",  
-  openArrowW: "min(2.66vw, 4.92vh)",    
-  openArrowH: "min(3.20vw, 4.92vh)",    
+  closedArrowW: "min(2.31vw, 3.58vh)",
+  closedArrowH: "min(1.97vw, 3.04vh)",
+  openArrowW: "min(2.66vw, 4.92vh)",
+  openArrowH: "min(3.20vw, 4.92vh)",
 };
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -263,12 +263,13 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: 0.45, ease: EASE } }}
       exit={{ opacity: 0, transition: { duration: 0.25, ease: EASE } }}
-      className="grid w-full items-start"
+      className="grid w-full items-center"
       style={{
         gridTemplateColumns: `${SZ.rowTitleBox} 1fr auto`,
         columnGap: SZ.openedGap,
         paddingTop: SZ.rowPaddingY,
         paddingBottom: SZ.rowPaddingY,
+        minHeight: "min(8vw, 12.4vh)",
       }}
     >
       <h3
@@ -285,7 +286,6 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
         className="flex flex-col"
         style={{
           gap: SZ.rowInnerGap,
-          maxWidth: SZ.descBox,
         }}
       >
         <h4

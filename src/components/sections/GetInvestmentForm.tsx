@@ -1052,8 +1052,8 @@ export default function GetInvestmentForm({
           viewport={{ once: true, amount: 0.5 }}
         >
           <motion.h2
-            className="m-0 max-w-[794px] font-['Poppins',_sans-serif] font-normal capitalize text-[#000] max-md:!text-[32px] max-md:!leading-[120%]"
-            style={{ fontSize: "clamp(32px, 4vw, 56px)", lineHeight: "120%" }}
+            className="m-0 max-w-[794px] font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
+            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
             custom={0}
             variants={fadeUp}
           >

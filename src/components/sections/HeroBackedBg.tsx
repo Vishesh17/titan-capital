@@ -17,11 +17,10 @@ const WHITE = "#ffffff";
 const BEIGE = "#FBF7F0";
 
 /* Scroll track for hero: just enough for smooth fade, no pause */
-const HERO_TRACK_VH = 140;
+const HERO_TRACK_VH = 110;
 
-/* INCREASED: Dwell height for Backed Before & How We Show Up sticky pause.
-   Setting this to 200 ensures it takes roughly 2 full scrolls before unpinning. */
-const BACKED_DWELL_VH = 120; 
+/* Dwell height for Backed Before & How We Show Up sticky pause. */
+const BACKED_DWELL_VH = 80;
 
 export default function HeroBackedBg({
   hero,

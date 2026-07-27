@@ -20,6 +20,7 @@ export interface FounderStory {
   logo: string;
   logoScale?: number;
   text: string;
+  tag?: string;
 }
 
 export interface ImpactAtGlanceData {
@@ -38,7 +39,6 @@ const FALLBACK_IMPACT_DATA: ImpactStat[] = [
   { num: "4",    label: "IPOs 2023-2026" },
   { num: "15",   label: "Years Investing" },
   { num: "40+",  label: "Values > $100M" },
-  { num: "250M+", label: "Lives Impacted" },
 ];
 
 const FALLBACK_SLIDES: FounderStory[] = [
@@ -48,6 +48,7 @@ const FALLBACK_SLIDES: FounderStory[] = [
     image: "/images/misc/5.webp",
     logo: "/images/logos/Ofbusiness.png",
     text: `"Building anything meaningful demands everything you have. It's never easy, but it's always worth it."`,
+    tag: "Unicorn",
   },
   {
     name: "Abhishek Bansal",
@@ -55,6 +56,7 @@ const FALLBACK_SLIDES: FounderStory[] = [
     image: "/images/misc/6.webp",
     logo: "/images/logos/Shadowfax.svg",
     text: `"In India, logistics isn't just about speed. It's about reaching the right place even when the address is wrong."`,
+    tag: "Unicorn",
   },
   {
     name: "Harshil Mathur",
@@ -62,6 +64,7 @@ const FALLBACK_SLIDES: FounderStory[] = [
     image: "/images/misc/3.webp",
     logo: "/images/logos/Razorpay-logo.webp",
     text: `"The vision was never just to be a payment gateway. It was to be the financial nervous system for a business."`,
+    tag: "Unicorn",
   },
 ];
 
@@ -157,7 +160,7 @@ function ImpactStatCell({
   return (
     <motion.div
       className="flex flex-row items-stretch justify-start max-md:!gap-[12px] max-md:!pl-0 max-md:w-full"
-      style={{ gap: "min(1.85vw, 2.86vh)", paddingLeft: IMPACT_CELL_PADDING }}
+      style={{ gap: "min(1.04vw, 1.61vh)", paddingLeft: IMPACT_CELL_PADDING }}
       variants={{
         hidden: { opacity: 0, y: 20 },
         visible: {
@@ -171,7 +174,7 @@ function ImpactStatCell({
         className="shrink-0 bg-black max-md:!h-full max-md:!min-h-[80px]"
         style={{
           width: "1px",
-          height: "min(13.89vw, 21.49vh)",
+          height: "min(6.94vw, 10.74vh)",
           scaleY: lineScale,
           transformOrigin: "top",
         }}
@@ -179,19 +182,19 @@ function ImpactStatCell({
       <div className="flex flex-col items-start text-left justify-center">
         <span
           className="font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[36px] max-md:!leading-[105%]"
-          style={{ fontSize: "min(6.48vw, 10.03vh)", lineHeight: "150%" }}
+          style={{ fontSize: "min(3.47vw, 5.37vh)", lineHeight: "150%" }}
         >
           <RollingNumber value={stat.num} />
         </span>
         <span
           className="whitespace-nowrap font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[14px] max-md:!leading-[125%] max-md:!mt-[6px]"
           style={{
-            fontSize: "min(2.55vw, 3.94vh)",
+            fontSize: "min(1.16vw, 1.79vh)",
             lineHeight: "120%",
-            marginTop: "min(1.16vw, 1.79vh)",
+            marginTop: "min(0.58vw, 0.90vh)",
           }}
         >
-          {stat.label.replace(/\n/g, ' ')} 
+          {stat.label.replace(/\n/g, ' ')}
         </span>
       </div>
     </motion.div>
@@ -208,7 +211,7 @@ function deriveCompany(story: FounderStory): string {
 
 function QuoteMarkIcon() {
   return (
-    <svg viewBox="0 0 42 33" fill="none" aria-hidden style={{ width: "min(2.43vw, 3.76vh)", height: "min(1.91vw, 2.95vh)" }}>
+    <svg viewBox="0 0 42 33" fill="none" aria-hidden className="max-md:!w-[20px] max-md:!h-[16px]" style={{ width: "min(2.43vw, 3.76vh)", height: "min(1.91vw, 2.95vh)" }}>
       <path d="M24.5946 22.5385C24.5946 15.948 26.7387 9.90141 31.027 4.3987C33.7387 1.07148 35.9144 -0.368185 37.5541 0.0797102C39.0676 0.655575 39.8243 1.51937 39.8243 2.6711C39.8243 3.75885 39.3198 4.91058 38.3108 6.12629C37.3649 7.34201 36.6081 8.33378 36.0405 9.1016C35.473 9.86942 35 10.7012 34.6216 11.597C33.7387 13.3886 33.2973 15.5641 33.2973 18.1235C34.8108 17.6756 36.3243 17.8675 37.8378 18.6994C40.6126 20.299 42 22.3465 42 24.8419C42 27.2733 41.2432 29.2569 39.7297 30.7925C38.2793 32.2642 36.2613 33 33.6757 33C31.0901 33 28.9144 32.0082 27.1486 30.0247C25.4459 27.9772 24.5946 25.4818 24.5946 22.5385ZM0 22.5385C0 15.6921 2.11261 9.64547 6.33784 4.3987C9.55405 0.495613 12.2342 -0.68811 14.3784 0.84753C14.8198 1.16746 15.0405 1.67934 15.0405 2.38317C15.0405 3.66287 14.5676 4.91058 13.6216 6.12629C12.7387 7.34201 12.0135 8.33378 11.4459 9.1016C10.8784 9.86942 10.4054 10.7012 10.027 11.597C9.14414 13.3886 8.7027 15.5641 8.7027 18.1235C10.2162 17.6756 11.6982 17.8675 13.1486 18.6994C15.8604 20.299 17.2162 22.3465 17.2162 24.8419C17.2162 27.2733 16.491 29.2569 15.0405 30.7925C13.5901 32.2642 11.5721 33 8.98649 33C6.4009 33 4.25676 32.0082 2.55405 30.0247C0.851351 27.9772 0 25.4818 0 22.5385Z" fill="white" />
     </svg>
   );
@@ -225,7 +228,7 @@ function StoryArrow() {
 function CardLogo({ story, company, origin }: { story: FounderStory; company: string; origin: "left bottom" | "right bottom"; }) {
   if (!story.logo) {
     return (
-      <span className="whitespace-nowrap font-['Poppins',_sans-serif] font-semibold uppercase text-white max-md:!text-[18px]" style={{ fontSize: "min(1.85vw, 2.86vh)", lineHeight: "155%" }}>
+      <span className="whitespace-nowrap font-['Poppins',_sans-serif] font-semibold uppercase text-white max-md:!text-[20px]" style={{ fontSize: "min(1.85vw, 2.86vh)", lineHeight: "155%" }}>
         {company}
       </span>
     );
@@ -234,11 +237,11 @@ function CardLogo({ story, company, origin }: { story: FounderStory; company: st
     <img
       src={cdnImageSrc(story.logo, 400)}
       alt={company}
-      className="object-contain"
+      className="object-contain max-md:!h-[36px]"
       style={{
-        height: "min(5.09vw, 7.88vh)", 
-        width: "auto", 
-        objectPosition: origin, 
+        height: "min(5.09vw, 7.88vh)",
+        width: "auto",
+        objectPosition: origin,
         filter: "brightness(0) invert(1)",
         transform: `scale(${story.logoScale ?? 1})`,
         transformOrigin: origin,
@@ -273,6 +276,29 @@ function StoryCard({ story }: { story: FounderStory }) {
       />
       <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(21, 21, 21, 0.00) 0%, rgba(21, 21, 21, 0.82) 82%)" }} aria-hidden />
 
+      {story.tag && (
+        <div
+          className="absolute left-0 z-20 flex items-center text-[#001A4D]"
+          style={{
+            top: "clamp(10px, min(1.2vw, 1.8vh), 18px)",
+            width: "clamp(100px, min(9.65vw, 14.2vh), 139px)",
+            height: "clamp(24px, min(2.29vw, 3.36vh), 33px)",
+            padding: "clamp(6px, min(0.7vw, 1vh), 10px)",
+            gap: "10px",
+            borderRadius: "0 70px 70px 0",
+            background: "#FFFFFF",
+            boxShadow: "0 4px 18.6px 0 rgba(0,0,0,0.18)",
+            fontSize: "clamp(8px, min(0.83vw, 1.22vh), 12px)",
+            fontFamily: "'Poppins', sans-serif",
+            fontWeight: 500,
+            lineHeight: "150%",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {story.tag}
+        </div>
+      )}
+
       <motion.div
         className="absolute z-10"
         style={{ top: "min(1.85vw, 2.86vh)", right: "min(1.85vw, 2.86vh)" }}
@@ -284,7 +310,7 @@ function StoryCard({ story }: { story: FounderStory }) {
       </motion.div>
 
       <motion.div
-        className="pointer-events-none absolute z-10"
+        className="pointer-events-none absolute z-10 max-md:!left-[16px] max-md:!bottom-[-4px] max-md:![transform:none]"
         style={{ left: "min(1.85vw, 2.86vh)", bottom: 0, transform: "translateY(25px)" }}
         initial={false}
         animate={{ opacity: hovered ? 0 : 1 }}
@@ -302,7 +328,7 @@ function StoryCard({ story }: { story: FounderStory }) {
       >
         <CardLogo story={story} company={company} origin="left bottom" />
         
-        <div style={{ paddingTop: 0, marginTop: "-28px" }}>
+        <div className="max-md:!mt-[4px]" style={{ paddingTop: 0, marginTop: "-28px" }}>
           <QuoteMarkIcon />
           <p
             className="m-0 font-['Poppins',_sans-serif] font-medium text-white max-md:!text-[14px]"
@@ -533,13 +559,13 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
         style={{
           position: "sticky",
           top: 0,
-          height: "100vh",
+          height: "50vh",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           borderRadius: "min(6.66vw, 10.30vh)",
-          paddingTop: "min(4.63vw, 7.16vh)",
-          paddingBottom: "min(4.63vw, 7.16vh)",
+          paddingTop: "min(2vw, 3vh)",
+          paddingBottom: "min(2vw, 3vh)",
           paddingLeft: "var(--section-px-wide)",
           paddingRight: "var(--section-px-wide)",
           zIndex: 1,
@@ -555,7 +581,6 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
             visible: { transition: { staggerChildren: 0.12, delayChildren: 0.15 } },
           }}
         >
-          {/* IMPACT HEADING MARGIN FIXED: Same clamp(32px,6dvh,48px) spacing below heading */}
           <motion.h2
             variants={{
               hidden: { opacity: 0, y: 30 },
@@ -565,17 +590,16 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
             style={{
               fontSize: "min(4.51vw, 6.98vh)",
               lineHeight: "150%",
-              marginBottom: "min(5.5vw, 10.5vh)",
+              marginBottom: "min(2.5vw, 4vh)",
             }}
           >
             {`${impactHeadingFirst} ${impactHeadingSecond}`}
           </motion.h2>
 
           <div
-            className="grid max-md:!grid-cols-2 max-md:!gap-x-[24px] max-md:!gap-y-[70px] max-md:!w-full max-md:!pl-[24px] max-md:!pr-[16px] max-md:!justify-items-start"
+            className="grid w-full max-md:!grid-cols-2 max-md:!gap-x-[24px] max-md:!gap-y-[70px] max-md:!pl-[24px] max-md:!pr-[16px] max-md:!justify-items-start"
             style={{
-              gridTemplateColumns: "repeat(3, 1fr)",
-              maxWidth: "85%",
+              gridTemplateColumns: "repeat(5, 1fr)",
               paddingLeft: IMPACT_CELL_PADDING,
               paddingRight: IMPACT_CELL_PADDING,
               columnGap: IMPACT_COL_GAP,
@@ -588,8 +612,6 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
           </div>
         </motion.div>
       </section>
-
-      <div aria-hidden className="h-[50vh] w-full max-md:hidden" />
 
       <StoriesSection
         storiesHeadingFirst={storiesHeadingFirst}

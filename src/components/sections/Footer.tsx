@@ -210,7 +210,7 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
           maxWidth: "241px",
           gap: "clamp(6px, 1.6vw, 10px)",
           padding: "8px",
-          borderRadius: "6px",
+          borderRadius: "2px",
           background: "#FBF7F0",
         }}
       >
@@ -218,7 +218,7 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
           className="m-0 font-poppins font-normal text-[#0E0E0E]"
           style={{ fontSize: "clamp(8px, 1.8vw, 11px)", lineHeight: "140%" }}
         >
-          Stay close to what founders are building and where markets are moving - with Titan Capital.
+          Stay close to what founders are building and where markets are moving, with Titan Capital.
         </p>
         <div className="flex w-full flex-row items-center" style={{ gap: "4px" }}>
           <input
@@ -299,7 +299,7 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
         columnGap: "clamp(10px, min(1.11vw, 1.63vh), 16px)",
         gridTemplateRows: "repeat(2, minmax(0, 1fr))",
         gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-        borderRadius: "12px",
+        borderRadius: "2px",
         background: "#FBF7F0",
       }}
     >
@@ -313,7 +313,7 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
           lineHeight: "150%",
         }}
       >
-        Stay close to what founders are building and where markets are moving - with Titan Capital.
+        Stay close to what founders are building and where markets are moving, with Titan Capital.
       </p>
 
       {/* Email input — row 2, col 1. Wrapper holds the error/success message

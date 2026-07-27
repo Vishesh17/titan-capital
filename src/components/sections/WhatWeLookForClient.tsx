@@ -133,7 +133,7 @@ export default function WhatWeLookForClient({
 
   return (
     <section
-      className="relative flex w-full flex-col items-center justify-center overflow-hidden bg-[#FBF7F0]"
+      className="relative flex w-full flex-col items-center justify-center overflow-hidden bg-[white]"
       style={{
         paddingTop: "clamp(60px, min(8vw, 10vh), 120px)",
         paddingBottom: "clamp(60px, min(8vw, 10vh), 120px)",
@@ -152,7 +152,8 @@ export default function WhatWeLookForClient({
           className="mb-[clamp(40px,6vw,80px)] flex w-full flex-col items-center justify-center text-center"
         >
           <motion.h2
-            className="m-0 font-['Poppins',_sans-serif] text-[clamp(32px,4vw,56px)] font-normal capitalize leading-[120%] text-[#000]"
+            className="m-0 font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
+            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
             variants={fadeUp}
           >
             {headingFirst} {headingSecond}
@@ -169,7 +170,7 @@ export default function WhatWeLookForClient({
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, amount: 0.2 }}
-              className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-[#000]/20 -translate-x-1/2"
+              className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-[black] -translate-x-1/2"
               style={{ transformOrigin: "top" }}
               variants={{
                 hidden: { scaleY: 0 },
@@ -182,7 +183,7 @@ export default function WhatWeLookForClient({
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, amount: 0.2 }}
-              className="absolute top-1/2 left-0 w-[calc(50%-clamp(16px,2vw,32px))] h-[1px] bg-[#000]/20 -translate-y-1/2"
+              className="absolute top-1/2 left-0 w-[calc(50%-clamp(16px,2vw,32px))] h-[1px] bg-[black] -translate-y-1/2"
               style={{ transformOrigin: "right" }}
               variants={{
                 hidden: { scaleX: 0 },
@@ -195,7 +196,7 @@ export default function WhatWeLookForClient({
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, amount: 0.2 }}
-              className="absolute top-1/2 right-0 w-[calc(50%-clamp(16px,2vw,32px))] h-[1px] bg-[#000]/20 -translate-y-1/2"
+              className="absolute top-1/2 right-0 w-[calc(50%-clamp(16px,2vw,32px))] h-[1px] bg-[black] -translate-y-1/2"
               style={{ transformOrigin: "left" }}
               variants={{
                 hidden: { scaleX: 0 },
@@ -234,7 +235,7 @@ export default function WhatWeLookForClient({
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true, amount: 0.8 }}
-                    className="w-full h-[1px] bg-[#000]/20"
+                    className="w-full h-[1px] bg-[#000]"
                     style={{ transformOrigin: "left" }}
                     variants={{
                       hidden: { scaleX: 0 },

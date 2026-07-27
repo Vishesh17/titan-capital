@@ -25,7 +25,6 @@ interface Company {
   status: string;
   tags: string;
   investmentStage: string;
-  fundType: string;
   logo: string;
   founderImage: string;
   isRecent: boolean;
@@ -37,7 +36,6 @@ interface Filters {
   status: string[];
   tags: string[];
   investmentStage: string[];
-  fundType: string[];
 }
 
 interface APIResponse {
@@ -46,13 +44,12 @@ interface APIResponse {
 }
 
 const FILTER_CONFIG = [
-  { key: "fundType" as const, label: "Fund Type" },
   { key: "investmentStage" as const, label: "Stage" },
   { key: "sector" as const, label: "Sector" },
   { key: "status" as const, label: "Status" },
 ];
 
-type FilterKey = "fundType" | "investmentStage" | "sector" | "year" | "status";
+type FilterKey = "investmentStage" | "sector" | "year" | "status";
 
 /* ═══════════════════════════════════════════════════════
    Sidebar Filter Section
@@ -337,7 +334,6 @@ export default function PortfolioGrid() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<Record<FilterKey, Set<string>>>({
-    fundType: new Set(),
     investmentStage: new Set(),
     sector: new Set(),
     year: new Set(),
@@ -384,7 +380,6 @@ export default function PortfolioGrid() {
   const clearAll = useCallback(() => {
     setSearchQuery("");
     setActiveFilters({
-      fundType: new Set(),
       investmentStage: new Set(),
       sector: new Set(),
       year: new Set(),
@@ -394,7 +389,6 @@ export default function PortfolioGrid() {
 
   const filterOptions = useMemo((): Record<FilterKey, string[]> => {
     return {
-      fundType: data?.filters.fundType ?? [],
       investmentStage: data?.filters.investmentStage ?? [],
       sector: data?.filters.sector ?? [],
       year: data?.filters.year ?? [],
@@ -410,11 +404,6 @@ export default function PortfolioGrid() {
         const q = searchQuery.trim().toLowerCase();
         if (!c.brandName.toLowerCase().includes(q)) return false;
       }
-      if (
-        activeFilters.fundType.size > 0 &&
-        !activeFilters.fundType.has(c.fundType)
-      )
-        return false;
       if (
         activeFilters.investmentStage.size > 0 &&
         !activeFilters.investmentStage.has(c.investmentStage)
@@ -447,7 +436,8 @@ export default function PortfolioGrid() {
   return (
     <section
       ref={sectionRef}
-      className="relative flex w-full flex-col items-center overflow-hidden bg-[#FBF7F0]"
+      // REMOVED overflow-hidden, ADDED overflow-x-clip if needed for animations
+      className="relative flex w-full flex-col items-center overflow-x-clip bg-[#FBF7F0]"
       style={{
         paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
         paddingBottom: "clamp(60px, min(8vw, 12vh), 120px)",
@@ -459,7 +449,7 @@ export default function PortfolioGrid() {
         
         {/* ── LEFT SIDEBAR FILTERS ── */}
         <div 
-          className="w-full lg:w-[280px] shrink-0 flex flex-col items-start lg:sticky lg:top-[calc(var(--nav-height)+20px)]"
+          className="w-full lg:w-[280px] shrink-0 flex flex-col items-start lg:sticky lg:top-[calc(var(--nav-height,80px)+20px)] lg:max-h-[calc(100vh-100px)] lg:overflow-y-auto"
           style={{ paddingRight: "clamp(12px, 1.5vw, 20px)" }}
         >
           <div className="flex w-full items-center justify-between pb-4 border-b border-[#000]/10">
@@ -496,8 +486,10 @@ export default function PortfolioGrid() {
         >
           
           {/* SEARCH BAR */}
-          <div className="w-full flex mb-[clamp(24px,3vw,40px)]">
-            <div className="relative flex items-center w-full bg-white rounded-full p-1.5 pl-6 shadow-sm border border-[#000]/5">
+          {/* CHANGED: Removed max-w and justify-end. Added pl-[6px] to nudge it slightly away from the line */}
+          <div className="w-full flex mb-[clamp(24px,3vw,40px)] sticky top-[calc(var(--nav-height,80px)+20px)] z-20 pl-[6px]">
+            
+            <div className="relative flex items-center w-full bg-white rounded-full p-1.5 pl-6 shadow-md border border-[#000]/5">
               <svg
                 width="20"
                 height="20"

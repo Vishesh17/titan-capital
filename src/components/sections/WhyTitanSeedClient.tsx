@@ -182,7 +182,7 @@ export default function WhyTitanSeedClient({
         style={{
           top: "var(--nav-height)",
           paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
-          paddingBottom: "clamp(20px, 3vw, 32px)",
+          paddingBottom: "clamp(48px, min(6vw, 8vh), 80px)",
           backgroundColor: "#FBF7F0",
         }}
         initial="hidden"
@@ -190,8 +190,8 @@ export default function WhyTitanSeedClient({
         viewport={{ once: true, amount: 0.5 }}
       >
         <motion.h2
-          className="m-0 max-w-[794px] font-['Poppins',_sans-serif] font-normal capitalize text-[#000] max-md:!text-[32px] max-md:!leading-[120%]"
-          style={{ fontSize: "clamp(32px, 4vw, 56px)", lineHeight: "120%" }}
+          className="m-0 max-w-[794px] font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
+          style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
           custom={0}
           variants={fadeUp}
         >
@@ -199,7 +199,7 @@ export default function WhyTitanSeedClient({
         </motion.h2>
 
         <motion.p
-          className="mt-[clamp(16px,min(2vw,3vh),24px)] max-w-[800px] font-['Poppins',_sans-serif] font-normal text-[#323232] max-md:!text-[16px] max-md:!leading-[140%]"
+          className="mt-[clamp(28px,min(3vw,4.5vh),44px)] max-w-[800px] font-['Poppins',_sans-serif] font-normal text-[#323232] max-md:!text-[16px] max-md:!leading-[140%]"
           style={{ fontSize: "clamp(16px, 1.5vw, 22px)", lineHeight: "150%" }}
           custom={0.2}
           variants={fadeUp}
@@ -247,7 +247,7 @@ export default function WhyTitanSeedClient({
         >
           {/* Animated Vertical Line */}
           <motion.div
-            className="absolute left-0 top-0 bottom-0 w-[1px] bg-[#000]/20"
+            className="absolute left-0 top-0 bottom-0 w-[1px] bg-[#000]"
             style={{ transformOrigin: "top" }}
             initial={{ scaleY: 0 }}
             whileInView={{ scaleY: 1 }}
@@ -259,7 +259,7 @@ export default function WhyTitanSeedClient({
           {cardsData.map((card, idx) => (
             <motion.div
               key={idx}
-              className="relative w-full flex flex-col justify-center border-t border-[#000]/20"
+              className="relative w-full flex flex-col justify-center border-t border-[#000]"
               style={{
                 paddingTop: "clamp(36px, 6vw, 72px)",
                 paddingBottom: "clamp(36px, 6vw, 72px)",

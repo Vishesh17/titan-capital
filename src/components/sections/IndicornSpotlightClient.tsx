@@ -126,7 +126,7 @@ export interface IndicornSpotlightData {
 const FALLBACK_LOGOS: IndicornLogo[] = [
   { src: "/images/logos/ofbusiness_white.svg",          alt: "OfBusiness",  mode: "white",       scale: 1.0 },
   { src: "/images/logos/Razorpay.webp",                 alt: "Razorpay",    mode: "opaqueBg",    scale: 1.9 },
-  { src: "/images/portfolio_grid/unicommerce-logo.png", alt: "Unicommerce", mode: "transparent", scale: 1.0 },
+  { src: "/images/portfolio_grid/unicommerce-logo.png", alt: "Unicommerce", mode: "transparent", scale: 2.5 },
   { src: "/images/logos/Credgenics.svg",                alt: "Credgenics",  mode: "transparent", scale: 1.0 },
 ];
 
@@ -339,7 +339,7 @@ export default function IndicornSpotlightClient({
                 {rotatingLogosLabel}
               </span>
               <div
-                className="relative overflow-hidden max-md:!w-[clamp(90px,20vw,120px)] max-md:!h-[24px]"
+                className="relative max-md:!w-[clamp(90px,20vw,120px)] max-md:!h-[24px]"
                 style={{ width: "min(6.94vw, 10.74vh)", height: "min(2.08vw, 3.22vh)" }}
               >
                 {indicornLogos.map((logo, i) => {

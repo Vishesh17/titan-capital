@@ -61,7 +61,7 @@ const FALLBACK_FUNDS: FundInfo[] = [
 function FundCard({ info }: { info: FundInfo }) {
   return (
     <div
-      className="flex w-full flex-col bg-white"
+      className="flex w-full flex-col bg-[white]"
       style={{
         borderRadius: "clamp(6px, 0.8vw, 10px)",
         boxShadow: "12px 12px 24px -8px rgba(207, 207, 207, 0.25)",
@@ -278,7 +278,7 @@ export default function FundDetailsClient({
 
   return (
     <section
-      className="relative flex w-full flex-col items-center overflow-hidden bg-white"
+      className="relative flex w-full flex-col items-center overflow-hidden bg-[#FBF7F0]"
       style={{
         paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
         paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
@@ -286,33 +286,61 @@ export default function FundDetailsClient({
         paddingRight: "var(--section-px-wide)",
       }}
     >
-      <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col">
         
-        {/* ── TOP ANIMATED HORIZONTAL LINE ── */}
-        <motion.div
-          className="w-full h-[1px] bg-[#000]/20"
-          style={{ transformOrigin: "center" }}
-          initial={{ scaleX: 0 }}
-          whileInView={{ scaleX: 1 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 1.2, ease: "easeInOut" }}
-        />
-
-        {/* ── HEADING ── */}
-        <motion.div
-          className="py-[clamp(24px,3.5vw,48px)] flex flex-col items-center text-center"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        >
-          <h2
-            className="m-0 font-['Poppins',_sans-serif] font-normal capitalize text-[#000] max-md:!text-[32px] max-md:!leading-[120%]"
-            style={{ fontSize: "clamp(32px, 4vw, 56px)", lineHeight: "120%" }}
+        {/* ── HEADING AND TOGGLE ROW ── */}
+        <div className="flex w-full items-center justify-between py-[clamp(24px,3.5vw,48px)]">
+          {/* ── HEADING (LEFT ALIGNED) ── */}
+          <motion.div
+            className="flex flex-col items-start text-left"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            {headingFirst} {headingSecond}
-          </h2>
-        </motion.div>
+            <h2
+              className="m-0 font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
+              style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
+            >
+              {headingFirst} {headingSecond}
+            </h2>
+          </motion.div>
+
+          {/* ── TOGGLE BUTTON WITH SVG ARROW (RIGHT ALIGNED) ── */}
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="shrink-0 border-none bg-transparent cursor-pointer p-0 focus:outline-none ml-4"
+            aria-label={isExpanded ? "Collapse Fund Details" : "Expand Fund Details"}
+          >
+            <motion.div
+              className="relative flex items-center justify-center rounded-full"
+              style={{
+                width: "clamp(48px, 6vw, 84px)",
+                height: "clamp(48px, 6vw, 84px)",
+                backgroundColor: "#FBF7F0",
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <motion.svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-[clamp(20px,2vw,28px)] h-[clamp(20px,2vw,28px)]"
+                viewBox="0 0 24 24"
+                fill="none"
+                animate={{ rotate: isExpanded ? 180 : 0 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+              >
+                <path
+                  d="M6 9L12 15L18 9"
+                  stroke="black"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </motion.svg>
+            </motion.div>
+          </button>
+        </div>
 
         {/* ── EXPANDABLE CONTENT SECTION ── */}
         <AnimatePresence>
@@ -337,51 +365,6 @@ export default function FundDetailsClient({
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* ── BOTTOM ANIMATED HORIZONTAL LINE ── */}
-        <motion.div
-          className="w-full h-[1px] bg-[#000]/20"
-          style={{ transformOrigin: "center" }}
-          initial={{ scaleX: 0 }}
-          whileInView={{ scaleX: 1 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 1.2, ease: "easeInOut" }}
-        />
-
-        {/* ── TOGGLE BUTTON WITH SVG ARROW ── */}
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="mt-[clamp(20px,3vw,40px)] border-none bg-transparent cursor-pointer p-0 focus:outline-none"
-          aria-label={isExpanded ? "Collapse Fund Details" : "Expand Fund Details"}
-        >
-          <motion.div
-            className="relative flex items-center justify-center rounded-full"
-            style={{
-              width: "clamp(56px, 6vw, 84px)",
-              height: "clamp(56px, 6vw, 84px)",
-              backgroundColor: "#FBF7F0",
-            }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <motion.svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-[clamp(20px,2vw,28px)] h-[clamp(20px,2vw,28px)]"
-              viewBox="0 0 24 24"
-              fill="none"
-              animate={{ rotate: isExpanded ? 180 : 0 }}
-              transition={{ duration: 0.4, ease: "easeInOut" }}
-            >
-              <path
-                d="M6 9L12 15L18 9"
-                stroke="black"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </motion.svg>
-          </motion.div>
-        </button>
 
       </div>
     </section>

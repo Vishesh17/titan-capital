@@ -8,7 +8,6 @@ import {
   AnimatePresence,
   useTransform,
   useMotionValue,
-  useMotionTemplate,
   animate,
   useSpring,
   useInView,
@@ -54,7 +53,7 @@ const FALLBACK_FOUNDERS: HeroFounder[] = [
   { name: "Varun Khaitan",       role: "Co-Founder, Urban Company",     image: "/images/herosection/Asish Mohapatra 1.png", scaleFactor: 0.9, positionX: -13, positionY: 20, squareScaleFactor: 0.9, squarePositionX: 0, squarePositionY: 7 },
   { name: "Ishendra Agarwal",    role: "Co-Founder, GIVA",              image: "/images/herosection/image 177.png", scaleFactor: 1.3, positionX: -8, positionY: 40, squareScaleFactor: 1.2, squarePositionX: -2, squarePositionY: 18 },
   { name: "Anand Agrawal",       role: "Co-Founder, Credgenics",        image: "/images/herosection/Rishabh 2.png", scaleFactor: 1, positionX: 10, positionY: 0, squareScaleFactor: 0.9, squarePositionX: 2, squarePositionY: 6 },
-  { name: "Ruchi Kalra",         role: "Co-Founder, Ofbusiness",        image: "/images/herosection/Aarti Gill 2.png", scaleFactor: 1.2, positionX: -20, positionY: 14, squareScaleFactor: 1, squarePositionX: -13, squarePositionY: 8 },
+  { name: "Ruchi Kalra",         role: "Co-Founder, Ofbusiness",        image: "/images/hero_founders_images/ruchi-kalra.png", scaleFactor: 1.2, positionX: 0, positionY: 14, squareScaleFactor: 1, squarePositionX: 0, squarePositionY: 8 },
 ];
 
 const FALLBACK_SUBTITLE =
@@ -70,7 +69,7 @@ function heroImageSrc(url: string, width: number): string {
 /* ─────────────────────────────────────────────────────────
    Shared Styles & Dimensions
    ───────────────────────────────────────────────────────── */
-const CARD_BG = "white";
+const CARD_BG = "#FBF7F0";
 const IMG_STYLE: React.CSSProperties = {
   objectFit: "cover",
   objectPosition: "top center",
@@ -246,24 +245,24 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   useEffect(() => {
     if (stage !== "slideshow" || !ready) return;
     let count = 0;
-    const totalTicks = slideshowFounders.length * 2;
+    const totalTicks = slideshowFounders.length;
     const id = setInterval(() => {
       count += 1;
       if (count >= totalTicks) {
         setSlideIndex(0);
         clearInterval(id);
-        setTimeout(() => setStage("animate"), 300);
+        setTimeout(() => setStage("animate"), 150);
       } else {
         setSlideIndex(count % slideshowFounders.length);
       }
-    }, 200);
+    }, 130);
     return () => clearInterval(id);
   }, [stage, ready, slideshowFounders.length]);
 
   useEffect(() => {
     if (stage !== "animate") return;
     const controls = animate(progress, 1, {
-      duration: 5.5,
+      duration: 4.5,
       ease: "linear",
     });
     return () => controls.stop();
@@ -322,17 +321,12 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     };
   }, []);
 
-  const subtitleBottomOpacity = useTransform(
-    progress,
-    [0.18, 0.24, 0.78, 0.84],
-    [1, 0, 0, 1]
-  );
-
-  const headingOpacity = useTransform(progress, [0.72, 0.80], [0, 1]);
+  const headingOpacity = useTransform(progress, [0.50, 0.58], [0, 1]);
 
   const [headingReady, setHeadingReady] = useState(false);
+  const [uiReady, setUiReady] = useState(false);
   const [headingTick, setHeadingTick] = useState(0);
-  
+
   const logoFounder = founders.find(f => f.isLogo);
   const nonLogoFounders = founders.filter(f => !f.isLogo);
   const headingFounder = logoFounder
@@ -340,10 +334,21 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     : nonLogoFounders[headingTick % nonLogoFounders.length];
 
   useEffect(() => {
+    if (ready) document.body.classList.add("hero-hide-nav");
+  }, [ready]);
+
+  useEffect(() => {
+    if (!headingReady) return;
+    const timer = setTimeout(() => {
+      setUiReady(true);
+      document.body.classList.remove("hero-hide-nav");
+    }, 3200);
+    return () => clearTimeout(timer);
+  }, [headingReady]);
+
+  useEffect(() => {
     const unsub = progress.on("change", (v) => {
-      if (v >= 0.80 && !headingReady) setHeadingReady(true);
-      const hideNav = v >= 0.28 && v < 0.75;
-      document.body.classList.toggle("hero-hide-nav", hideNav);
+      if (v >= 0.56 && !headingReady) setHeadingReady(true);
     });
     return () => {
       unsub();
@@ -355,7 +360,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
   useEffect(() => {
     if (!headingReady || !heroInView) return;
-    const delay = headingTick === 0 ? 4000 : 2600;
+    const delay = headingTick === 0 ? 4500 : 1500;
     const timer = setTimeout(() => {
       setHeadingTick((t) => t + 1);
     }, delay);
@@ -371,8 +376,11 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
         <HeroGlow />
 
         <motion.p
-          style={{ opacity: subtitleBottomOpacity, maxWidth: "min(52vw, 900px)" }}
-          className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 text-center font-['Poppins',_sans-serif] text-[min(1.62vw,2.51vh)] font-normal leading-[145%] text-white/90 max-md:!bottom-[clamp(16px,4dvh,32px)] max-md:!text-[clamp(11px,3vw,14px)] max-md:!w-[75vw] max-md:!max-w-[75vw]"
+          style={{ maxWidth: "min(52vw, 900px)" }}
+          className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 text-center font-['Poppins',_sans-serif] text-[min(1.62vw,2.51vh)] font-normal leading-[145%] text-white/90 max-md:!bottom-[clamp(48px,12dvh,80px)] max-md:!text-[clamp(11px,3vw,14px)] max-md:!w-[75vw] max-md:!max-w-[75vw]"
+          initial={{ opacity: 1 }}
+          animate={{ opacity: uiReady ? 1 : stage === "animate" ? 0 : 1 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
           {subtitle}
         </motion.p>
@@ -444,7 +452,6 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 heroIndex={heroIndex}
                 progress={progress}
                 dims={dims}
-                slot={slot}
               />
             ))}
           </div>
@@ -458,9 +465,9 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
             
             <h1
               className="pointer-events-none m-0 hidden md:flex flex-col items-start text-left font-['Poppins',_sans-serif] font-black uppercase leading-[86%] text-white"
-              style={{ fontSize: "min(10.4vw, 16.0vh)" }}
+              style={{ fontSize: "min(9.88vw, 15.2vh)" }}
             >
-              <RevealLine show={headingReady} delay={0}>Backing Founder</RevealLine>
+              <RevealLine show={headingReady} delay={0}>Backing Founders</RevealLine>
               <span
                 className="flex items-stretch"
                 style={{ gap: "min(0.8vw, 1.4vh)", marginTop: "min(0.2vw, 0.4vh)" }}
@@ -488,15 +495,15 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
             <h1
               className="pointer-events-none m-0 flex md:hidden flex-col items-start text-left font-['Poppins',_sans-serif] font-black uppercase text-white"
-              style={{ fontSize: "clamp(36px, 12vw, 50px)", lineHeight: "110%" }}
+              style={{ fontSize: "clamp(36px, 12vw, 50px)", lineHeight: "96%" }}
             >
               <RevealLine show={headingReady} delay={0}>Backing</RevealLine>
               <RevealLine show={headingReady} delay={0.3}>Founder</RevealLine>
               <RevealLine show={headingReady} delay={0.6}>For</RevealLine>
               
               <span
-                className="relative inline-block shrink-0 overflow-hidden my-[clamp(8px,2dvh,16px)]"
-                style={{ width: "min(70vw, 300px)", height: "min(52.5vw, 225px)", borderRadius: "4px" }}
+                className="relative inline-block shrink-0 overflow-hidden my-[clamp(4px,1dvh,8px)]"
+                style={{ width: "min(70vw, 300px)", height: "min(54vw, 231px)", borderRadius: "4px" }}
                 ref={mobileSlotRef}
               >
                 <HeadingPhoto founder={headingFounder} tick={headingTick} show={headingReady} />
@@ -506,7 +513,12 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
               <RevealLine show={headingReady} delay={1.2}>Impact</RevealLine>
             </h1>
 
-            <div className="absolute left-1/2 top-full flex -translate-x-1/2 flex-col items-center mt-[min(4.63vw,7.16vh)] max-md:!static max-md:!translate-x-0 max-md:!mt-[clamp(16px,4dvh,32px)] max-md:!items-center max-md:!w-full">
+            <motion.div
+              className="absolute left-1/2 top-full flex -translate-x-1/2 flex-col items-center mt-[min(4.63vw,7.16vh)] max-md:!static max-md:!translate-x-0 max-md:!mt-[clamp(8px,2dvh,16px)] max-md:!items-center max-md:!w-full"
+              initial={{ opacity: 0, y: 12 }}
+              animate={uiReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            >
               <div
                 className="pointer-events-auto flex items-center justify-center gap-[min(2.31vw,3.58vh)] max-md:!gap-[clamp(12px,4vw,24px)]"
               >
@@ -520,7 +532,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 </Link>
                 <CursorFillButton href="/getinvestment" label="Get Investment" />
               </div>
-            </div>
+            </motion.div>
 
           </div>
         </motion.div>
@@ -589,16 +601,21 @@ function HeadingPhoto({
   const imageOffsetX = founder.positionX ?? 0;
   const imageOffsetY = founder.positionY ?? 0;
   
+  const isFirst = tick === 0;
+
   return (
     <AnimatePresence>
       <motion.div
         key={tick}
         className="absolute inset-0 flex items-center justify-center"
         style={{ zIndex: tick, background: CARD_BG }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: show ? 1 : 0 }}
+        initial={isFirst ? { opacity: 0, x: "-100%" } : { opacity: 0 }}
+        animate={show ? (isFirst ? { opacity: 1, x: "0%" } : { opacity: 1 }) : { opacity: 0 }}
         exit={{ opacity: 1 }}
-        transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
+        transition={isFirst
+          ? { duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 1.8 }
+          : { duration: 1.0, ease: [0.22, 1, 0.36, 1] }
+        }
       >
         <div
           className="absolute inset-0"
@@ -690,7 +707,6 @@ function FounderCard({
   heroIndex,
   progress,
   dims,
-  slot,
 }: {
   founder: HeroFounder;
   index: number;
@@ -698,10 +714,7 @@ function FounderCard({
   heroIndex: number;
   progress: MotionValue<number>;
   dims: Dims;
-  slot: Slot;
 }) {
-  const isHero = index === heroIndex;
-
   const cappenEase = cubicBezier(0.76, 0, 0.24, 1);
   const linear = (t: number) => t;
 
@@ -714,67 +727,33 @@ function FounderCard({
 
   const dealStart = 0.03 + stagger;
   const dealEnd = 0.15 + stagger;
-  const openStart = 0.28 + invertedStagger; 
-  const openEnd = 0.50 + invertedStagger;
+  const openStart = 0.22 + invertedStagger;
+  const openEnd = 0.48 + invertedStagger;
 
-  const flightStart = 0.65;
-  const flightEnd = 0.82;
-
-  const xOffset = useTransform(progress, [flightStart, flightEnd], [0, isHero ? slot.cx : 0], { ease: cappenEase });
   const yOffset = useTransform(
     progress,
-    isHero
-      ? [dealStart, dealEnd, openStart, openEnd, flightStart, flightEnd]
-      : [dealStart, dealEnd, openStart, openEnd],
-    isHero
-      ? [0, deckY, deckY, stripY, stripY, slot.cy]
-      : [0, deckY, deckY, stripY],
-    isHero
-      ? { ease: [cappenEase, linear, cappenEase, linear, cappenEase] }
-      : { ease: [cappenEase, linear, cappenEase] }
+    [dealStart, dealEnd, openStart, openEnd],
+    [0, deckY, deckY, stripY],
+    { ease: [cappenEase, linear, cappenEase] }
   );
 
-  const translateX = useTransform(xOffset, (val) => `calc(-50% + ${val}px)`);
+  const translateX = useTransform(() => `calc(-50%)`);
   const translateY = useTransform(yOffset, (val) => `calc(-50% + ${val}px)`);
 
   const scale = useTransform(
     progress,
-    isHero
-      ? [dealStart, dealEnd, openStart, openEnd, flightStart, flightEnd]
-      : [dealStart, dealEnd, openStart, openEnd],
-    isHero
-      ? [1, deckScale, deckScale, 1, 1, 1]
-      : [1, deckScale, deckScale, 1],
-    isHero
-      ? { ease: [cappenEase, linear, cappenEase, linear, cappenEase] }
-      : { ease: [cappenEase, linear, cappenEase] }
+    [dealStart, dealEnd, openStart, openEnd],
+    [1, deckScale, deckScale, 1],
+    { ease: [cappenEase, linear, cappenEase] }
   );
 
-  const heroWidth = useTransform(
-    progress, 
-    [flightStart, flightEnd], 
-    [dims.cardW, slot.w], 
-    { ease: cappenEase }
-  );
-  const heroHeight = useTransform(
-    progress, 
-    [flightStart, flightEnd], 
-    [dims.cardH, slot.h], 
-    { ease: cappenEase }
-  );
-
-  const zIndex = useTransform(progress, (v) =>
-    isHero && v >= flightStart - 0.01 ? 60 : 40 - index
-  );
+  const zIndex = useTransform(() => 40 - index);
 
   const opacity = useTransform(
     progress,
-    isHero ? [0.82, 0.85] : [0.60, 0.68],
+    [0.50, 0.62],
     [1, 0]
   );
-
-  const grayscaleMV = useTransform(progress, [flightStart, flightEnd], [0.9, 0]);
-  const heroFilter = useMotionTemplate`grayscale(${grayscaleMV})`;
 
   return (
     <motion.div
@@ -784,16 +763,14 @@ function FounderCard({
         top: "50%",
         x: translateX,
         y: translateY,
-        width: isHero ? heroWidth : dims.cardW,
-        height: isHero ? heroHeight : dims.cardH,
+        width: dims.cardW,
+        height: dims.cardH,
         scale,
         opacity,
         zIndex,
         borderRadius: "2px",
-        filter: founder.isLogo ? "none" : isHero ? heroFilter : "grayscale(0.9)",
-        willChange: isHero
-          ? "transform, opacity, width, height, filter"
-          : "transform, opacity",
+        filter: founder.isLogo ? "none" : "grayscale(0.9)",
+        willChange: "transform, opacity",
       }}
     >
         <div

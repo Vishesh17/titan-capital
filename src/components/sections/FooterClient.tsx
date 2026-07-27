@@ -137,7 +137,7 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
           className="m-0 font-poppins font-normal text-[#0E0E0E]"
           style={{ fontSize: "clamp(8px, 1.8vw, 11px)", lineHeight: "140%" }}
         >
-          Stay close to what founders are building and where markets are moving - with Titan Capital.
+          Stay close to what founders are building and where markets are moving, with Titan Capital.
         </p>
         <div className="flex w-full flex-col" style={{ gap: "3px" }}>
           <input
@@ -201,7 +201,7 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
           style={{
             width: "clamp(100px, 28vw, 140px)",
             height: "clamp(24px, 6.5vw, 32px)",
-            borderRadius: "6px",
+            borderRadius: "2px",
             fontFamily: "'Libre Baskerville', serif",
             fontSize: "clamp(7px, 1.7vw, 10px)",
             fontWeight: 600,
@@ -250,7 +250,7 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
           lineHeight: "150%",
         }}
       >
-        Stay close to what founders are building and where markets are moving - with Titan Capital.
+        Stay close to what founders are building and where markets are moving, with Titan Capital.
       </p>
 
       {/* Email input — row 2, col 1. Wrapper holds the error/success message
@@ -342,7 +342,7 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
           height: "clamp(40px, min(3.68vw, 5.4vh), 53px)",
           padding: "10px",
           gap: "10px",
-          borderRadius: "9px",
+          borderRadius: "2px",
           fontFamily: "'Libre Baskerville', serif",
           fontSize: "clamp(11px, min(1.11vw, 1.63vh), 16px)",
           fontWeight: 600,

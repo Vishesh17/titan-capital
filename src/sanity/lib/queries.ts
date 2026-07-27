@@ -417,6 +417,7 @@ export const impactAtGlanceQuery = groq`
       role,
       text,
       logoScale,
+      tag,
       "image": image.asset->url,
       "logo": logo.asset->url
     }

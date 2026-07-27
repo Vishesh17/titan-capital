@@ -9,6 +9,8 @@ import {
   useMotionValue,
   useSpring,
   useTransform,
+  useInView,
+  type TargetAndTransition,
 } from "framer-motion";
 
 /*
@@ -581,73 +583,119 @@ function MobileFadingGrid() {
 }
 
 /* ═══════════════════════════════════════════════════════
+   RevealLine — per-character 3D flip animation
+   ═══════════════════════════════════════════════════════ */
+const CHAR_STAGGER = 0.035;
+function RevealLine({
+  children,
+  show,
+  delay = 0,
+}: {
+  children: string;
+  show: boolean;
+  delay?: number;
+}) {
+  const chars = children.split("");
+
+  return (
+    <span
+      className="inline-flex whitespace-nowrap"
+      aria-label={children}
+      style={{ perspective: "500px", transformStyle: "preserve-3d" }}
+    >
+      {chars.map((ch, i) => (
+        <motion.span
+          key={i}
+          aria-hidden
+          className="inline-flex"
+          style={{
+            transformOrigin: "center center",
+            backfaceVisibility: "hidden",
+            transformStyle: "preserve-3d",
+            willChange: "transform",
+            transform:
+              "translateZ(-0.85em) rotateX(var(--rotateX)) scaleY(var(--scaleY)) translateZ(0.85em)",
+          }}
+          initial={{
+            "--rotateX": "-90deg",
+            "--scaleY": 1.5,
+            opacity: 0,
+          } as TargetAndTransition}
+          animate={{
+            "--rotateX": show ? "0deg" : "-90deg",
+            "--scaleY": show ? 1 : 1.5,
+            opacity: show ? 1 : 0,
+          } as TargetAndTransition}
+          transition={{
+            duration: 1.1,
+            ease: [0.76, 0, 0.24, 1],
+            delay: delay + i * CHAR_STAGGER,
+          }}
+        >
+          <span style={{width: ch === " " ? "0.3em" : "auto"}}>{ch === " " ? " " : ch}</span>
+        </motion.span>
+      ))}
+    </span>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
    Main Component
    ═══════════════════════════════════════════════════════ */
 export default function BackedEarly() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const inView = useInView(sectionRef, { once: true, amount: 0.3 });
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    if (inView) setShow(true);
+  }, [inView]);
+
   return (
     <section
+      ref={sectionRef}
       className="relative flex w-full flex-col overflow-hidden max-md:overflow-x-hidden max-md:w-[100vw] max-md:ml-[calc(50%-50vw)] bg-[#00112E] min-h-[100svh]"
       style={{
-        // Padding top is calculated here to stretch behind the transparent nav bar without margin gaps.
         paddingTop: "calc(var(--nav-height) + clamp(20px, min(4vw, 6vh), 60px))",
         paddingBottom: "clamp(20px, min(4vw, 6vh), 60px)",
       }}
     >
       <style>{MARQUEE_CSS}</style>
-      
-      {/* ── BACKGROUND GLOWS & GRID ── */}
+
       <HeroGlow />
       <AnimatedGrid />
 
       <div className="relative z-10 flex w-full flex-1 flex-col items-center justify-between">
 
-        {/* ── TOP/CENTER: HEADING & SUBTITLE ── */}
         <div className="flex w-full flex-1 flex-col items-center justify-center mb-[clamp(32px,min(4vw,6vh),60px)]">
-          <motion.div
-            className="flex flex-col items-center"
-            style={{ paddingLeft: "var(--section-px-wide)", paddingRight: "var(--section-px-wide)" }}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.5 }}
-          >
-            <motion.h2
-              className="m-0 flex flex-col items-center justify-center font-['Poppins',_sans-serif] font-black uppercase text-white max-md:!text-[32px] text-center"
+          <div className="flex w-full flex-col items-center">
+            <h2
+              className="m-0 flex w-full flex-col items-center justify-center font-['Poppins',_sans-serif] font-black uppercase text-white max-md:!text-[32px] text-center"
               style={{
-                fontSize: "clamp(40px, 6vw, 96px)",
-                lineHeight: "105%",
-                letterSpacing: "-0.02em",
-              }}
-              variants={{
-                hidden: { opacity: 0, y: 30 },
-                visible: {
-                  opacity: 1,
-                  y: 0,
-                  transition: { duration: 0.8, ease: "easeOut" },
-                },
+                fontSize: "min(9.88vw, 15.2vh)",
+                lineHeight: "86%",
               }}
             >
-              <span>Backed Early</span>
-              <span>Built To Last</span>
-            </motion.h2>
+              <RevealLine show={show} delay={0}>Backed Early</RevealLine>
+              <RevealLine show={show} delay={0.5}>Built To Last</RevealLine>
+            </h2>
 
             <motion.p
               className="mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[800px] font-['Poppins',_sans-serif] font-normal leading-[1.6] text-white/90 text-center"
-              style={{ fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)" }}
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: {
-                  opacity: 1,
-                  y: 0,
-                  transition: { duration: 0.8, ease: "easeOut", delay: 0.2 },
-                },
+              style={{
+                fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)",
+                paddingLeft: "var(--section-px-wide)",
+                paddingRight: "var(--section-px-wide)",
               }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={show ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, ease: "easeOut", delay: 1.2 }}
             >
               We partner with entrepreneurs from day one. We invest conviction, not just capital, and stay by their side through every stage of their journey.
             </motion.p>
-          </motion.div>
+          </div>
         </div>
 
-        {/* ── BOTTOM: MARQUEE (DESKTOP) / GRID (MOBILE) ── */}
         <div className="w-full shrink-0">
           <CardMarquee />
           <MobileFadingGrid />
