@@ -34,11 +34,11 @@ export interface ImpactAtGlanceData {
 }
 
 const FALLBACK_IMPACT_DATA: ImpactStat[] = [
-  { num: "300+", label: "Startup Backed" },
+  { num: "300+", label: "Companies Backed" },
   { num: "7",    label: "Unicorns $1B+" },
   { num: "4",    label: "IPOs 2023-2026" },
-  { num: "15",   label: "Years Investing" },
-  { num: "40+",  label: "Values > $100M" },
+  { num: "250M+",   label: "Lives Impacted" },
+  { num: "30+",  label: "Values > $100M" },
 ];
 
 const FALLBACK_SLIDES: FounderStory[] = [
@@ -78,7 +78,7 @@ const STORY_GAP = "calc(var(--section-px-wide) * 0.4)";
 const BORDER_PADDING = "calc(var(--section-px-wide) * 0.2)";
 
 const IMPACT_CELL_PADDING = "calc(var(--section-px-wide) * 0.01)";
-const IMPACT_COL_GAP = "calc(var(--section-px-wide) * 1.4)";
+const IMPACT_COL_GAP = "calc(var(--section-px-wide) * 0.5)";
 const IMPACT_ROW_GAP = "calc(var(--section-px-wide) * 1.2)";
 
 function cdnImageSrc(url: string, width: number): string {
@@ -171,26 +171,25 @@ function ImpactStatCell({
       }}
     >
       <motion.div
-        className="shrink-0 bg-black max-md:!h-full max-md:!min-h-[80px]"
+        className="shrink-0 self-stretch bg-black max-md:!h-full max-md:!min-h-[80px]"
         style={{
           width: "1px",
-          height: "min(6.94vw, 10.74vh)",
           scaleY: lineScale,
           transformOrigin: "top",
         }}
       />
       <div className="flex flex-col items-start text-left justify-center">
         <span
-          className="font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[36px] max-md:!leading-[105%]"
-          style={{ fontSize: "min(3.47vw, 5.37vh)", lineHeight: "150%" }}
+          className="font-['Poppins',_sans-serif] font-medium capitalize text-black max-md:!text-[36px] max-md:!leading-[105%]"
+          style={{ fontSize: "min(6vw, 9.3vh)", lineHeight: "150%" }}
         >
           <RollingNumber value={stat.num} />
         </span>
         <span
           className="whitespace-nowrap font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[14px] max-md:!leading-[125%] max-md:!mt-[6px]"
           style={{
-            fontSize: "min(1.16vw, 1.79vh)",
-            lineHeight: "120%",
+            fontSize: "min(1.5vw, 2.3vh)",
+            lineHeight: "130%",
             marginTop: "min(0.58vw, 0.90vh)",
           }}
         >
@@ -547,10 +546,10 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress: impactProgress } = useScroll({
     target: wrapperRef,
-    offset: ["start 0.8", "start 0.2"],
+    offset: ["start end", "start 30%"],
   });
-  
-  const lineScale = useSpring(impactProgress, { stiffness: 60, damping: 20 });
+
+  const lineScale = useSpring(impactProgress, { stiffness: 80, damping: 25 });
 
   return (
     <div ref={wrapperRef} className="relative w-full bg-[#FBF7F0]">
@@ -561,10 +560,10 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
           top: 0,
           height: "50vh",
           display: "flex",
-          alignItems: "center",
+          alignItems: "flex-start",
           justifyContent: "center",
           borderRadius: "min(6.66vw, 10.30vh)",
-          paddingTop: "min(2vw, 3vh)",
+          paddingTop: "calc(var(--nav-height) + min(1vw, 1.5vh))",
           paddingBottom: "min(2vw, 3vh)",
           paddingLeft: "var(--section-px-wide)",
           paddingRight: "var(--section-px-wide)",
