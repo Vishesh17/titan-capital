@@ -46,14 +46,14 @@ export interface HeroData {
    Fallback data
    ───────────────────────────────────────────────────────── */
 const FALLBACK_FOUNDERS: HeroFounder[] = [
-  { name: "Abhiraj Singh Bhal",  role: "Co-Founder, Urban Company",     image: "/images/herosection/3. Varun Khaitan  1.png", scaleFactor: 1, positionX: 0, positionY: 10, squareScaleFactor: 0.9, squarePositionX: 0, squarePositionY: 7 },
-  { name: "Ashutosh Valani",     role: "Co-Founder, RENÉE Cosmetics",   image: "/images/herosection/4. Ghazal 1.png", scaleFactor: 1.3, positionX: 0, positionY: 5, squareScaleFactor: 0.9, squarePositionX: 0, squarePositionY: 7 },
-  { name: "Abhishek Bansal",     role: "Co-Founder, Shadowfax",         image: "/images/herosection/6. Ashtosh Valani 1.png", scaleFactor: 1, positionX: 0, positionY: 2, squareScaleFactor: 0.9, squarePositionX: 0, squarePositionY: 7 },
-  { name: "Titan Capital",       role: "",                              image: "/images/logos/titancapitallogo.svg",     isLogo: true, scaleFactor: 1, positionX: 0, positionY: 0, squareScaleFactor: 1, squarePositionX: 0, squarePositionY: 0 },
-  { name: "Varun Khaitan",       role: "Co-Founder, Urban Company",     image: "/images/herosection/Asish Mohapatra 1.png", scaleFactor: 0.9, positionX: -13, positionY: 20, squareScaleFactor: 0.9, squarePositionX: 0, squarePositionY: 7 },
-  { name: "Ishendra Agarwal",    role: "Co-Founder, GIVA",              image: "/images/herosection/image 177.png", scaleFactor: 1.3, positionX: -8, positionY: 40, squareScaleFactor: 1.2, squarePositionX: -2, squarePositionY: 18 },
-  { name: "Anand Agrawal",       role: "Co-Founder, Credgenics",        image: "/images/herosection/Rishabh 2.png", scaleFactor: 1, positionX: 10, positionY: 0, squareScaleFactor: 0.9, squarePositionX: 2, squarePositionY: 6 },
-  { name: "Ruchi Kalra",         role: "Co-Founder, Ofbusiness",        image: "/images/hero_founders_images/ruchi-kalra.png", scaleFactor: 1.2, positionX: 0, positionY: 14, squareScaleFactor: 1, squarePositionX: 0, squarePositionY: 8 },
+  { name: "Abhiraj Singh Bhal",  role: "Co-Founder, Urban Company",     image: "/images/hero_founders_images/15.png", scaleFactor: 1.5, positionX: 0, positionY: 0, squareScaleFactor: 1, squarePositionX: -3, squarePositionY: 0 },
+  { name: "Ashutosh Valani",     role: "Co-Founder, RENÉE Cosmetics",   image: "/images/hero_founders_images/12.png", scaleFactor: 1.5, positionX: 5, positionY: -5, squareScaleFactor: 1, squarePositionX: 0, squarePositionY: 0 },
+  { name: "Abhishek Bansal",     role: "Co-Founder, Shadowfax",         image: "/images/hero_founders_images/1.png", scaleFactor: 1.5, positionX: 0, positionY: -10, squareScaleFactor: 1, squarePositionX: 0, squarePositionY: 0 },
+  { name: "Titan Capital",       role: "",                              image: "/images/logos/titancapitallogo.svg",     isLogo: true, scaleFactor: 0.7, positionX: 0, positionY: 0, squareScaleFactor: 1, squarePositionX: 0, squarePositionY: 0 },
+  { name: "Varun Khaitan",       role: "Co-Founder, Urban Company",     image: "/images/hero_founders_images/5.png", scaleFactor: 1.5, positionX: 0, positionY: -5, squareScaleFactor: 1, squarePositionX: 0, squarePositionY: 0 },
+  { name: "Ishendra Agarwal",    role: "Co-Founder, GIVA",              image: "/images/hero_founders_images/7.png", scaleFactor: 1.5, positionX: 0, positionY: -12, squareScaleFactor: 1.2, squarePositionX: 0, squarePositionY: 0 },
+  { name: "Anand Agrawal",       role: "Co-Founder, Credgenics",        image: "/images/hero_founders_images/6.png", scaleFactor: 1.5, positionX: 0, positionY: -10, squareScaleFactor: 1, squarePositionX: 0, squarePositionY: 0 },
+  { name: "Ruchi Kalra",         role: "Co-Founder, Ofbusiness",        image: "/images/hero_founders_images/4.png", scaleFactor: 1.5, positionX: 0, positionY: -15, squareScaleFactor: 1, squarePositionX: 0, squarePositionY: 0 },
 ];
 
 const FALLBACK_SUBTITLE =
