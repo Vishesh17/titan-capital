@@ -275,28 +275,26 @@ function StoryCard({ story }: { story: FounderStory }) {
       />
       <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(21, 21, 21, 0.00) 0%, rgba(21, 21, 21, 0.82) 82%)" }} aria-hidden />
 
-      {story.tag && (
-        <div
-          className="absolute left-0 z-20 flex items-center text-[#001A4D]"
-          style={{
-            top: "clamp(10px, min(1.2vw, 1.8vh), 18px)",
-            width: "clamp(100px, min(9.65vw, 14.2vh), 139px)",
-            height: "clamp(24px, min(2.29vw, 3.36vh), 33px)",
-            padding: "clamp(6px, min(0.7vw, 1vh), 10px)",
-            gap: "10px",
-            borderRadius: "0 70px 70px 0",
-            background: "#FFFFFF",
-            boxShadow: "0 4px 18.6px 0 rgba(0,0,0,0.18)",
-            fontSize: "clamp(8px, min(0.83vw, 1.22vh), 12px)",
-            fontFamily: "'Poppins', sans-serif",
-            fontWeight: 500,
-            lineHeight: "150%",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {story.tag}
-        </div>
-      )}
+      <div
+        className="absolute left-0 z-20 flex items-center text-[#001A4D]"
+        style={{
+          top: "clamp(10px, min(1.2vw, 1.8vh), 18px)",
+          width: "clamp(70px, min(6.75vw, 9.95vh), 100px)",
+          height: "clamp(24px, min(2.29vw, 3.36vh), 33px)",
+          padding: "clamp(6px, min(0.7vw, 1vh), 10px)",
+          gap: "10px",
+          borderRadius: "0 70px 70px 0",
+          background: "#FFFFFF",
+          boxShadow: "0 4px 18.6px 0 rgba(0,0,0,0.18)",
+          fontSize: "clamp(8px, min(0.83vw, 1.22vh), 12px)",
+          fontFamily: "'Poppins', sans-serif",
+          fontWeight: 500,
+          lineHeight: "150%",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {story.tag || "Portfolio"}
+      </div>
 
       <motion.div
         className="absolute z-10"

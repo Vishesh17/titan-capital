@@ -280,8 +280,9 @@ export default function FundDetailsClient({
     <section
       className="relative flex w-full flex-col items-center overflow-hidden bg-[#FBF7F0]"
       style={{
-        paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
-        paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
+        // Reduced overall padding to make the section smaller
+        paddingTop: "clamp(20px, 3vw, 40px)",
+        paddingBottom: "clamp(20px, 3vw, 40px)",
         paddingLeft: "var(--section-px-wide)",
         paddingRight: "var(--section-px-wide)",
       }}
@@ -289,7 +290,7 @@ export default function FundDetailsClient({
       <div className="mx-auto flex w-full max-w-[1440px] flex-col">
         
         {/* ── HEADING AND TOGGLE ROW ── */}
-        <div className="flex w-full items-center justify-between py-[clamp(24px,3.5vw,48px)]">
+        <div className="flex w-full items-center justify-between py-[clamp(12px,1.5vw,24px)]">
           {/* ── HEADING (LEFT ALIGNED) ── */}
           <motion.div
             className="flex flex-col items-start text-left"
@@ -300,7 +301,8 @@ export default function FundDetailsClient({
           >
             <h2
               className="m-0 font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
-              style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
+              // Reduced line-height from 150% to 110% to eliminate fake whitespace
+              style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "110%" }}
             >
               {headingFirst} {headingSecond}
             </h2>
@@ -315,16 +317,17 @@ export default function FundDetailsClient({
             <motion.div
               className="relative flex items-center justify-center rounded-full"
               style={{
-                width: "clamp(48px, 6vw, 84px)",
-                height: "clamp(48px, 6vw, 84px)",
-                backgroundColor: "#FBF7F0",
+                // Shrunk max size of the button
+                width: "clamp(40px, 5vw, 56px)",
+                height: "clamp(40px, 5vw, 56px)",
+                backgroundColor: "white",
               }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <motion.svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="w-[clamp(20px,2vw,28px)] h-[clamp(20px,2vw,28px)]"
+                className="w-[clamp(18px,2vw,24px)] h-[clamp(18px,2vw,24px)]"
                 viewBox="0 0 24 24"
                 fill="none"
                 animate={{ rotate: isExpanded ? 180 : 0 }}
@@ -349,10 +352,14 @@ export default function FundDetailsClient({
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="w-full overflow-hidden mb-[clamp(24px,3.5vw,48px)]"
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              // Removed mb-[...] class from here to prevent snapping/glitching during exit animation
+              className="w-full overflow-hidden"
             >
-              <div className="flex w-full flex-col gap-[clamp(12px,1.5vw,20px)] pt-[8px]">
+              <div 
+                // Moved bottom spacing to pb-[...] here so it's handled inside the animated container
+                className="flex w-full flex-col gap-[clamp(12px,1.5vw,20px)] pt-[8px] pb-[clamp(16px,2vw,32px)]"
+              >
                 {funds.map((fund, idx) => (
                   <FundAccordionItem
                     key={idx}

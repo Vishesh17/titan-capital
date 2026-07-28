@@ -138,167 +138,174 @@ const FALLBACK_CARDS_DATA: WhyTitanSeedCard[] = [
     desc: "From the moment we invest, you're in 650+ founders, strategic partners, and the Titan entrepreneur network, all at your disposal.",
   },
   {
-    title: "Founders Helping Founders",
-    desc: "A strong founder community that shares what actually works; playbooks, templates, and hard-won lessons.",
-  },
-  {
     title: "Warm Introduction",
     desc: "Every introduction we make is personal. Our network picks up for you.",
+  },
+  {
+    title: "Founders Helping Founders",
+    desc: "A strong founder community that shares what actually works; playbooks, templates, and hard-won lessons.",
   },
   {
     title: "Follow-On Opportunity",
     desc: "For companies that break out, we show up again, through our Winners Fund.",
   },
 ];
-
 /* ─────────────────────────────────────────────────────────
    Main Component
    ───────────────────────────────────────────────────────── */
-export default function WhyTitanSeedClient({
-  data,
-}: {
-  data?: WhyTitanSeedData | null;
-}) {
-  const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
-  const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
-  const cardsData =
-    data?.cards && data.cards.length > 0 ? data.cards : FALLBACK_CARDS_DATA;
-
-  const rightColRef = useRef<HTMLDivElement>(null);
-  const imageContainerRef = useRef<HTMLDivElement>(null);
-
-  return (
-    <section
-      className="relative flex w-full flex-col items-center bg-[#FBF7F0]"
-      style={{
-        paddingBottom: "clamp(60px, min(8vw, 12vh), 120px)",
-        paddingLeft: "var(--section-px-wide)",
-        paddingRight: "var(--section-px-wide)",
-      }}
-    >
-      {/* ── STICKY HEADING & SUBTITLE ── */}
-      <motion.div
-        className="w-full flex flex-col items-center text-center z-20 lg:sticky"
+   export default function WhyTitanSeedClient({
+    data,
+  }: {
+    data?: WhyTitanSeedData | null;
+  }) {
+    const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
+    const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
+    const cardsData =
+      data?.cards && data.cards.length > 0 ? data.cards : FALLBACK_CARDS_DATA;
+  
+    const rightColRef = useRef<HTMLDivElement>(null);
+    const imageContainerRef = useRef<HTMLDivElement>(null);
+  
+    // Split the spacing controls so you can tweak them independently
+    const headingToDescGap = "clamp(12px, 1.5vw, 20px)"; // Decreased gap 
+    const descToContentGap = "clamp(40px, 5vw, 64px)";   // Generous gap before the 2-column layout
+  
+    return (
+      <section
+        className="relative flex w-full flex-col items-center bg-[#FBF7F0]"
         style={{
-          top: "var(--nav-height)",
-          paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
-          paddingBottom: "min(3.47vw, 5.37vh)",
-          backgroundColor: "#FBF7F0",
+          paddingBottom: "clamp(60px, min(8vw, 12vh), 120px)",
+          paddingLeft: "var(--section-px-wide)",
+          paddingRight: "var(--section-px-wide)",
         }}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.5 }}
       >
-        <motion.h2
-          className="m-0 max-w-[794px] font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
-          style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
-          custom={0}
-          variants={fadeUp}
+        {/* ── STICKY HEADING & SUBTITLE ── */}
+        <motion.div
+          className="w-full flex flex-col items-center text-center z-20 lg:sticky"
+          style={{
+            top: "var(--nav-height)",
+            paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
+            paddingBottom: descToContentGap, // Applies the bottom gap
+            backgroundColor: "#FBF7F0",
+          }}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.5 }}
         >
-          {headingFirst} {headingSecond}
-        </motion.h2>
-
-        <motion.p
-          className="mt-[clamp(28px,min(3vw,4.5vh),44px)] max-w-[800px] font-['Poppins',_sans-serif] font-normal text-[#323232] max-md:!text-[16px] max-md:!leading-[140%]"
-          style={{ fontSize: "clamp(16px, 1.5vw, 22px)", lineHeight: "150%" }}
-          custom={0.2}
-          variants={fadeUp}
-        >
-          500+ founder community with shared playbooks, templates, learnings
-        </motion.p>
-      </motion.div>
-
-      {/* ── TWO COLUMN LAYOUT ── */}
-      <div className="flex w-full max-w-[1440px] flex-col lg:flex-row items-start justify-between gap-[clamp(40px,5vw,80px)] relative z-10">
-        
-        {/* ── LEFT: Sticky Image Container ── */}
-        <div 
-          className="w-full lg:w-[45%] shrink-0 lg:sticky self-start z-10"
-          style={{ top: "calc(var(--nav-height) + clamp(150px, 20vw, 220px))" }}
-        >
-          <div 
-            ref={imageContainerRef}
-            className="w-full overflow-hidden bg-[#00112E] relative"
-            style={{
-              borderRadius: "2px",
-              height: "clamp(220px, 28vw, 400px)",
-              maxWidth: "540px",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.05)"
-            }}
+          <motion.h2
+            className="m-0 max-w-[794px] font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)]"
+            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "110%" }} 
+            custom={0}
+            variants={fadeUp}
           >
-            {/* ── Container Ambient Background ── */}
-            <ContainerGlow containerRef={imageContainerRef} />
-
-            {/* Next.js Image Component */}
-            <Image
-              src="/images/titanseedfund/whytitanseed.png"
-              alt="Why Titan Seed"
-              fill
-              className="object-cover z-10"
-              sizes="(max-width: 1024px) 100vw, 45vw"
-            />
-          </div>
-        </div>
-
-        {/* ── RIGHT: Scrolling Reel ── */}
-        <div 
-          ref={rightColRef}
-          className="w-full lg:w-[50%] relative flex flex-col pt-[16px] lg:pt-0"
-        >
-          {/* Animated Vertical Line */}
-          <motion.div
-            className="absolute left-0 top-0 bottom-0 w-[1px] bg-[#000]"
-            style={{ transformOrigin: "top" }}
-            initial={{ scaleY: 0 }}
-            whileInView={{ scaleY: 1 }}
-            viewport={{ once: true, amount: 0.1 }}
-            transition={{ duration: 1.5, ease: "easeInOut" }}
-          />
-
-          {/* List Items */}
-          {cardsData.map((card, idx) => (
-            <motion.div
-              key={idx}
-              className="relative w-full flex flex-col justify-center border-t border-[#000]"
+            {headingFirst} {headingSecond}
+          </motion.h2>
+  
+          <motion.p
+            className="m-0 max-w-[800px] font-['Poppins',_sans-serif] font-normal text-[#323232] max-md:!text-[16px] max-md:!leading-[140%]"
+            style={{ 
+              marginTop: headingToDescGap, // Tighter gap closer to the heading
+              fontSize: "clamp(16px, 1.5vw, 22px)", 
+              lineHeight: "150%" 
+            }}
+            custom={0.2}
+            variants={fadeUp}
+          >
+            500+ founder community with shared playbooks, templates, learnings
+          </motion.p>
+        </motion.div>
+  
+        {/* ── TWO COLUMN LAYOUT ── */}
+        <div className="flex w-full max-w-[1440px] flex-col lg:flex-row items-start justify-between gap-[clamp(40px,5vw,80px)] relative z-10">
+          
+          {/* ── LEFT: Sticky Image Container ── */}
+          <div 
+            className="w-full lg:w-[45%] shrink-0 lg:sticky self-start z-10"
+            style={{ top: "calc(var(--nav-height) + clamp(150px, 20vw, 220px))" }}
+          >
+            <div 
+              ref={imageContainerRef}
+              className="w-full overflow-hidden bg-[#00112E] relative"
               style={{
-                paddingTop: "clamp(36px, 6vw, 72px)",
-                paddingBottom: "clamp(36px, 6vw, 72px)",
-                paddingLeft: "clamp(24px, 3vw, 40px)",
+                borderRadius: "2px",
+                height: "clamp(220px, 28vw, 400px)",
+                maxWidth: "540px",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.05)"
               }}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-10%" }}
-              custom={0.1}
-              variants={fadeUp}
             >
-              {/* Number */}
-              <span 
-                className="font-['Poppins',_sans-serif] font-medium text-[#000] mb-[12px]" 
-                style={{ fontSize: "clamp(18px, 2vw, 24px)" }}
+              {/* ── Container Ambient Background ── */}
+              <ContainerGlow containerRef={imageContainerRef} />
+  
+              {/* Next.js Image Component */}
+              <Image
+                src="/images/titanseedfund/whytitanseed.png"
+                alt="Why Titan Seed"
+                fill
+                className="object-cover z-10"
+                sizes="(max-width: 1024px) 100vw, 45vw"
+              />
+            </div>
+          </div>
+  
+          {/* ── RIGHT: Scrolling Reel ── */}
+          <div 
+            ref={rightColRef}
+            className="w-full lg:w-[50%] relative flex flex-col pt-[16px] lg:pt-0"
+          >
+            {/* Animated Vertical Line */}
+            <motion.div
+              className="absolute left-0 top-0 bottom-0 w-[1px] bg-[#000]"
+              style={{ transformOrigin: "top" }}
+              initial={{ scaleY: 0 }}
+              whileInView={{ scaleY: 1 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ duration: 1.5, ease: "easeInOut" }}
+            />
+  
+            {/* List Items */}
+            {cardsData.map((card, idx) => (
+              <motion.div
+                key={idx}
+                className="relative w-full flex flex-col justify-center border-t border-[#000]"
+                style={{
+                  paddingTop: "clamp(36px, 6vw, 72px)",
+                  paddingBottom: "clamp(36px, 6vw, 72px)",
+                  paddingLeft: "clamp(24px, 3vw, 40px)",
+                }}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-10%" }}
+                custom={0.1}
+                variants={fadeUp}
               >
-                {String(idx + 1).padStart(2, '0')}
-              </span>
-
-              {/* Title */}
-              <h3 
-                className="m-0 font-['Poppins',_sans-serif] font-medium text-[#000] mb-[16px]" 
-                style={{ fontSize: "clamp(24px, 3vw, 40px)", lineHeight: "120%" }}
-              >
-                {card.title}
-              </h3>
-
-              {/* Description */}
-              <p 
-                className="m-0 font-['Poppins',_sans-serif] font-normal text-[#323232]" 
-                style={{ fontSize: "clamp(16px, 1.5vw, 20px)", lineHeight: "150%" }}
-              >
-                {card.desc}
-              </p>
-            </motion.div>
-          ))}
+                {/* Number */}
+                <span 
+                  className="font-['Poppins',_sans-serif] font-medium text-[#000] mb-[12px]" 
+                  style={{ fontSize: "clamp(18px, 2vw, 24px)" }}
+                >
+                  {String(idx + 1).padStart(2, '0')}
+                </span>
+  
+                {/* Title */}
+                <h3 
+                  className="m-0 font-['Poppins',_sans-serif] font-medium text-[#000] mb-[16px]" 
+                  style={{ fontSize: "clamp(24px, 3vw, 40px)", lineHeight: "120%" }}
+                >
+                  {card.title}
+                </h3>
+  
+                {/* Description */}
+                <p 
+                  className="m-0 font-['Poppins',_sans-serif] font-normal text-[#323232]" 
+                  style={{ fontSize: "clamp(16px, 1.5vw, 20px)", lineHeight: "150%" }}
+                >
+                  {card.desc}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+  
         </div>
-
-      </div>
-    </section>
-  );
-}
+      </section>
+    );
+  }

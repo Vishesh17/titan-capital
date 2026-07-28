@@ -228,31 +228,10 @@ function DesktopCardsContainer({
   headingScale: MotionValue<number>;
   heading: string;
 }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const mx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
-    const my = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
-    mouseX.set(mx);
-    mouseY.set(my);
-  }, [mouseX, mouseY]);
-
-  const handleMouseLeave = useCallback(() => {
-    mouseX.set(0);
-    mouseY.set(0);
-  }, [mouseX, mouseY]);
-
   return (
     <div
-      ref={containerRef}
       className="flex h-full w-full items-center justify-center relative"
       style={{ perspective: 2000 }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
     >
       {beliefs.map((belief, i) => {
         const direction = i === 0 ? -1 : i === 2 ? 1 : 0;
@@ -267,8 +246,6 @@ function DesktopCardsContainer({
             radius={radius}
             lineOpacity={lineOpacity}
             progress={progress}
-            mouseX={mouseX}
-            mouseY={mouseY}
           />
         );
       })}
@@ -409,7 +386,7 @@ function MobileCardsContainer({
 /* ─────────────────────────────────────────────────────────
    Card Blobs Texture (Mouse-following fluid blobs)
    ───────────────────────────────────────────────────────── */
-function CardBlobs({ mouseX, mouseY }: { mouseX: MotionValue<number>; mouseY: MotionValue<number> }) {
+function CardBlobs({ mouseX, mouseY, isHovered }: { mouseX: MotionValue<number>; mouseY: MotionValue<number>; isHovered: boolean }) {
   // Use the exact spring config from Hero for the cursor
   const cursorSpring = { damping: 25, stiffness: 250, mass: 0.3 };
   const smoothMouseX = useSpring(mouseX, cursorSpring);
@@ -432,15 +409,15 @@ function CardBlobs({ mouseX, mouseY }: { mouseX: MotionValue<number>; mouseY: Mo
 
   return (
     <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-      
-      {/* 1. Ambient Blob (Mimicking Hero Left Blob at exact 75% ratio) */}
+
+      {/* 1. Ambient Blob (reduced size + opacity so the hover blob reads clearly) */}
       <motion.div
         className="absolute"
         style={{
-          left: "-25%",
-          top: "-25%",
-          width: "75%",
-          height: "75%",
+          left: "-20%",
+          top: "-20%",
+          width: "55%",
+          height: "55%",
           x: leftX,
           y: leftY,
           willChange: "transform",
@@ -448,7 +425,7 @@ function CardBlobs({ mouseX, mouseY }: { mouseX: MotionValue<number>; mouseY: Mo
       >
         <motion.div
           className="w-full h-full rounded-full blur-[40px] max-md:blur-[25px]"
-          style={{ background: "radial-gradient(circle, #5054B5 0%, #054EB6 40%, #022250 80%, transparent 100%)", opacity: 0.6 }}
+          style={{ background: "radial-gradient(circle, #5054B5 0%, #054EB6 40%, #022250 80%, transparent 100%)", opacity: 0.35 }}
           animate={{
             x: ["0%", "35%", "-15%", "25%", "0%"],
             y: ["0%", "25%", "-10%", "35%", "0%"],
@@ -458,14 +435,14 @@ function CardBlobs({ mouseX, mouseY }: { mouseX: MotionValue<number>; mouseY: Mo
         />
       </motion.div>
 
-      {/* 2. Ambient Blob (Mimicking Hero Right Blob at exact 70% ratio) */}
+      {/* 2. Ambient Blob (reduced size + opacity) */}
       <motion.div
         className="absolute"
         style={{
-          right: "-25%",
-          bottom: "-25%",
-          width: "70%",
-          height: "70%",
+          right: "-20%",
+          bottom: "-20%",
+          width: "50%",
+          height: "50%",
           x: rightX,
           y: rightY,
           willChange: "transform",
@@ -473,7 +450,7 @@ function CardBlobs({ mouseX, mouseY }: { mouseX: MotionValue<number>; mouseY: Mo
       >
         <motion.div
           className="w-full h-full rounded-full blur-[40px] max-md:blur-[25px]"
-          style={{ background: "radial-gradient(circle, #AC71C6 0%, #033699 50%, #001A4D 80%, transparent 100%)", opacity: 0.5 }}
+          style={{ background: "radial-gradient(circle, #AC71C6 0%, #033699 50%, #001A4D 80%, transparent 100%)", opacity: 0.3 }}
           animate={{
             x: ["0%", "-35%", "15%", "-25%", "0%"],
             y: ["0%", "-25%", "10%", "-35%", "0%"],
@@ -483,19 +460,20 @@ function CardBlobs({ mouseX, mouseY }: { mouseX: MotionValue<number>; mouseY: Mo
         />
       </motion.div>
 
-      {/* 3. Mouse Hover Blob (Scaled properly to 25% card width) */}
+      {/* 3. Mouse Hover Blob — only visible on the card being hovered, larger + brighter */}
       <motion.div
         className="absolute rounded-full aspect-square blur-[30px] max-md:blur-[20px]"
         style={{
-          width: "25%", // This perfectly scales the 25vw logic down to the individual card
-          background: "radial-gradient(circle, rgba(80,84,181,0.85) 0%, rgba(5,78,182,0.5) 40%, rgba(2,34,80,0.2) 70%, transparent 100%)",
-          opacity: 0.4,
+          width: "40%",
+          background: "radial-gradient(circle, rgba(80,84,181,0.95) 0%, rgba(5,78,182,0.6) 40%, rgba(2,34,80,0.25) 70%, transparent 100%)",
           left: cursorLeft,
           top: cursorTop,
           translateX: "-50%",
           translateY: "-50%",
-          willChange: "transform",
+          willChange: "transform, opacity",
         }}
+        animate={{ opacity: isHovered ? 0.75 : 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       />
     </div>
   );
@@ -513,8 +491,6 @@ function DesktopCardSlice({
   radius,
   lineOpacity,
   progress,
-  mouseX,
-  mouseY,
 }: {
   belief: Belief;
   index: number;
@@ -524,11 +500,30 @@ function DesktopCardSlice({
   radius: MotionValue<number>;
   lineOpacity: MotionValue<number>;
   progress: MotionValue<number>;
-  mouseX: MotionValue<number>;
-  mouseY: MotionValue<number>;
 }) {
   const x = useTransform(splitX, (v) => v * direction);
-  
+
+  const cardRef = useRef<HTMLDivElement>(null);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const mx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    const my = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    mouseX.set(mx);
+    mouseY.set(my);
+  }, [mouseX, mouseY]);
+
+  const handleMouseEnter = useCallback(() => setIsHovered(true), []);
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false);
+    mouseX.set(0);
+    mouseY.set(0);
+  }, [mouseX, mouseY]);
+
   // NEW: Triggers immediately as the flip completes, detached from exact scroll bounds
   const [isFlipped, setIsFlipped] = useState(false);
   useEffect(() => {
@@ -578,6 +573,10 @@ function DesktopCardSlice({
       </motion.div>
 
       <motion.div
+        ref={cardRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
         style={{
           position: "absolute",
           inset: 0,
@@ -591,7 +590,7 @@ function DesktopCardSlice({
         }}
         className="relative"
       >
-        <CardBlobs mouseX={mouseX} mouseY={mouseY} />
+        <CardBlobs mouseX={mouseX} mouseY={mouseY} isHovered={isHovered} />
 
         <div className="relative z-10 flex flex-col h-full" style={{ paddingTop: "min(3.47vw, 5.37vh)", paddingBottom: "min(2.78vw, 4.31vh)", paddingLeft: "min(2.08vw, 3.22vh)", paddingRight: "min(2.08vw, 3.22vh)", gap: "min(1.85vw, 2.86vh)" }}>
           <div className="flex justify-center">
@@ -715,7 +714,7 @@ function MobileCardSlice({
         }}
         className="relative"
       >
-        <CardBlobs mouseX={mouseX} mouseY={mouseY} />
+        <CardBlobs mouseX={mouseX} mouseY={mouseY} isHovered={false} />
 
         {/* FIXED: Overrode inner mobile padding via max-md:!p-[20px_16px] for consistent framing */}
         <div

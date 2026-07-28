@@ -237,7 +237,7 @@ function FlipCard({ item }: { item: TestimonialItem }) {
             >
               <p
                 className="m-0 font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[clamp(10px,2.8vw,13px)] max-md:!leading-[1.5]"
-                style={{ fontSize: "min(1.20vw, 1.80vh)", lineHeight: "150%" }}
+                style={{ fontSize: "min(1.3vw, 1.96vh)", lineHeight: "150%" }}
               >
                 {item.text}
               </p>
@@ -254,8 +254,8 @@ function FlipCard({ item }: { item: TestimonialItem }) {
           {item.name}
         </p>
         <p
-          className="m-0 mt-[min(0.29vw,0.45vh)] font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[12px]"
-          style={{ fontSize: "min(0.93vw, 1.43vh)", lineHeight: "150%" }}
+          className="m-0 mt-[min(0.29vw,0.45vh)] font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[13px]"
+          style={{ fontSize: "min(1.1vw, 1.7vh)", lineHeight: "150%" }}
         >
           {item.role}
         </p>

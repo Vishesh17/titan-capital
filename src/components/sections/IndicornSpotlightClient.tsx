@@ -328,8 +328,8 @@ export default function IndicornSpotlightClient({
             <div
               className="flex items-center max-md:!flex-row max-md:!gap-[12px] max-md:!justify-center max-md:!mt-[32px]"
               style={{
-                gap: "min(2.87vw, 3.34vh)",
-                marginTop: "min(2.31vw, 3.58vh)", 
+                gap: "min(1.2vw, 1.8vh)",
+                marginTop: "min(2.31vw, 3.58vh)",
               }}
             >
               <span
@@ -368,7 +368,7 @@ export default function IndicornSpotlightClient({
                         sizes="120px"
                         style={{
                           objectFit: "contain",
-                          objectPosition: "left",
+                          objectPosition: "left center",
                           filter: filterStyle,
                           transform: `scale(${logo.scale})`,
                           transformOrigin: "left center",
