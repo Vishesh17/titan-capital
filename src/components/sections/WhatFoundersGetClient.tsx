@@ -47,7 +47,7 @@ const SZ = {
   rowTitleBox: "18vw",
   openedContentBox: "65.22vw",
 
-  headingToDivider: "min(2.31vw, 3.58vh)",
+  headingToDivider: "min(3.47vw, 5.37vh)",
   rowPaddingY: "min(1.04vw, 1.61vh)",
   rowInnerGap: "min(0.93vw, 1.43vh)",
   openedGap: "min(2.31vw, 3.58vh)",

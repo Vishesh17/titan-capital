@@ -201,7 +201,8 @@ export default function GetInvestmentFAQClient({
       <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center">
         {/* ── HEADING ── */}
         <motion.div
-          className="mb-[clamp(32px,min(3.5vw,5vh),56px)] flex flex-col items-center text-center"
+          className="max-md:!mb-[clamp(32px,6dvh,48px)] flex flex-col items-center text-center"
+          style={{ marginBottom: "min(3.47vw, 5.37vh)" }}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.5 }}

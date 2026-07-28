@@ -1046,7 +1046,8 @@ export default function GetInvestmentForm({
 
         {/* ── Main Section Heading ── */}
         <motion.div
-          className="mb-[clamp(32px,min(4.5vw,6.5vh),64px)] flex flex-col items-center text-center"
+          className="max-md:!mb-[clamp(32px,6dvh,48px)] flex flex-col items-center text-center"
+          style={{ marginBottom: "min(3.47vw, 5.37vh)" }}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.5 }}

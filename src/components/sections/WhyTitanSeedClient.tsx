@@ -182,7 +182,7 @@ export default function WhyTitanSeedClient({
         style={{
           top: "var(--nav-height)",
           paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
-          paddingBottom: "clamp(48px, min(6vw, 8vh), 80px)",
+          paddingBottom: "min(3.47vw, 5.37vh)",
           backgroundColor: "#FBF7F0",
         }}
         initial="hidden"
