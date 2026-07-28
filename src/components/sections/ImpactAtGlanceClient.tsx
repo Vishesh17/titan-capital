@@ -180,7 +180,7 @@ function ImpactStatCell({
       />
       <div className="flex flex-col items-start text-left justify-center">
         <span
-          className="font-['Poppins',_sans-serif] font-medium capitalize text-black max-md:!text-[36px] max-md:!leading-[105%]"
+          className="font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[36px] max-md:!leading-[105%]"
           style={{ fontSize: "min(6vw, 9.3vh)", lineHeight: "150%" }}
         >
           <RollingNumber value={stat.num} />
@@ -188,7 +188,7 @@ function ImpactStatCell({
         <span
           className="whitespace-nowrap font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[14px] max-md:!leading-[125%] max-md:!mt-[6px]"
           style={{
-            fontSize: "min(1.5vw, 2.3vh)",
+            fontSize: "min(1.32vw, 2.02vh)",
             lineHeight: "130%",
             marginTop: "min(0.58vw, 0.90vh)",
           }}

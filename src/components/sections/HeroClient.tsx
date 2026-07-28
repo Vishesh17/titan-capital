@@ -245,13 +245,13 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   useEffect(() => {
     if (stage !== "slideshow" || !ready) return;
     let count = 0;
-    const totalTicks = slideshowFounders.length;
+    const totalTicks = slideshowFounders.length * 2;
     const id = setInterval(() => {
       count += 1;
       if (count >= totalTicks) {
         setSlideIndex(0);
         clearInterval(id);
-        setTimeout(() => setStage("animate"), 150);
+        setTimeout(() => setStage("animate"), 500);
       } else {
         setSlideIndex(count % slideshowFounders.length);
       }
@@ -322,9 +322,11 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   }, []);
 
   const headingOpacity = useTransform(progress, [0.50, 0.58], [0, 1]);
+  const sideLabelsOpacity = useTransform(progress, [0.44, 0.52], [1, 0]);
 
   const [headingReady, setHeadingReady] = useState(false);
   const [uiReady, setUiReady] = useState(false);
+  const [subtitleReady, setSubtitleReady] = useState(false);
   const [headingTick, setHeadingTick] = useState(0);
 
   const logoFounder = founders.find(f => f.isLogo);
@@ -339,11 +341,10 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
   useEffect(() => {
     if (!headingReady) return;
-    const timer = setTimeout(() => {
-      setUiReady(true);
-      document.body.classList.remove("hero-hide-nav");
-    }, 3200);
-    return () => clearTimeout(timer);
+    setUiReady(true);
+    document.body.classList.remove("hero-hide-nav");
+    const t = setTimeout(() => setSubtitleReady(true), 2700);
+    return () => clearTimeout(t);
   }, [headingReady]);
 
   useEffect(() => {
@@ -375,11 +376,24 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
       >
         <HeroGlow />
 
+        <motion.span
+          style={{ opacity: sideLabelsOpacity }}
+          className="pointer-events-none absolute left-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 font-['Poppins',_sans-serif] text-[min(1.04vw,1.61vh)] font-medium tracking-[0.2em] text-white/70 max-md:!left-1/2 max-md:!top-[5vh] max-md:!-translate-x-1/2 max-md:!translate-y-0 max-md:!text-[14px]"
+        >
+          FOUNDER-FIRST
+        </motion.span>
+        <motion.span
+          style={{ opacity: sideLabelsOpacity }}
+          className="pointer-events-none absolute right-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 font-['Poppins',_sans-serif] text-[min(1.04vw,1.61vh)] font-medium tracking-[0.2em] text-white/70 max-md:!right-auto max-md:!left-1/2 max-md:!top-auto max-md:!bottom-[18vh] max-md:!-translate-x-1/2 max-md:!translate-y-0 max-md:!text-[14px]"
+        >
+          ENDURING-VALUE
+        </motion.span>
+
         <motion.p
           style={{ maxWidth: "min(52vw, 900px)" }}
           className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 text-center font-['Poppins',_sans-serif] text-[min(1.62vw,2.51vh)] font-normal leading-[145%] text-white/90 max-md:!bottom-[clamp(48px,12dvh,80px)] max-md:!text-[clamp(11px,3vw,14px)] max-md:!w-[75vw] max-md:!max-w-[75vw]"
           initial={{ opacity: 1 }}
-          animate={{ opacity: uiReady ? 1 : stage === "animate" ? 0 : 1 }}
+          animate={{ opacity: subtitleReady ? 1 : stage === "animate" ? 0 : 1 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
           {subtitle}
@@ -487,8 +501,8 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                   <HeadingPhoto founder={headingFounder} tick={headingTick} show={headingReady} />
                 </span>
                 <span className="flex flex-col items-start leading-[86%]">
-                  <RevealLine show={headingReady} delay={0.7}>Enduring</RevealLine>
-                  <RevealLine show={headingReady} delay={1.0}>Impact</RevealLine>
+                  <RevealLine show={headingReady} delay={1.7}>Enduring</RevealLine>
+                  <RevealLine show={headingReady} delay={2.0}>Impact</RevealLine>
                 </span>
               </span>
             </h1>
@@ -509,8 +523,8 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 <HeadingPhoto founder={headingFounder} tick={headingTick} show={headingReady} />
               </span>
 
-              <RevealLine show={headingReady} delay={0.9}>Enduring</RevealLine>
-              <RevealLine show={headingReady} delay={1.2}>Impact</RevealLine>
+              <RevealLine show={headingReady} delay={1.7}>Enduring</RevealLine>
+              <RevealLine show={headingReady} delay={2.0}>Impact</RevealLine>
             </h1>
 
             <motion.div
@@ -613,7 +627,7 @@ function HeadingPhoto({
         animate={show ? (isFirst ? { opacity: 1, x: "0%" } : { opacity: 1 }) : { opacity: 0 }}
         exit={{ opacity: 1 }}
         transition={isFirst
-          ? { duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 1.8 }
+          ? { duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 1.25 }
           : { duration: 1.0, ease: [0.22, 1, 0.36, 1] }
         }
       >
@@ -642,7 +656,7 @@ function HeadingPhoto({
   );
 }
 
-const CHAR_STAGGER = 0.035;
+const CHAR_STAGGER = 0.025;
 function RevealLine({
   children,
   show,
@@ -686,7 +700,7 @@ function RevealLine({
             opacity: show ? 1 : 0,
           } as TargetAndTransition}
           transition={{
-            duration: 1.1,
+            duration: 0.7,
             ease: [0.76, 0, 0.24, 1],
             delay: delay + i * CHAR_STAGGER,
           }}
