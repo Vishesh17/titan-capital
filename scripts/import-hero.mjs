@@ -5,16 +5,20 @@
  *     node --env-file=.env.local scripts/import-hero.mjs
  *
  *   WHAT IT DOES:
- *     1. Uploads every hero-founder image from
- *        public/images/hero_founders_images/ to Sanity assets.
+ *     1. Uploads every hero-founder image to Sanity assets.
  *     2. Creates (or replaces) the singleton "hero" document with
- *        headline, subtitle, CTA labels, and a flat `founders` array —
- *        with the Titan Capital logo card sitting at position 5 (index 4),
- *        the visual anchor of the fanned deck.
+ *        headline, subtitle, CTA labels, and the flat `founders` array.
+ *     3. Writes per-card scale/position tuning:
+ *          - scaleFactor / positionX / positionY  → heading-photo slot
+ *          - squareScaleFactor / squarePositionX / squarePositionY → slideshow
+ *
+ *   ORDER MATTERS: the card at index 3 (4th entry) is the visual anchor
+ *   of the fanned deck and the first frame of the slideshow — that's
+ *   where the Titan Capital logo sits with isLogo: true.
  *
  *   AFTER RUNNING:
- *     Open Sanity Studio → "Home — Hero Section" → click Publish
- *     (if not already published). Then refresh your dev server.
+ *     Open Sanity Studio → "Home — Hero Section" → click Publish.
+ *     Restart the dev server so the updated GROQ query is picked up.
  *
  *   REQUIRES:
  *     SANITY_API_WRITE_TOKEN in .env.local (Editor scope)
@@ -49,23 +53,100 @@ const client = createClient({
 });
 
 /* ────────────────────────────────────────────────────────
-   Source content — mirrors the FALLBACK_FOUNDERS array in
-   HeroClient.tsx. Paths are RELATIVE to /public.
-
-   ORDER MATTERS: the card at index 4 (5th entry) is the
-   visual anchor of the fanned deck and the first frame of
-   the slideshow — that's where the Titan Capital logo sits.
+   Source content — mirrors FALLBACK_FOUNDERS in HeroClient.tsx.
+   Paths are relative to the repo root. Edit values below to
+   retune photos, scales, or positions.
    ──────────────────────────────────────────────────────── */
 const FOUNDERS = [
-  { name: "Ghazal Alagh",        role: "Co-Founder, Mamaearth",         imagePath: "public/images/herosection/1. Abhishek 2.png" },
-  { name: "Abhiraj Singh Bhal",  role: "Co-Founder, Urban Company",     imagePath: "public/images/herosection/3. Varun Khaitan  1.png" },
-  { name: "Ashutosh Valani",     role: "Co-Founder, RENÉE Cosmetics",   imagePath: "public/images/herosection/4. Ghazal 1.png" },
-  { name: "Abhishek Bansal",     role: "Co-Founder, Shadowfax",         imagePath: "public/images/herosection/6. Ashtosh Valani 1.png" },
-  { name: "Titan Capital",       role: "",                              imagePath: "public/images/hero_founders_images/titan-capital.png",     isLogo: true },
-  { name: "Ruchi Kalra",         role: "Co-Founder, Ofbusiness",        imagePath: "public/images/herosection/Aarti Gill 2.png" },
-  { name: "Varun Khaitan",       role: "Co-Founder, Urban Company",     imagePath: "public/images/herosection/Asish Mohapatra 1.png" },
-  { name: "Ishendra Agarwal",    role: "Co-Founder, GIVA",              imagePath: "public/images/herosection/image 177.png" },
-  { name: "Anand Agrawal",       role: "Co-Founder, Credgenics",        imagePath: "public/images/herosection/Rishabh 2.png" },
+  {
+    name: "Abhiraj Singh Bhal",
+    role: "Co-Founder, Urban Company",
+    imagePath: "public/images/hero_founders_images/15.png",
+    scaleFactor: 1.5,
+    positionX: 0,
+    positionY: 0,
+    squareScaleFactor: 1,
+    squarePositionX: -3,
+    squarePositionY: 0,
+  },
+  {
+    name: "Ashutosh Valani",
+    role: "Co-Founder, RENÉE Cosmetics",
+    imagePath: "public/images/hero_founders_images/12.png",
+    scaleFactor: 1.5,
+    positionX: 5,
+    positionY: -5,
+    squareScaleFactor: 1,
+    squarePositionX: 0,
+    squarePositionY: 0,
+  },
+  {
+    name: "Abhishek Bansal",
+    role: "Co-Founder, Shadowfax",
+    imagePath: "public/images/hero_founders_images/1.png",
+    scaleFactor: 1.5,
+    positionX: 0,
+    positionY: -10,
+    squareScaleFactor: 1,
+    squarePositionX: 0,
+    squarePositionY: 0,
+  },
+  {
+    name: "Titan Capital",
+    role: "",
+    imagePath: "public/images/logos/titancapitallogo.svg",
+    isLogo: true,
+    scaleFactor: 0.7,
+    positionX: 0,
+    positionY: 0,
+    squareScaleFactor: 1,
+    squarePositionX: 0,
+    squarePositionY: 0,
+  },
+  {
+    name: "Varun Khaitan",
+    role: "Co-Founder, Urban Company",
+    imagePath: "public/images/hero_founders_images/5.png",
+    scaleFactor: 1.5,
+    positionX: 0,
+    positionY: -5,
+    squareScaleFactor: 1,
+    squarePositionX: 0,
+    squarePositionY: 0,
+  },
+  {
+    name: "Ishendra Agarwal",
+    role: "Co-Founder, GIVA",
+    imagePath: "public/images/hero_founders_images/7.png",
+    scaleFactor: 1.5,
+    positionX: 0,
+    positionY: -12,
+    squareScaleFactor: 1.2,
+    squarePositionX: 0,
+    squarePositionY: 0,
+  },
+  {
+    name: "Anand Agrawal",
+    role: "Co-Founder, Credgenics",
+    imagePath: "public/images/hero_founders_images/6.png",
+    scaleFactor: 1.5,
+    positionX: 0,
+    positionY: -10,
+    squareScaleFactor: 1,
+    squarePositionX: 0,
+    squarePositionY: 0,
+  },
+  {
+    name: "Ruchi Kalra",
+    role: "Co-Founder, Ofbusiness",
+    imagePath: "public/images/hero_founders_images/4.png",
+    scaleFactor: 1.5,
+    positionX: 0,
+    positionY: -15,
+    squareScaleFactor: 1,
+    squarePositionX: 0,
+    squarePositionY: 0,
+  },
 ];
 
 const TEXT = {
@@ -73,7 +154,7 @@ const TEXT = {
   titleLine2Before: "For Enduring",
   titleLine2Emphasis: "Impact",
   subtitle:
-    "We partner with founders from day one. We invest conviction, not just capital, and stay by their side through every stage of their journey.",
+    "We partner with entrepreneurs from day one. We invest conviction, not just capital, and stay by their side through every stage of their journey.",
   primaryCtaLabel: "Get Investment",
   secondaryCtaLabel: "View Portfolio",
 };
@@ -124,6 +205,12 @@ async function main() {
         name: entry.name,
         role: entry.role || "",
         isLogo: entry.isLogo === true,
+        scaleFactor: entry.scaleFactor ?? 1,
+        positionX: entry.positionX ?? 0,
+        positionY: entry.positionY ?? 0,
+        squareScaleFactor: entry.squareScaleFactor ?? 1,
+        squarePositionX: entry.squarePositionX ?? 0,
+        squarePositionY: entry.squarePositionY ?? 0,
         image: {
           _type: "image",
           asset: { _type: "reference", _ref: assetId },
@@ -151,9 +238,10 @@ async function main() {
   const result = await client.createOrReplace(doc);
 
   console.log(`✓ Document written: ${result._id}`);
-  console.log(`  ${founders.length} founder cards. Anchor (index 4): ${founders[4]?.name ?? "—"}`);
-  console.log("\nNext: open Sanity Studio → 'Home — Hero Section'");
-  console.log("       click Publish if needed. Then refresh your dev server.\n");
+  console.log(`  ${founders.length} founder cards. Logo anchor: ${founders.find((f) => f.isLogo)?.name ?? "—"}`);
+  console.log("\nNext:");
+  console.log("  1. Restart the Next.js dev server so the updated GROQ query is picked up.");
+  console.log("  2. Open Sanity Studio → 'Home — Hero Section' → click Publish if needed.\n");
 }
 
 main().catch((err) => {

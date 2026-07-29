@@ -126,7 +126,29 @@ export const hero = defineType({
               type: "number",
               initialValue: 0,
             }),
-
+            defineField({
+              name: "squareScaleFactor",
+              title: "Slideshow Scale Factor",
+              description:
+                "Image scale in the SHUFFLE/slideshow card (before it becomes the heading photo). 1 = normal.",
+              type: "number",
+              validation: (r) => r.min(0.5).max(2.0),
+              initialValue: 1,
+            }),
+            defineField({
+              name: "squarePositionX",
+              title: "Slideshow Horizontal Offset (px)",
+              description: "Shift image left/right in the slideshow card. Positive = right.",
+              type: "number",
+              initialValue: 0,
+            }),
+            defineField({
+              name: "squarePositionY",
+              title: "Slideshow Vertical Offset (px)",
+              description: "Shift image up/down in the slideshow card. Positive = down.",
+              type: "number",
+              initialValue: 0,
+            }),
           ],
           preview: {
             select: { title: "name", subtitle: "role", media: "image" },

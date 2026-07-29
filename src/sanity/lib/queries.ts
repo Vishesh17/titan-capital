@@ -441,7 +441,13 @@ export const heroQuery = groq`
       name,
       role,
       "image": image.asset->url,
-      isLogo
+      isLogo,
+      scaleFactor,
+      positionX,
+      positionY,
+      squareScaleFactor,
+      squarePositionX,
+      squarePositionY
     }
   }
 `;
