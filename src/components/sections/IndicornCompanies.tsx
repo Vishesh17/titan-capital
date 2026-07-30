@@ -41,13 +41,13 @@ const fallbackData: PortfolioCompany[] = [
   },
   {
     name: "Razorpay",
-    logoUrl: "/images/portfolio_grid/razorpay-logo.png", // Replace with your logo path
+    logoUrl: "/images/portfolio_grid/Razorpay-logo.png", // Replace with your logo path
     description:
       "Razorpay has grown from a simple payment gateway to India's most comprehensive full-stack financial solutions platform.",
   },
   {
     name: "OfBusiness",
-    logoUrl: "/images/portfolio_grid/ofbusiness.png", // Replace with your logo path
+    logoUrl: "/images/portfolio_grid/Ofbusiness.png", // Replace with your logo path
     description:
       "India's largest B2B marketplace for manufacturing and infrastructure SMEs, offering both raw material procurement and embedded financing",
   },
