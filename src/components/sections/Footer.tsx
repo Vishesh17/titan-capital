@@ -21,14 +21,15 @@ const footerHrefs: Record<string, string> = {
   "Titan Seed Fund": "/titanSeedFund",
   "Home Page": "/",
   "Get Investment": "/getinvestment",
-  "Teams": "/ourTeam",
+  "Our Team": "/ourTeam",
   "Our Story": "/ourstory",
-  "Beyond The Cheque": "/beyondTheCheque"
+  "Beyond The Cheque": "/beyondTheCheque",
+  "Indicorns": "/indicorns",
 };
 
 const navLinks = [
   { title: "Home", links: ["Home Page"] },
-  { title: "About", links: ["Our Story", "Teams", "Beyond The Cheque"] },//Our Story, Teams, Indicorns
+  { title: "About", links: ["Our Team", "Indicorns"] },//Our Story, Teams, Indicorns
   { title: "For Founder", links: ["Get Investment","Titan Seed Fund", "Titan Winners Fund"] },//"Beyond Cheque"
   { title: "Portfolio", links: ["Our Portfolio"] },
   // { title: "Community", links: ["Founder Story", "Titan Ecosystem"] },

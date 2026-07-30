@@ -119,7 +119,7 @@ const FALLBACK_SECTIONS: NavbarSection[] = [
     subItems: [
       { label: "Our Story", url: "/ourstory" },
       { label: "Our Team", url: "/ourTeam" },
-      { label: "Beyond The Cheque", url: "/beyondTheCheque" },
+      { label: "Indicorns", url: "/indicorns" },
     ],
   },
 ];
