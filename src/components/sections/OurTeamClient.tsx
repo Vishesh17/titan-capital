@@ -305,10 +305,13 @@ function TeamGroup({
         <motion.div
           className="h-[1px] flex-1 bg-black/30"
           style={{ transformOrigin: "right" }}
-          initial={{ scaleX: 0 }}
-          whileInView={{ scaleX: 1 }}
+          initial="hidden"
+          whileInView="visible"
           viewport={{ once: false, amount: 0.8 }}
-          transition={{ duration: 1.2, ease: "easeInOut" }}
+          variants={{
+            hidden: { scaleX: 0, transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } },
+            visible: { scaleX: 1, transition: { duration: 2.6, ease: [0.22, 1, 0.36, 1] } },
+          }}
         />
         
         <motion.h3
@@ -328,10 +331,13 @@ function TeamGroup({
         <motion.div
           className="h-[1px] flex-1 bg-black/30"
           style={{ transformOrigin: "left" }}
-          initial={{ scaleX: 0 }}
-          whileInView={{ scaleX: 1 }}
+          initial="hidden"
+          whileInView="visible"
           viewport={{ once: false, amount: 0.8 }}
-          transition={{ duration: 1.2, ease: "easeInOut" }}
+          variants={{
+            hidden: { scaleX: 0, transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } },
+            visible: { scaleX: 1, transition: { duration: 2.6, ease: [0.22, 1, 0.36, 1] } },
+          }}
         />
       </div>
 

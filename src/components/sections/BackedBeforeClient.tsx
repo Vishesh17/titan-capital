@@ -35,7 +35,7 @@ const FALLBACK_ROW1: BackedBeforeLogo[] = [
   { name: "Razorpay",      logos_backuprc: "/images/logos_backup/Razorpay.webp",            scaleClass: "" },
   { name: "Ofbusiness",    logos_backuprc: "/images/logos_backup/Ofbusiness.png",           scaleClass: "" },
   { name: "Cart.com",      logos_backuprc: "/images/logos_backup/Cart.com.webp",            scaleClass: "" },
-  { name: "Unicommerce",   logos_backuprc: "/images/logos_backup/unicommerce-logo.svg",     scaleClass: "" },
+  { name: "Unicommerce",   logos_backuprc: "/images/logos_backup/unicommerce-logo.svg",     scaleClass: "0.7" },
   { name: "Snapdeal",      logos_backuprc: "/images/logos_backup/snapdeal-company-1.webp",  scaleClass: "" },
   { name: "Credgenics",    logos_backuprc: "/images/logos_backup/Credgenics.svg",           scaleClass: "" },
 ];

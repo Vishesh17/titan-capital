@@ -11,13 +11,18 @@ export async function generateMetadata() {
 
 export default function TitanSeedFundPage() {
   return (
-    <main className="flex min-h-screen w-full flex-col">
-      <TitanSeedHero />
-      <WhyTitanSeed />
-      <WhatWeLookFor />
-      <FundDetails />
-      <Footer />   
-      {/* You can add your next sections below here later */}
-    </main>
+    <>
+      <main className="relative w-full p-0 m-0">
+        <div className="relative z-[2] bg-white">
+          <TitanSeedHero />
+          <WhyTitanSeed />
+          <WhatWeLookFor />
+          <FundDetails />
+        </div>
+        <div className="sticky bottom-0 z-0">
+          <Footer />
+        </div>
+      </main>
+    </>
   );
 }

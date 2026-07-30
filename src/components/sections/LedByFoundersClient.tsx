@@ -131,14 +131,14 @@ function FounderRow({ founder }: { founder: FounderProfile }) {
         viewport={{ once: false, amount: 0.5 }} 
         className="hidden lg:block w-[1px] bg-black shrink-0"
         style={{ 
-          height: PHOTO_HEIGHT, // Exactly matches the photo height
+          height: PHOTO_HEIGHT,
           transformOrigin: "top" 
         }}
         variants={{
-          hidden: { scaleY: 0 },
+          hidden: { scaleY: 0, transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } },
           visible: {
             scaleY: 1,
-            transition: { duration: 2.2, ease: "easeInOut" },
+            transition: { duration: 2.6, ease: [0.22, 1, 0.36, 1] },
           },
         }}
       />
@@ -194,10 +194,10 @@ function FounderRow({ founder }: { founder: FounderProfile }) {
             marginBottom: "clamp(16px, min(2vw, 3vh), 32px)",
           }}
           variants={{
-            hidden: { scaleX: 0 },
+            hidden: { scaleX: 0, transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } },
             visible: {
               scaleX: 1,
-              transition: { duration: 2.2, ease: "easeInOut" },
+              transition: { duration: 2.6, ease: [0.22, 1, 0.36, 1] },
             },
           }}
         />
