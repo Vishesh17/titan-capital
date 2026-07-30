@@ -255,7 +255,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
       } else {
         setSlideIndex(count % slideshowFounders.length);
       }
-    }, 130);
+    }, 200);
     return () => clearInterval(id);
   }, [stage, ready, slideshowFounders.length]);
 
