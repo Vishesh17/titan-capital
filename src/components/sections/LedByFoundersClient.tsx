@@ -2,31 +2,22 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────
-   Shared motion variants — same scaleX-highlight + fadeUp
-   pattern used by OurTeamHeroClient + OurTeamClient.
+   Shared motion variants
    ───────────────────────────────────────────────────────── */
-const fadeUp = (delay = 0) => ({
-  hidden: { opacity: 0, y: 40 },
+const fadeUp = (delay = 0): Variants => ({
+  hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: "easeOut" as const, delay },
-  },
-});
-
-const highlightScaleX = (delay = 0.5) => ({
-  hidden: { scaleX: 0 },
-  visible: {
-    scaleX: 1,
-    transition: { duration: 0.6, ease: "easeInOut" as const, delay },
+    transition: { duration: 0.8, ease: "easeOut", delay },
   },
 });
 
 /* ─────────────────────────────────────────────────────────
-   Types — shared with the server wrapper (LedByFounders.tsx).
+   Types
    ───────────────────────────────────────────────────────── */
 export interface FounderProfile {
   name: string;
@@ -43,10 +34,6 @@ export interface LedByFoundersData {
   founders?: FounderProfile[];
 }
 
-/* ─────────────────────────────────────────────────────────
-   Fallback content — rendered when Sanity returns null or
-   the doc hasn't been populated yet.
-   ───────────────────────────────────────────────────────── */
 const FALLBACK_HEADING_TOP = "Led By Founders";
 const FALLBACK_HEADING_BOTTOM = "Who've Walked The Path.";
 
@@ -69,7 +56,6 @@ const FALLBACK_FOUNDERS: FounderProfile[] = [
   },
 ];
 
-/* Sanity CDN transform — matches the helper used by OurTeamClient. */
 function cdnImageSrc(url: string, width: number): string {
   if (!url) return url;
   if (!url.startsWith("https://cdn.sanity.io/")) return url;
@@ -79,7 +65,6 @@ function cdnImageSrc(url: string, width: number): string {
 /* ═══════════════════════════════════════════════════════
    ICON
    ═══════════════════════════════════════════════════════ */
-
 const LinkedInIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -87,8 +72,8 @@ const LinkedInIcon = () => (
     fill="none"
     className="transition-transform duration-200 hover:scale-110 hover:opacity-80"
     style={{
-      width: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
-      height: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
+      width: "clamp(24px, min(2.5vw, 3.5vh), 32px)",
+      height: "clamp(24px, min(2.5vw, 3.5vh), 32px)",
       aspectRatio: "1 / 1",
     }}
   >
@@ -100,28 +85,31 @@ const LinkedInIcon = () => (
 );
 
 /* ═══════════════════════════════════════════════════════
-   ONE FOUNDER PROFILE (image + content row)
+   ONE FOUNDER PROFILE
    ═══════════════════════════════════════════════════════ */
-
 function FounderRow({ founder }: { founder: FounderProfile }) {
   const isImageLeft = (founder.imagePosition ?? "left") === "left";
 
+  // Centralized dimensions to keep the photo and the vertical line perfectly synced
+  const PHOTO_WIDTH = "clamp(240px, min(26.6vw, 38vh), 380px)";
+  const PHOTO_HEIGHT = "clamp(320px, min(35.5vw, 50vh), 500px)";
+
   return (
     <div
-      className={`flex w-full flex-col items-center justify-between lg:items-start ${
+      className={`flex w-full flex-col items-center justify-between lg:items-center ${
         isImageLeft ? "lg:flex-row" : "lg:flex-row-reverse"
       }`}
       style={{
-        gap: "clamp(32px, min(5.55vw, 8.14vh), 80px)",
+        gap: "clamp(24px, min(4vw, 5vh), 56px)", 
       }}
     >
       {/* ── PORTRAIT ── */}
       <div
         className="relative shrink-0 overflow-hidden bg-gray-200"
         style={{
-          width: "clamp(280px, min(31.59vw, 46.33vh), 455px)",
-          height: "clamp(368px, min(41.59vw, 61vh), 599px)",
-          borderRadius: "12px",
+          width: PHOTO_WIDTH,
+          height: PHOTO_HEIGHT,
+          borderRadius: "2px", 
         }}
       >
         {founder.image && (
@@ -130,40 +118,50 @@ function FounderRow({ founder }: { founder: FounderProfile }) {
             alt={founder.name}
             fill
             sizes="(max-width: 1024px) 90vw, 32vw"
-            className="object-cover object-center"
+            // scale-105 zooms in slightly to push any baked-in borders outside the container frame
+            className="object-cover object-center scale-105"
           />
         )}
       </div>
 
+      {/* ── VERTICAL LINE ── */}
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: false, amount: 0.5 }} 
+        className="hidden lg:block w-[1px] bg-black shrink-0"
+        style={{ 
+          height: PHOTO_HEIGHT, // Exactly matches the photo height
+          transformOrigin: "top" 
+        }}
+        variants={{
+          hidden: { scaleY: 0 },
+          visible: {
+            scaleY: 1,
+            transition: { duration: 2.2, ease: "easeInOut" },
+          },
+        }}
+      />
+
       {/* ── CONTENT ── */}
-      <div className="flex w-full flex-1 flex-col items-start">
+      <div className="flex w-full flex-1 flex-col items-start lg:px-4">
         {/* Highlighted name */}
-        <div
-          className="inline-block bg-[#D3E2FF]"
+        <h3
+          className="m-0 font-['Poppins',_sans-serif] font-semibold text-[#0E0E0E]"
           style={{
-            paddingLeft: "12px",
-            paddingRight: "12px",
-            paddingTop: "4px",
-            paddingBottom: "4px",
-            marginBottom: "clamp(8px, min(0.83vw, 1.22vh), 12px)",
+            fontSize: "clamp(28px, min(3.33vw, 4.88vh), 42px)",
+            lineHeight: "130%",
+            marginBottom: "clamp(4px, min(0.55vw, 0.81vh), 8px)",
           }}
         >
-          <h3
-            className="m-0 font-['Poppins',_sans-serif] font-medium text-[#0E0E0E]"
-            style={{
-              fontSize: "clamp(28px, min(3.33vw, 4.88vh), 48px)",
-              lineHeight: "158%",
-            }}
-          >
-            {founder.name}
-          </h3>
-        </div>
+          {founder.name}
+        </h3>
 
         {/* Role */}
         <p
-          className="m-0 font-['Poppins',_sans-serif] font-normal text-[#0E0E0E]"
+          className="m-0 font-['Poppins',_sans-serif] font-normal text-[#323232]"
           style={{
-            fontSize: "clamp(18px, min(2.22vw, 3.25vh), 32px)",
+            fontSize: "clamp(16px, min(1.6vw, 2.4vh), 20px)",
             lineHeight: "158%",
           }}
         >
@@ -172,9 +170,7 @@ function FounderRow({ founder }: { founder: FounderProfile }) {
 
         {/* LinkedIn */}
         {founder.linkedin && (
-          <div
-            style={{ marginTop: "clamp(12px, min(1.6vw, 2.4vh), 24px)" }}
-          >
+          <div style={{ marginTop: "clamp(8px, min(1.2vw, 1.8vh), 16px)" }}>
             <Link
               href={founder.linkedin}
               target="_blank"
@@ -186,14 +182,33 @@ function FounderRow({ founder }: { founder: FounderProfile }) {
           </div>
         )}
 
+        {/* ── HORIZONTAL LINE ── */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, amount: 0.8 }} 
+          className="w-full h-[1px] bg-black"
+          style={{
+            transformOrigin: isImageLeft ? "left" : "right",
+            marginTop: "clamp(16px, min(2vw, 3vh), 32px)",
+            marginBottom: "clamp(16px, min(2vw, 3vh), 32px)",
+          }}
+          variants={{
+            hidden: { scaleX: 0 },
+            visible: {
+              scaleX: 1,
+              transition: { duration: 2.2, ease: "easeInOut" },
+            },
+          }}
+        />
+
         {/* Bio */}
         <p
           className="m-0 whitespace-pre-line font-['Poppins',_sans-serif] font-normal text-[#323232]"
           style={{
-            marginTop: "clamp(20px, min(2.77vw, 4.07vh), 40px)",
-            fontSize: "clamp(14px, min(1.38vw, 2.03vh), 20px)",
+            fontSize: "clamp(14px, min(1.38vw, 2.03vh), 18px)",
             lineHeight: "160%",
-            maxWidth: "717px",
+            maxWidth: "600px",
           }}
         >
           {founder.bio}
@@ -206,7 +221,6 @@ function FounderRow({ founder }: { founder: FounderProfile }) {
 /* ═══════════════════════════════════════════════════════
    MAIN CLIENT COMPONENT
    ═══════════════════════════════════════════════════════ */
-
 export default function LedByFoundersClient({
   data,
 }: {
@@ -223,56 +237,41 @@ export default function LedByFoundersClient({
     <section
       className="relative flex w-full flex-col bg-[#FBF7F0]"
       style={{
-        // Site-wide section rhythm — identical to Footer + HeroClient.
-        paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
-        paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
+        // Lower z-index so the OurTeam section (z-20) slides up and over
+        // this one via its negative top margin + curved top.
+        zIndex: 1,
+        paddingTop: "clamp(60px, min(8vw, 10vh), 120px)",
+        paddingBottom: "clamp(60px, min(8vw, 10vh), 120px)",
         paddingLeft: "var(--section-px-wide, 5%)",
         paddingRight: "var(--section-px-wide, 5%)",
       }}
     >
       <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center">
-        {/* ── HEADING — scaleX-highlight + fadeUp pattern, identical
-              to the one used in OurTeamHero + OurTeamClient. ── */}
+        {/* ── HEADING ── */}
         <motion.div
-          className="flex w-full flex-col items-center text-center"
+          className="max-md:!mb-[clamp(32px,6dvh,48px)] flex w-full flex-col items-center justify-center text-center"
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.5 }}
+          viewport={{ once: false, amount: 0.5 }}
+          // Matches the gap used in WhatWeLookForClient precisely
+          style={{ marginBottom: "min(3.47vw, 5.37vh)" }}
         >
-          <motion.div
-            className="relative inline-flex items-center justify-center overflow-hidden"
-            style={{
-              paddingLeft: "16px",
-              paddingRight: "16px",
-              paddingTop: "4px",
-              paddingBottom: "4px",
-            }}
+          <motion.h2
+            className="m-0 font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
+            // Line height matched to WhatWeLookFor section (150%)
+            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
             variants={fadeUp(0)}
           >
-            <motion.span
-              className="absolute inset-0 z-0 h-full w-full bg-[#D3E2FF]"
-              style={{ transformOrigin: "left" }}
-              variants={highlightScaleX(0.5)}
-            />
-            <h2
-              className="relative z-10 m-0 font-['Libre_Baskerville',_serif] font-semibold italic text-[#001A4D]"
-              style={{
-                fontSize: "clamp(32px, min(4.44vw, 6.51vh), 64px)",
-                lineHeight: "120%",
-              }}
-            >
-              {headingTop}
-            </h2>
-          </motion.div>
+            {headingTop}
+          </motion.h2>
 
           <motion.h2
-            className="m-0 font-['Libre_Baskerville',_serif] font-semibold text-[#001A4D]"
+            className="m-0 font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
             style={{
-              fontSize: "clamp(32px, min(4.44vw, 6.51vh), 64px)",
-              lineHeight: "120%",
-              marginTop: "clamp(4px, min(0.55vw, 0.81vh), 8px)",
+              fontSize: "min(4.51vw, 6.98vh)",
+              lineHeight: "150%",
             }}
-            variants={fadeUp(0.2)}
+            variants={fadeUp(0.15)}
           >
             {headingBottom}
           </motion.h2>
@@ -282,7 +281,7 @@ export default function LedByFoundersClient({
         <div
           className="flex w-full flex-col"
           style={{
-            marginTop: "clamp(48px, min(6.66vw, 9.77vh), 96px)",
+            // Removed marginTop so the exact padding gap from the heading above dictates spacing
             gap: "clamp(64px, min(8vw, 12vh), 120px)",
           }}
         >

@@ -63,13 +63,13 @@ function cdnImageSrc(url: string, width: number): string {
 }
 
 /* ─────────────────────────────────────────────────────────
-   Detail page layout (1440 design ref):
-     • Row 1: Back (left)  ⟂  About/<Name> (right)
-     • Row 2: Photo (517×564 on blob) left  +  Name / Title /
-       Social icons right
-     • Bio card (835 wide, cream) overlaps the bottom-right
-       of the photo column and is right-aligned in the grid.
-   All dimensions clamp proportionally from the 1440 baseline.
+   Fallback Constants (Used if Sanity fields are empty)
+   ───────────────────────────────────────────────────────── */
+const FALLBACK_TITLE = "Community And Social\nMedia Manager";
+const FALLBACK_BIO = `At Titan Capital, Supriya excels in representing the company’s community, PR, and social media presence. Coming with an engineering background from KGEC\n\n9 years of experience in digital marketing, she brings in a wealth of knowledge and expertise to the table. Her past experiences working in various industries, including but not limited to venture capital, logistics, real estate, and digital agencies, has honed her skills in digital space and provided her with a unique perspective required in the ever evolving markets.\n\nIn her breathing spell, Supriya loves to explore places in her vicinity and stay on top of the latest trends. Whether it’s through travel or keeping up with the latest advancements in her field, Supriya is always looking for means to generate niche skills, to grow and evolve.`;
+
+/* ─────────────────────────────────────────────────────────
+   Detail page layout
    ───────────────────────────────────────────────────────── */
 export default async function TeamMemberPage({
   params,
@@ -80,11 +80,18 @@ export default async function TeamMemberPage({
   const member = await getMember(slug);
   if (!member) notFound();
 
-  const emailHref =
-    member.emailUrl &&
-    (member.emailUrl.startsWith("mailto:")
+  // 1. Field Fallback Logic
+  const titleText = member.title || FALLBACK_TITLE;
+  const bioText = member.bio || FALLBACK_BIO;
+  
+  // 2. Social URLs (Always render `#` if empty so the icons stay visible)
+  const linkedinHref = member.linkedinUrl || "#";
+  const twitterHref = member.twitterUrl || "#";
+  const emailHref = member.emailUrl
+    ? member.emailUrl.startsWith("mailto:")
       ? member.emailUrl
-      : `mailto:${member.emailUrl}`);
+      : `mailto:${member.emailUrl}`
+    : "#";
 
   return (
     <main className="flex min-h-screen w-full flex-col bg-white">
@@ -106,21 +113,7 @@ export default async function TeamMemberPage({
               className="group inline-flex items-center transition-transform duration-300 hover:scale-105 hover:opacity-80"
               style={{ gap: "clamp(8px, min(0.8vw, 1.2vh), 14px)" }}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 57 57"
-                fill="none"
-                style={{
-                  width: "clamp(28px, min(2.5vw, 3.6vh), 36px)",
-                  height: "clamp(28px, min(2.5vw, 3.6vh), 36px)",
-                  aspectRatio: "1 / 1",
-                }}
-              >
-                <path
-                  d="M5.34375 28.5C5.34375 41.2883 15.7117 51.6562 28.5 51.6562C41.2883 51.6562 51.6562 41.2883 51.6562 28.5C51.6562 15.7117 41.2883 5.34375 28.5 5.34375C15.7117 5.34375 5.34375 15.7117 5.34375 28.5ZM29.0177 18.3291C29.1838 18.4938 29.3158 18.6897 29.4062 18.9055C29.4966 19.1212 29.5436 19.3527 29.5445 19.5867C29.5455 19.8206 29.5003 20.0525 29.4116 20.269C29.3229 20.4854 29.1925 20.6824 29.0277 20.8484L23.203 26.7188H38.0742C38.5466 26.7188 38.9997 26.9064 39.3338 27.2405C39.6678 27.5745 39.8555 28.0276 39.8555 28.5C39.8555 28.9724 39.6678 29.4255 39.3338 29.7595C38.9997 30.0936 38.5466 30.2812 38.0742 30.2812H23.203L29.0277 36.1516C29.1925 36.3178 29.3229 36.5149 29.4115 36.7315C29.5001 36.9481 29.5452 37.1801 29.5441 37.4141C29.5431 37.6482 29.496 37.8797 29.4055 38.0956C29.3149 38.3114 29.1828 38.5073 29.0166 38.6721C28.8503 38.8368 28.6533 38.9672 28.4367 39.0558C28.22 39.1445 27.9881 39.1895 27.754 39.1885C27.52 39.1875 27.2884 39.1403 27.0726 39.0498C26.8568 38.9593 26.6609 38.8271 26.4961 38.6609L17.6578 29.7547C17.3267 29.421 17.1409 28.97 17.1409 28.5C17.1409 28.03 17.3267 27.579 17.6578 27.2453L26.4961 18.3391C26.6609 18.1726 26.8569 18.0403 27.0729 17.9497C27.2889 17.8591 27.5206 17.812 27.7548 17.8111C27.989 17.8102 28.2211 17.8554 28.4378 17.9443C28.6545 18.0332 28.8516 18.1639 29.0177 18.3291Z"
-                  fill="black"
-                />
-              </svg>
+              
               <span
                 className="font-['Poppins',_sans-serif] font-light text-black"
                 style={{
@@ -145,7 +138,7 @@ export default async function TeamMemberPage({
               >
                 About
               </Link>
-              <span className="font-light">/</span>
+              <span className="font-light"> / </span>
               <span className="font-medium">{member.name}</span>
             </p>
           </div>
@@ -158,9 +151,8 @@ export default async function TeamMemberPage({
               gap: "clamp(28px, min(3vw, 4.5vh), 56px)",
             }}
           >
-            {/* Photo with cream blob (688×664 native PNG used for both
-                the colour BG and as the alpha mask on the photo) */}
-            <div className="relative shrink-0">
+            {/* Photo with cream blob */}
+            <div className="relative shrink-0 z-0">
               <div
                 className="relative"
                 style={{
@@ -182,9 +174,6 @@ export default async function TeamMemberPage({
                 />
                 {member.image && (
                   <div
-                    // Mask container matches the blob img's exact offset
-                    // (top 6 %, left 5 %) and full size, same as the team
-                    // section — so the cutout takes the blob shape.
                     className="absolute h-full w-full"
                     style={{
                       top: "6%",
@@ -197,10 +186,6 @@ export default async function TeamMemberPage({
                       maskRepeat: "no-repeat",
                     }}
                   >
-                    {/* Inner container is 75 % × 85 %, anchored to the
-                        mask's BOTTOM-left — same as OurTeamClient — so
-                        the photo renders smaller, pushed to the left,
-                        starting from the bottom of the blob. */}
                     <div
                       className="absolute"
                       style={{
@@ -224,8 +209,10 @@ export default async function TeamMemberPage({
               </div>
             </div>
 
-            {/* Right column: name, title, icons */}
-            <div className="flex w-full flex-1 flex-col">
+            {/* Right column: name, title, icons, bio 
+                Added max-lg:-mt-12 to create negative vertical padding between photo and text on mobile.
+                Added lg:pt-12 to align Name with the face on desktop rather than the high blob edge. */}
+            <div className="flex w-full flex-1 flex-col max-lg:-mt-12 lg:pt-12 relative z-10">
               <h1
                 className="m-0 font-['Poppins',_sans-serif] font-medium text-[#0E0E0E]"
                 style={{
@@ -235,105 +222,93 @@ export default async function TeamMemberPage({
               >
                 {member.name}
               </h1>
+              
+              {/* Title using whitespace-pre-line to respect line breaks */}
               <p
-                className="m-0 font-['Poppins',_sans-serif] font-normal capitalize text-[#0E0E0E]"
+                className="m-0 font-['Poppins',_sans-serif] font-normal capitalize text-[#0E0E0E] whitespace-pre-line"
                 style={{
                   fontSize: "clamp(20px, min(2.22vw, 3.25vh), 32px)",
                   lineHeight: "158%",
                 }}
               >
-                {member.title}
+                {titleText}
               </p>
 
-              {(member.linkedinUrl || emailHref || member.twitterUrl) && (
-                <div
-                  className="flex items-center"
+              {/* Social Icons (Always rendered, regardless of Sanity data) */}
+              <div
+                className="flex items-center"
+                style={{
+                  gap: "clamp(10px, min(1.1vw, 1.6vh), 18px)",
+                  marginTop: "clamp(16px, min(1.7vw, 2.5vh), 28px)",
+                }}
+              >
+                <a
+                  href={linkedinHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${member.name} on LinkedIn`}
+                  className="inline-block transition-transform duration-200 hover:scale-110"
                   style={{
-                    gap: "clamp(10px, min(1.1vw, 1.6vh), 18px)",
-                    marginTop: "clamp(16px, min(1.7vw, 2.5vh), 28px)",
+                    width: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
+                    height: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
+                    aspectRatio: "1 / 1",
                   }}
                 >
-                  {member.linkedinUrl && (
-                    <a
-                      href={member.linkedinUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={`${member.name} on LinkedIn`}
-                      className="inline-block transition-transform duration-200 hover:scale-110"
-                      style={{
-                        width: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
-                        height: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
-                        aspectRatio: "1 / 1",
-                      }}
-                    >
-                      <LinkedInIcon className="h-full w-full" />
-                    </a>
-                  )}
-                  {emailHref && (
-                    <a
-                      href={emailHref}
-                      aria-label={`Email ${member.name}`}
-                      className="inline-block transition-transform duration-200 hover:scale-110"
-                      style={{
-                        width: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
-                        height: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
-                        aspectRatio: "1 / 1",
-                      }}
-                    >
-                      <GmailIcon className="h-full w-full" />
-                    </a>
-                  )}
-                  {member.twitterUrl && (
-                    <a
-                      href={member.twitterUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={`${member.name} on X`}
-                      className="inline-block transition-transform duration-200 hover:scale-110"
-                      style={{
-                        width: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
-                        height: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
-                        aspectRatio: "1 / 1",
-                      }}
-                    >
-                      <XIcon className="h-full w-full" />
-                    </a>
-                  )}
-                </div>
-              )}
+                  <LinkedInIcon className="h-full w-full" />
+                </a>
+                
+                <a
+                  href={emailHref}
+                  aria-label={`Email ${member.name}`}
+                  className="inline-block transition-transform duration-200 hover:scale-110"
+                  style={{
+                    width: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
+                    height: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
+                    aspectRatio: "1 / 1",
+                  }}
+                >
+                  <GmailIcon className="h-full w-full" />
+                </a>
+                
+                <a
+                  href={twitterHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${member.name} on X`}
+                  className="inline-block transition-transform duration-200 hover:scale-110"
+                  style={{
+                    width: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
+                    height: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
+                    aspectRatio: "1 / 1",
+                  }}
+                >
+                  <XIcon className="h-full w-full" />
+                </a>
+              </div>
 
-              {/* Bio card — on mobile flows below the icons in normal
-                  order. On lg+ it gets pulled left + up via negative
-                  margins so the left edge overlaps the photo and the
-                  card sits in the lower half of the row. */}
-              {member.bio && (
-                <div
-                  className="relative z-10 box-border flex w-full self-stretch lg:self-end"
-                  style={{
-                    background: "#FBF7F0",
-                    borderRadius: "12px",
-                    boxShadow: "0 0 46.7px 0 rgba(157, 157, 157, 0.25)",
-                    padding:
-                      "clamp(20px, min(2.36vw, 3.45vh), 34px) clamp(16px, min(2vw, 3vh), 28px)",
-                    marginTop: "clamp(24px, min(3vw, 4.4vh), 56px)",
-                    maxWidth: "clamp(320px, min(58vw, 100%), 835px)",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: "10px",
-                  }}
-                >
-                  <p
-                    className="m-0 whitespace-pre-line font-['Poppins',_sans-serif] font-normal text-black"
-                    style={{
-                      fontSize: "clamp(14px, min(1.67vw, 2.44vh), 24px)",
-                      lineHeight: "150%",
-                      maxWidth: "clamp(280px, min(51.3vw, 100%), 739px)",
-                    }}
-                  >
-                    {member.bio}
-                  </p>
-                </div>
-              )}
+              {/* Bio card — Overlaps the left image horizontally and is shifted down vertically. */}
+<div
+  className="relative z-10 box-border flex self-stretch lg:self-end max-lg:mt-8 lg:mt-24 xl:mt-36 max-lg:w-full lg:-ml-[clamp(80px,8vw,140px)] lg:w-[calc(100%+clamp(80px,8vw,140px))]"
+  style={{
+    background: "#FBF7F0",
+    borderRadius: "2px",
+    padding: "clamp(20px, min(2.36vw, 3.45vh), 34px)",
+    maxWidth: "clamp(420px, 85vw, 1035px)",
+    justifyContent: "center",
+    alignItems: "center",
+  }}
+>
+  {/* Added w-full to the className and removed the maxWidth from style */}
+  <p
+    className="m-0 w-full whitespace-pre-line font-['Poppins',_sans-serif] font-normal text-black"
+    style={{
+      fontSize: "clamp(14px, min(1.67vw, 2.44vh), 24px)",
+      lineHeight: "150%",
+    }}
+  >
+    {bioText}
+  </p>
+</div>
             </div>
           </div>
         </div>

@@ -295,18 +295,18 @@ const LOGO_W = 150;
 const LOGO_H = 40;
 
 const companies = [
-  { name: "Shadowfax",     bgImage: "/images/portfolio/shadowfax_bg.webp",     logo: "/images/logos_backup/Shadowfax.svg",                logoScale: 1.2 },
-  { name: "Credgenics",    bgImage: "/images/portfolio/credgenics_bg.webp",    logo: "/images/logos_backup/Credgenics.svg",               logoScale: 0.9 },
-  { name: "OLA",           bgImage: "/images/portfolio/ola_bg.webp",           logo: "/images/logos_backup/ola.svg",                      logoScale: 0.7 },
-  // { name: "Zouk",          bgImage: "/images/portfolio/zouk_bg.webp",          logo: "/images/logos_backup/zouk_new_logo.webp",           logoScale: 0.8 },
-  { name: "Cart.com",      bgImage: "/images/portfolio/Cart.com_bg.webp",      logo: "/images/logos_backup/cartdotcom.svg",               logoScale: 1.0, noInvert: true },
-  { name: "Unicommerce",   bgImage: "/images/portfolio/Unicommerce_bg.webp",   logo: "/images/logos_backup/unicommerce-logo.svg",         logoScale: 1.0 },
-  { name: "Khatabook",     bgImage: "/images/portfolio/khatabook_bg.webp",     logo: "/images/logos_backup/khatabook.png",                logoScale: 1.2, logoClass: "translate-y-[5px]" },
-  { name: "Mamaearth",     bgImage: "/images/portfolio/mamaearth_bg.webp",     logo: "/images/logos_backup/mamaearthpng-logo.webp",       logoScale: 1.0 },
-  { name: "Ofbusiness",    bgImage: "/images/portfolio/ofbusiness_bg.webp",    logo: "/images/logos_backup/ofbusiness_white.svg",         logoScale: 1.0 },
-  { name: "Razorpay",      bgImage: "/images/portfolio/razorpay_bg.webp",      logo: "/images/logos_backup/Razorpay-logo.webp",           logoScale: 1.0 },
-  { name: "Snapdeal",      bgImage: "/images/portfolio/snapdeal_bg.webp",      logo: "/images/logos_backup/snapdeal-company-1-logo.webp", logoScale: 1.0 },
-  { name: "Urban Company", bgImage: "/images/portfolio/urbanccompany_bg.webp", logo: "/images/logos_backup/uc_white.png",                 logoScale: 1.0 },
+  { name: "Shadowfax",     bgImage: "/images/portfolio/shadowfax.webp",     logo: "/images/logos_backup/Shadowfax.svg",                logoScale: 1.2 },
+  { name: "Credgenics",    bgImage: "/images/portfolio/credgenics.webp",    logo: "/images/logos_backup/Credgenics.svg",               logoScale: 0.9 },
+  { name: "OLA",           bgImage: "/images/portfolio/ola.webp",           logo: "/images/logos_backup/ola.svg",                      logoScale: 0.7 },
+  { name: "Zouk",          bgImage: "/images/portfolio/zouk.webp",          logo: "/images/logos_backup/zouk_new_logo.webp",           logoScale: 0.8 },
+  { name: "Cart.com",      bgImage: "/images/portfolio/cartdotcom.webp",    logo: "/images/logos_backup/cartdotcom.svg",               logoScale: 1.0, noInvert: true },
+  { name: "Unicommerce",   bgImage: "/images/portfolio/unicommerce.webp",   logo: "/images/logos_backup/unicommerce-logo.svg",         logoScale: 1.0, bgPosition: "center bottom" },
+  { name: "Khatabook",     bgImage: "/images/portfolio/khatabook.webp",     logo: "/images/logos_backup/khatabook.png",                logoScale: 1.2, logoClass: "translate-y-[5px]" },
+  { name: "Mamaearth",     bgImage: "/images/portfolio/mamaearth.webp",     logo: "/images/logos_backup/mamaearthpng-logo.webp",       logoScale: 1.0 },
+  { name: "Ofbusiness",    bgImage: "/images/portfolio/ofbusiness.webp",    logo: "/images/logos_backup/ofbusiness_white.svg",         logoScale: 1.0 },
+  { name: "Razorpay",      bgImage: "/images/portfolio/razorpay.webp",      logo: "/images/logos_backup/Razorpay-logo.webp",           logoScale: 1.0 },
+  { name: "Snapdeal",      bgImage: "/images/portfolio/snapdeal.webp",      logo: "/images/logos_backup/snapdeal-company-1-logo.webp", logoScale: 1.0 },
+  { name: "Urban Company", bgImage: "/images/portfolio/urbancompany.webp",  logo: "/images/logos_backup/uc_white.png",                 logoScale: 1.0 },
 ];
 
 /* ═══════════════════════════════════════════════════════
@@ -348,6 +348,7 @@ function CompanyCard({ company, mode = "marquee" }: { company: (typeof companies
         fill
         sizes={isMarquee ? "(max-width: 768px) 45vw, 22vw" : "50vw"}
         className={`object-cover ${isMarquee ? "" : "transition-transform duration-500 ease-out group-hover/card:scale-105"}`}
+        style={{ objectPosition: company.bgPosition ?? "center" }}
       />
 
       <div

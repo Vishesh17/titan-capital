@@ -17,14 +17,6 @@ const fadeUp = (delay = 0) => ({
   },
 });
 
-const highlightScaleX = (delay = 0.5) => ({
-  hidden: { scaleX: 0 },
-  visible: {
-    scaleX: 1,
-    transition: { duration: 0.6, ease: "easeInOut" as const, delay },
-  },
-});
-
 /* ─────────────────────────────────────────────────────────
    Types
    ───────────────────────────────────────────────────────── */
@@ -59,55 +51,34 @@ const FALLBACK_DESC =
 // cols 1-2 rows 2-3 on lg. Front/back is alternated so each global
 // flip swaps every cell.
 const GRID_STRUCTURE = [
-  // Card 0 — mobile r1c1 / lg r1c1
+  // Row 1 (lg): 6 cards spanning cols 1-6, full width
   { frontIsBox: true,  gridClass: "col-start-1 row-start-1 lg:col-start-1 lg:row-start-1" },
-  // Card 1 — mobile r1c2 / lg r1c2
   { frontIsBox: false, gridClass: "col-start-2 row-start-1 lg:col-start-2 lg:row-start-1" },
-  // Card 2 — mobile r1c3 / lg r1c3
   { frontIsBox: true,  gridClass: "col-start-3 row-start-1 lg:col-start-3 lg:row-start-1" },
-  // Card 3 — mobile r1c4 / lg r1c4
   { frontIsBox: false, gridClass: "col-start-4 row-start-1 lg:col-start-4 lg:row-start-1" },
-  // Card 4 — mobile r2c3 / lg r1c5
   { frontIsBox: true,  gridClass: "col-start-3 row-start-2 lg:col-start-5 lg:row-start-1" },
+  { frontIsBox: false, gridClass: "col-start-4 row-start-2 lg:col-start-6 lg:row-start-1" },
 
-  // Card 5 — mobile r2c4 / lg r2c2
-  { frontIsBox: true,  gridClass: "col-start-4 row-start-2 lg:col-start-2 lg:row-start-2" },
-  // Card 6 — mobile r3c3 / lg r2c3
+  // Row 2 (lg): heading owns cols 1-2, 4 cards fill cols 3-6
   { frontIsBox: false, gridClass: "col-start-3 row-start-3 lg:col-start-3 lg:row-start-2" },
-  // Card 7 — mobile r3c4 / lg r2c4
   { frontIsBox: true,  gridClass: "col-start-4 row-start-3 lg:col-start-4 lg:row-start-2" },
-  // Card 8 — mobile r4c3 / lg r2c5
   { frontIsBox: false, gridClass: "col-start-3 row-start-4 lg:col-start-5 lg:row-start-2" },
+  { frontIsBox: true,  gridClass: "col-start-4 row-start-4 lg:col-start-6 lg:row-start-2" },
 
-  // Card 9 — mobile r4c4 / lg r3c3
-  { frontIsBox: true,  gridClass: "col-start-4 row-start-4 lg:col-start-3 lg:row-start-3" },
-  // Card 10 — mobile r5c1 / lg r3c4
-  { frontIsBox: false, gridClass: "col-start-1 row-start-5 lg:col-start-4 lg:row-start-3" },
-  // Card 11 — mobile r5c2 / lg r3c5
-  { frontIsBox: true,  gridClass: "col-start-2 row-start-5 lg:col-start-5 lg:row-start-3" },
+  // Row 3 (lg): heading owns cols 1-2, 3 cards in cols 4-6 (col 3 empty)
+  { frontIsBox: true,  gridClass: "col-start-1 row-start-5 lg:col-start-4 lg:row-start-3" },
+  { frontIsBox: false, gridClass: "col-start-2 row-start-5 lg:col-start-5 lg:row-start-3" },
+  { frontIsBox: true,  gridClass: "col-start-3 row-start-5 lg:col-start-6 lg:row-start-3" },
 ];
 
 const FALLBACK_IMAGES = Array.from(
-  { length: 12 },
+  { length: 13 },
   (_, i) => `/images/team${i + 1}.jpg`
 );
 
 /* ─────────────────────────────────────────────────────────
    Sub-Components
    ───────────────────────────────────────────────────────── */
-const Dot = ({ className }: { className: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="10"
-    height="10"
-    viewBox="0 0 10 10"
-    fill="none"
-    className={`absolute z-20 ${className}`}
-  >
-    <circle cx="5" cy="5" r="5" fill="#323232" />
-  </svg>
-);
-
 const Photo = ({ src }: { src: string }) => (
   <div className="relative h-full w-full bg-[#f0f0f0]">
     <Image
@@ -121,7 +92,7 @@ const Photo = ({ src }: { src: string }) => (
   </div>
 );
 
-const BlueBox = () => <div className="h-[82%] w-[76.5%] bg-[#D3E2FF]" />;
+const BlueBox = () => <div className="h-[76%] w-[76.5%] bg-[#D3E2FF]" />;
 
 function FlipCard({
   isFlipped,
@@ -140,13 +111,8 @@ function FlipCard({
       // proper rectangles at their small size, not tall thin slivers.
       // Desktop: aspect-auto + height = viewport-derived slice so the
       // 5-col diamond auto-adapts (portrait/square/landscape per screen).
-      className={`relative w-full aspect-[205/229] lg:aspect-auto lg:h-[var(--card-h)] [perspective:1200px] ${gridClass}`}
+      className={`relative w-full aspect-[100/103] [perspective:1200px] ${gridClass}`}
     >
-      <Dot className="-left-[5px] -top-[5px]" />
-      <Dot className="-right-[5px] -top-[5px]" />
-      <Dot className="-bottom-[5px] -left-[5px]" />
-      <Dot className="-bottom-[5px] -right-[5px]" />
-
       <div
         className={`relative h-full w-full transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] [transform-style:preserve-3d] ${
           isFlipped ? "[transform:rotateY(180deg)]" : ""
@@ -216,7 +182,7 @@ export default function OurTeamHeroClient({
         // to it). marginTop pushes the section below the fixed navbar,
         // minHeight makes it fill the remaining viewport, then the
         // padding tokens are the site-wide section rhythm.
-        marginTop: "var(--nav-height)",
+        marginTop: "var(--nav-height) -20px",
         minHeight: "calc(100svh - var(--nav-height))",
         paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
         paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
@@ -232,86 +198,60 @@ export default function OurTeamHeroClient({
           one viewport because each FlipCard carries its own max-height,
           not because the container is narrowed. */}
       <div className="mx-auto flex w-full max-w-[1440px] flex-col">
+        {/* 4-col grid on mobile, 6-col grid on lg. Row 1 spans all 6
+            cols. The text block occupies cols 1-2 of rows 2-3. Cards
+            6-9 fill cols 3-6 of row 2. Cards 10-11 sit at cols 5-6 of
+            row 3 (right edge), matching the design. Cards fill their
+            columns via w-full + aspect-[3/4] so size follows viewport
+            width naturally. */}
         <div
-          // Grid fills the max-w-[1440px] outer wrapper — no inner
-          // max-w cap — so the section's left / right extents line
-          // up with Footer, LedByFounders, and OurTeamClient. Cards
-          // are portrait rectangles via aspect-ratio 205/229; on
-          // shorter viewports the section will overflow slightly
-          // (a small scroll) rather than contract the grid inward.
-          // Mobile: 4-col grid so the top row shows all 4 cards side
-          // by side (per the mobile design). Desktop lg+: 5-col diamond.
-          className="grid w-full grid-cols-4 lg:grid-cols-5"
+          className="grid w-full grid-cols-4 lg:grid-cols-6 lg:pl-[clamp(20px,min(3vw,4vh),80px)]"
           style={{
-            columnGap: "clamp(14px, min(2vw, 2.5vh), 32px)",
-            rowGap: "clamp(18px, min(2.4vw, 3vh), 40px)",
-            // CSS var consumed by each FlipCard at lg+ (aspect-ratio
-            // drives card height on mobile).
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ["--card-h" as any]:
-              "clamp(80px, calc((100svh - 300px) / 3), 400px)",
+            columnGap: "clamp(14px, min(1.8vw, 2.2vh), 32px)",
+            rowGap: "clamp(18px, min(2.2vw, 2.8vh), 40px)",
           }}
         >
-          {/* Row 1 (items 0-4) */}
-          {teamItems.slice(0, 5).map((item) => (
+          {/* Row 1 (items 0-5) — 6 cards spanning full width on lg */}
+          {teamItems.slice(0, 6).map((item) => (
             <FlipCard key={item.id} {...item} isFlipped={isFlipped} />
           ))}
 
           {/* ── TEXT BLOCK ──
-              Mobile: spans cols 1-2 and rows 2-4 (occupying the left
-              half of the 4-col grid while cards 4-9 sit in cols 3-4).
-              Desktop lg+: spans cols 1-2 rows 2-3 with pt-[calc()]
-              pushing the first heading line to the midpoint of row 2. */}
+              Mobile: cols 1-2 rows 2-4.
+              Desktop lg+: cols 1-2 rows 2-3. */}
           <motion.div
-            className="pointer-events-none relative z-10 col-start-1 col-span-2 row-start-2 row-span-3 flex flex-col items-start lg:col-span-2 lg:col-start-1 lg:row-span-2 lg:row-start-2 lg:pt-[calc((100svh-300px)/6)]"
+            className="pointer-events-none relative z-10 col-start-1 col-span-2 row-start-2 row-span-3 flex flex-col items-start lg:col-span-2 lg:col-start-1 lg:row-span-2 lg:row-start-2"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.4 }}
           >
             <motion.h1
-              className="pointer-events-auto m-0 font-['Libre_Baskerville',_serif] font-semibold text-[#0E0E0E]"
+              className="pointer-events-auto m-0 font-['Poppins',_sans-serif] font-bold uppercase text-[#0E0E0E]"
               style={{
-                fontSize: "clamp(28px, min(4.4vw, 5.4vh), 56px)",
-                lineHeight: "118%",
+                fontSize: "clamp(40px, min(5.55vw, 8.6vh), 96px)",
+                lineHeight: "140%",
               }}
               variants={fadeUp(0)}
             >
               {titleLine1}
             </motion.h1>
 
-            <motion.div
-              // inline-flex + padding sizes the cream highlight to fit
-              // "Backing" — no clipping at any viewport.
-              className="pointer-events-auto relative my-1 inline-flex items-center justify-center overflow-hidden"
+            <motion.h1
+              className="pointer-events-auto m-0 font-['Poppins',_sans-serif] font-bold uppercase text-[#0E0E0E]"
               style={{
-                paddingLeft: "clamp(8px, 1vw, 14px)",
-                paddingRight: "clamp(8px, 1vw, 14px)",
-                paddingTop: "2px",
-                paddingBottom: "2px",
+                fontSize: "clamp(40px, min(5.55vw, 8.6vh), 96px)",
+                lineHeight: "140%",
               }}
               variants={fadeUp(0.15)}
             >
-              <motion.span
-                className="absolute inset-0 z-0 h-full w-full bg-[#FBF7F0]"
-                style={{ transformOrigin: "left" }}
-                variants={highlightScaleX(0.55)}
-              />
-              <h1
-                className="relative z-10 m-0 font-['Libre_Baskerville',_serif] font-semibold italic text-[#0E0E0E]"
-                style={{
-                  fontSize: "clamp(28px, min(4.4vw, 5.4vh), 56px)",
-                  lineHeight: "118%",
-                }}
-              >
-                {titleLine2}
-              </h1>
-            </motion.div>
+              {titleLine2}
+            </motion.h1>
 
             <motion.h1
-              className="pointer-events-auto m-0 font-['Libre_Baskerville',_serif] font-semibold text-[#0E0E0E]"
+              className="pointer-events-auto m-0 font-['Poppins',_sans-serif] font-bold uppercase text-[#0E0E0E]"
               style={{
-                fontSize: "clamp(28px, min(4.4vw, 5.4vh), 56px)",
-                lineHeight: "118%",
+                fontSize: "clamp(40px, min(5.55vw, 8.6vh), 96px)",
+                lineHeight: "140%",
               }}
               variants={fadeUp(0.3)}
             >
@@ -321,8 +261,8 @@ export default function OurTeamHeroClient({
             <motion.p
               className="pointer-events-auto m-0 font-['Poppins',_sans-serif] font-normal text-[#000]"
               style={{
-                marginTop: "clamp(8px, min(1vw, 1.4vh), 16px)",
-                maxWidth: "clamp(220px, min(28vw, 100%), 420px)",
+                marginTop: "clamp(12px, min(1.4vw, 2vh), 24px)",
+                maxWidth: "100%",
                 fontSize: "clamp(13px, min(1.5vw, 1.8vh), 20px)",
                 lineHeight: "150%",
               }}
@@ -332,8 +272,8 @@ export default function OurTeamHeroClient({
             </motion.p>
           </motion.div>
 
-          {/* Rows 2-3 cards (items 5-11) */}
-          {teamItems.slice(5).map((item) => (
+          {/* Rows 2-3 cards (items 6-11) */}
+          {teamItems.slice(6).map((item) => (
             <FlipCard key={item.id} {...item} isFlipped={isFlipped} />
           ))}
         </div>

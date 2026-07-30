@@ -26,19 +26,19 @@ export interface WhatWeBelieveData {
 const HEADING = "What We Believe";
 const BELIEFS: Belief[] = [
   {
-    title: "Founder Centricity",
+    title: "Founder-Centricity",
     description:
-      "We back individuals ahead of market cycles. Exceptional founders possess the resilience to iterate and the vision to define new categories; our conviction is anchored in the person, remaining constant as the business model evolves.",
+      "Our conviction is anchored in the individual, not the market cycle. Great founders have the resilience to iterate and define new categories.",
   },
   {
     title: "Conviction Consensus",
     description:
-      "We forgo herd mentality. By identifying asymmetric potential before it is market-validated, we prioritize independent, contrarian analysis over industry consensus.",
+      "We don’t wait for consensus. The best opportunities often look wrong before they're proven right. We back our own read, even when it's early.",
   },
   {
     title: "Commitment Endurance",
     description:
-      "Partnership transcends the initial capital injection. We remain deeply engaged through talent acquisition, iterative pivots, and subsequent funding, providing support in the decisive moments that define long-term success.",
+      "Our involvement doesn't end at the cheque. We stay close through all the pivots providing support in the decisive moments that define long-term success.",
   },
 ];
 

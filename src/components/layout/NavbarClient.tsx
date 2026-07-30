@@ -3,11 +3,26 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useScroll, useMotionValueEvent } from "framer-motion";
 import { useLenis } from "lenis/react";
 
+/* Routes whose hero renders on a LIGHT background — the navbar
+   flips to dark-on-light while the user is above the scroll
+   threshold. Once scrolled past 60px it snaps back to the
+   default navy pill for consistency with every other section. */
+const INVERTED_HERO_ROUTES = new Set(["/ourTeam", "/indicorns"]);
+
 /* ─── Cursor-origin fill button (shared) ─── */
-function NavCursorFillButton({ href, label }: { href: string; label: string }) {
+function NavCursorFillButton({
+  href,
+  label,
+  inverted,
+}: {
+  href: string;
+  label: string;
+  inverted: boolean;
+}) {
   const [origin, setOrigin] = useState("50% 50%");
   const [hovered, setHovered] = useState(false);
 
@@ -26,6 +41,12 @@ function NavCursorFillButton({ href, label }: { href: string; label: string }) {
     setOrigin(`${x}% ${y}%`);
     setHovered(false);
   };
+
+  const baseColor = inverted ? "#0E0E0E" : "white";
+  const hoverColor = inverted ? "white" : "#001A4D";
+  const borderColor = inverted ? "#0E0E0E" : "#CDCDCD";
+  const fillColor = inverted ? "#001A4D" : "white";
+
   return (
     <Link
       href={href}
@@ -36,13 +57,14 @@ function NavCursorFillButton({ href, label }: { href: string; label: string }) {
         width: "min(12.15vw, 18.8vh)",
         height: "min(3.36vw, 5.19vh)",
         borderRadius: "53px",
-        border: "1px solid #CDCDCD",
-        color: hovered ? "#001A4D" : "white",
+        border: `1px solid ${borderColor}`,
+        color: hovered ? hoverColor : baseColor,
       }}
     >
       <span
-        className="absolute inset-0 bg-white transition-transform duration-400 ease-out"
+        className="absolute inset-0 transition-transform duration-400 ease-out"
         style={{
+          background: fillColor,
           transformOrigin: origin,
           transform: hovered ? "scale(1)" : "scale(0)",
           borderRadius: "inherit",
@@ -110,8 +132,12 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
   const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
 
-  const lenis = useLenis(); 
-  const { scrollY } = useScroll(); 
+  const pathname = usePathname();
+  const isInvertedRoute = INVERTED_HERO_ROUTES.has(pathname);
+  const inverted = isInvertedRoute && !scrolled;
+
+  const lenis = useLenis();
+  const { scrollY } = useScroll();
 
   // Restored the missing variables here!
   const sections = data?.sections?.length ? data.sections : FALLBACK_SECTIONS;
@@ -154,7 +180,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
           aria-label="Open Menu"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="26" height="17" viewBox="0 0 26 17" fill="none">
-            <path d="M0 1.5V0H25.5V1.5H0ZM25.5 7.5V9H0V7.5H25.5ZM0 15H25.5V16.5H0V15Z" fill="white"/>
+            <path d="M0 1.5V0H25.5V1.5H0ZM25.5 7.5V9H0V7.5H25.5ZM0 15H25.5V16.5H0V15Z" fill={inverted ? "#0E0E0E" : "white"} />
           </svg>
         </button>
 
@@ -165,12 +191,12 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
             width={98}
             height={32}
             priority
-            className="h-[32px] w-[98px] object-contain brightness-0 invert max-md:!h-[clamp(24px,4dvh,30px)] max-md:!w-[clamp(74px,12vw,92px)]"
+            className={`h-[32px] w-[98px] object-contain max-md:!h-[clamp(24px,4dvh,30px)] max-md:!w-[clamp(74px,12vw,92px)] ${inverted ? "" : "brightness-0 invert"}`}
           />
         </Link>
 
         <div className="hidden md:block">
-          <NavCursorFillButton href={ctaUrl} label={ctaLabel} />
+          <NavCursorFillButton href={ctaUrl} label={ctaLabel} inverted={inverted} />
         </div>
       </nav>
 

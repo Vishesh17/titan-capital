@@ -386,7 +386,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
           style={{ opacity: sideLabelsOpacity }}
           className="pointer-events-none absolute right-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 font-['Poppins',_sans-serif] text-[min(1.04vw,1.61vh)] font-medium tracking-[0.2em] text-white/70 max-md:!right-auto max-md:!left-1/2 max-md:!top-auto max-md:!bottom-[18vh] max-md:!-translate-x-1/2 max-md:!translate-y-0 max-md:!text-[14px]"
         >
-          ENDURING-VALUE
+          OPERATOR-LED
         </motion.span>
 
         <motion.p
@@ -502,7 +502,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 </span>
                 <span className="flex flex-col items-start leading-[86%]">
                   <RevealLine show={headingReady} delay={1.7}>Enduring</RevealLine>
-                  <RevealLine show={headingReady} delay={2.0}>Impact</RevealLine>
+                  <RevealLine show={headingReady} delay={2.0}>Companies</RevealLine>
                 </span>
               </span>
             </h1>

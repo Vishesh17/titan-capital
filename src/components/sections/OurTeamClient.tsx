@@ -9,11 +9,10 @@ import LinkedInIcon from "@/components/icons/LinkedInIcon";
 import XIcon from "@/components/icons/XIcon";
 
 /* ─────────────────────────────────────────────────────────
-   Types — shared with the server wrapper (OurTeam.tsx).
+   Types
    ───────────────────────────────────────────────────────── */
 export interface TeamMember {
   name: string;
-  /** URL slug — also drives /ourteam/<slug> detail page. */
   slug?: string;
   title: string;
   bio?: string;
@@ -31,8 +30,6 @@ export interface OurTeamData {
   winnerFundTeam?: TeamMember[];
 }
 
-/* Slug helper for fallback data + safety net when a Sanity entry
-   forgets its slug. Lowercase, alphanumeric joined by hyphens. */
 export function teamSlug(name: string): string {
   return name
     .toLowerCase()
@@ -42,12 +39,7 @@ export function teamSlug(name: string): string {
 }
 
 /* ─────────────────────────────────────────────────────────
-   Fallback content — rendered when Sanity returns null or
-   the doc hasn't been populated yet. Editors replace by
-   creating the "Our Team Page" document in Studio.
-   Placeholder URLs (#) ensure all three social icons render
-   so the layout matches the design even before real links
-   are added in Studio.
+   Fallback content
    ───────────────────────────────────────────────────────── */
 const FALLBACK_HEADING_FIRST = "Meet The";
 const FALLBACK_HEADING_SECOND = "Full Team.";
@@ -86,9 +78,6 @@ const FALLBACK_WINNER: TeamMember[] = [
   fallback("Vatsal Singh", "Investment Analyst"),
 ];
 
-/* ─────────────────────────────────────────────────────────
-   Sanity CDN transform helper.
-   ───────────────────────────────────────────────────────── */
 function cdnImageSrc(url: string, width: number): string {
   if (!url) return url;
   if (!url.startsWith("https://cdn.sanity.io/")) return url;
@@ -96,28 +85,15 @@ function cdnImageSrc(url: string, width: number): string {
 }
 
 /* ─────────────────────────────────────────────────────────
-   Reusable organic blob path — used as both the background
-   decoration AND the clip-path for the photo. Two SVG defs
-   live at the top of the section; cards reference them by id.
-   The viewBox is 254×250 so transforms can use clipPathUnits
-   ="objectBoundingBox" by scaling 1/254 × 1/250.
+   Reusable organic blob path
    ───────────────────────────────────────────────────────── */
-/* Blue blob asset — the actual design-ref vector saved as PNG with
-   transparent surrounding. The native dimensions are 440×436; the
-   image is used as both the colour BG and the mask on the photo
-   so the photo takes the exact same organic shape. */
 const BLOB_SRC = "/images/team/blob-blue.png";
 const BLOB_VIEWBOX_W = 440;
 const BLOB_VIEWBOX_H = 436;
 
-/* No-op kept for layout parity — defs are no longer needed since we
-   mask the photo with the PNG itself (mask-image). */
 function BlobDefs() {
   return null;
 }
-
-/* Social icons live in /components/icons — single source of truth,
-   reused on the slug page as well. */
 
 function SocialLink({
   href,
@@ -136,8 +112,8 @@ function SocialLink({
       aria-label={label}
       className="inline-block transition-transform duration-200 hover:scale-110"
       style={{
-        width: "clamp(22px, min(2vw, 3vh), 30px)",
-        height: "clamp(22px, min(2vw, 3vh), 30px)",
+        width: "clamp(18px, min(1.6vw, 2.2vh), 24px)",
+        height: "clamp(18px, min(1.6vw, 2.2vh), 24px)",
         aspectRatio: "1 / 1",
       }}
     >
@@ -147,60 +123,46 @@ function SocialLink({
 }
 
 /* ─────────────────────────────────────────────────────────
-   Single team-member card — blob background + clipped photo
-   (monochrome by default, colour on hover) + name + title
-   + social icons.
+   Single team-member card 
    ───────────────────────────────────────────────────────── */
 function TeamCard({
   member,
   rotateBlob,
 }: {
   member: TeamMember;
-  /** Small rotation applied to the bg blob for extra organic variety. */
   rotateBlob: number;
 }) {
   const slug = member.slug || teamSlug(member.name);
-
-  // Normalise the email link — accept either a plain address or a
-  // pre-formed mailto:.
-  const emailHref =
-    member.emailUrl &&
-    (member.emailUrl.startsWith("mailto:")
+  
+  const linkedinHref = member.linkedinUrl || "#";
+  const emailHref = member.emailUrl
+    ? member.emailUrl.startsWith("mailto:")
       ? member.emailUrl
-      : `mailto:${member.emailUrl}`);
+      : `mailto:${member.emailUrl}`
+    : "#";
+  const twitterHref = member.twitterUrl || "#";
 
   return (
     <motion.div
-      // w-full anchors the whole card to its flex slot width.
-      // Without it the card was sizing to its widest text child,
-      // so cards with longer titles ended up visibly wider than
-      // cards with short titles ("CFO" vs "Vice President — …").
-      className="group flex w-full flex-col items-center"
+      className="group flex w-full flex-col items-start"
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.55, ease: "easeOut" }}
     >
-      {/* ── PHOTO + BLOB — wrapped in a Link to /ourteam/<slug>.
-            Hover scales the whole card subtly and reveals the
-            colour photo (monochrome → colour). ── */}
       <Link
         href={`/ourTeam/${slug}`}
         aria-label={`${member.name} — ${member.title}`}
-        className="block w-full focus:outline-none"
+        className="block w-full focus:outline-none flex flex-col items-start"
       >
         <div
           className="relative w-full transition-transform duration-300 ease-out group-hover:-translate-y-1"
-          // Photo card fills 100 % of its flex slot (no maxWidth cap)
-          // so the blob is the same constant size for every card and
-          // the grid reaches the same left/right extent as the hero,
-          // LedByFounders, and Footer (≈ 1440 inner wrapper).
           style={{
+            maxWidth: "clamp(160px, min(18vw, 25vh), 240px)",
             aspectRatio: `${BLOB_VIEWBOX_W} / ${BLOB_VIEWBOX_H}`,
           }}
         >
-          {/* ── BG BLOB — the design-ref PNG asset, offset & rotated
-                  for visual halo around the photo. ── */}
+          {/* ── BACKGROUND BLOB ── */}
           <img
             src={BLOB_SRC}
             alt=""
@@ -216,13 +178,7 @@ function TeamCard({
             }}
           />
 
-          {/* ── PHOTO — outer mask container matches the blob img's
-                  exact offset (top 6 %, left 5 %) and full size so
-                  the cutout takes the blob shape. Inside, the image
-                  container is smaller (75 % × 85 %) and anchored to
-                  the mask's top-left corner, so the photo renders
-                  SMALLER and pushed to the LEFT of the blob, with the
-                  person's head aligned to the blob's head. ── */}
+          {/* ── PHOTO CROP/MASK ── */}
           <div
             className="absolute h-full w-full"
             style={{
@@ -245,14 +201,14 @@ function TeamCard({
                   src={cdnImageSrc(member.image, 600)}
                   alt={member.name}
                   fill
-                  sizes="(max-width: 640px) 40vw, (max-width: 1024px) 25vw, 300px"
+                  sizes="(max-width: 640px) 40vw, (max-width: 1024px) 25vw, 240px"
                   className="object-cover object-bottom transition-[filter] duration-500 ease-out [filter:grayscale(1)] group-hover:[filter:grayscale(0)]"
                 />
               </div>
             ) : (
               <div
-                className="flex h-full w-full items-end justify-start bg-[#E5E5E5] font-['Poppins',_sans-serif] text-[#9A9A9A]"
-                style={{ fontSize: "clamp(28px, 4vw, 56px)" }}
+                className="flex h-full w-full items-end justify-start bg-[#E5E5E5] font-['Poppins',_sans-serif] text-[#9A9A9A] pb-6 pl-8"
+                style={{ fontSize: "clamp(24px, 3.5vw, 48px)" }}
               >
                 {member.name
                   .split(" ")
@@ -265,83 +221,69 @@ function TeamCard({
           </div>
         </div>
 
-        {/* ── NAME — reserve a fixed 1-line slot so cards
-              never differ in height because of name wrapping. ── */}
+        {/* ── NAME ── */}
         <h3
-          className="m-0 text-center font-['Poppins',_sans-serif] font-medium text-[#0E0E0E]"
+          className="m-0 text-left font-['Poppins',_sans-serif] font-semibold text-[#0E0E0E]"
           style={{
-            fontSize: "clamp(18px, min(2.5vw, 3.67vh), 36px)",
-            lineHeight: "158%",
-            marginTop: "clamp(12px, min(1.4vw, 2vh), 24px)",
-            maxWidth: "359px",
-            // 1 line tall = 1.58em (line-height) — long names that
-            // still wrap will push past this naturally.
-            minHeight: "1.58em",
+            fontSize: "clamp(16px, min(1.8vw, 2.5vh), 22px)",
+            lineHeight: "130%",
+            marginTop: "clamp(12px, min(1.5vw, 2.2vh), 20px)",
+            maxWidth: "300px",
+            // Removed minHeight so there are no forced blank gaps
           }}
         >
           {member.name}
         </h3>
 
-        {/* ── TITLE — reserve a fixed 2-line slot.
-              Without this, cards with short titles ("CFO") were
-              shorter than cards with long titles ("Vice President
-              — Corporate Development"), which is what made the
-              grid look uneven. ── */}
+        {/* ── TITLE ── */}
         <p
-          className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-[#0E0E0E]"
+          className="m-0 text-left font-['Poppins',_sans-serif] font-normal text-[#323232]"
           style={{
-            fontSize: "clamp(13px, min(1.67vw, 2.44vh), 24px)",
+            fontSize: "clamp(12px, min(1.1vw, 1.6vh), 14px)",
             lineHeight: "158%",
-            marginTop: "clamp(2px, 0.4vw, 8px)",
-            maxWidth: "421px",
-            // 2 lines tall = 2 × 1.58em line-height.
-            minHeight: "calc(2 * 1.58em)",
+            marginTop: "clamp(4px, 0.5vw, 8px)",
+            maxWidth: "280px",
+            // Removed minHeight so short titles sit snugly above the social icons
           }}
         >
           {member.title}
         </p>
       </Link>
 
-      {/* ── SOCIAL ICONS — outside the Link so each icon is its
-            own focusable, navigable anchor. ── */}
-      {(member.linkedinUrl || emailHref || member.twitterUrl) && (
-        <div
-          className="flex items-center justify-center"
-          style={{
-            gap: "clamp(8px, min(0.83vw, 1.22vh), 14px)",
-            marginTop: "clamp(10px, min(1.1vw, 1.6vh), 16px)",
-          }}
+      {/* ── SOCIAL ICONS ── */}
+      <div
+        className="flex w-full items-center justify-start"
+        style={{
+          gap: "clamp(8px, min(0.83vw, 1.22vh), 12px)",
+          // Snug top margin now that the fake title space is gone
+          marginTop: "clamp(8px, min(1vw, 1.5vh), 12px)",
+        }}
+      >
+        <SocialLink
+          href={linkedinHref}
+          label={`${member.name} on LinkedIn`}
         >
-          {member.linkedinUrl && (
-            <SocialLink
-              href={member.linkedinUrl}
-              label={`${member.name} on LinkedIn`}
-            >
-              <LinkedInIcon />
-            </SocialLink>
-          )}
-          {emailHref && (
-            <SocialLink href={emailHref} label={`Email ${member.name}`}>
-              <GmailIcon />
-            </SocialLink>
-          )}
-          {member.twitterUrl && (
-            <SocialLink
-              href={member.twitterUrl}
-              label={`${member.name} on X`}
-            >
-              <XIcon />
-            </SocialLink>
-          )}
-        </div>
-      )}
+          <LinkedInIcon />
+        </SocialLink>
+        <SocialLink 
+          href={emailHref} 
+          label={`Email ${member.name}`}
+        >
+          <GmailIcon />
+        </SocialLink>
+        <SocialLink
+          href={twitterHref}
+          label={`${member.name} on X`}
+        >
+          <XIcon />
+        </SocialLink>
+      </div>
     </motion.div>
   );
 }
 
 /* ─────────────────────────────────────────────────────────
-   Team group — sub-section heading + responsive grid of
-   cards. 3 cols desktop, 2 cols tablet, 1 col mobile.
+   Team group
    ───────────────────────────────────────────────────────── */
 const BLOB_ROTATIONS = [-6, 4, -2, 8, -10, 5, -4];
 
@@ -356,34 +298,49 @@ function TeamGroup({
   return (
     <div
       className="flex w-full flex-col items-center"
-      style={{ gap: "clamp(28px, min(3.33vw, 4.89vh), 56px)" }}
+      style={{ gap: "clamp(40px, min(4.5vw, 6vh), 64px)" }}
     >
-      <motion.h2
-        className="m-0 text-center font-['Libre_Baskerville',_serif] font-semibold text-[#001A4D] max-md:!text-[24px]"
-        style={{
-          fontSize: "clamp(24px, min(3.06vw, 4.48vh), 44px)",
-          lineHeight: "120%",
-        }}
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.5 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-      >
-        {title}
-      </motion.h2>
+      {/* ── Subheading with Flex-1 Horizontal Lines ── */}
+      <div className="flex w-full flex-row items-center justify-center gap-[clamp(16px,2vw,32px)]">
+        <motion.div
+          className="h-[1px] flex-1 bg-black/30"
+          style={{ transformOrigin: "right" }}
+          initial={{ scaleX: 0 }}
+          whileInView={{ scaleX: 1 }}
+          viewport={{ once: false, amount: 0.8 }}
+          transition={{ duration: 1.2, ease: "easeInOut" }}
+        />
+        
+        <motion.h3
+          className="m-0 text-center font-['Poppins',_sans-serif] font-medium text-black max-md:!text-[28px] whitespace-nowrap"
+          style={{
+            fontSize: "clamp(28px, min(3.3vw, 4.5vh), 48px)",
+            lineHeight: "120%",
+          }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.5 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
+          {title}
+        </motion.h3>
 
-      {/* Mobile: single-column grid so each row has exactly one card
-            (per the mobile design). Desktop md+: 3-col grid where the
-            first card aligns to the left content edge and the third
-            to the right, with the columnGap providing the visible
-            gutter between them. Grid columns handle "third card
-            matches Footer right edge" implicitly — the rightmost
-            column always ends at max-w-[1440px]. */}
+        <motion.div
+          className="h-[1px] flex-1 bg-black/30"
+          style={{ transformOrigin: "left" }}
+          initial={{ scaleX: 0 }}
+          whileInView={{ scaleX: 1 }}
+          viewport={{ once: false, amount: 0.8 }}
+          transition={{ duration: 1.2, ease: "easeInOut" }}
+        />
+      </div>
+
+      {/* ── GRID: 4 columns on desktop ── */}
       <div
-        className="grid w-full grid-cols-1 md:grid-cols-3"
+        className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
         style={{
-          rowGap: "clamp(36px, min(4vw, 6vh), 72px)",
-          columnGap: "clamp(20px, min(3vw, 4.5vh), 96px)",
+          rowGap: "clamp(48px, min(5.5vw, 8vh), 80px)",
+          columnGap: "clamp(16px, min(2vw, 3vh), 40px)",
         }}
       >
         {members.map((member, i) => (
@@ -425,83 +382,56 @@ export default function OurTeamClient({
     <section
       className="relative flex w-full flex-col items-center overflow-hidden bg-white"
       style={{
-        // Site-wide section rhythm — identical to Footer + HeroClient.
-        // No nav-height offset: this section is the third on /ourTeam,
-        // not the hero, so the navbar is already cleared upstream.
-        paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
-        paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
+        // Curved top + high z-index + negative top margin so this white
+        // section slides UP and over the cream LedByFounders section above
+        // — the same "curved-top panel covers the previous section" look as
+        // FoundersTestimonial over IndicornSpotlight. (LedByFounders is
+        // taller than one viewport, so it isn't pinned like the ~100vh
+        // IndicornSpotlight — that would freeze its top and hide the second
+        // founder — but the overlap gives the same visual family.)
+        borderTopLeftRadius: "min(4.44vw, 7.30vh)",
+        borderTopRightRadius: "min(4.44vw, 7.30vh)",
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
+        zIndex: 20,
+        marginTop: "min(-4.44vw, -7.30vh)",
+        paddingTop: "clamp(60px, min(8vw, 10vh), 120px)",
+        paddingBottom: "clamp(60px, min(8vw, 10vh), 120px)",
         paddingLeft: "var(--section-px-wide, 5%)",
         paddingRight: "var(--section-px-wide, 5%)",
       }}
     >
-      {/* SVG defs for the blob clip-path (must live somewhere in
-          the DOM for url(#…) references in this section to work). */}
       <BlobDefs />
 
       <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center">
-        {/* ── PAGE HEADING — italic phrase first on a light-blue
-              pill, regular phrase after. Same scaleX + variants
-              pattern WinnersHero uses. ── */}
+        
+        {/* ── MAIN HEADING ── */}
         <motion.div
-          className="flex flex-row flex-wrap items-baseline justify-center text-center"
-          style={{
-            gap: "clamp(8px, min(1vw, 1.5vh), 18px)",
-            marginBottom: "clamp(48px, min(6vw, 9vh), 120px)",
-          }}
+          className="max-md:!mb-[clamp(32px,6dvh,48px)] flex w-full flex-col items-center justify-center text-center"
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.5 }}
+          viewport={{ once: false, amount: 0.5 }}
+          style={{ marginBottom: "min(3.47vw, 5.37vh)" }}
         >
-          <motion.div
-            className="relative inline-flex items-center justify-center overflow-hidden bg-transparent px-[10px] py-[6px] md:px-[14px] md:py-[10px]"
+          <motion.h2
+            className="m-0 font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(32px,8vw,40px)]"
+            style={{
+              fontSize: "min(4.51vw, 6.98vh)", 
+              lineHeight: "150%", 
+            }}
             variants={{
-              hidden: { opacity: 0, y: 40 },
-              visible: {
-                opacity: 1,
-                y: 0,
-                transition: { duration: 0.6, ease: "easeOut" },
-              },
+              hidden: { opacity: 0, y: 30 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
             }}
           >
-            <motion.span
-              className="absolute inset-0 z-0 h-full w-full bg-[#D3E2FF]"
-              style={{ transformOrigin: "left", borderRadius: "4px" }}
-              variants={{
-                hidden: { scaleX: 0 },
-                visible: {
-                  scaleX: 1,
-                  transition: { duration: 0.6, ease: "easeInOut", delay: 0.5 },
-                },
-              }}
-            />
-            <span
-              className="relative z-10 font-['Libre_Baskerville',_serif] font-semibold italic leading-[120%] text-[#001A4D] max-md:!text-[32px]"
-              style={{ fontSize: "var(--heading-xl)" }}
-            >
-              {headingFirst}
-            </span>
-          </motion.div>
-
-          <motion.h1
-            className="m-0 font-['Libre_Baskerville',_serif] font-semibold leading-[120%] text-[#001A4D] max-md:!text-[32px]"
-            style={{ fontSize: "var(--heading-xl)" }}
-            variants={{
-              hidden: { opacity: 0, y: 40 },
-              visible: {
-                opacity: 1,
-                y: 0,
-                transition: { duration: 0.6, ease: "easeOut", delay: 0.2 },
-              },
-            }}
-          >
-            {headingSecond}
-          </motion.h1>
+            {headingFirst} {headingSecond}
+          </motion.h2>
         </motion.div>
 
         {/* ── THREE TEAM GROUPS ── */}
         <div
           className="flex w-full flex-col items-center"
-          style={{ gap: "clamp(60px, min(8vw, 12vh), 140px)" }}
+          style={{ gap: "clamp(80px, min(10vw, 15vh), 160px)" }}
         >
           <TeamGroup title="Corporate Team" members={corporate} />
           <TeamGroup title="Seed Team" members={seed} />
