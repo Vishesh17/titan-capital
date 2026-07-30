@@ -60,11 +60,11 @@ function computeDims() {
   const winH = window.innerHeight;
 
   const targetW = 452;
-  const targetH = 513;
+  const targetH = 580;
 
   const scale = Math.min(winW / 1512, winH / 982, 1.2);
   const cardW = Math.max(280, Math.round(targetW * Math.min(scale, 1)));
-  const cardH = Math.max(380, Math.round(targetH * Math.min(scale, 1)));
+  const cardH = Math.max(420, Math.round(targetH * Math.min(scale, 1)));
 
   const gap = Math.round(winW * 0.02);
   const photoW = 3 * cardW;
@@ -615,7 +615,7 @@ function DesktopCardSlice({
           <div className="flex justify-center">
             <p
               className="font-['Poppins',_sans-serif] font-normal text-white/90 text-center max-md:!text-[13px]"
-              style={{ fontSize: "min(1.39vw, 2.15vh)", lineHeight: "155%" }}
+              style={{ fontSize: "min(1.5vw, 2.3vh)", lineHeight: "160%" }}
             >
               {belief.description}
             </p>

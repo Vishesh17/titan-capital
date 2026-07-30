@@ -188,8 +188,8 @@ function ImpactStatCell({
         <span
           className="whitespace-nowrap font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[14px] max-md:!leading-[125%] max-md:!mt-[6px]"
           style={{
-            fontSize: "min(1.32vw, 2.02vh)",
-            lineHeight: "130%",
+            fontSize: "min(1.6vw, 2.5vh)",
+            lineHeight: "160%",
             marginTop: "min(0.58vw, 0.90vh)",
           }}
         >
@@ -279,14 +279,14 @@ function StoryCard({ story }: { story: FounderStory }) {
         className="absolute left-0 z-20 flex items-center text-[#001A4D]"
         style={{
           top: "clamp(10px, min(1.2vw, 1.8vh), 18px)",
-          width: "clamp(70px, min(6.75vw, 9.95vh), 100px)",
-          height: "clamp(24px, min(2.29vw, 3.36vh), 33px)",
-          padding: "clamp(6px, min(0.7vw, 1vh), 10px)",
+          width: "clamp(80px, min(7.5vw, 11vh), 120px)",
+          height: "clamp(28px, min(2.6vw, 3.8vh), 38px)",
+          padding: "clamp(8px, min(0.8vw, 1.2vh), 12px)",
           gap: "10px",
           borderRadius: "0 70px 70px 0",
           background: "#FFFFFF",
           boxShadow: "0 4px 18.6px 0 rgba(0,0,0,0.18)",
-          fontSize: "clamp(8px, min(0.83vw, 1.22vh), 12px)",
+          fontSize: "clamp(10px, min(1vw, 1.5vh), 14px)",
           fontFamily: "'Poppins', sans-serif",
           fontWeight: 500,
           lineHeight: "150%",
@@ -368,7 +368,7 @@ function SeeMoreButton({ label, onClick }: { label: string; onClick?: () => void
     >
       <motion.span
         className="pointer-events-none absolute -translate-y-1/2 whitespace-nowrap font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[13px]"
-        style={{ left: "min(1.5vw, 2.5vh)", top: "50%", fontSize: "min(1.16vw,1.79vh)", lineHeight: "100%" }}
+        style={{ left: "min(1.5vw, 2.5vh)", top: "50%", fontSize: "min(1.5vw, 2.3vh)" , lineHeight: "100%" }}
         animate={{ opacity: hovered ? 1 : 0 }}
         transition={{ duration: hovered ? 0.28 : 0.15, delay: hovered ? 0.15 : 0, ease: [0.22, 1, 0.36, 1] }}
       >
