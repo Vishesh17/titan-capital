@@ -156,7 +156,7 @@ function TeamCard({
         className="block w-full focus:outline-none flex flex-col items-start"
       >
         <div
-          className="relative w-full transition-transform duration-300 ease-out group-hover:-translate-y-1"
+          className="relative w-full transition-transform duration-300 ease-out group-hover:-translate-y-1 max-md:!max-w-[45vw]"
           style={{
             maxWidth: "clamp(160px, min(18vw, 25vh), 240px)",
             aspectRatio: `${BLOB_VIEWBOX_W} / ${BLOB_VIEWBOX_H}`,
@@ -341,9 +341,9 @@ function TeamGroup({
         />
       </div>
 
-      {/* ── GRID: 4 columns on desktop ── */}
+      {/* ── GRID: 2 columns on mobile, 4 columns on desktop ── */}
       <div
-        className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+        className="grid w-full grid-cols-2 sm:grid-cols-2 lg:grid-cols-4"
         style={{
           rowGap: "clamp(48px, min(5.5vw, 8vh), 80px)",
           columnGap: "clamp(16px, min(2vw, 3vh), 40px)",

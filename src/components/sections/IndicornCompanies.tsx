@@ -62,13 +62,14 @@ export default function IndicornCompanies({
 
   return (
     <section
-      className="relative flex w-full items-center overflow-hidden bg-[#040e24] font-['Poppins',_sans-serif] max-md:!min-h-[100vh]"
+      className="relative flex w-full items-center overflow-hidden bg-[#040e24] font-['Poppins',_sans-serif] max-md:!min-h-[100vh] max-md:!static"
       style={{
         // Sticky-reveal: this section pins to the top of the viewport
         // while the testimonial section below scrolls up and covers it —
         // identical choreography to IndicornSpotlight → FoundersTestimonial
         // on the home page. It must be ~one viewport tall so it pins
         // cleanly, so the content is vertically centred within 100vh.
+        // MOBILE: position: static override via max-md:!static class
         position: "sticky",
         top: 0,
         zIndex: 1,
