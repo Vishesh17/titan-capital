@@ -41,7 +41,7 @@ const FALLBACK_IMPACT_DATA: ImpactStat[] = [
   { num: "30+",  label: "Values > $100M" },
 ];
 
-const FALLBACK_SLIDES: FounderStory[] = [
+export const FALLBACK_SLIDES: FounderStory[] = [
   {
     name: "Ashish Mohapatra",
     role: "Co-Founder & CEO, Ofbusiness",
@@ -251,7 +251,7 @@ function CardLogo({ story, company, origin }: { story: FounderStory; company: st
   );
 }
 
-function StoryCard({ story }: { story: FounderStory }) {
+export function StoryCard({ story }: { story: FounderStory }) {
   const [hovered, setHovered] = useState(false);
   const company = deriveCompany(story);
 
@@ -345,7 +345,7 @@ function StoryCard({ story }: { story: FounderStory }) {
   );
 }
 
-function SeeMoreButton({ label, onClick }: { label: string; onClick?: () => void }) {
+export function SeeMoreButton({ label, onClick }: { label: string; onClick?: () => void }) {
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -386,7 +386,7 @@ function SeeMoreButton({ label, onClick }: { label: string; onClick?: () => void
   );
 }
 
-function padStories(stories: FounderStory[], count: number): FounderStory[] {
+export function padStories(stories: FounderStory[], count: number): FounderStory[] {
   if (stories.length >= count) return stories.slice(0, count);
   const result: FounderStory[] = [];
   for (let i = 0; i < count; i++) {

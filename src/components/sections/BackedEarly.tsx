@@ -19,7 +19,7 @@ import {
   Mobile: 2x2 grid with independent, sequential 3D card-flip rotations.
 */
 
-const MARQUEE_CSS = `
+export const MARQUEE_CSS = `
 @keyframes continuous-marquee {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
@@ -29,7 +29,7 @@ const MARQUEE_CSS = `
 /* ─────────────────────────────────────────────────────────
    Hero Glow Background
    ───────────────────────────────────────────────────────── */
-function HeroGlow() {
+export function HeroGlow() {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const normX = useMotionValue(0);
@@ -161,7 +161,7 @@ function HeroGlow() {
 /* ─────────────────────────────────────────────────────────
    Animated Grid — canvas with cursor-follow wave distortion
    ───────────────────────────────────────────────────────── */
-function AnimatedGrid() {
+export function AnimatedGrid() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: -9999, y: -9999 });
 
@@ -587,7 +587,7 @@ function MobileFadingGrid() {
    RevealLine — per-character 3D flip animation
    ═══════════════════════════════════════════════════════ */
 const CHAR_STAGGER = 0.035;
-function RevealLine({
+export function RevealLine({
   children,
   show,
   delay = 0,

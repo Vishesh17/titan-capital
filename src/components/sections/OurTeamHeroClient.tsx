@@ -37,42 +37,42 @@ const FALLBACK_TITLE_3 = "Builders";
 const FALLBACK_DESC =
   "We've built companies ourselves. We know the weight of the journey. Now we back the founders building out their dreams.";
 
-// Exactly 12 slots with two responsive layouts:
+// 15 slots. Desktop (lg+) is a 7-column grid, left-aligned:
 //
-//   Mobile (4-col grid)                 Desktop lg+ (5-col diamond)
-//     row1: c0  c1  c2  c3               row1: c0 c1 c2 c3 c4
-//     row2: [text] c4  c5                row2:    c5 c6 c7 c8
-//     row3: [text] c6  c7                row3:       c9 c10 c11
-//     row4: [text] c8  c9
-//     row5: c10 c11 —   —
+//   Desktop lg+ (7-col)
+//     row1:  c0 c1 c2 c3 c4 c5 c6           ← 7 cards, full width
+//     row2:  [ heading ]  c7  c8  c9  c10    ← heading cols 1-3, cards cols 4-7
+//     row3:  [ heading ]  c11 c12 c13 c14    ← heading cols 1-3, cards cols 4-7
 //
-// The gridClass for each card carries both the mobile position and the
-// lg position; the text block spans cols 1-2 rows 2-4 on mobile and
-// cols 1-2 rows 2-3 on lg. Front/back is alternated so each global
-// flip swaps every cell.
+// gridClass is consumed ONLY by the desktop block, so it carries lg
+// positions only. The mobile (< lg) block lays out its own 4,2,2,2
+// grid from MOBILE_POSITIONS and never reads gridClass. Front/back is
+// alternated so each global flip swaps every cell.
 const GRID_STRUCTURE = [
-  // Row 1 (lg): 6 cards spanning cols 1-6, full width
-  { frontIsBox: true,  gridClass: "col-start-1 row-start-1 lg:col-start-1 lg:row-start-1" },
-  { frontIsBox: false, gridClass: "col-start-2 row-start-1 lg:col-start-2 lg:row-start-1" },
-  { frontIsBox: true,  gridClass: "col-start-3 row-start-1 lg:col-start-3 lg:row-start-1" },
-  { frontIsBox: false, gridClass: "col-start-4 row-start-1 lg:col-start-4 lg:row-start-1" },
-  { frontIsBox: true,  gridClass: "col-start-3 row-start-2 lg:col-start-5 lg:row-start-1" },
-  { frontIsBox: false, gridClass: "col-start-4 row-start-2 lg:col-start-6 lg:row-start-1" },
+  // Row 1 — 7 cards spanning cols 1-7
+  { frontIsBox: true,  gridClass: "lg:col-start-1 lg:row-start-1" },
+  { frontIsBox: false, gridClass: "lg:col-start-2 lg:row-start-1" },
+  { frontIsBox: true,  gridClass: "lg:col-start-3 lg:row-start-1" },
+  { frontIsBox: false, gridClass: "lg:col-start-4 lg:row-start-1" },
+  { frontIsBox: true,  gridClass: "lg:col-start-5 lg:row-start-1" },
+  { frontIsBox: false, gridClass: "lg:col-start-6 lg:row-start-1" },
+  { frontIsBox: true,  gridClass: "lg:col-start-7 lg:row-start-1" },
 
-  // Row 2 (lg): heading owns cols 1-2, 4 cards fill cols 3-6
-  { frontIsBox: false, gridClass: "col-start-3 row-start-3 lg:col-start-3 lg:row-start-2" },
-  { frontIsBox: true,  gridClass: "col-start-4 row-start-3 lg:col-start-4 lg:row-start-2" },
-  { frontIsBox: false, gridClass: "col-start-3 row-start-4 lg:col-start-5 lg:row-start-2" },
-  { frontIsBox: true,  gridClass: "col-start-4 row-start-4 lg:col-start-6 lg:row-start-2" },
+  // Row 2 — heading owns cols 1-3, 4 cards fill cols 4-7
+  { frontIsBox: false, gridClass: "lg:col-start-4 lg:row-start-2" },
+  { frontIsBox: true,  gridClass: "lg:col-start-5 lg:row-start-2" },
+  { frontIsBox: false, gridClass: "lg:col-start-6 lg:row-start-2" },
+  { frontIsBox: true,  gridClass: "lg:col-start-7 lg:row-start-2" },
 
-  // Row 3 (lg): heading owns cols 1-2, 3 cards in cols 4-6 (col 3 empty)
-  { frontIsBox: true,  gridClass: "col-start-1 row-start-5 lg:col-start-4 lg:row-start-3" },
-  { frontIsBox: false, gridClass: "col-start-2 row-start-5 lg:col-start-5 lg:row-start-3" },
-  { frontIsBox: true,  gridClass: "col-start-3 row-start-5 lg:col-start-6 lg:row-start-3" },
+  // Row 3 — heading owns cols 1-3, 4 cards fill cols 4-7
+  { frontIsBox: true,  gridClass: "lg:col-start-4 lg:row-start-3" },
+  { frontIsBox: false, gridClass: "lg:col-start-5 lg:row-start-3" },
+  { frontIsBox: true,  gridClass: "lg:col-start-6 lg:row-start-3" },
+  { frontIsBox: false, gridClass: "lg:col-start-7 lg:row-start-3" },
 ];
 
 const FALLBACK_IMAGES = Array.from(
-  { length: 13 },
+  { length: 15 },
   (_, i) => `/images/team${i + 1}.jpg`
 );
 
@@ -124,11 +124,10 @@ function FlipCard({
 }) {
   return (
     <div
-      // Mobile: aspect-ratio 205/229 (portrait) so 4-col cards read as
-      // proper rectangles at their small size, not tall thin slivers.
-      // Desktop: aspect-auto + height = viewport-derived slice so the
-      // 5-col diamond auto-adapts (portrait/square/landscape per screen).
-      className={`relative w-full aspect-[100/103] [perspective:1200px] ${gridClass}`}
+      // Mobile keeps the near-square 100/103 ratio (untouched). Desktop
+      // (lg+) uses a taller 100/122 portrait ratio so the 7,4,4 cards
+      // read as fuller rectangles.
+      className={`relative w-full aspect-[100/103] lg:aspect-[100/122] [perspective:1200px] ${gridClass}`}
     >
       <div
         className={`relative h-full w-full transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] [transform-style:preserve-3d] ${
@@ -178,11 +177,17 @@ export default function OurTeamHeroClient({
   const description = data?.description || FALLBACK_DESC;
 
   const teamItems = GRID_STRUCTURE.map((struct, index) => {
-    const cmsImage = data?.members?.[index];
+    const members = data?.members ?? [];
+    // Cards beyond the number of CMS members cycle back through the
+    // existing member photos (rather than 404ing on missing fallback
+    // files). Add more members in Sanity for unique faces on all 15.
+    const cmsImage =
+      members[index] ||
+      (members.length ? members[index % members.length] : FALLBACK_IMAGES[index]);
     return {
       ...struct,
       id: index,
-      imgSrc: cmsImage || FALLBACK_IMAGES[index],
+      imgSrc: cmsImage,
     };
   });
 
@@ -275,22 +280,23 @@ export default function OurTeamHeroClient({
           ))}
         </div>
 
-        {/* ══════════ DESKTOP (lg+) — 6-col diamond ══════════ */}
+        {/* ══════════ DESKTOP (lg+) — 7-col grid (7,4,4) ══════════ */}
         <div
-          className="hidden lg:grid w-full lg:grid-cols-6 lg:pl-[clamp(20px,min(3vw,4vh),80px)]"
+          className="hidden lg:grid w-full lg:grid-cols-7"
           style={{
             columnGap: "clamp(14px, min(1.8vw, 2.2vh), 32px)",
             rowGap: "clamp(18px, min(2.2vw, 2.8vh), 40px)",
           }}
         >
-          {/* Row 1 (items 0-5) — 6 cards spanning full width on lg */}
-          {teamItems.slice(0, 6).map((item) => (
+          {/* Row 1 (items 0-6) — 7 cards spanning full width on lg */}
+          {teamItems.slice(0, 7).map((item) => (
             <FlipCard key={item.id} {...item} isFlipped={isFlipped} />
           ))}
 
-          {/* ── TEXT BLOCK — cols 1-2 rows 2-3 ── */}
+          {/* ── TEXT BLOCK — cols 1-3 rows 2-3 (fills the gap left by the
+               7,4,4 grid; left edge aligns with the row-1 cards) ── */}
           <motion.div
-            className="pointer-events-none relative z-10 flex flex-col items-start lg:col-span-2 lg:col-start-1 lg:row-span-2 lg:row-start-2"
+            className="pointer-events-none relative z-10 flex flex-col items-start justify-center lg:col-span-3 lg:col-start-1 lg:row-span-2 lg:row-start-2"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.4 }}
@@ -300,8 +306,8 @@ export default function OurTeamHeroClient({
                 key={i}
                 className="pointer-events-auto m-0 font-['Poppins',_sans-serif] font-bold uppercase text-[#0E0E0E]"
                 style={{
-                  fontSize: "clamp(40px, min(5.55vw, 8.6vh), 96px)",
-                  lineHeight: "140%",
+                  fontSize: "clamp(52px, min(7.5vw, 11.6vh), 132px)",
+                  lineHeight: "108%",
                 }}
                 variants={fadeUp(i * 0.15)}
               >
@@ -322,8 +328,8 @@ export default function OurTeamHeroClient({
             </motion.p>
           </motion.div>
 
-          {/* Rows 2-3 cards (items 6-11) */}
-          {teamItems.slice(6).map((item) => (
+          {/* Rows 2-3 cards (items 7-14) — 4 + 4 in cols 4-7 */}
+          {teamItems.slice(7).map((item) => (
             <FlipCard key={item.id} {...item} isFlipped={isFlipped} />
           ))}
         </div>

@@ -12,7 +12,7 @@ import {
 /* ─────────────────────────────────────────────────────────
    Hero Glow Background (With Local Cursor Tracking)
    ───────────────────────────────────────────────────────── */
-function HeroGlow({ sectionRef }: { sectionRef: React.RefObject<HTMLElement | null> }) {
+export function HeroGlow({ sectionRef }: { sectionRef: React.RefObject<HTMLElement | null> }) {
   // Initial values far off-screen so the blob doesn't jump on load
   const mouseX = useMotionValue(-1000);
   const mouseY = useMotionValue(-1000);
@@ -146,7 +146,7 @@ function HeroGlow({ sectionRef }: { sectionRef: React.RefObject<HTMLElement | nu
 /* ─────────────────────────────────────────────────────────
    Cursor-origin fill button
    ───────────────────────────────────────────────────────── */
-function CursorFillButton({ href, label }: { href: string; label: string }) {
+export function CursorFillButton({ href, label }: { href: string; label: string }) {
   const [origin, setOrigin] = useState("50% 50%");
   const [hovered, setHovered] = useState(false);
 

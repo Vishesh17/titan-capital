@@ -22,7 +22,7 @@ export interface FifteenYearsData {
    Fallbacks — used when Sanity is unreachable. Covers
    2011 → 2026 with placeholder copy so the page never blanks.
    ───────────────────────────────────────────────────────── */
-const FALLBACK_HEADING_FIRST = "Fifteen Years of";
+const FALLBACK_HEADING_FIRST = "15 Years of Showing Up";
 const FALLBACK_HEADING_HIGHLIGHT = "Showing Up";
 const FALLBACK_YEARS: YearEntry[] = Array.from({ length: 16 }, (_, i) => {
   const year = 2011 + i;
@@ -81,7 +81,7 @@ function DigitWheel({ digit }: { digit: number }) {
         {Array.from({ length: 10 }).map((_, i) => (
           <div
             key={i}
-            className="flex w-full items-center justify-center font-['Libre_Baskerville',_serif] font-bold text-black"
+            className="flex w-full items-center justify-center font-['Poppins',_serif] font-bold text-black"
             style={{
               height: "10%",
               fontSize: "clamp(40px, min(6.67vw, 9.78vh), 96px)",
@@ -113,7 +113,7 @@ function YearDisplay({ year }: { year: number }) {
       style={{ gap: "clamp(2px, min(0.4vw, 0.6vh), 8px)" }}
     >
       <span
-        className="font-['Libre_Baskerville',_serif] font-bold text-black"
+        className="font-['Poppins',_serif] font-bold text-black"
         style={{
           fontSize: "clamp(40px, min(6.67vw, 9.78vh), 96px)",
           lineHeight: "120%",
@@ -366,7 +366,7 @@ export default function FifteenYearsClient({
           viewport={{ once: true, amount: 0.5 }}
         >
           <motion.h2
-            className="m-0 font-['Libre_Baskerville',_serif] font-semibold leading-[120%] text-[#001A4D] max-md:!text-[32px]"
+            className="m-0 font-['Poppins',_serif] font-semibold leading-[120%] text-black max-md:!text-[32px]"
             style={{ fontSize: "var(--heading-xl)" }}
             variants={{
               hidden: { opacity: 0, y: 40 },
@@ -380,7 +380,7 @@ export default function FifteenYearsClient({
             {headingFirst}
           </motion.h2>
 
-          <motion.div
+          {/* <motion.div
             className="relative inline-flex items-center justify-center overflow-hidden bg-transparent px-[10px] py-[6px] md:px-[14px] md:py-[10px]"
             variants={{
               hidden: { opacity: 0, y: 40 },
@@ -403,12 +403,12 @@ export default function FifteenYearsClient({
               }}
             />
             <span
-              className="relative z-10 font-['Libre_Baskerville',_serif] font-semibold italic leading-[120%] text-[#001A4D] max-md:!text-[32px]"
+              className="relative z-10 font-['Poppins',_serif] font-semibold italic leading-[120%] text-[#001A4D] max-md:!text-[32px]"
               style={{ fontSize: "var(--heading-xl)" }}
             >
               {headingHighlight}
             </span>
-          </motion.div>
+          </motion.div> */}
         </motion.div>
 
         {/* ── TWO-COLUMN BODY ──
@@ -453,7 +453,7 @@ export default function FifteenYearsClient({
                 style={{ gap: "clamp(14px, min(1.8vw, 2.6vh), 32px)" }}
               >
                 <h3
-                  className="m-0 font-['Poppins',_sans-serif] font-medium text-[#0E0E0E]"
+                  className="m-0 font-['Poppins',_sans-serif] font-medium text-black"
                   style={{
                     fontSize: "clamp(20px, min(2.78vw, 4.07vh), 40px)",
                     lineHeight: "158%",
@@ -463,9 +463,9 @@ export default function FifteenYearsClient({
                   {current.subtitle}
                 </h3>
                 <p
-                  className="m-0 font-['Poppins',_sans-serif] font-normal text-[#0E0E0E]"
+                  className="m-0 font-['Poppins',_sans-serif] font-normal text-black/80"
                   style={{
-                    fontSize: "clamp(15px, min(2.5vw, 3.67vh), 36px)",
+                    fontSize: "clamp(12px, min(2.0vw, 3vh), 28px)",
                     lineHeight: "163%",
                     maxWidth: "724px",
                   }}

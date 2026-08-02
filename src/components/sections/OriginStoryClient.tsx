@@ -30,7 +30,7 @@ export interface OriginStoryData {
    Fallbacks — rendered when Sanity returns null or empty.
    Replace the placeholder images with your real assets in Studio.
    ───────────────────────────────────────────────────────── */
-const FALLBACK_HEADING_FIRST = "Origin";
+const FALLBACK_HEADING_FIRST = "Origin Story";
 const FALLBACK_HEADING_HIGHLIGHT = "Story";
 const FALLBACK_BULLETS: OriginBullet[] = [
   {
@@ -341,7 +341,7 @@ function BulletRow({
           style={{ gap: "clamp(12px, min(1.4vw, 2vh), 24px)" }}
         >
           <h3
-            className="m-0 font-['Poppins',_sans-serif] font-medium text-[#0E0E0E]"
+            className="m-0 font-['Poppins',_sans-serif] font-medium text-black"
             style={{
               fontSize: "clamp(20px, min(2.5vw, 3.67vh), 36px)",
               lineHeight: "158%",
@@ -351,7 +351,7 @@ function BulletRow({
             {bullet.title}
           </h3>
           <p
-            className="m-0 font-['Poppins',_sans-serif] font-normal text-[#323232]"
+            className="m-0 font-['Poppins',_sans-serif] font-normal text-black/85"
             style={{
               fontSize: "clamp(14px, min(1.67vw, 2.44vh), 24px)",
               lineHeight: "150%",
@@ -387,7 +387,7 @@ export default function OriginStoryClient({
 
   return (
     <section
-      className="relative flex w-full flex-col items-center overflow-hidden bg-white"
+      className="relative flex w-full flex-col items-center overflow-hidden bg-[#FBF7F0]"
       style={{
         paddingTop: "clamp(48px, min(7vw, 10vh), 120px)",
         paddingBottom: "clamp(48px, min(7vw, 10vh), 120px)",
@@ -404,7 +404,7 @@ export default function OriginStoryClient({
         viewport={{ once: true, amount: 0.5 }}
       >
         <motion.h2
-          className="m-0 font-['Libre_Baskerville',_serif] font-semibold leading-[120%] text-[#001A4D] max-md:!text-[32px]"
+          className="m-0 font-['Poppins',_serif] font-semibold leading-[120%] text-black max-md:!text-[32px]"
           style={{ fontSize: "var(--heading-xl)" }}
           variants={{
             hidden: { opacity: 0, y: 40 },
@@ -418,7 +418,7 @@ export default function OriginStoryClient({
           {headingFirst}
         </motion.h2>
 
-        <motion.div
+        {/* <motion.div
           className="relative inline-flex items-center justify-center overflow-hidden bg-transparent px-[10px] py-[6px] md:px-[14px] md:py-[10px]"
           variants={{
             hidden: { opacity: 0, y: 40 },
@@ -446,7 +446,7 @@ export default function OriginStoryClient({
           >
             {headingHighlight}
           </span>
-        </motion.div>
+        </motion.div> */}
       </motion.div>
 
       {/* ── BULLETS + CONNECTORS ── */}
