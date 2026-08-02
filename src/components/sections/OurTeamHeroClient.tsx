@@ -76,6 +76,23 @@ const FALLBACK_IMAGES = Array.from(
   (_, i) => `/images/team${i + 1}.jpg`
 );
 
+// MOBILE-ONLY 4-column diamond (matches the mobile design screenshot):
+//   Row 1 : 4 cards (c1 c2 c3 c4)
+//   Rows 2-4 : heading block owns cols 1-2, 2 cards each on the right (c3 c4)
+// → 4, 2, 2, 2. Literal class strings so Tailwind's JIT generates them.
+const MOBILE_POSITIONS = [
+  "col-start-1 row-start-1", // 0
+  "col-start-2 row-start-1", // 1
+  "col-start-3 row-start-1", // 2
+  "col-start-4 row-start-1", // 3
+  "col-start-3 row-start-2", // 4
+  "col-start-4 row-start-2", // 5
+  "col-start-3 row-start-3", // 6
+  "col-start-4 row-start-3", // 7
+  "col-start-3 row-start-4", // 8
+  "col-start-4 row-start-4", // 9
+];
+
 /* ─────────────────────────────────────────────────────────
    Sub-Components
    ───────────────────────────────────────────────────────── */
@@ -174,38 +191,93 @@ export default function OurTeamHeroClient({
     return () => clearInterval(interval);
   }, []);
 
+  const headingLines = [titleLine1, titleLine2, titleLine3];
+
   return (
     <section
-      className="relative flex w-full flex-col bg-white"
+      // Full-viewport min-height on desktop ONLY (lg+). On mobile the
+      // section sizes to its content so the next section flows up right
+      // after the hero grid instead of leaving empty space below.
+      className="relative flex w-full flex-col bg-white lg:min-h-[calc(100svh_-_var(--nav-height))]"
       style={{
-        // Matches HeroClient.tsx (Hero.tsx server wrapper delegates
-        // to it). marginTop pushes the section below the fixed navbar,
-        // minHeight makes it fill the remaining viewport, then the
-        // padding tokens are the site-wide section rhythm.
-        marginTop: "var(--nav-height) -20px",
-        minHeight: "calc(100svh - var(--nav-height))",
-        paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
-        paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
-        paddingLeft: "var(--section-px-wide, 5%)",
-        paddingRight: "var(--section-px-wide, 5%)",
+        // marginTop pushes the section below the fixed navbar; the
+        // padding tokens are the site-wide section rhythm (same
+        // var(--section-py) / var(--section-px-wide) as every other
+        // section, so top→heading and content→bottom match the rest).
+        marginTop: "var(--nav-height)",
+        paddingTop: "var(--section-py)",
+        paddingBottom: "var(--section-py)",
+        paddingLeft: "var(--section-px-wide)",
+        paddingRight: "var(--section-px-wide)",
       }}
     >
-      {/* Same wrapper as every other section: max-w-[1440px] inner
-          container centered by mx-auto, with the section's own padding
-          driven by var(--section-px-wide). This means the hero's left
-          and right gutters match Footer / Hero / LedByFounders exactly
-          — no custom width clamp making it narrower. The grid fits in
-          one viewport because each FlipCard carries its own max-height,
-          not because the container is narrowed. */}
       <div className="mx-auto flex w-full max-w-[1440px] flex-col">
-        {/* 4-col grid on mobile, 6-col grid on lg. Row 1 spans all 6
-            cols. The text block occupies cols 1-2 of rows 2-3. Cards
-            6-9 fill cols 3-6 of row 2. Cards 10-11 sit at cols 5-6 of
-            row 3 (right edge), matching the design. Cards fill their
-            columns via w-full + aspect-[3/4] so size follows viewport
-            width naturally. */}
+        {/* ══════════ MOBILE (< lg) — 4-col diamond (4,2,2,2) ══════════
+            Row 1: 4 cards across. Rows 2-4: heading + description own
+            cols 1-2 while 2 cards sit in cols 3-4 each row. Mirrors the
+            mobile design; desktop layout below is untouched. */}
         <div
-          className="grid w-full grid-cols-4 lg:grid-cols-6 lg:pl-[clamp(20px,min(3vw,4vh),80px)]"
+          className="grid w-full grid-cols-4 lg:hidden"
+          style={{
+            columnGap: "clamp(10px, 2.6vw, 16px)",
+            rowGap: "clamp(10px, 2.6vw, 16px)",
+          }}
+        >
+          {/* Row 1 — cards 0-3 */}
+          {teamItems.slice(0, 4).map((item, i) => (
+            <FlipCard
+              key={`m-${item.id}`}
+              isFlipped={isFlipped}
+              frontIsBox={item.frontIsBox}
+              imgSrc={item.imgSrc}
+              gridClass={MOBILE_POSITIONS[i]}
+            />
+          ))}
+
+          {/* ── TEXT BLOCK — cols 1-2, rows 2-4 ── */}
+          <motion.div
+            className="col-start-1 col-span-2 row-start-2 row-span-3 flex flex-col justify-center items-start pr-[8px]"
+            initial="hidden"
+            animate="visible"
+          >
+            {headingLines.map((line, i) => (
+              <motion.h1
+                key={i}
+                className="m-0 font-['Poppins',_sans-serif] font-bold uppercase text-[#0E0E0E]"
+                style={{ fontSize: "clamp(30px, 9vw, 46px)", lineHeight: "128%" }}
+                variants={fadeUp(i * 0.15)}
+              >
+                {line}
+              </motion.h1>
+            ))}
+            <motion.p
+              className="m-0 font-['Poppins',_sans-serif] font-normal text-[#000]"
+              style={{
+                marginTop: "clamp(10px, 2.5vw, 16px)",
+                fontSize: "clamp(13px, 3.6vw, 15px)",
+                lineHeight: "150%",
+              }}
+              variants={fadeUp(0.45)}
+            >
+              {description}
+            </motion.p>
+          </motion.div>
+
+          {/* Right cards — rows 2-4, cols 3-4 (cards 4-9) */}
+          {teamItems.slice(4, 10).map((item, k) => (
+            <FlipCard
+              key={`m-${item.id}`}
+              isFlipped={isFlipped}
+              frontIsBox={item.frontIsBox}
+              imgSrc={item.imgSrc}
+              gridClass={MOBILE_POSITIONS[4 + k]}
+            />
+          ))}
+        </div>
+
+        {/* ══════════ DESKTOP (lg+) — 6-col diamond ══════════ */}
+        <div
+          className="hidden lg:grid w-full lg:grid-cols-6 lg:pl-[clamp(20px,min(3vw,4vh),80px)]"
           style={{
             columnGap: "clamp(14px, min(1.8vw, 2.2vh), 32px)",
             rowGap: "clamp(18px, min(2.2vw, 2.8vh), 40px)",
@@ -216,48 +288,26 @@ export default function OurTeamHeroClient({
             <FlipCard key={item.id} {...item} isFlipped={isFlipped} />
           ))}
 
-          {/* ── TEXT BLOCK ──
-              Mobile: cols 1-2 rows 2-4.
-              Desktop lg+: cols 1-2 rows 2-3. */}
+          {/* ── TEXT BLOCK — cols 1-2 rows 2-3 ── */}
           <motion.div
-            className="pointer-events-none relative z-10 col-start-1 col-span-2 row-start-2 row-span-3 flex flex-col items-start lg:col-span-2 lg:col-start-1 lg:row-span-2 lg:row-start-2"
+            className="pointer-events-none relative z-10 flex flex-col items-start lg:col-span-2 lg:col-start-1 lg:row-span-2 lg:row-start-2"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.4 }}
           >
-            <motion.h1
-              className="pointer-events-auto m-0 font-['Poppins',_sans-serif] font-bold uppercase text-[#0E0E0E]"
-              style={{
-                fontSize: "clamp(40px, min(5.55vw, 8.6vh), 96px)",
-                lineHeight: "140%",
-              }}
-              variants={fadeUp(0)}
-            >
-              {titleLine1}
-            </motion.h1>
-
-            <motion.h1
-              className="pointer-events-auto m-0 font-['Poppins',_sans-serif] font-bold uppercase text-[#0E0E0E]"
-              style={{
-                fontSize: "clamp(40px, min(5.55vw, 8.6vh), 96px)",
-                lineHeight: "140%",
-              }}
-              variants={fadeUp(0.15)}
-            >
-              {titleLine2}
-            </motion.h1>
-
-            <motion.h1
-              className="pointer-events-auto m-0 font-['Poppins',_sans-serif] font-bold uppercase text-[#0E0E0E]"
-              style={{
-                fontSize: "clamp(40px, min(5.55vw, 8.6vh), 96px)",
-                lineHeight: "140%",
-              }}
-              variants={fadeUp(0.3)}
-            >
-              {titleLine3}
-            </motion.h1>
-
+            {headingLines.map((line, i) => (
+              <motion.h1
+                key={i}
+                className="pointer-events-auto m-0 font-['Poppins',_sans-serif] font-bold uppercase text-[#0E0E0E]"
+                style={{
+                  fontSize: "clamp(40px, min(5.55vw, 8.6vh), 96px)",
+                  lineHeight: "140%",
+                }}
+                variants={fadeUp(i * 0.15)}
+              >
+                {line}
+              </motion.h1>
+            ))}
             <motion.p
               className="pointer-events-auto m-0 font-['Poppins',_sans-serif] font-normal text-[#000]"
               style={{

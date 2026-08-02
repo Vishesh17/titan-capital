@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -59,10 +59,29 @@ export default function WhyIndicorns() {
     const timer = setInterval(() => {
       setActiveIndex((prev) => (prev === timelineData.length - 1 ? 0 : prev + 1));
     }, 3000);
-    
+
     // Cleanup the interval on unmount or when activeIndex changes (manual click)
     return () => clearInterval(timer);
   }, [activeIndex]);
+
+  // ── Mobile timeline carousel (swipe + dots) ──
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [mobileIndex, setMobileIndex] = useState(0);
+
+  const handleCarouselScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const step = el.scrollWidth / timelineData.length;
+    const i = Math.round(el.scrollLeft / step);
+    setMobileIndex(Math.max(0, Math.min(timelineData.length - 1, i)));
+  };
+
+  const scrollToCard = (i: number) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const step = el.scrollWidth / timelineData.length;
+    el.scrollTo({ left: i * step, behavior: "smooth" });
+  };
 
   return (
     <section
@@ -96,10 +115,97 @@ export default function WhyIndicorns() {
           The Indicorns?
         </motion.h2>
 
-        {/* Top Story Section */}
+        {/* ══════════ MOBILE (< md) ══════════
+            Order per design: heading → swipeable timeline cards + dots →
+            story text → image. Desktop story/timeline are hidden below md. */}
+        <div className="md:hidden">
+          {/* Swipeable timeline cards */}
+          <div
+            ref={scrollRef}
+            onScroll={handleCarouselScroll}
+            className="flex snap-x snap-mandatory gap-[16px] overflow-x-auto -mx-[var(--section-px-wide)] px-[var(--section-px-wide)] pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {timelineData.map((item, index) => (
+              <div
+                key={index}
+                className="flex shrink-0 snap-start flex-col rounded-[20px] border border-[#ECECEC] bg-white p-[28px] shadow-[0_4px_20px_rgba(0,0,0,0.04)]"
+                style={{ width: "76%" }}
+              >
+                <div
+                  className="mb-[18px] h-[18px] w-[18px] rounded-full bg-[#0f2143]"
+                  style={{ boxShadow: "0 0 0 4px rgba(15,33,67,0.10)" }}
+                />
+                <p className="m-0 mb-[8px] text-[13px] font-medium text-[#333]">
+                  {item.date}
+                </p>
+                <h4 className="m-0 mb-[12px] whitespace-pre-line text-[20px] font-semibold leading-[1.3] text-black">
+                  {item.title}
+                </h4>
+                <p className="m-0 text-[15px] leading-[1.6] text-[#4a4a4a]">
+                  {item.desc}
+                </p>
+                {item.stats && (
+                  <div className="mt-[20px]">
+                    <div className="mb-[8px] flex items-center gap-[12px]">
+                      <span className="text-[42px] font-normal leading-none text-black">
+                        {item.stats.number}
+                      </span>
+                      <span className="whitespace-pre-line text-[14px] leading-tight text-[#4a4a4a]">
+                        {item.stats.label}
+                      </span>
+                    </div>
+                    <p className="m-0 whitespace-pre-line text-[11px] leading-[1.4] text-[#6b6b6b]">
+                      {item.stats.sub}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Pagination dots */}
+          <div className="mt-[20px] flex justify-center gap-[8px]">
+            {timelineData.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Go to card ${i + 1}`}
+                onClick={() => scrollToCard(i)}
+                className={`h-[7px] w-[7px] rounded-full transition-colors duration-300 ${
+                  mobileIndex === i ? "bg-[#0f2143]" : "bg-[#0f2143]/25"
+                }`}
+              />
+            ))}
+          </div>
+
+          {/* Story — text then image */}
+          <div className="mt-[clamp(40px,10vw,64px)] flex flex-col">
+            <h3 className="m-0 mb-[clamp(16px,4vw,24px)] text-[24px] font-semibold leading-[130%] text-black">
+              September 2024
+            </h3>
+            <p className="m-0 text-[16px] font-normal leading-[160%] text-[#1a1a1a]">
+              On the main stage of YourStory&apos;s TechSparks India&apos;s
+              largest startup summit - Kunal Bahl introduced one word to the
+              ecosystem: Indicorn.
+              <br />
+              <br />
+              It wasn&apos;t just a new word. It was a challenge to change how
+              India defines, celebrates, and aspires toward success measured in
+              revenue and profit, not a valuation set in someone else&apos;s
+              currency.
+            </p>
+            <img
+              src="/images/indicorns/skyscrappers.png"
+              alt="Skyscrapers looking up"
+              className="mt-[clamp(24px,6vw,40px)] w-full rounded-[2px] object-cover"
+            />
+          </div>
+        </div>
+
+        {/* Top Story Section (desktop / tablet only) */}
         <motion.div
           variants={itemVariants}
-          className="grid grid-cols-1 lg:grid-cols-2 items-center gap-[clamp(32px,min(4vw,6vh),64px)] mb-[clamp(48px,min(7vw,10vh),120px)]"
+          className="max-md:hidden grid grid-cols-1 lg:grid-cols-2 items-center gap-[clamp(32px,min(4vw,6vh),64px)] mb-[clamp(48px,min(7vw,10vh),120px)]"
         >
           {/* Image */}
           <div className="w-full overflow-hidden rounded-[2px] shadow-sm">
@@ -139,8 +245,8 @@ export default function WhyIndicorns() {
           </div>
         </motion.div>
 
-        {/* Timeline Section */}
-        <div className="relative w-full">
+        {/* Timeline Section (desktop / tablet only) */}
+        <div className="max-md:hidden relative w-full">
           {/* Background Timeline Line (Desktop) */}
           <div className="hidden md:block absolute top-[44px] left-[16.66%] right-[16.66%] h-[1px] bg-[#d3cec4] z-0" />
           

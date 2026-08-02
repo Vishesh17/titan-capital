@@ -386,7 +386,12 @@ export default function OurTeamClient({
 
   return (
     <section
-      className="relative flex w-full flex-col items-center overflow-hidden bg-white"
+      // max-md:!mt-0 — on mobile the negative overlap margin (~59px) all
+      // but cancels LedByFounders' bottom padding, leaving almost no gap
+      // after the last founder. Neutralise the overlap on mobile so normal
+      // section spacing returns; desktop keeps the slide-over via the
+      // inline negative marginTop.
+      className="relative flex w-full flex-col items-center overflow-hidden bg-white max-md:!mt-0 max-md:!rounded-t-[min(6.66vw,10.30vh)]"
       style={{
         // Curved top + high z-index + negative top margin so this white
         // section slides UP and over the cream LedByFounders section above

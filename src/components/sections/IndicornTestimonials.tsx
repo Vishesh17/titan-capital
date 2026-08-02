@@ -16,7 +16,7 @@ interface IndicornTestimonial {
 const testimonials: IndicornTestimonial[] = [
   {
     id: 0,
-    image: "/images/indicorns/kapil_makhija.png", // Replace with actual image path
+    image: "/images/indicorns/kapil_makhija.png", 
     quote:
       '"The unicorn framing was never ours. Indicorn is. It asks the right question: have you built something real? Have you built something that lasts? That\'s what we were always trying to do."',
     name: "Kalyan Krishnamurthy", 
@@ -24,7 +24,7 @@ const testimonials: IndicornTestimonial[] = [
   },
   {
     id: 1,
-    image: "/images/indicorns/Varun_alagh.png", // Replace with actual image path
+    image: "/images/indicorns/Varun_alagh.png", 
     quote:
       '"Profitability was always our north star. We built Mamaearth for the long run, not for the next funding round. The Indicorn term finally gives that philosophy a name."',
     name: "Varun Alagh",
@@ -32,7 +32,7 @@ const testimonials: IndicornTestimonial[] = [
   },
   {
     id: 2,
-    image: "images/indicorns/kunal_bahl.png", // Replace with actual image path
+    image: "images/indicorns/kunal_bahl.png", 
     quote:
       '"The unicorn framing was never ours. Indicorn is. It asks the right question: have you built something real? Have you built something that lasts? That\'s what we were always trying to do."',
     name: "Kunal Bhal",
@@ -62,20 +62,16 @@ export default function IndicornFoundersSay() {
 
   return (
     <section
-      className="relative w-full overflow-hidden bg-white z-20"
+      // THE FIX: We moved ALL padding out of the inline style object and into Tailwind classes.
+      // Desktop uses pt-[calc(var(--section-py)+40px)]. Mobile safely overrides it with max-md:!pt-[48px].
+      className="relative w-full overflow-hidden bg-white z-20 px-[var(--section-px-wide)] pb-[var(--section-py)] pt-[calc(var(--section-py)+40px)] max-md:!mt-0 max-md:!pt-[48px] max-md:!pb-[48px]"
       style={{
-        // Curved top + high z-index so this section slides UP and over the
-        // pinned IndicornCompanies section — same as FoundersTestimonial
-        // over IndicornSpotlight. Radius token matches that section exactly.
         borderTopLeftRadius: "min(4.44vw, 7.30vh)",
         borderTopRightRadius: "min(4.44vw, 7.30vh)",
         borderBottomLeftRadius: 0,
         borderBottomRightRadius: 0,
         marginTop: "-40px",
-        paddingTop: "calc(var(--section-py) + 40px)",
-        paddingBottom: "var(--section-py)",
-        paddingLeft: "var(--section-px-wide)",
-        paddingRight: "var(--section-px-wide)",
+        // Notice: padding rules are completely gone from here! No more specificity wars.
       }}
     >
       <div className="mx-auto max-w-[1440px] flex flex-col items-center">
@@ -105,11 +101,7 @@ export default function IndicornFoundersSay() {
           </p>
         </motion.div>
 
-        {/* Flat vertical testimonial stack — three rows, NO 3D tilt. The
-            active (middle) row expands: tall portrait photo + italic quote
-            + name/role; inactive rows stay compact: short landscape photo
-            + plain quote. Thin divider lines separate the rows. Matches
-            the design screenshot exactly. */}
+        {/* Flat vertical testimonial stack */}
         <div className="w-full max-w-[1180px] flex flex-col">
           {testimonials.map((item, index) => {
             const isActive = activeIndex === index;
@@ -135,8 +127,7 @@ export default function IndicornFoundersSay() {
                   borderBottom: isLast ? "none" : "1px solid #e5e5e5",
                 }}
               >
-                {/* Morphing founder photo — width constant, height grows
-                    when active (landscape → portrait). */}
+                {/* Morphing founder photo */}
                 <motion.div
                   initial={false}
                   animate={{ width: imgWidth, height: imgHeight }}
@@ -152,7 +143,6 @@ export default function IndicornFoundersSay() {
 
                 {/* Text — centered in the remaining space */}
                 <div className="flex flex-1 flex-col items-center justify-center text-center">
-                  {/* Grid-stacked normal/italic quote for a clean crossfade */}
                   <div className="grid w-full grid-cols-1 grid-rows-1 items-center justify-center">
                     {/* Plain quote (inactive) */}
                     <motion.p

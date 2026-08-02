@@ -25,7 +25,7 @@ export default function IndicornsPage() {
             <IndicornCompanies />
             {/* Dwell spacer keeps Companies pinned a beat before Testimonials
                 slides over it. */}
-            <div aria-hidden className="h-[35vh] w-full" />
+            <div aria-hidden className="hidden md:block h-[35vh] w-full" />
             <IndicornTestimonial />
           </div>
         </div>

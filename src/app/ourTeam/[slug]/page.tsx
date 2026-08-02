@@ -145,7 +145,7 @@ export default async function TeamMemberPage({
 
           {/* ── Row 2: Photo  +  Name/Title/Icons  (Bio card overlaps) ── */}
           <div
-            className="relative flex w-full flex-col lg:flex-row lg:items-start"
+            className="relative flex w-full flex-col max-lg:items-center lg:flex-row lg:items-start"
             style={{
               marginTop: "clamp(20px, min(2.2vw, 3.2vh), 40px)",
               gap: "clamp(28px, min(3vw, 4.5vh), 56px)",
@@ -212,9 +212,9 @@ export default async function TeamMemberPage({
             {/* Right column: name, title, icons, bio 
                 Added max-lg:-mt-12 to create negative vertical padding between photo and text on mobile.
                 Added lg:pt-12 to align Name with the face on desktop rather than the high blob edge. */}
-            <div className="flex w-full flex-1 flex-col max-lg:-mt-12 lg:pt-12 relative z-10">
+            <div className="flex w-full flex-1 flex-col max-lg:items-center max-lg:mt-2 lg:pt-12 relative z-10">
               <h1
-                className="m-0 font-['Poppins',_sans-serif] font-medium text-[#0E0E0E]"
+                className="m-0 font-['Poppins',_sans-serif] font-medium text-[#0E0E0E] max-lg:!text-center"
                 style={{
                   fontSize: "clamp(28px, min(3.33vw, 4.88vh), 48px)",
                   lineHeight: "158%",
@@ -225,7 +225,7 @@ export default async function TeamMemberPage({
               
               {/* Title using whitespace-pre-line to respect line breaks */}
               <p
-                className="m-0 font-['Poppins',_sans-serif] font-normal capitalize text-[#0E0E0E] whitespace-pre-line"
+                className="m-0 font-['Poppins',_sans-serif] font-normal capitalize text-[#0E0E0E] whitespace-pre-line max-lg:!text-center"
                 style={{
                   fontSize: "clamp(20px, min(2.22vw, 3.25vh), 32px)",
                   lineHeight: "158%",
@@ -236,7 +236,7 @@ export default async function TeamMemberPage({
 
               {/* Social Icons (Always rendered, regardless of Sanity data) */}
               <div
-                className="flex items-center"
+                className="flex items-center max-lg:justify-center"
                 style={{
                   gap: "clamp(10px, min(1.1vw, 1.6vh), 18px)",
                   marginTop: "clamp(16px, min(1.7vw, 2.5vh), 28px)",

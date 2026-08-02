@@ -143,8 +143,8 @@ function FounderRow({ founder }: { founder: FounderProfile }) {
         }}
       />
 
-      {/* ── CONTENT ── */}
-      <div className="flex w-full flex-1 flex-col items-start lg:px-4">
+      {/* ── CONTENT ── (mobile: centered; desktop: left-aligned, unchanged) */}
+      <div className="flex w-full flex-1 flex-col items-center text-center lg:items-start lg:text-left lg:px-4">
         {/* Highlighted name */}
         <h3
           className="m-0 font-['Poppins',_sans-serif] font-semibold text-[#0E0E0E]"
@@ -186,8 +186,8 @@ function FounderRow({ founder }: { founder: FounderProfile }) {
         <motion.div
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: false, amount: 0.8 }} 
-          className="w-full h-[1px] bg-black"
+          viewport={{ once: false, amount: 0.8 }}
+          className="w-full h-[1px] bg-black max-md:!origin-center"
           style={{
             transformOrigin: isImageLeft ? "left" : "right",
             marginTop: "clamp(16px, min(2vw, 3vh), 32px)",
