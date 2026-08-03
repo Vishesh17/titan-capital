@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { hasAppMounted } from "@/lib/appNavState";
 import {
   motion,
   AnimatePresence,
@@ -235,9 +236,21 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     return idx !== -1 ? idx : Math.ceil((founders.length - 1) / 2);
   })();
 
+  // Skip the long intro (photo slideshow + card deal/open choreography) when
+  // the homepage is reached via CLIENT-SIDE navigation (back button, footer,
+  // navbar). On a hard/fresh load hasAppMounted() is false → full intro; on a
+  // soft nav it's already true → jump straight to the heading reveal.
+  // Read once at first render (useState initializer runs during render).
+  const [skipIntro] = useState(() => hasAppMounted());
+
   const [ready, setReady] = useState(false);
-  const progress = useMotionValue(0);
-  const [stage, setStage] = useState<"slideshow" | "animate">("slideshow");
+  // On a soft-nav skip, start progress already at the end so the heading
+  // wrapper is visible immediately (headingOpacity maps progress→1) and the
+  // card choreography is bypassed.
+  const progress = useMotionValue(skipIntro ? 1 : 0);
+  const [stage, setStage] = useState<"slideshow" | "animate">(
+    skipIntro ? "animate" : "slideshow"
+  );
 
   const slideshowFounders = founders.filter(f => !f.isLogo);
   const [slideIndex, setSlideIndex] = useState(0);
@@ -261,12 +274,19 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
   useEffect(() => {
     if (stage !== "animate") return;
+    // Soft nav: snap straight to the end so the card choreography is skipped;
+    // setting progress past 0.56 fires the change handler → headingReady →
+    // the heading RevealLine plays on its own (the "final part" only).
+    if (skipIntro) {
+      progress.set(1);
+      return;
+    }
     const controls = animate(progress, 1, {
       duration: 4.5,
       ease: "linear",
     });
     return () => controls.stop();
-  }, [stage, progress]);
+  }, [stage, progress, skipIntro]);
 
   const [dims, setDims] = useState<Dims>(FALLBACK_DIMS);
   const [slot, setSlot] = useState<Slot>(FALLBACK_SLOT);
@@ -324,9 +344,12 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   const headingOpacity = useTransform(progress, [0.50, 0.58], [0, 1]);
   const sideLabelsOpacity = useTransform(progress, [0.44, 0.52], [1, 0]);
 
-  const [headingReady, setHeadingReady] = useState(false);
+  // On a soft-nav skip, reveal the heading immediately (don't wait on the
+  // progress change-listener, which registers in a later effect than the one
+  // that snaps progress to 1 — so the set(1) event would be missed).
+  const [headingReady, setHeadingReady] = useState(skipIntro);
   const [uiReady, setUiReady] = useState(false);
-  const [subtitleReady, setSubtitleReady] = useState(false);
+  const [subtitleReady, setSubtitleReady] = useState(skipIntro);
   const [headingTick, setHeadingTick] = useState(0);
 
   const logoFounder = founders.find(f => f.isLogo);
@@ -336,8 +359,10 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     : nonLogoFounders[headingTick % nonLogoFounders.length];
 
   useEffect(() => {
-    if (ready) document.body.classList.add("hero-hide-nav");
-  }, [ready]);
+    // Only hide the navbar while the full intro plays — on a soft-nav skip
+    // there's no intro to hide behind, so keep the nav visible.
+    if (ready && !skipIntro) document.body.classList.add("hero-hide-nav");
+  }, [ready, skipIntro]);
 
   useEffect(() => {
     if (!headingReady) return;

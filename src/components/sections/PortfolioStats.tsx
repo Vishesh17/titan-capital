@@ -48,10 +48,13 @@ function RollingNumber({ value }: { value: string }) {
   };
 
   return (
-    <div className="flex flex-row items-center justify-center">
-      {/* PREFIX (e.g., "$") — Appears instantly with the parent block */}
+    <div className="flex flex-row items-center justify-center leading-none">
+      {/* PREFIX (e.g., "$") — matched to the 1.2em digit window so it
+          sits on the same line as the rolling digits. */}
       {prefix && (
-        <span>{prefix}</span>
+        <span className="inline-flex items-center leading-none" style={{ height: "1.2em" }}>
+          {prefix}
+        </span>
       )}
 
       {/* ROLLING DIGITS */}
@@ -88,9 +91,11 @@ function RollingNumber({ value }: { value: string }) {
         })}
       </div>
 
-      {/* SUFFIX (e.g., "B+", "+") — Appears instantly with the parent block */}
+      {/* SUFFIX (e.g., "B+", "+") — matched to the 1.2em digit window. */}
       {suffix && (
-        <span>{suffix}</span>
+        <span className="inline-flex items-center leading-none" style={{ height: "1.2em" }}>
+          {suffix}
+        </span>
       )}
     </div>
   );
@@ -108,7 +113,7 @@ export default function PortfolioStats() {
       }}
     >
       <motion.div
-        className="flex w-full flex-row items-center justify-center"
+        className="flex w-full flex-row items-start justify-center"
         style={{ gap: "clamp(10px, min(5.26vw, 7.12vh), 50px)" }}
         initial="hidden"
         whileInView="visible"
@@ -137,7 +142,8 @@ export default function PortfolioStats() {
             <div
               className="font-['Poppins',_serif] font-medium text-[#001A4D]"
               style={{
-                fontSize: "clamp(28px, min(4.44vw, 6.52vh), 64px)",
+                // ~20% larger than before.
+                fontSize: "clamp(34px, min(5.33vw, 7.82vh), 77px)",
                 textAlign: "center",
               }}
             >
@@ -146,7 +152,8 @@ export default function PortfolioStats() {
             <span
               className="font-['Poppins',_sans-serif] font-normal text-[#001A4D] mt-1"
               style={{
-                fontSize: "clamp(7px, min(1.11vw, 1.63vh), 16px)",
+                // ~40% larger than before.
+                fontSize: "clamp(10px, min(1.55vw, 2.28vh), 22px)",
                 lineHeight: "140%",
                 textAlign: "center",
               }}

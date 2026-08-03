@@ -1,7 +1,8 @@
 "use client";
 
 import { ReactLenis } from "lenis/react";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
+import { markAppMounted } from "@/lib/appNavState";
 
 /**
  * Site-wide smooth scroll via Lenis. Mounted once at the root so every
@@ -20,6 +21,14 @@ export default function LenisProvider({
 }: {
   children: ReactNode;
 }) {
+  // Runs once on the app's first client render and never again (this
+  // provider is mounted once at the root and persists across soft navs).
+  // After this, hasAppMounted() reports true for any later route change —
+  // letting the homepage hero know it was reached via client navigation.
+  useEffect(() => {
+    markAppMounted();
+  }, []);
+
   return (
     <ReactLenis
       root

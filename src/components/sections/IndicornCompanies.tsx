@@ -1,8 +1,102 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useEffect, useRef } from "react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
+
+/* ─────────────────────────────────────────────────────────
+   Animated background glow — same moving left/right blobs plus
+   cursor-follow blob as IndicornSpotlight's HeroGlow.
+   ───────────────────────────────────────────────────────── */
+function HeroGlow() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const normX = useMotionValue(0);
+  const normY = useMotionValue(0);
+
+  const cursorSpring = { damping: 25, stiffness: 250, mass: 0.3 };
+  const smoothX = useSpring(mouseX, cursorSpring);
+  const smoothY = useSpring(mouseY, cursorSpring);
+
+  const ambientSpring = { damping: 30, stiffness: 70, mass: 1 };
+  const smoothNormX = useSpring(normX, ambientSpring);
+  const smoothNormY = useSpring(normY, ambientSpring);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      mouseX.set(rect.width / 2);
+      mouseY.set(rect.height / 2);
+    }
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        mouseX.set(e.clientX - rect.left);
+        mouseY.set(e.clientY - rect.top);
+      }
+      normX.set((e.clientX / window.innerWidth) * 2 - 1);
+      normY.set((e.clientY / window.innerHeight) * 2 - 1);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [mouseX, mouseY, normX, normY]);
+
+  const leftX = useTransform(smoothNormX, [-1, 1], ["-8%", "8%"]);
+  const leftY = useTransform(smoothNormY, [-1, 1], ["-8%", "8%"]);
+  const rightX = useTransform(smoothNormX, [-1, 1], ["8%", "-8%"]);
+  const rightY = useTransform(smoothNormY, [-1, 1], ["8%", "-8%"]);
+
+  return (
+    <div ref={containerRef} className="absolute inset-0 pointer-events-none z-0">
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute"
+        style={{
+          left: "-25%", top: "-25%", width: "min(75vw, 100vh)", height: "min(75vw, 100vh)",
+          zIndex: 0, x: leftX, y: leftY, willChange: "transform",
+        }}
+      >
+        <motion.div
+          className="w-full h-full rounded-full blur-[120px]"
+          style={{ background: "radial-gradient(circle, #5054B5 0%, #054EB6 40%, #022250 80%, transparent 100%)", opacity: 0.6 }}
+          animate={{ x: ["0%", "35%", "-15%", "25%", "0%"], y: ["0%", "25%", "-10%", "35%", "0%"], scale: [1, 1.15, 0.85, 1.1, 1] }}
+          transition={{ duration: 18, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
+        />
+      </motion.div>
+
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute"
+        style={{
+          right: "-25%", bottom: "-25%", width: "min(70vw, 90vh)", height: "min(70vw, 90vh)",
+          zIndex: 0, x: rightX, y: rightY, willChange: "transform",
+        }}
+      >
+        <motion.div
+          className="w-full h-full rounded-full blur-[120px]"
+          style={{ background: "radial-gradient(circle, #AC71C6 0%, #033699 50%, #001A4D 80%, transparent 100%)", opacity: 0.5 }}
+          animate={{ x: ["0%", "-35%", "15%", "-25%", "0%"], y: ["0%", "-25%", "10%", "-35%", "0%"], scale: [1, 1.15, 0.85, 1.1, 1] }}
+          transition={{ duration: 21, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
+        />
+      </motion.div>
+
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute top-0 left-0 rounded-full blur-[60px]"
+        style={{
+          width: "25vw", height: "25vw", zIndex: 5, x: smoothX, y: smoothY,
+          translateX: "-50%", translateY: "-50%", opacity: 0.4,
+          background: "radial-gradient(circle, rgba(80,84,181,0.85) 0%, rgba(5,78,182,0.5) 40%, rgba(2,34,80,0.2) 70%, transparent 100%)",
+          willChange: "transform",
+        }}
+      />
+    </div>
+  );
+}
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -26,6 +120,9 @@ export interface PortfolioCompany {
   name: string;
   logoUrl: string;
   description: string;
+  /** Per-logo size multiplier — some logos have more built-in padding and
+      read smaller at the same box height. Defaults to 1. */
+  scale?: number;
 }
 
 export interface IndicornSpotlightData {
@@ -38,18 +135,21 @@ const fallbackData: PortfolioCompany[] = [
     logoUrl: "/images/portfolio_grid/unicommerce-logo.png", // Replace with your logo path
     description:
       "India's leading e-commerce SaaS platform, enabling thousands of brands to manage multi-channel operations.",
+    scale: 0.8,
   },
   {
     name: "Razorpay",
     logoUrl: "/images/portfolio_grid/Razorpay-logo.png", // Replace with your logo path
     description:
       "Razorpay has grown from a simple payment gateway to India's most comprehensive full-stack financial solutions platform.",
+    scale: 1.5,
   },
   {
     name: "OfBusiness",
     logoUrl: "/images/portfolio_grid/Ofbusiness.png", // Replace with your logo path
     description:
       "India's largest B2B marketplace for manufacturing and infrastructure SMEs, offering both raw material procurement and embedded financing",
+    scale: 1.5,
   },
 ];
 
@@ -80,9 +180,8 @@ export default function IndicornCompanies({
         paddingRight: "var(--section-px-wide)",
       }}
     >
-      {/* Background ambient glows matching the screenshot */}
-      <div className="pointer-events-none absolute top-1/4 -left-[20%] w-[60%] h-[60%] rounded-full bg-[#1e4ebf] opacity-[0.25] blur-[150px] mix-blend-screen" />
-      <div className="pointer-events-none absolute bottom-0 -right-[20%] w-[60%] h-[60%] rounded-full bg-[#1e4ebf] opacity-[0.2] blur-[150px] mix-blend-screen" />
+      {/* Animated background glow (moving blobs + cursor-follow blob) */}
+      <HeroGlow />
 
       <motion.div
         className="relative z-10 mx-auto max-w-[1440px] flex w-full flex-col"
@@ -133,6 +232,10 @@ export default function IndicornCompanies({
                   src={company.logoUrl}
                   alt={`${company.name} logo`}
                   className="max-h-full max-w-[clamp(120px,14vw,160px)] object-contain mix-blend-multiply"
+                  style={{
+                    transform: `scale(${company.scale ?? 1})`,
+                    transformOrigin: "left center",
+                  }}
                 />
               </div>
 

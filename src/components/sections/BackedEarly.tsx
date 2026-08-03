@@ -299,11 +299,11 @@ const companies = [
   { name: "Credgenics",    bgImage: "/images/portfolio/credgenics.webp",    logo: "/images/logos_backup/Credgenics.svg",               logoScale: 0.9 },
   { name: "OLA",           bgImage: "/images/portfolio/ola.webp",           logo: "/images/logos_backup/ola.svg",                      logoScale: 0.7 },
   { name: "Zouk",          bgImage: "/images/portfolio/zouk.webp",          logo: "/images/logos_backup/zouk_new_logo.webp",           logoScale: 0.8 },
-  { name: "Cart.com",      bgImage: "/images/portfolio/cartdotcom.webp",    logo: "/images/logos_backup/cartdotcom.svg",               logoScale: 1.0, noInvert: true },
   { name: "Unicommerce",   bgImage: "/images/portfolio/unicommerce.webp",   logo: "/images/logos_backup/unicommerce-logo.svg",         logoScale: 1.0 },
   { name: "Khatabook",     bgImage: "/images/portfolio/khatabook.webp",     logo: "/images/logos_backup/khatabook.png",                logoScale: 1.2, logoClass: "translate-y-[5px]" },
   { name: "Mamaearth",     bgImage: "/images/portfolio/mamaearth.webp",     logo: "/images/logos_backup/mamaearthpng-logo.webp",       logoScale: 1.0 },
   { name: "Ofbusiness",    bgImage: "/images/portfolio/ofbusiness.webp",    logo: "/images/logos_backup/ofbusiness_white.svg",         logoScale: 1.0 },
+  { name: "Cart.com",      bgImage: "/images/portfolio/cartdotcom.webp",    logo: "/images/logos_backup/cartdotcom.svg",               logoScale: 1.0, noInvert: true },
   { name: "Razorpay",      bgImage: "/images/portfolio/razorpay.webp",      logo: "/images/logos_backup/Razorpay-logo.webp",           logoScale: 1.0 },
   { name: "Snapdeal",      bgImage: "/images/portfolio/snapdeal.webp",      logo: "/images/logos_backup/snapdeal-company-1-logo.webp", logoScale: 1.0 },
   { name: "Urban Company", bgImage: "/images/portfolio/urbancompany.webp",  logo: "/images/logos_backup/uc_white.png",                 logoScale: 1.0 },
@@ -348,14 +348,17 @@ function CompanyCard({ company, mode = "marquee" }: { company: (typeof companies
         fill
         sizes={isMarquee ? "(max-width: 768px) 45vw, 22vw" : "50vw"}
         className={`object-cover ${isMarquee ? "" : "transition-transform duration-500 ease-out group-hover/card:scale-105"}`}
-        style={{ objectPosition: company.bgPosition ?? "center" }}
+        style={{ objectPosition: "center" }}
       />
 
+      {/* Full-card gradient (same ramp as the "Their Stories" cards in
+          ImpactAtGlance) so the logo reads cleanly over the photo instead
+          of blending into it. */}
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-[1]"
+        className="pointer-events-none absolute inset-0 z-[1]"
         style={{
-          height: "45%",
-          background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%)",
+          background:
+            "linear-gradient(180deg, rgba(21, 21, 21, 0.00) 0%, rgba(21, 21, 21, 0.82) 82%)",
         }}
       />
 
