@@ -300,7 +300,7 @@ const companies = [
   { name: "OLA",           bgImage: "/images/portfolio/ola.webp",           logo: "/images/logos_backup/ola.svg",                      logoScale: 0.7 },
   { name: "Zouk",          bgImage: "/images/portfolio/zouk.webp",          logo: "/images/logos_backup/zouk_new_logo.webp",           logoScale: 0.8 },
   { name: "Cart.com",      bgImage: "/images/portfolio/cartdotcom.webp",    logo: "/images/logos_backup/cartdotcom.svg",               logoScale: 1.0, noInvert: true },
-  { name: "Unicommerce",   bgImage: "/images/portfolio/unicommerce.webp",   logo: "/images/logos_backup/unicommerce-logo.svg",         logoScale: 1.0, bgPosition: "center bottom" },
+  { name: "Unicommerce",   bgImage: "/images/portfolio/unicommerce.webp",   logo: "/images/logos_backup/unicommerce-logo.svg",         logoScale: 1.0 },
   { name: "Khatabook",     bgImage: "/images/portfolio/khatabook.webp",     logo: "/images/logos_backup/khatabook.png",                logoScale: 1.2, logoClass: "translate-y-[5px]" },
   { name: "Mamaearth",     bgImage: "/images/portfolio/mamaearth.webp",     logo: "/images/logos_backup/mamaearthpng-logo.webp",       logoScale: 1.0 },
   { name: "Ofbusiness",    bgImage: "/images/portfolio/ofbusiness.webp",    logo: "/images/logos_backup/ofbusiness_white.svg",         logoScale: 1.0 },
