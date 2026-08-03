@@ -19,8 +19,8 @@ export interface BlogsHeroData {
   subtitle?: string;
 }
 
-const FALLBACK_HEADING_FIRST = "Thinking From The\nTitan Ecosystem";
-
+const FALLBACK_HEADING_FIRST = "Thinking From The";
+const FALLBACK_HEADING_SECOND = "Titan Ecosystem";
 const FALLBACK_SUBTITLE =
   "Operator-led insights. Investment theses. Founder stories. Market maps. The playbooks we wish existed when we were building.";
 
@@ -303,7 +303,7 @@ function RevealLine({
 
   return (
     <span
-      className="inline-flex"
+      className="inline-flex whitespace-nowrap"
       aria-label={children}
       style={{ perspective: "500px", transformStyle: "preserve-3d" }}
     >
@@ -352,6 +352,7 @@ export default function BlogsHeroClient({
   data?: BlogsHeroData | null;
 }) {
   const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
+  const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
   const subtitle = data?.subtitle || FALLBACK_SUBTITLE;
 
   const sectionRef = useRef<HTMLElement>(null);
@@ -383,6 +384,7 @@ export default function BlogsHeroClient({
             }}
           >
             <RevealLine show={show} delay={0}>{headingFirst}</RevealLine>
+            <RevealLine show={show} delay={0.5}>{headingSecond}</RevealLine>
           </h1>
 
           <motion.p
@@ -390,7 +392,7 @@ export default function BlogsHeroClient({
             style={{ fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)" }}
             initial={{ opacity: 0, y: 20 }}
             animate={show ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 0.8 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 1.2 }}
           >
             {subtitle}
           </motion.p>
