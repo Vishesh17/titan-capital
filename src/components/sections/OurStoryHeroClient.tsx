@@ -11,20 +11,24 @@ export interface OurStoryHeroData {
 }
 
 /* ─────────────────────────────────────────────────────────
-   Marquee card slots — gray placeholders for now (images drop
-   in later). Positions/sizes recreate the scattered look of the
-   design: a mix of portrait + square cards at varied heights.
-   `top` uses vh so the vertical scatter tracks the hero height.
-   The whole row drifts right → left on a seamless loop.
+   Drifting placeholder field.
+
+   A 3-row grid of uniform cells drifts right → left. Every cell
+   holds a gray rectangle that is BIG or SMALL, alternating like a
+   chess board — `(row + col) % 2`. Because every cell is the same
+   size, columns line up across the rows and the row-to-row spacing
+   is a single constant gap. All sizes use clamp + min(vw, vh) so
+   the whole field compresses responsively on short/narrow screens.
+   Images can drop into the rectangles later.
    ───────────────────────────────────────────────────────── */
-const CARDS = [
-  { w: "clamp(90px, 11vw, 150px)",   h: "clamp(105px, 13vw, 175px)", top: "6vh" },
-  { w: "clamp(100px, 12vw, 165px)",  h: "clamp(95px, 10.5vw, 150px)", top: "22vh" },
-  { w: "clamp(80px, 9vw, 130px)",    h: "clamp(105px, 13vw, 170px)", top: "9vh" },
-  { w: "clamp(95px, 11.5vw, 150px)", h: "clamp(95px, 11vw, 150px)",  top: "48vh" },
-  { w: "clamp(78px, 9vw, 120px)",    h: "clamp(78px, 9vw, 120px)",   top: "58vh" },
-  { w: "clamp(95px, 11.5vw, 150px)", h: "clamp(100px, 12vw, 165px)", top: "40vh" },
-];
+const ROWS = 3;
+const COLS = 14; // unique columns (even → checkerboard stays seamless when doubled)
+
+const CELL_W = "clamp(84px, min(11vw, 15.5vh), 172px)";
+const CELL_H = "clamp(94px, min(12.5vw, 17vh), 196px)";
+const COL_GAP = "clamp(26px, min(3.6vw, 5vh), 84px)";
+const ROW_GAP = "clamp(14px, min(1.8vw, 2.5vh), 34px)";
+const SMALL_SCALE = "58%"; // small rectangles fill 58% of their cell
 
 const MARQUEE_CSS = `
 @keyframes ourstory-marquee {
@@ -48,49 +52,73 @@ export default function OurStoryHeroClient({
 
   const line1 = "Being Founder";
   const line2 = "Takes Guts";
+  // TODO: replace with the real hero subtitle (placeholder copy for now).
+  const description =
+    "Built by founders, for founders — the story behind every conviction, every cheque, and every late-night call.";
+
+  const columns = Array.from({ length: COLS });
+  const rows = Array.from({ length: ROWS });
 
   return (
     <section
       className="relative flex w-full items-center justify-center overflow-hidden bg-white"
       style={{
-        marginTop: "var(--nav-height)",
-        minHeight: "calc(100svh - var(--nav-height))",
+        // White section starts at the very top so its background fills
+        // behind the transparent navbar (nav strip matches the hero until
+        // it turns blue on scroll). Content clears the nav via paddingTop.
+        height: "78svh",
+        paddingTop: "var(--nav-height)",
         paddingLeft: "var(--section-px-wide)",
         paddingRight: "var(--section-px-wide)",
       }}
     >
       <style>{MARQUEE_CSS}</style>
 
-      {/* ── DRIFTING PLACEHOLDER CARDS (behind heading) ── */}
+      {/* ── DRIFTING CHECKERBOARD FIELD (behind heading) ── */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+        className="pointer-events-none absolute inset-0 z-0 flex items-center overflow-hidden"
       >
         <div
-          className="flex h-full w-max items-start"
+          className="flex w-max"
           style={{
-            gap: "clamp(48px, 7vw, 130px)",
+            gap: COL_GAP,
             willChange: "transform",
-            animation: "ourstory-marquee 40s linear infinite",
+            animation: "ourstory-marquee 55s linear infinite",
           }}
         >
-          {[...CARDS, ...CARDS].map((c, i) => (
-            <div
-              key={i}
-              className="shrink-0 rounded-[2px] bg-[#D9D9D9]"
-              style={{ width: c.w, height: c.h, marginTop: c.top }}
-            />
+          {[...columns, ...columns].map((_, ci) => (
+            <div key={ci} className="flex shrink-0 flex-col" style={{ gap: ROW_GAP }}>
+              {rows.map((__, ri) => {
+                const big = (ci + ri) % 2 === 0;
+                return (
+                  <div
+                    key={ri}
+                    className="flex shrink-0 items-center justify-center"
+                    style={{ width: CELL_W, height: CELL_H }}
+                  >
+                    <div
+                      className="rounded-[2px] bg-[#D9D9D9]"
+                      style={{
+                        width: big ? "100%" : SMALL_SCALE,
+                        height: big ? "100%" : SMALL_SCALE,
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           ))}
         </div>
       </div>
 
-      {/* ── HEADING (centered, above the cards) ── */}
-      <div className="relative z-10 flex flex-col items-center text-center">
+      {/* ── HEADING + DESCRIPTION (centered, above the field) ── */}
+      <div className="relative z-10 flex max-w-[760px] flex-col items-center text-center">
         <h1
           className="m-0 font-['Poppins',_sans-serif] font-bold uppercase text-[#0E0E0E]"
           style={{
-            fontSize: "clamp(40px, min(5.55vw, 8.6vh), 96px)",
-            lineHeight: "140%",
+            fontSize: "clamp(44px, min(6.3vw, 9.7vh), 112px)",
+            lineHeight: "132%",
             opacity: 0,
             animation: "ourstory-rise 0.8s cubic-bezier(0.22,1,0.36,1) 0.1s forwards",
           }}
@@ -101,14 +129,26 @@ export default function OurStoryHeroClient({
         <h1
           className="m-0 font-['Poppins',_sans-serif] font-bold uppercase text-[#0E0E0E]"
           style={{
-            fontSize: "clamp(40px, min(5.55vw, 8.6vh), 96px)",
-            lineHeight: "140%",
+            fontSize: "clamp(44px, min(6.3vw, 9.7vh), 112px)",
+            lineHeight: "132%",
             opacity: 0,
             animation: "ourstory-rise 0.8s cubic-bezier(0.22,1,0.36,1) 0.28s forwards",
           }}
         >
           {line2}
         </h1>
+
+        <p
+          className="m-0 font-['Poppins',_sans-serif] font-normal leading-[1.6] text-[#1a1a1a] max-md:!text-[14px]"
+          style={{
+            marginTop: "clamp(16px, min(2.5vw, 4vh), 36px)",
+            fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)",
+            opacity: 0,
+            animation: "ourstory-rise 0.8s cubic-bezier(0.22,1,0.36,1) 0.46s forwards",
+          }}
+        >
+          {description}
+        </p>
       </div>
     </section>
   );

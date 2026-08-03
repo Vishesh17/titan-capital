@@ -58,17 +58,19 @@ const GRID_STRUCTURE = [
   { frontIsBox: false, gridClass: "lg:col-start-6 lg:row-start-1" },
   { frontIsBox: true,  gridClass: "lg:col-start-7 lg:row-start-1" },
 
-  // Row 2 — heading owns cols 1-3, 4 cards fill cols 4-7
-  { frontIsBox: false, gridClass: "lg:col-start-4 lg:row-start-2" },
-  { frontIsBox: true,  gridClass: "lg:col-start-5 lg:row-start-2" },
-  { frontIsBox: false, gridClass: "lg:col-start-6 lg:row-start-2" },
-  { frontIsBox: true,  gridClass: "lg:col-start-7 lg:row-start-2" },
+  // Row 2 — heading owns cols 1-3, 4 cards fill cols 4-7.
+  // frontIsBox follows a (row+col) chess-board so box/photo alternate
+  // both across each row AND down each column (col4: photo→box→photo…).
+  { frontIsBox: true,  gridClass: "lg:col-start-4 lg:row-start-2" },
+  { frontIsBox: false, gridClass: "lg:col-start-5 lg:row-start-2" },
+  { frontIsBox: true,  gridClass: "lg:col-start-6 lg:row-start-2" },
+  { frontIsBox: false, gridClass: "lg:col-start-7 lg:row-start-2" },
 
   // Row 3 — heading owns cols 1-3, 4 cards fill cols 4-7
-  { frontIsBox: true,  gridClass: "lg:col-start-4 lg:row-start-3" },
-  { frontIsBox: false, gridClass: "lg:col-start-5 lg:row-start-3" },
-  { frontIsBox: true,  gridClass: "lg:col-start-6 lg:row-start-3" },
-  { frontIsBox: false, gridClass: "lg:col-start-7 lg:row-start-3" },
+  { frontIsBox: false, gridClass: "lg:col-start-4 lg:row-start-3" },
+  { frontIsBox: true,  gridClass: "lg:col-start-5 lg:row-start-3" },
+  { frontIsBox: false, gridClass: "lg:col-start-6 lg:row-start-3" },
+  { frontIsBox: true,  gridClass: "lg:col-start-7 lg:row-start-3" },
 ];
 
 const FALLBACK_IMAGES = Array.from(
@@ -125,9 +127,11 @@ function FlipCard({
   return (
     <div
       // Mobile keeps the near-square 100/103 ratio (untouched). Desktop
-      // (lg+) uses a taller 100/122 portrait ratio so the 7,4,4 cards
-      // read as fuller rectangles.
-      className={`relative w-full aspect-[100/103] lg:aspect-[100/122] [perspective:1200px] ${gridClass}`}
+      // (lg+) drops the fixed aspect and instead sizes card HEIGHT with
+      // min(vw, vh) so the whole 7,4,4 grid compresses to fit inside the
+      // 70svh hero on every viewport (short laptops included). Width still
+      // comes from the 7-col grid, so the cards' aspect adapts per screen.
+      className={`relative w-full aspect-[100/103] lg:aspect-auto lg:h-[var(--card-h)] [perspective:1200px] ${gridClass}`}
     >
       <div
         className={`relative h-full w-full transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] [transform-style:preserve-3d] ${
@@ -200,17 +204,14 @@ export default function OurTeamHeroClient({
 
   return (
     <section
-      // Full-viewport min-height on desktop ONLY (lg+). On mobile the
-      // section sizes to its content so the next section flows up right
-      // after the hero grid instead of leaving empty space below.
-      className="relative flex w-full flex-col bg-white lg:min-h-[calc(100svh_-_var(--nav-height))]"
+      // The white section starts at the very top (no nav-height margin) so
+      // its background fills BEHIND the transparent navbar — the nav strip
+      // matches the hero until it turns blue on scroll. Content clears the
+      // nav via paddingTop instead of a margin.
+      // Desktop (lg+): 78svh tall from the top; mobile sizes to content.
+      className="relative flex w-full flex-col bg-white lg:!h-[80svh] lg:!pt-[calc(var(--nav-height)_+_min(1.6vw,2.3vh))] lg:!pb-[min(0.5vw,0.8vh)]"
       style={{
-        // marginTop pushes the section below the fixed navbar; the
-        // padding tokens are the site-wide section rhythm (same
-        // var(--section-py) / var(--section-px-wide) as every other
-        // section, so top→heading and content→bottom match the rest).
-        marginTop: "var(--nav-height)",
-        paddingTop: "var(--section-py)",
+        paddingTop: "calc(var(--nav-height) + var(--section-py))",
         paddingBottom: "var(--section-py)",
         paddingLeft: "var(--section-px-wide)",
         paddingRight: "var(--section-px-wide)",
@@ -280,23 +281,37 @@ export default function OurTeamHeroClient({
           ))}
         </div>
 
-        {/* ══════════ DESKTOP (lg+) — 7-col grid (7,4,4) ══════════ */}
+        {/* ══════════ DESKTOP (lg+) — 7-col grid (7,4,4) ══════════
+            Card height + gaps are CSS vars so the absolute heading overlay
+            (below) can align to cols 1-3 / rows 2-3 WITHOUT being a grid
+            item — that keeps all three card rows a constant height even if
+            the heading + description are taller than two rows. */}
         <div
-          className="hidden lg:grid w-full lg:grid-cols-7"
+          className="relative hidden lg:grid w-full lg:grid-cols-7"
           style={{
-            columnGap: "clamp(14px, min(1.8vw, 2.2vh), 32px)",
-            rowGap: "clamp(18px, min(2.2vw, 2.8vh), 40px)",
-          }}
+            "--card-h": "min(12vw, 17vh)",
+            "--col-gap": "clamp(14px, min(1.8vw, 2.2vh), 32px)",
+            "--row-gap": "clamp(22px, min(2.9vw, 4vh), 52px)",
+            columnGap: "var(--col-gap)",
+            rowGap: "var(--row-gap)",
+          } as React.CSSProperties}
         >
           {/* Row 1 (items 0-6) — 7 cards spanning full width on lg */}
           {teamItems.slice(0, 7).map((item) => (
             <FlipCard key={item.id} {...item} isFlipped={isFlipped} />
           ))}
 
-          {/* ── TEXT BLOCK — cols 1-3 rows 2-3 (fills the gap left by the
-               7,4,4 grid; left edge aligns with the row-1 cards) ── */}
+          {/* ── TEXT BLOCK — absolute overlay over cols 1-3 / rows 2-3.
+               Positioned off the shared CSS vars so it does NOT stretch the
+               grid rows (constant row spacing). Left edge aligns with the
+               row-1 cards. ── */}
           <motion.div
-            className="pointer-events-none relative z-10 flex flex-col items-start justify-center lg:col-span-3 lg:col-start-1 lg:row-span-2 lg:row-start-2"
+            className="pointer-events-none absolute left-0 z-10 flex flex-col items-start justify-center"
+            style={{
+              top: "calc(var(--card-h) + var(--row-gap))",
+              height: "calc(2 * var(--card-h) + var(--row-gap))",
+              width: "calc((100% - 6 * var(--col-gap)) / 7 * 3 + 2 * var(--col-gap))",
+            }}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.4 }}
@@ -306,8 +321,8 @@ export default function OurTeamHeroClient({
                 key={i}
                 className="pointer-events-auto m-0 font-['Poppins',_sans-serif] font-bold uppercase text-[#0E0E0E]"
                 style={{
-                  fontSize: "clamp(52px, min(7.5vw, 11.6vh), 132px)",
-                  lineHeight: "108%",
+                  fontSize: "clamp(38px, min(6.8vw, 8.8vh), 112px)",
+                  lineHeight: "110%",
                 }}
                 variants={fadeUp(i * 0.15)}
               >
@@ -319,7 +334,7 @@ export default function OurTeamHeroClient({
               style={{
                 marginTop: "clamp(12px, min(1.4vw, 2vh), 24px)",
                 maxWidth: "100%",
-                fontSize: "clamp(13px, min(1.5vw, 1.8vh), 20px)",
+                fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)",
                 lineHeight: "150%",
               }}
               variants={fadeUp(0.45)}

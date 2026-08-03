@@ -148,7 +148,10 @@ function BlogCard({ blog }: { blog: Blog }) {
       </div>
       <div
         className="flex flex-1 flex-col"
-        style={{ paddingTop: "clamp(12px, 1.4vw, 20px)", gap: "clamp(8px, 0.9vw, 14px)" }}
+        style={{
+          padding: "clamp(16px, 1.4vw, 22px) clamp(16px, 1.4vw, 22px) clamp(20px, 1.7vw, 28px)",
+          gap: "clamp(8px, 0.9vw, 14px)",
+        }}
       >
         <MetaLine blog={blog} />
         <h3
