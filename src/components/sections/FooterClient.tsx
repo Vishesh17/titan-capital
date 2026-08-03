@@ -23,15 +23,18 @@ const footerHrefs: Record<string, string> = {
   "Get Investment": "/getinvestment",
   "Our Team": "/ourteam",
   "Indicorns": "/indicorns",
+  "Our Story": "/ourstory",
+  "Founder Story": "/foundersstory",
+  "Blogs" : "/blogs"
 };
 
 const navLinks = [
   { title: "Home", links: ["Home Page"] },
-  { title: "About", links: ["Our Team", "Indicorns"] },//Our Story, Teams, Indicorns
+  { title: "About", links: ["Our Team", "Indicorns","Our Story"] },//Our Story, Teams, Indicorns
   { title: "For Founder", links: ["Get Investment","Titan Seed Fund", "Titan Winners Fund"] },//"Beyond Cheque"
   { title: "Portfolio", links: ["Our Portfolio"] },
-  // { title: "Community", links: ["Founder Story", "Titan Ecosystem"] },
-  // { title: "Perspective", links: ["Blogs","News","Events"] },
+  { title: "Community", links: ["Founder Story"] }, //"Titan Ecosystem"
+  { title: "Perspective", links: ["Blogs"] }, //,"News","Events"
 ];
 
 /* ────────────────────────────────────────────────

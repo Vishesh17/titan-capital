@@ -38,26 +38,26 @@ const FALLBACK_BULLETS: OriginBullet[] = [
       "In 2011, we started backing founders from our own pockets. Not as a fund. Not with a thesis.",
     desc:
       "Just as founders who'd been through the chaos of building a startup from zero, and believed deeply that India was at the beginning of something historic; with the goal that we must do everything in our abilities to support the next generation of founders in achieving their dreams, **Backed before anyone else did** isn't a tagline. It's the only kind of investing we know how to do.",
-    images: ["/images/ourstory/bullet1.png"],
+    images: ["/images/ourstory/1.webp"],
   },
   {
     title: "The word ‘startup’ hadn't yet entered national parlance.",
     desc:
       "The founders we backed early were building in categories that didn't have names yet. Fintech infrastructure. On-demand services. D2C. Hyperlocal logistics. We didn't invest because the markets were obvious. We invested because the founders were exceptional.",
-    images: ["/images/ourstory/bullet2.png"],
+    images: ["/images/ourstory/2.webp"],
   },
   {
     title:
       "Over 15 years, Titan Capital has backed 300+ companies and 500+ founders.",
     desc:
       "Fifteen years on, it's a fund. But the instinct hasn't changed — back the founder first, and the rest tends to follow. Some became Indicorns. Some became unicorns. Many are still building. All of them, the ones that made it and the ones that didn't, taught us something about what it takes.",
-    images: ["/images/ourstory/bullet3.png"],
+    images: ["/images/ourstory/3.webp"],
   },
   {
     title: "Today, Titan Capital is more than a venture capital fund.",
     desc:
       "We're a community, a resource library, an amalgamation of rich experiences, an expert network, and a support system that founders can draw on at every stage. The cheque is just the beginning. Everything that follows is the relationship.",
-    images: ["/images/ourstory/bullet4.png"],
+    images: ["/images/ourstory/4.webp"],
   },
 ];
 
@@ -110,11 +110,6 @@ function BulletDot({ uniqueId }: { uniqueId: string }) {
         width: "clamp(56px, min(6.6vw, 9.7vh), 95px)",
         height: "clamp(56px, min(6.6vw, 9.7vh), 95px)",
         flexShrink: 0,
-        // Negative margin pulls the visible dot inline with the title's
-        // first line cap-height — the visible core is ~24px but the
-        // glow halo extends well past it.
-        marginLeft: "clamp(-22px, -2vw, -10px)",
-        marginTop: "clamp(-22px, -2vw, -10px)",
       }}
     >
       <circle cx="47.5" cy="47.5" r="47.5" fill={`url(#${gradId})`} />
@@ -156,7 +151,7 @@ function ImageDeck({ images, alt }: { images: string[]; alt: string }) {
   const cardStyle: React.CSSProperties = {
     width: "clamp(220px, min(30.3vw, 44.5vh), 437px)",
     aspectRatio: "437 / 542",
-    borderRadius: "12px",
+    borderRadius: "2px",
   };
 
   return (
@@ -201,7 +196,10 @@ function ImageDeck({ images, alt }: { images: string[]; alt: string }) {
             fill
             sizes="(max-width: 768px) 70vw, 437px"
             className="object-cover"
-            style={{ borderRadius: "12px" }}
+            // The source photos ship with their own rounded corners; a
+            // slight zoom pushes those corners outside the frame so the
+            // card reads with the container's sharp 2px radius instead.
+            style={{ transform: "scale(1.06)" }}
           />
         </motion.div>
       ))}
@@ -335,7 +333,20 @@ function BulletRow({
         className="flex w-full flex-row items-start lg:max-w-[760px]"
         style={{ gap: "clamp(10px, min(1.2vw, 1.8vh), 22px)" }}
       >
-        <BulletDot uniqueId={`b${index}`} />
+        {/* Dot centered on the title's FIRST line: the wrapper's height
+            equals one title line-box (1.58 × the title font-size clamp), so
+            the dot's core lines up with line 1 at every viewport. The dot
+            (with its wide glow) overflows the wrapper equally top/bottom.
+            marginLeft pulls the glow halo into the left gutter. */}
+        <div
+          className="flex shrink-0 items-center justify-center"
+          style={{
+            height: "calc(1.58 * clamp(20px, min(2.5vw, 3.67vh), 36px))",
+            marginLeft: "clamp(-22px, -2vw, -10px)",
+          }}
+        >
+          <BulletDot uniqueId={`b${index}`} />
+        </div>
         <div
           className="flex flex-1 flex-col"
           style={{ gap: "clamp(12px, min(1.4vw, 2vh), 24px)" }}
@@ -389,6 +400,10 @@ export default function OriginStoryClient({
     <section
       className="relative flex w-full flex-col items-center overflow-hidden bg-[#FBF7F0]"
       style={{
+        // Rounded top + bottom corners (same treatment as the "Their
+        // Stories" section in ImpactAtGlance) — the white hero above and
+        // white FifteenYears below show through the curved corners.
+        borderRadius: "min(4.44vw, 7.30vh)",
         paddingTop: "clamp(48px, min(7vw, 10vh), 120px)",
         paddingBottom: "clamp(48px, min(7vw, 10vh), 120px)",
         paddingLeft: "var(--section-px-wide, 5%)",
@@ -397,15 +412,15 @@ export default function OriginStoryClient({
     >
       {/* ── HEADING — both words on the same line, side-by-side ── */}
       <motion.div
-        className="mb-[clamp(48px,min(6vw,9vh),120px)] flex flex-row flex-wrap items-baseline justify-center text-center"
-        style={{ gap: "clamp(8px, min(1vw, 1.5vh), 18px)" }}
+        className="flex flex-row flex-wrap items-baseline justify-center text-center max-md:!mb-[clamp(32px,6dvh,48px)]"
+        style={{ gap: "clamp(8px, min(1vw, 1.5vh), 18px)", marginBottom: "min(3.47vw, 5.37vh)" }}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.5 }}
       >
         <motion.h2
-          className="m-0 font-['Poppins',_serif] font-semibold leading-[120%] text-black max-md:!text-[32px]"
-          style={{ fontSize: "var(--heading-xl)" }}
+          className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
+          style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
           variants={{
             hidden: { opacity: 0, y: 40 },
             visible: {

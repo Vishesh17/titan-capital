@@ -60,7 +60,7 @@ function DigitWheel({ digit }: { digit: number }) {
       style={{
         width: widthClamp,
         height: heightClamp,
-        borderRadius: "12px",
+        borderRadius: "2px",
         // Inset shadow from the spec → odometer-window feel.
         boxShadow: "inset 0 4px 10.9px 0 rgba(0, 0, 0, 0.25)",
       }}
@@ -81,7 +81,7 @@ function DigitWheel({ digit }: { digit: number }) {
         {Array.from({ length: 10 }).map((_, i) => (
           <div
             key={i}
-            className="flex w-full items-center justify-center font-['Poppins',_serif] font-bold text-black"
+            className="flex w-full items-center justify-center font-['Poppins',_serif] font-medium text-black"
             style={{
               height: "10%",
               fontSize: "clamp(40px, min(6.67vw, 9.78vh), 96px)",
@@ -113,13 +113,13 @@ function YearDisplay({ year }: { year: number }) {
       style={{ gap: "clamp(2px, min(0.4vw, 0.6vh), 8px)" }}
     >
       <span
-        className="font-['Poppins',_serif] font-bold text-black"
+        className="font-['Poppins',_serif] font-medium text-black"
         style={{
           fontSize: "clamp(40px, min(6.67vw, 9.78vh), 96px)",
           lineHeight: "120%",
-          // Tighter letter-spacing between the "2" and "0" so the
-          // static portion visually matches the snug wheel layout.
-          letterSpacing: "0.04em",
+          // Wider letter-spacing so the static "2 0" breathes and reads
+          // in step with the gaps between the digit wheels.
+          letterSpacing: "0.18em",
         }}
       >
         20
@@ -347,8 +347,8 @@ export default function FifteenYearsClient({
     <section
       className="relative flex w-full flex-col items-center overflow-hidden bg-white"
       style={{
-        paddingTop: "clamp(48px, min(7vw, 10vh), 120px)",
-        paddingBottom: "clamp(48px, min(7vw, 10vh), 120px)",
+        paddingTop: "clamp(28px, min(4vw, 6vh), 64px)",
+        paddingBottom: "clamp(28px, min(4vw, 6vh), 64px)",
         paddingLeft: "var(--section-px-wide, 5%)",
         paddingRight: "var(--section-px-wide, 5%)",
       }}
@@ -356,18 +356,18 @@ export default function FifteenYearsClient({
       <div className="mx-auto flex w-full max-w-[1330px] flex-col items-center">
         {/* ── HEADING — same WinnersHero pattern (split, scaleX cream pill) ── */}
         <motion.div
-          className="flex flex-col items-center text-center"
+          className="flex flex-col items-center text-center max-md:!mb-[clamp(32px,6dvh,48px)]"
           style={{
             gap: "clamp(4px, min(0.4vw, 0.6vh), 8px)",
-            marginBottom: "clamp(40px, min(5vw, 7vh), 96px)",
+            marginBottom: "min(3.47vw, 5.37vh)",
           }}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.5 }}
         >
           <motion.h2
-            className="m-0 font-['Poppins',_serif] font-semibold leading-[120%] text-black max-md:!text-[32px]"
-            style={{ fontSize: "var(--heading-xl)" }}
+            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
+            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
             variants={{
               hidden: { opacity: 0, y: 40 },
               visible: {
@@ -440,7 +440,7 @@ export default function FifteenYearsClient({
                 enough for ~10 lines of description at desktop. */}
           <div
             className="relative flex w-full flex-1 flex-col lg:max-w-[760px]"
-            style={{ minHeight: "clamp(240px, min(28vw, 40vh), 380px)" }}
+            style={{ minHeight: "clamp(150px, min(19vw, 27vh), 260px)" }}
           >
             <AnimatePresence mode="wait">
               <motion.div
@@ -483,7 +483,7 @@ export default function FifteenYearsClient({
               pill's lift/scale never gets sliced by the row's clip
               box or by the section boundary above. */}
         <div
-          className="mt-[clamp(80px,min(10vw,14vh),180px)] w-full"
+          className="mt-[clamp(28px,min(3.5vw,5vh),56px)] w-full"
           style={{ paddingTop: "12px", paddingBottom: "12px" }}
         >
           <div

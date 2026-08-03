@@ -122,6 +122,20 @@ const FALLBACK_SECTIONS: NavbarSection[] = [
       { label: "Indicorns", url: "/indicorns" },
     ],
   },
+  {
+    id: "community",
+    title: "COMMUNITY ",
+    subItems: [
+      { label: "Founders Story", url: "/foundersstory" },
+    ],
+  },
+  {
+    id: "perspective",
+    title: "PERSPECTIVE ",
+    subItems: [
+      { label: "Blogs", url: "/blogs" },
+    ],
+  },
 ];
 
 const FALLBACK_CTA_LABEL = "Get Investment";

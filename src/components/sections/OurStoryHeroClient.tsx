@@ -13,22 +13,27 @@ export interface OurStoryHeroData {
 /* ─────────────────────────────────────────────────────────
    Drifting placeholder field.
 
-   A 3-row grid of uniform cells drifts right → left. Every cell
-   holds a gray rectangle that is BIG or SMALL, alternating like a
-   chess board — `(row + col) % 2`. Because every cell is the same
-   size, columns line up across the rows and the row-to-row spacing
-   is a single constant gap. All sizes use clamp + min(vw, vh) so
-   the whole field compresses responsively on short/narrow screens.
-   Images can drop into the rectangles later.
+   Randomly-sized gray rectangles scattered at random heights,
+   drifting right → left on a seamless loop. Sizes/offsets are a
+   fixed hand-tuned set (deterministic → no hydration mismatch)
+   but read as random. Every value uses clamp + min(vw, vh) so the
+   whole field compresses responsively on short/narrow screens.
+   `top` is the vertical scatter (vh) and `ml` is the horizontal
+   gap before each rectangle (varied → uneven spacing). Images can
+   drop into the rectangles later.
    ───────────────────────────────────────────────────────── */
-const ROWS = 3;
-const COLS = 14; // unique columns (even → checkerboard stays seamless when doubled)
-
-const CELL_W = "clamp(84px, min(11vw, 15.5vh), 172px)";
-const CELL_H = "clamp(94px, min(12.5vw, 17vh), 196px)";
-const COL_GAP = "clamp(26px, min(3.6vw, 5vh), 84px)";
-const ROW_GAP = "clamp(14px, min(1.8vw, 2.5vh), 34px)";
-const SMALL_SCALE = "58%"; // small rectangles fill 58% of their cell
+const CARDS = [
+  { w: "clamp(84px, 9.5vw, 150px)",  h: "clamp(104px, min(12.5vw, 16.5vh), 185px)", top: "6vh",  ml: "clamp(26px, 3.4vw, 62px)" },
+  { w: "clamp(62px, 6.8vw, 104px)",  h: "clamp(68px, min(7.8vw, 10.5vh), 116px)",   top: "40vh", ml: "clamp(46px, 5.6vw, 108px)" },
+  { w: "clamp(96px, 11vw, 168px)",   h: "clamp(84px, min(10vw, 13vh), 150px)",      top: "20vh", ml: "clamp(22px, 2.8vw, 48px)" },
+  { w: "clamp(72px, 8vw, 124px)",    h: "clamp(96px, min(11.5vw, 15vh), 168px)",    top: "1vh",  ml: "clamp(52px, 6.2vw, 124px)" },
+  { w: "clamp(88px, 10vw, 150px)",   h: "clamp(76px, min(8.8vw, 11.5vh), 128px)",   top: "52vh", ml: "clamp(28px, 3.4vw, 64px)" },
+  { w: "clamp(58px, 6.2vw, 96px)",   h: "clamp(62px, min(7.2vw, 9.5vh), 104px)",    top: "28vh", ml: "clamp(54px, 6.6vw, 132px)" },
+  { w: "clamp(92px, 10.5vw, 160px)", h: "clamp(100px, min(12vw, 15.5vh), 180px)",   top: "13vh", ml: "clamp(24px, 3vw, 52px)" },
+  { w: "clamp(68px, 7.4vw, 114px)",  h: "clamp(72px, min(8.2vw, 10.8vh), 122px)",   top: "45vh", ml: "clamp(48px, 5.8vw, 112px)" },
+  { w: "clamp(80px, 9vw, 140px)",    h: "clamp(88px, min(10.5vw, 13.5vh), 156px)",  top: "32vh", ml: "clamp(32px, 3.8vw, 74px)" },
+  { w: "clamp(74px, 8.2vw, 128px)",  h: "clamp(80px, min(9.4vw, 12.2vh), 140px)",   top: "8vh",  ml: "clamp(44px, 5.2vw, 100px)" },
+];
 
 const MARQUEE_CSS = `
 @keyframes ourstory-marquee {
@@ -56,9 +61,6 @@ export default function OurStoryHeroClient({
   const description =
     "Built by founders, for founders — the story behind every conviction, every cheque, and every late-night call.";
 
-  const columns = Array.from({ length: COLS });
-  const rows = Array.from({ length: ROWS });
-
   return (
     <section
       className="relative flex w-full items-center justify-center overflow-hidden bg-white"
@@ -74,40 +76,25 @@ export default function OurStoryHeroClient({
     >
       <style>{MARQUEE_CSS}</style>
 
-      {/* ── DRIFTING CHECKERBOARD FIELD (behind heading) ── */}
+      {/* ── DRIFTING SCATTERED FIELD (behind heading, below the nav) ── */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-0 flex items-center overflow-hidden"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 overflow-hidden"
+        style={{ top: "var(--nav-height)" }}
       >
         <div
-          className="flex w-max"
+          className="flex h-full w-max items-start"
           style={{
-            gap: COL_GAP,
             willChange: "transform",
-            animation: "ourstory-marquee 55s linear infinite",
+            animation: "ourstory-marquee 60s linear infinite",
           }}
         >
-          {[...columns, ...columns].map((_, ci) => (
-            <div key={ci} className="flex shrink-0 flex-col" style={{ gap: ROW_GAP }}>
-              {rows.map((__, ri) => {
-                const big = (ci + ri) % 2 === 0;
-                return (
-                  <div
-                    key={ri}
-                    className="flex shrink-0 items-center justify-center"
-                    style={{ width: CELL_W, height: CELL_H }}
-                  >
-                    <div
-                      className="rounded-[2px] bg-[#D9D9D9]"
-                      style={{
-                        width: big ? "100%" : SMALL_SCALE,
-                        height: big ? "100%" : SMALL_SCALE,
-                      }}
-                    />
-                  </div>
-                );
-              })}
-            </div>
+          {[...CARDS, ...CARDS].map((c, i) => (
+            <div
+              key={i}
+              className="shrink-0 rounded-[2px] bg-[#D9D9D9]"
+              style={{ width: c.w, height: c.h, marginTop: c.top, marginLeft: c.ml }}
+            />
           ))}
         </div>
       </div>
