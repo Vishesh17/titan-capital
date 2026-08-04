@@ -156,6 +156,76 @@ export const hero = defineType({
         },
       ],
     }),
+
+    /* ─────────── All founders (slideshow + heading rotation) ─────────── */
+    defineField({
+      name: "allFounders",
+      title: "All founders (intro slideshow + rotating heading photo)",
+      description:
+        "EVERY founder photo to cycle through in the intro flicker AND the rotating heading photo — so all founders get screen time. This is separate from the 'Founder cards' film-strip above (which stays a small curated set). Add as many as you like; if left empty the site falls back to the /public/images/hero_founders_images folder.",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          name: "heroAllFounder",
+          fields: [
+            defineField({
+              name: "name",
+              title: "Name (optional)",
+              type: "string",
+            }),
+            defineField({
+              name: "image",
+              title: "Photo",
+              type: "image",
+              options: { hotspot: true },
+              validation: (r) => r.required(),
+            }),
+            defineField({
+              name: "scaleFactor",
+              title: "Heading Scale Factor",
+              description: "Image scale in the rotating heading slot. 1 = normal, 1.5 = larger.",
+              type: "number",
+              validation: (r) => r.min(0.5).max(2.0),
+              initialValue: 1.5,
+            }),
+            defineField({
+              name: "positionX",
+              title: "Heading Horizontal Offset (px)",
+              type: "number",
+              initialValue: 0,
+            }),
+            defineField({
+              name: "positionY",
+              title: "Heading Vertical Offset (px)",
+              description: "Negative nudges the photo up (good for centring a face).",
+              type: "number",
+              initialValue: -8,
+            }),
+            defineField({
+              name: "squareScaleFactor",
+              title: "Slideshow Scale Factor",
+              type: "number",
+              validation: (r) => r.min(0.5).max(2.0),
+              initialValue: 1,
+            }),
+            defineField({
+              name: "squarePositionX",
+              title: "Slideshow Horizontal Offset (px)",
+              type: "number",
+              initialValue: 0,
+            }),
+            defineField({
+              name: "squarePositionY",
+              title: "Slideshow Vertical Offset (px)",
+              type: "number",
+              initialValue: 0,
+            }),
+          ],
+          preview: { select: { title: "name", media: "image" } },
+        },
+      ],
+    }),
   ],
 
   preview: {

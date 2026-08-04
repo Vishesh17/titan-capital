@@ -41,24 +41,52 @@ export interface HeroData {
   primaryCtaLabel?: string;
   secondaryCtaLabel?: string;
   founders?: HeroFounder[];
+  /** Full list for the intro slideshow + rotating heading photo. */
+  allFounders?: HeroFounder[];
 }
 
 /* ─────────────────────────────────────────────────────────
    Fallback data
    ───────────────────────────────────────────────────────── */
 const FALLBACK_FOUNDERS: HeroFounder[] = [
-  { name: "Abhiraj Singh Bhal",  role: "Co-Founder, Urban Company",     image: "/images/hero_founders_images/15.png", scaleFactor: 1.5, positionX: 0, positionY: 0, squareScaleFactor: 1, squarePositionX: -3, squarePositionY: 0 },
+  { name: "Abhiraj Singh Bhal",  role: "Co-Founder, Urban Company",     image: "/images/hero_founders_images/16.png", scaleFactor: 1.5, positionX: 0, positionY: 0, squareScaleFactor: 1, squarePositionX: -3, squarePositionY: 0 },
   { name: "Ashutosh Valani",     role: "Co-Founder, RENÉE Cosmetics",   image: "/images/hero_founders_images/12.png", scaleFactor: 1.5, positionX: 5, positionY: -5, squareScaleFactor: 1, squarePositionX: 0, squarePositionY: 0 },
   { name: "Abhishek Bansal",     role: "Co-Founder, Shadowfax",         image: "/images/hero_founders_images/1.png", scaleFactor: 1.5, positionX: 0, positionY: -10, squareScaleFactor: 1, squarePositionX: 0, squarePositionY: 0 },
   { name: "Titan Capital",       role: "",                              image: "/images/logos/titancapitallogo.svg",     isLogo: true, scaleFactor: 0.7, positionX: 0, positionY: 0, squareScaleFactor: 1, squarePositionX: 0, squarePositionY: 0 },
   { name: "Varun Khaitan",       role: "Co-Founder, Urban Company",     image: "/images/hero_founders_images/5.png", scaleFactor: 1.5, positionX: 0, positionY: -5, squareScaleFactor: 1, squarePositionX: 0, squarePositionY: 0 },
-  { name: "Ishendra Agarwal",    role: "Co-Founder, GIVA",              image: "/images/hero_founders_images/7.png", scaleFactor: 1.5, positionX: 0, positionY: -12, squareScaleFactor: 1.2, squarePositionX: 0, squarePositionY: 0 },
+  { name: "Ishendra Agarwal",    role: "Co-Founder, GIVA",              image: "/images/hero_founders_images/7.png", scaleFactor: 1.5, positionX: 0, positionY: -10, squareScaleFactor: 1.2, squarePositionX: 0, squarePositionY: 0 },
   { name: "Anand Agrawal",       role: "Co-Founder, Credgenics",        image: "/images/hero_founders_images/6.png", scaleFactor: 1.5, positionX: 0, positionY: -10, squareScaleFactor: 1, squarePositionX: 0, squarePositionY: 0 },
-  { name: "Ruchi Kalra",         role: "Co-Founder, Ofbusiness",        image: "/images/hero_founders_images/4.png", scaleFactor: 1.5, positionX: 0, positionY: -15, squareScaleFactor: 1, squarePositionX: 0, squarePositionY: 0 },
+  { name: "Ruchi Kalra",         role: "Co-Founder, Ofbusiness",        image: "/images/hero_founders_images/4.png", scaleFactor: 1.5, positionX: 0, positionY: -10, squareScaleFactor: 1, squarePositionX: 0, squarePositionY: 0 },
 ];
 
 const FALLBACK_SUBTITLE =
   "We partner with entrepreneurs from day one. We invest conviction, not just capital, and stay by their side through every stage of their journey.";
+
+/* Founder photos for the flicker SLIDESHOW + the rotating HEADING photo, so
+   ALL founders get screen time. This is the ONE place that controls which
+   faces appear there (independent of the curated film-strip `founders`).
+   To add/remove a face: edit HERO_FOUNDER_IMAGE_NUMBERS to match the numbered
+   files that actually exist in /public/images/hero_founders_images. (Only
+   list numbers whose .png file exists — a missing number would 404 / show a
+   stale cached image.) Sanity `allFounders`, once imported, overrides this. */
+const HERO_FOUNDER_IMAGE_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16];
+const FALLBACK_BY_IMAGE = new Map(FALLBACK_FOUNDERS.map((f) => [f.image, f]));
+const ALL_FOUNDERS: HeroFounder[] = HERO_FOUNDER_IMAGE_NUMBERS.map((n) => {
+  const image = `/images/hero_founders_images/${n}.png`;
+  return (
+    FALLBACK_BY_IMAGE.get(image) ?? {
+      name: `Founder ${n}`,
+      role: "",
+      image,
+      scaleFactor: 1.5,
+      positionX: 0,
+      positionY: -8,
+      squareScaleFactor: 1,
+      squarePositionX: 0,
+      squarePositionY: 0,
+    }
+  );
+});
 
 function heroImageSrc(url: string, width: number): string {
   if (url.startsWith("https://cdn.sanity.io/")) {
@@ -231,6 +259,13 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     return FALLBACK_FOUNDERS;
   })();
 
+  // Full founder set for the intro slideshow + rotating heading photo.
+  // Comes from Sanity (`allFounders`); falls back to the local folder list.
+  const allFounders: HeroFounder[] =
+    data?.allFounders && data.allFounders.length > 0
+      ? data.allFounders
+      : ALL_FOUNDERS;
+
   const heroIndex = (() => {
     const idx = founders.findIndex(f => f.isLogo || f.name.includes("Titan"));
     return idx !== -1 ? idx : Math.ceil((founders.length - 1) / 2);
@@ -252,13 +287,15 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     skipIntro ? "animate" : "slideshow"
   );
 
-  const slideshowFounders = founders.filter(f => !f.isLogo);
+  // Slideshow flickers through EVERY founder photo (not just the film-strip set).
+  const slideshowFounders = allFounders;
   const [slideIndex, setSlideIndex] = useState(0);
 
   useEffect(() => {
     if (stage !== "slideshow" || !ready) return;
     let count = 0;
-    const totalTicks = slideshowFounders.length * 2;
+    // One pass through all founders before handing off to the deck animation.
+    const totalTicks = slideshowFounders.length;
     const id = setInterval(() => {
       count += 1;
       if (count >= totalTicks) {
@@ -352,11 +389,12 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   const [subtitleReady, setSubtitleReady] = useState(skipIntro);
   const [headingTick, setHeadingTick] = useState(0);
 
+  // Heading's rotating photo slot also cycles through EVERY founder (logo first
+  // if present, then all the faces), so the heading showcases them all too.
   const logoFounder = founders.find(f => f.isLogo);
-  const nonLogoFounders = founders.filter(f => !f.isLogo);
   const headingFounder = logoFounder
-    ? (headingTick === 0 ? logoFounder : nonLogoFounders[(headingTick - 1) % nonLogoFounders.length])
-    : nonLogoFounders[headingTick % nonLogoFounders.length];
+    ? (headingTick === 0 ? logoFounder : allFounders[(headingTick - 1) % allFounders.length])
+    : allFounders[headingTick % allFounders.length];
 
   useEffect(() => {
     // Only hide the navbar while the full intro plays — on a soft-nav skip
@@ -511,7 +549,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 className="flex items-stretch"
                 style={{ gap: "min(0.8vw, 1.4vh)", marginTop: "min(0.2vw, 0.4vh)" }}
               >
-                <RevealLine show={headingReady} delay={0.5}>For</RevealLine>
+                <RevealLine show={headingReady} delay={0.5}>Building</RevealLine>
                 <span
                   ref={slotRef}
                   className="relative inline-block shrink-0 overflow-hidden"
@@ -526,8 +564,8 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                   <HeadingPhoto founder={headingFounder} tick={headingTick} show={headingReady} />
                 </span>
                 <span className="flex flex-col items-start leading-[86%]">
-                  <RevealLine show={headingReady} delay={1.7}>Enduring</RevealLine>
-                  <RevealLine show={headingReady} delay={2.0}>Companies</RevealLine>
+                  <RevealLine show={headingReady} delay={1.7}>The</RevealLine>
+                  <RevealLine show={headingReady} delay={2.0}>Future</RevealLine>
                 </span>
               </span>
             </h1>
@@ -537,9 +575,9 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
               style={{ fontSize: "clamp(36px, 12vw, 50px)", lineHeight: "96%" }}
             >
               <RevealLine show={headingReady} delay={0}>Backing</RevealLine>
-              <RevealLine show={headingReady} delay={0.3}>Founder</RevealLine>
-              <RevealLine show={headingReady} delay={0.6}>For</RevealLine>
-              
+              <RevealLine show={headingReady} delay={0.3}>Founders</RevealLine>
+              <RevealLine show={headingReady} delay={0.6}>Building</RevealLine>
+
               <span
                 className="relative inline-block shrink-0 overflow-hidden my-[clamp(4px,1dvh,8px)]"
                 style={{ width: "min(70vw, 300px)", height: "min(54vw, 231px)", borderRadius: "4px" }}
@@ -548,8 +586,8 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 <HeadingPhoto founder={headingFounder} tick={headingTick} show={headingReady} />
               </span>
 
-              <RevealLine show={headingReady} delay={1.7}>Enduring</RevealLine>
-              <RevealLine show={headingReady} delay={2.0}>Impact</RevealLine>
+              <RevealLine show={headingReady} delay={1.7}>The</RevealLine>
+              <RevealLine show={headingReady} delay={2.0}>Future</RevealLine>
             </h1>
 
             <motion.div
@@ -673,18 +711,38 @@ function HeadingPhoto({
               ...IMG_STYLE,
               objectFit: founder.isLogo ? "contain" : "scale-down",
               objectPosition: "center center",
+              // Punch up the photo so the halftone dither reads (skip logo).
+              filter: founder.isLogo ? "none" : "contrast(1.14) saturate(1.12)",
             }}
           />
         </div>
-        {/* Grainy overlay */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 z-10 opacity-[0.12]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-            mixBlendMode: "overlay",
-          }}
-        />
+        {/* Grainy / halftone print effect (skip the clean logo card) */}
+        {!founder.isLogo && (
+          <>
+            {/* Halftone dot grid */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 z-10"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at center, rgba(0,0,0,0.9) 0.75px, transparent 1.15px)",
+                backgroundSize: "3px 3px",
+                mixBlendMode: "overlay",
+                opacity: 0.6,
+              }}
+            />
+            {/* Fine film grain */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 z-10"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+                mixBlendMode: "overlay",
+                opacity: 0.28,
+              }}
+            />
+          </>
+        )}
       </motion.div>
     </AnimatePresence>
   );

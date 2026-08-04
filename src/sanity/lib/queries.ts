@@ -448,6 +448,16 @@ export const heroQuery = groq`
       squareScaleFactor,
       squarePositionX,
       squarePositionY
+    },
+    allFounders[]{
+      name,
+      "image": image.asset->url,
+      scaleFactor,
+      positionX,
+      positionY,
+      squareScaleFactor,
+      squarePositionX,
+      squarePositionY
     }
   }
 `;
