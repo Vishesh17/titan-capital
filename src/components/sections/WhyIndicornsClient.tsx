@@ -282,7 +282,7 @@ export default function WhyIndicorns() {
                   key={index}
                   variants={itemVariants}
                   onClick={() => setActiveIndex(index)}
-                  className={`p-8 flex flex-col relative z-10 cursor-pointer overflow-hidden transition-all duration-500 ease-out ${
+                  className={`p-8 pb-[clamp(40px,min(4.5vw,6vh),64px)] flex flex-col relative z-10 cursor-pointer overflow-hidden transition-all duration-500 ease-out ${
                     isActive
                       ? "bg-white rounded-[8px] shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-[#f0ebe1]"
                       : "bg-transparent border border-transparent hover:bg-white/40 rounded-[8px]"
@@ -315,22 +315,22 @@ export default function WhyIndicorns() {
                   />
                   
                   <p
-                    className="m-0 font-medium text-[#333] mb-3 relative z-20 max-md:!text-[13px]"
-                    style={{ fontSize: "min(0.97vw, 1.51vh)" }}
+                    className="m-0 font-medium text-[#333] mb-3 relative z-20 max-md:!text-[15px]"
+                    style={{ fontSize: "min(1.16vw, 1.8vh)" }}
                   >
                     {item.date}
                   </p>
                   <h4
-                    className="m-0 font-semibold text-black leading-[1.3] mb-4 whitespace-pre-line relative z-20 max-md:!text-[20px]"
-                    style={{ fontSize: "min(1.39vw, 2.15vh)" }}
+                    className="m-0 font-semibold text-black leading-[1.3] mb-4 whitespace-pre-line relative z-20 max-md:!text-[24px]"
+                    style={{ fontSize: "min(1.72vw, 2.66vh)" }}
                   >
                     {item.title}
                   </h4>
                   <p
-                    className={`m-0 text-[#4a4a4a] leading-[1.6] relative z-20 max-md:!text-[15px] ${
+                    className={`m-0 text-[#4a4a4a] leading-[1.6] relative z-20 max-md:!text-[18px] ${
                       item.stats ? "mb-6" : ""
                     }`}
-                    style={{ fontSize: "min(1.04vw, 1.61vh)" }}
+                    style={{ fontSize: "min(1.33vw, 2.06vh)" }}
                   >
                     {item.desc}
                   </p>
@@ -339,21 +339,21 @@ export default function WhyIndicorns() {
                     <div className="mt-auto relative z-20">
                       <div className="flex items-center gap-3 mb-2">
                         <span
-                          className="font-normal leading-none text-black max-md:!text-[42px]"
-                          style={{ fontSize: "min(2.92vw, 4.51vh)" }}
+                          className="font-normal leading-none text-black max-md:!text-[50px]"
+                          style={{ fontSize: "min(3.5vw, 5.4vh)" }}
                         >
                           {item.stats.number}
                         </span>
                         <span
-                          className="leading-tight text-[#4a4a4a] whitespace-pre-line max-md:!text-[14px]"
-                          style={{ fontSize: "min(0.97vw, 1.51vh)" }}
+                          className="leading-tight text-[#4a4a4a] whitespace-pre-line max-md:!text-[16px]"
+                          style={{ fontSize: "min(1.16vw, 1.8vh)" }}
                         >
                           {item.stats.label}
                         </span>
                       </div>
                       <p
-                        className="m-0 text-[#6b6b6b] leading-[1.4] whitespace-pre-line max-md:!text-[11px]"
-                        style={{ fontSize: "min(0.76vw, 1.18vh)" }}
+                        className="m-0 text-[#6b6b6b] leading-[1.4] whitespace-pre-line max-md:!text-[13px]"
+                        style={{ fontSize: "min(0.95vw, 1.47vh)" }}
                       >
                         {item.stats.sub}
                       </p>

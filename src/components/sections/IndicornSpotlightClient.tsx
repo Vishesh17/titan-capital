@@ -93,8 +93,8 @@ function HeroGlow() {
         className="pointer-events-none absolute top-0 left-0 rounded-full blur-[60px]"
         style={{
           width: "25vw", height: "25vw", zIndex: 5, x: smoothX, y: smoothY,
-          translateX: "-50%", translateY: "-50%", opacity: 0.4, 
-          background: "radial-gradient(circle, rgba(80,84,181,0.85) 0%, rgba(5,78,182,0.5) 40%, rgba(2,34,80,0.2) 70%, transparent 100%)",
+          translateX: "-50%", translateY: "-50%", opacity: 0.65,
+          background: "radial-gradient(circle, rgba(150,158,240,0.95) 0%, rgba(70,120,225,0.6) 40%, rgba(5,78,182,0.25) 70%, transparent 100%)",
           willChange: "transform", z: 0 
         }}
       />

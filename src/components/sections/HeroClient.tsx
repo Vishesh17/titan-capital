@@ -577,14 +577,14 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
           <div className="relative flex flex-col items-center md:-translate-y-[8vh]">
             
             <h1
-              className="pointer-events-none m-0 hidden md:flex flex-col items-center text-center font-['Poppins',_sans-serif] font-black uppercase leading-[86%] text-white"
+              className="pointer-events-none m-0 hidden md:flex flex-col items-start text-left font-['Poppins',_sans-serif] font-black uppercase leading-[86%] text-white"
               style={{ fontSize: "min(9.88vw, 15.2vh)", gap: "min(0.2vw, 0.4vh)" }}
             >
-              <RevealLine show={headingReady} delay={0}>Backing Founders</RevealLine>
-              <RevealLine show={headingReady} delay={0.5}>Building</RevealLine>
+              <RevealLine show={headingReady} delay={0}>Backing</RevealLine>
+              <RevealLine show={headingReady} delay={0.5}>Founders Building</RevealLine>
               <span
-                className="flex items-start justify-center"
-                style={{ gap: "min(0.8vw, 1.4vh)" }}
+                className="flex items-start justify-start self-end"
+                style={{ gap: "min(0.8vw, 1.4vh)", marginRight: "min(6vw, 9vh)" }}
               >
                 <RevealLine show={headingReady} delay={1.7}>The</RevealLine>
                 <span
@@ -592,7 +592,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                   className="relative inline-block shrink-0 overflow-hidden"
                   style={{
                     width: SLOT_W,
-                    height: "1.72em",
+                    height: "1.5em",
                     borderRadius: "2px",
                   }}
                 >

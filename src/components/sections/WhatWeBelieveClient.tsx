@@ -467,7 +467,7 @@ function CardBlobs({ mouseX, mouseY, isHovered }: { mouseX: MotionValue<number>;
         className="absolute rounded-full aspect-square blur-[30px] max-md:blur-[20px]"
         style={{
           width: "40%",
-          background: "radial-gradient(circle, rgba(80,84,181,0.95) 0%, rgba(5,78,182,0.6) 40%, rgba(2,34,80,0.25) 70%, transparent 100%)",
+          background: "radial-gradient(circle, rgba(150,158,240,0.95) 0%, rgba(70,120,225,0.6) 40%, rgba(5,78,182,0.25) 70%, transparent 100%)",
           left: cursorLeft,
           top: cursorTop,
           translateX: "-50%",

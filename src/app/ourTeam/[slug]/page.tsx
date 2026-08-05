@@ -38,7 +38,7 @@ export async function generateMetadata({
   if (!member) return base;
   return {
     ...base,
-    title: `${member.name} — ${member.title}`,
+    title: member.title ? `${member.name} — ${member.title}` : member.name,
     description: member.bio?.slice(0, 160) || base.description,
   };
 }
@@ -63,12 +63,6 @@ function cdnImageSrc(url: string, width: number): string {
 }
 
 /* ─────────────────────────────────────────────────────────
-   Fallback Constants (Used if Sanity fields are empty)
-   ───────────────────────────────────────────────────────── */
-const FALLBACK_TITLE = "Community And Social\nMedia Manager";
-const FALLBACK_BIO = `At Titan Capital, Supriya excels in representing the company’s community, PR, and social media presence. Coming with an engineering background from KGEC\n\n9 years of experience in digital marketing, she brings in a wealth of knowledge and expertise to the table. Her past experiences working in various industries, including but not limited to venture capital, logistics, real estate, and digital agencies, has honed her skills in digital space and provided her with a unique perspective required in the ever evolving markets.\n\nIn her breathing spell, Supriya loves to explore places in her vicinity and stay on top of the latest trends. Whether it’s through travel or keeping up with the latest advancements in her field, Supriya is always looking for means to generate niche skills, to grow and evolve.`;
-
-/* ─────────────────────────────────────────────────────────
    Detail page layout
    ───────────────────────────────────────────────────────── */
 export default async function TeamMemberPage({
@@ -80,18 +74,16 @@ export default async function TeamMemberPage({
   const member = await getMember(slug);
   if (!member) notFound();
 
-  // 1. Field Fallback Logic
-  const titleText = member.title || FALLBACK_TITLE;
-  const bioText = member.bio || FALLBACK_BIO;
-  
-  // 2. Social URLs (Always render `#` if empty so the icons stay visible)
-  const linkedinHref = member.linkedinUrl || "#";
-  const twitterHref = member.twitterUrl || "#";
+  // Show only what's filled in — empty fields are omitted from Sanity, so we
+  // render nothing for them (no placeholder title/bio, no dead social icons).
+  const linkedinHref = member.linkedinUrl || undefined;
+  const twitterHref = member.twitterUrl || undefined;
   const emailHref = member.emailUrl
     ? member.emailUrl.startsWith("mailto:")
       ? member.emailUrl
       : `mailto:${member.emailUrl}`
-    : "#";
+    : undefined;
+  const hasSocials = Boolean(linkedinHref || twitterHref || emailHref);
 
   return (
     <main className="flex min-h-screen w-full flex-col bg-white">
@@ -223,70 +215,81 @@ export default async function TeamMemberPage({
                 {member.name}
               </h1>
               
-              {/* Title using whitespace-pre-line to respect line breaks */}
-              <p
-                className="m-0 font-['Poppins',_sans-serif] font-normal capitalize text-[#0E0E0E] whitespace-pre-line max-lg:!text-center"
-                style={{
-                  fontSize: "clamp(20px, min(2.22vw, 3.25vh), 32px)",
-                  lineHeight: "158%",
-                }}
-              >
-                {titleText}
-              </p>
+              {/* Title (hidden when empty) — whitespace-pre-line respects line breaks */}
+              {member.title && (
+                <p
+                  className="m-0 font-['Poppins',_sans-serif] font-normal capitalize text-[#0E0E0E] whitespace-pre-line max-lg:!text-center"
+                  style={{
+                    fontSize: "clamp(20px, min(2.22vw, 3.25vh), 32px)",
+                    lineHeight: "158%",
+                  }}
+                >
+                  {member.title}
+                </p>
+              )}
 
-              {/* Social Icons (Always rendered, regardless of Sanity data) */}
-              <div
-                className="flex items-center max-lg:justify-center"
-                style={{
-                  gap: "clamp(10px, min(1.1vw, 1.6vh), 18px)",
-                  marginTop: "clamp(16px, min(1.7vw, 2.5vh), 28px)",
-                }}
-              >
-                <a
-                  href={linkedinHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`${member.name} on LinkedIn`}
-                  className="inline-block transition-transform duration-200 hover:scale-110"
+              {/* Social Icons — each rendered only if its link exists */}
+              {hasSocials && (
+                <div
+                  className="flex items-center max-lg:justify-center"
                   style={{
-                    width: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
-                    height: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
-                    aspectRatio: "1 / 1",
+                    gap: "clamp(10px, min(1.1vw, 1.6vh), 18px)",
+                    marginTop: "clamp(16px, min(1.7vw, 2.5vh), 28px)",
                   }}
                 >
-                  <LinkedInIcon className="h-full w-full" />
-                </a>
-                
-                <a
-                  href={emailHref}
-                  aria-label={`Email ${member.name}`}
-                  className="inline-block transition-transform duration-200 hover:scale-110"
-                  style={{
-                    width: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
-                    height: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
-                    aspectRatio: "1 / 1",
-                  }}
-                >
-                  <GmailIcon className="h-full w-full" />
-                </a>
-                
-                <a
-                  href={twitterHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`${member.name} on X`}
-                  className="inline-block transition-transform duration-200 hover:scale-110"
-                  style={{
-                    width: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
-                    height: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
-                    aspectRatio: "1 / 1",
-                  }}
-                >
-                  <XIcon className="h-full w-full" />
-                </a>
-              </div>
+                  {linkedinHref && (
+                    <a
+                      href={linkedinHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${member.name} on LinkedIn`}
+                      className="inline-block transition-transform duration-200 hover:scale-110"
+                      style={{
+                        width: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
+                        height: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
+                        aspectRatio: "1 / 1",
+                      }}
+                    >
+                      <LinkedInIcon className="h-full w-full" />
+                    </a>
+                  )}
 
-              {/* Bio card — Overlaps the left image horizontally and is shifted down vertically. */}
+                  {emailHref && (
+                    <a
+                      href={emailHref}
+                      aria-label={`Email ${member.name}`}
+                      className="inline-block transition-transform duration-200 hover:scale-110"
+                      style={{
+                        width: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
+                        height: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
+                        aspectRatio: "1 / 1",
+                      }}
+                    >
+                      <GmailIcon className="h-full w-full" />
+                    </a>
+                  )}
+
+                  {twitterHref && (
+                    <a
+                      href={twitterHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${member.name} on X`}
+                      className="inline-block transition-transform duration-200 hover:scale-110"
+                      style={{
+                        width: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
+                        height: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
+                        aspectRatio: "1 / 1",
+                      }}
+                    >
+                      <XIcon className="h-full w-full" />
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {/* Bio card (hidden when empty) — overlaps the image and shifts down. */}
+{member.bio && (
 <div
   className="relative z-10 box-border flex self-stretch lg:self-end max-lg:mt-8 lg:mt-24 xl:mt-36 max-lg:w-full lg:-ml-[clamp(80px,8vw,140px)] lg:w-[calc(100%+clamp(80px,8vw,140px))]"
   style={{
@@ -306,9 +309,10 @@ export default async function TeamMemberPage({
       lineHeight: "150%",
     }}
   >
-    {bioText}
+    {member.bio}
   </p>
 </div>
+)}
             </div>
           </div>
         </div>

@@ -133,14 +133,17 @@ function TeamCard({
   rotateBlob: number;
 }) {
   const slug = member.slug || teamSlug(member.name);
-  
-  const linkedinHref = member.linkedinUrl || "#";
+
+  // Only build a link when the field is actually present — anything empty
+  // is omitted from Sanity, so we skip rendering that icon entirely.
+  const linkedinHref = member.linkedinUrl || undefined;
   const emailHref = member.emailUrl
     ? member.emailUrl.startsWith("mailto:")
       ? member.emailUrl
       : `mailto:${member.emailUrl}`
-    : "#";
-  const twitterHref = member.twitterUrl || "#";
+    : undefined;
+  const twitterHref = member.twitterUrl || undefined;
+  const hasSocials = Boolean(linkedinHref || emailHref || twitterHref);
 
   return (
     <motion.div
@@ -235,49 +238,50 @@ function TeamCard({
           {member.name}
         </h3>
 
-        {/* ── TITLE ── */}
-        <p
-          className="m-0 text-left font-['Poppins',_sans-serif] font-normal text-[#323232]"
-          style={{
-            fontSize: "clamp(14px, min(1.32vw, 1.92vh), 17px)",
-            lineHeight: "158%",
-            marginTop: "clamp(4px, 0.5vw, 8px)",
-            maxWidth: "280px",
-            // Removed minHeight so short titles sit snugly above the social icons
-          }}
-        >
-          {member.title}
-        </p>
+        {/* ── TITLE ── (hidden when empty) */}
+        {member.title && (
+          <p
+            className="m-0 text-left font-['Poppins',_sans-serif] font-normal text-[#323232]"
+            style={{
+              fontSize: "clamp(14px, min(1.32vw, 1.92vh), 17px)",
+              lineHeight: "158%",
+              marginTop: "clamp(4px, 0.5vw, 8px)",
+              maxWidth: "280px",
+              // Removed minHeight so short titles sit snugly above the social icons
+            }}
+          >
+            {member.title}
+          </p>
+        )}
       </Link>
 
-      {/* ── SOCIAL ICONS ── */}
-      <div
-        className="flex w-full items-center justify-start"
-        style={{
-          gap: "clamp(8px, min(0.83vw, 1.22vh), 12px)",
-          // Snug top margin now that the fake title space is gone
-          marginTop: "clamp(8px, min(1vw, 1.5vh), 12px)",
-        }}
-      >
-        <SocialLink
-          href={linkedinHref}
-          label={`${member.name} on LinkedIn`}
+      {/* ── SOCIAL ICONS ── (each icon shows only if its link exists) */}
+      {hasSocials && (
+        <div
+          className="flex w-full items-center justify-start"
+          style={{
+            gap: "clamp(8px, min(0.83vw, 1.22vh), 12px)",
+            // Snug top margin now that the fake title space is gone
+            marginTop: "clamp(8px, min(1vw, 1.5vh), 12px)",
+          }}
         >
-          <LinkedInIcon />
-        </SocialLink>
-        <SocialLink 
-          href={emailHref} 
-          label={`Email ${member.name}`}
-        >
-          <GmailIcon />
-        </SocialLink>
-        <SocialLink
-          href={twitterHref}
-          label={`${member.name} on X`}
-        >
-          <XIcon />
-        </SocialLink>
-      </div>
+          {linkedinHref && (
+            <SocialLink href={linkedinHref} label={`${member.name} on LinkedIn`}>
+              <LinkedInIcon />
+            </SocialLink>
+          )}
+          {emailHref && (
+            <SocialLink href={emailHref} label={`Email ${member.name}`}>
+              <GmailIcon />
+            </SocialLink>
+          )}
+          {twitterHref && (
+            <SocialLink href={twitterHref} label={`${member.name} on X`}>
+              <XIcon />
+            </SocialLink>
+          )}
+        </div>
+      )}
     </motion.div>
   );
 }

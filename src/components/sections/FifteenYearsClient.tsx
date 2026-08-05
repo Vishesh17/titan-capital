@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useScroll,
+  useMotionValueEvent,
+} from "framer-motion";
+import { useLenis } from "lenis/react";
 
 /* ─────────────────────────────────────────────────────────
    Types — shared with server wrapper (FifteenYears.tsx).
@@ -39,8 +45,12 @@ const FALLBACK_YEARS: YearEntry[] = Array.from({ length: 16 }, (_, i) => {
   };
 });
 
-/* Autoplay cadence — 5 s per spec. */
-const AUTOPLAY_MS = 5000;
+/* Scroll distance (in viewport-heights) allotted to EACH year while the
+   timeline is pinned. Bigger = more scroll needed to advance one year. */
+const STEP_VH = 40;
+
+/* Autoplay interval in milliseconds */
+const AUTOPLAY_MS = 4000;
 
 /* ─────────────────────────────────────────────────────────
    Single digit wheel — vertical column of 0-9 that slides

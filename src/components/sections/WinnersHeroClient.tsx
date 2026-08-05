@@ -144,9 +144,9 @@ function HeroGlow() {
           y: smoothY,
           translateX: "-50%",
           translateY: "-50%",
-          opacity: 0.4,
+          opacity: 0.65,
           background:
-            "radial-gradient(circle, rgba(80,84,181,0.85) 0%, rgba(5,78,182,0.5) 40%, rgba(2,34,80,0.2) 70%, transparent 100%)",
+            "radial-gradient(circle, rgba(150,158,240,0.95) 0%, rgba(70,120,225,0.6) 40%, rgba(5,78,182,0.25) 70%, transparent 100%)",
           willChange: "transform",
         }}
       />
