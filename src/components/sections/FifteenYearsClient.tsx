@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   AnimatePresence,
   motion,
@@ -48,9 +48,6 @@ const FALLBACK_YEARS: YearEntry[] = Array.from({ length: 16 }, (_, i) => {
 /* Scroll distance (in viewport-heights) allotted to EACH year while the
    timeline is pinned. Bigger = more scroll needed to advance one year. */
 const STEP_VH = 40;
-
-/* Autoplay interval in milliseconds */
-const AUTOPLAY_MS = 4000;
 
 /* ─────────────────────────────────────────────────────────
    Single digit wheel — vertical column of 0-9 that slides
@@ -330,40 +327,59 @@ export default function FifteenYearsClient({
     return [...source].sort((a, b) => a.year - b.year);
   }, [data?.years]);
 
+  const N = years.length;
+
+  const sectionRef = useRef<HTMLElement>(null);
+  const lenis = useLenis();
+
+  // Scroll-driven timeline: the section is TALL and its content is pinned
+  // (sticky). Scroll progress through the section (0 → 1) maps to the year
+  // index — so one year advances per scroll, and the page can't reach the
+  // footer until the last year has been shown.
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end end"],
+  });
+
   const [activeIndex, setActiveIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
+  useMotionValueEvent(scrollYProgress, "change", (p) => {
+    if (N <= 1) return;
+    const idx = Math.min(N - 1, Math.max(0, Math.round(p * (N - 1))));
+    setActiveIndex((prev) => (prev === idx ? prev : idx));
+  });
 
-  // Autoplay — cycles every AUTOPLAY_MS until the user clicks a chip
-  // manually. `paused` is a state (not a ref) so this effect re-runs
-  // when the user interacts; the cleanup tears down the live interval
-  // so it can never fire again behind the user's back.
-  useEffect(() => {
-    if (paused) return;
-    if (years.length <= 1) return;
-    const id = setInterval(() => {
-      setActiveIndex((i) => (i + 1) % years.length);
-    }, AUTOPLAY_MS);
-    return () => clearInterval(id);
-  }, [paused, years.length]);
-
-  const handleSelect = (i: number) => {
-    setPaused(true);
-    setActiveIndex(i);
+  // Year chips SEEK to the scroll position for that year (Lenis-aware); the
+  // scroll listener above then updates the index — so the buttons work even
+  // without scrolling and stay in sync with the scroll.
+  const scrollToIndex = (i: number) => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY;
+    const scrollable = Math.max(0, el.offsetHeight - window.innerHeight);
+    const target = top + (N > 1 ? (i / (N - 1)) * scrollable : 0);
+    if (lenis) lenis.scrollTo(target, { duration: 1.0 });
+    else window.scrollTo({ top: target, behavior: "smooth" });
   };
 
-  const current = years[activeIndex];
+  const current = years[activeIndex] ?? years[0];
+  const sectionHeightVh = 100 + Math.max(0, N - 1) * STEP_VH;
 
   return (
     <section
-      className="relative flex w-full flex-col items-center overflow-hidden bg-white"
-      style={{
-        paddingTop: "clamp(28px, min(4vw, 6vh), 64px)",
-        paddingBottom: "clamp(28px, min(4vw, 6vh), 64px)",
-        paddingLeft: "var(--section-px-wide, 5%)",
-        paddingRight: "var(--section-px-wide, 5%)",
-      }}
+      ref={sectionRef}
+      className="relative w-full bg-white"
+      style={{ height: `${sectionHeightVh}vh` }}
     >
-      <div className="mx-auto flex w-full max-w-[1330px] flex-col items-center">
+      <div
+        className="sticky top-0 flex h-screen w-full flex-col items-center justify-center overflow-hidden"
+        style={{
+          paddingTop: "calc(var(--nav-height, 64px) + clamp(16px, min(2vw, 3vh), 40px))",
+          paddingBottom: "clamp(28px, min(4vw, 6vh), 64px)",
+          paddingLeft: "var(--section-px-wide, 5%)",
+          paddingRight: "var(--section-px-wide, 5%)",
+        }}
+      >
+        <div className="mx-auto flex w-full max-w-[1330px] flex-col items-center">
         {/* ── HEADING — same WinnersHero pattern (split, scaleX cream pill) ── */}
         <motion.div
           className="flex flex-col items-center text-center max-md:!mb-[clamp(32px,6dvh,48px)]"
@@ -509,10 +525,11 @@ export default function FifteenYearsClient({
                 key={y.year}
                 year={y.year}
                 active={i === activeIndex}
-                onClick={() => handleSelect(i)}
+                onClick={() => scrollToIndex(i)}
               />
             ))}
           </div>
+        </div>
         </div>
       </div>
     </section>

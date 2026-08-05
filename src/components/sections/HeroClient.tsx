@@ -304,9 +304,10 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
       id = setInterval(() => {
         count += 1;
         if (count >= totalTicks) {
-          setSlideIndex(0);
+          // Stop after ONE pass — hold on the last founder (no reset to 0,
+          // which looked like a second cycle starting) and hand off.
           if (id) clearInterval(id);
-          setTimeout(() => setStage("animate"), 500);
+          setTimeout(() => setStage("animate"), 300);
         } else {
           setSlideIndex(count % slideshowFounders.length);
         }
@@ -456,7 +457,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
   useEffect(() => {
     if (!headingReady || !heroInView) return;
-    const delay = headingTick === 0 ? 2250 : 1500;
+    const delay = headingTick === 0 ? 4100 : 1500;
     const timer = setTimeout(() => {
       setHeadingTick((t) => t + 1);
     }, delay);
@@ -474,7 +475,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
         <div className="pointer-events-none absolute left-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 max-md:!left-1/2 max-md:!top-[5vh] max-md:!-translate-x-1/2 max-md:!translate-y-0">
           <motion.span
             style={{ opacity: labelOpacity, y: labelY }}
-            className="block font-['Poppins',_sans-serif] text-[min(1.04vw,1.61vh)] font-medium tracking-[0.2em] text-white/70 max-md:!text-[14px]"
+            className="block font-['Poppins',_sans-serif] text-[min(1.4vw,2.15vh)] font-medium tracking-[0.2em] text-white/70 max-md:!text-[18px]"
           >
             FOUNDER-FIRST
           </motion.span>
@@ -482,7 +483,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
         <div className="pointer-events-none absolute right-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 max-md:!right-auto max-md:!left-1/2 max-md:!top-auto max-md:!bottom-[18vh] max-md:!-translate-x-1/2 max-md:!translate-y-0">
           <motion.span
             style={{ opacity: labelOpacity, y: labelY }}
-            className="block font-['Poppins',_sans-serif] text-[min(1.04vw,1.61vh)] font-medium tracking-[0.2em] text-white/70 max-md:!text-[14px]"
+            className="block font-['Poppins',_sans-serif] text-[min(1.4vw,2.15vh)] font-medium tracking-[0.2em] text-white/70 max-md:!text-[18px]"
           >
             OPERATOR-LED
           </motion.span>
@@ -491,8 +492,8 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
         <motion.p
           style={{ maxWidth: "min(52vw, 900px)" }}
           className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 text-center font-['Poppins',_sans-serif] text-[min(1.62vw,2.51vh)] font-normal leading-[145%] text-white/90 max-md:!bottom-[clamp(48px,12dvh,80px)] max-md:!text-[clamp(11px,3vw,14px)] max-md:!w-[75vw] max-md:!max-w-[75vw]"
-          initial={{ opacity: 1 }}
-          animate={{ opacity: subtitleReady ? 1 : stage === "animate" ? 0 : 1 }}
+          initial={false}
+          animate={{ opacity: subtitleReady ? 1 : 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
           {subtitle}
@@ -596,9 +597,9 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                     borderRadius: "2px",
                   }}
                 >
-                  <HeadingPhoto founder={headingFounder} tick={headingTick} show={headingReady} />
+                  <HeadingPhoto founder={headingFounder} tick={headingTick} show={headingReady} enterDelay={2.5} />
                 </span>
-                <RevealLine show={headingReady} delay={2.0}>Future</RevealLine>
+                <RevealLine show={headingReady} delay={3.1}>Future</RevealLine>
               </span>
             </h1>
 
@@ -615,7 +616,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 style={{ width: "min(70vw, 300px)", height: "min(54vw, 231px)", borderRadius: "4px" }}
                 ref={mobileSlotRef}
               >
-                <HeadingPhoto founder={headingFounder} tick={headingTick} show={headingReady} />
+                <HeadingPhoto founder={headingFounder} tick={headingTick} show={headingReady} enterDelay={1.25} />
               </span>
 
               <RevealLine show={headingReady} delay={1.7}>The</RevealLine>
@@ -701,16 +702,19 @@ function HeadingPhoto({
   founder,
   tick,
   show,
+  enterDelay = 1.25,
 }: {
   founder: HeroFounder;
   tick: number;
   show: boolean;
+  /** Delay (s) before the FIRST photo slides up into the heading slot. */
+  enterDelay?: number;
 }) {
+  const isFirst = tick === 0;
   const scale = clampScale(founder.scaleFactor);
   const imageOffsetX = founder.positionX ?? 0;
   const imageOffsetY = founder.positionY ?? 0;
   
-  const isFirst = tick === 0;
 
   return (
     <AnimatePresence>
@@ -718,21 +722,19 @@ function HeadingPhoto({
         key={tick}
         className="absolute inset-0 flex items-center justify-center"
         style={{ zIndex: tick, background: CARD_BG }}
-        initial={isFirst ? { opacity: 0, x: "-100%" } : { opacity: 0 }}
-        animate={show ? (isFirst ? { opacity: 1, x: "0%" } : { opacity: 1 }) : { opacity: 0 }}
+        initial={isFirst ? { y: "100%" } : { opacity: 0 }}
+        animate={show ? (isFirst ? { y: "0%" } : { opacity: 1 }) : (isFirst ? { y: "100%" } : { opacity: 0 })}
         exit={{ opacity: 1 }}
         transition={isFirst
-          ? { duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 1.25 }
+          ? { duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: enterDelay }
           : { duration: 1.0, ease: [0.22, 1, 0.36, 1] }
         }
       >
-        <div
-          className="absolute inset-0"
+        <div className="absolute inset-0"
           style={{
             transform: `scale(${scale}) translate(${imageOffsetX}px, ${imageOffsetY}px)`,
             transformOrigin: "center center",
-          }}
-        >
+          }}>
           <Image
             src={heroImageSrc(founder.image, 600)}
             alt={founder.name}
