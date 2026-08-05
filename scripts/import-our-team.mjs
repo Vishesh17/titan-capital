@@ -50,7 +50,7 @@ const DOC_ID = "ourTeam-singleton";
 const TEAM_DATA = {
   corporateTeam: [
     { name: "Chetan Rana", title: "CFO" },
-    { name: "Aakriti Kakkar", title: "Vice President — Corporate Development" },
+    { name: "Aakriti Kakkar", title: "Vice President, Corporate Development" },
     { name: "Supriya Gupta", title: "Community Marketing Lead" },
     { name: "Aditi Jain", title: "Associate Investment Director" },
     { name: "Manya Awasthi", title: "Manager — Investment Operations" },

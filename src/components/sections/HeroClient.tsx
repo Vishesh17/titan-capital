@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { hasAppMounted } from "@/lib/appNavState";
+import GrainOverlay from "@/components/ui/GrainOverlay";
 import {
   motion,
   AnimatePresence,
@@ -237,8 +238,8 @@ function HeroGlow() {
           y: smoothY,
           translateX: "-50%", 
           translateY: "-50%", 
-          opacity: 0.4, 
-          background: "radial-gradient(circle, rgba(80,84,181,0.85) 0%, rgba(5,78,182,0.5) 40%, rgba(2,34,80,0.2) 70%, transparent 100%)",
+          opacity: 0.65,
+          background: "radial-gradient(circle, rgba(150,158,240,0.95) 0%, rgba(70,120,225,0.6) 40%, rgba(5,78,182,0.25) 70%, transparent 100%)",
           willChange: "transform", 
           z: 0 
         }}
@@ -296,17 +297,25 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     let count = 0;
     // One pass through all founders before handing off to the deck animation.
     const totalTicks = slideshowFounders.length;
-    const id = setInterval(() => {
-      count += 1;
-      if (count >= totalTicks) {
-        setSlideIndex(0);
-        clearInterval(id);
-        setTimeout(() => setStage("animate"), 500);
-      } else {
-        setSlideIndex(count % slideshowFounders.length);
-      }
-    }, 200);
-    return () => clearInterval(id);
+    let id: ReturnType<typeof setInterval> | undefined;
+    // Hold ~0.85s first so the entrance (card + side labels rising from the
+    // bottom) plays BEFORE the photo flicker begins.
+    const startTimer = setTimeout(() => {
+      id = setInterval(() => {
+        count += 1;
+        if (count >= totalTicks) {
+          setSlideIndex(0);
+          if (id) clearInterval(id);
+          setTimeout(() => setStage("animate"), 500);
+        } else {
+          setSlideIndex(count % slideshowFounders.length);
+        }
+      }, 200);
+    }, 1050);
+    return () => {
+      clearTimeout(startTimer);
+      if (id) clearInterval(id);
+    };
   }, [stage, ready, slideshowFounders.length]);
 
   useEffect(() => {
@@ -381,6 +390,29 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   const headingOpacity = useTransform(progress, [0.50, 0.58], [0, 1]);
   const sideLabelsOpacity = useTransform(progress, [0.44, 0.52], [1, 0]);
 
+  // ── Cappen-style entrance ──
+  // The first slideshow card + the FOUNDER-FIRST / OPERATOR-LED side labels
+  // RISE UP from the bottom (fade + translateY) the first time the hero
+  // appears, just before the photo slideshow begins. `labelEntrance` drives
+  // that reveal (0 → 1); the visible label opacity multiplies it by the
+  // existing scroll-driven fade-out so both behaviours compose cleanly.
+  const labelEntrance = useMotionValue(skipIntro ? 1 : 0);
+  const labelY = useTransform(labelEntrance, [0, 1], ["75vh", "0vh"]);
+  const labelOpacity = useTransform(
+    [labelEntrance, sideLabelsOpacity],
+    ([enter, fade]: number[]) => enter * fade
+  );
+
+  useEffect(() => {
+    if (!ready || skipIntro) return;
+    const controls = animate(labelEntrance, 1, {
+      duration: 1.3,
+      ease: [0.22, 1, 0.36, 1],
+      delay: 0.15,
+    });
+    return () => controls.stop();
+  }, [ready, skipIntro, labelEntrance]);
+
   // On a soft-nav skip, reveal the heading immediately (don't wait on the
   // progress change-listener, which registers in a later effect than the one
   // that snaps progress to 1 — so the set(1) event would be missed).
@@ -424,7 +456,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
   useEffect(() => {
     if (!headingReady || !heroInView) return;
-    const delay = headingTick === 0 ? 4500 : 1500;
+    const delay = headingTick === 0 ? 2250 : 1500;
     const timer = setTimeout(() => {
       setHeadingTick((t) => t + 1);
     }, delay);
@@ -439,18 +471,22 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
       >
         <HeroGlow />
 
-        <motion.span
-          style={{ opacity: sideLabelsOpacity }}
-          className="pointer-events-none absolute left-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 font-['Poppins',_sans-serif] text-[min(1.04vw,1.61vh)] font-medium tracking-[0.2em] text-white/70 max-md:!left-1/2 max-md:!top-[5vh] max-md:!-translate-x-1/2 max-md:!translate-y-0 max-md:!text-[14px]"
-        >
-          FOUNDER-FIRST
-        </motion.span>
-        <motion.span
-          style={{ opacity: sideLabelsOpacity }}
-          className="pointer-events-none absolute right-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 font-['Poppins',_sans-serif] text-[min(1.04vw,1.61vh)] font-medium tracking-[0.2em] text-white/70 max-md:!right-auto max-md:!left-1/2 max-md:!top-auto max-md:!bottom-[18vh] max-md:!-translate-x-1/2 max-md:!translate-y-0 max-md:!text-[14px]"
-        >
-          OPERATOR-LED
-        </motion.span>
+        <div className="pointer-events-none absolute left-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 max-md:!left-1/2 max-md:!top-[5vh] max-md:!-translate-x-1/2 max-md:!translate-y-0">
+          <motion.span
+            style={{ opacity: labelOpacity, y: labelY }}
+            className="block font-['Poppins',_sans-serif] text-[min(1.04vw,1.61vh)] font-medium tracking-[0.2em] text-white/70 max-md:!text-[14px]"
+          >
+            FOUNDER-FIRST
+          </motion.span>
+        </div>
+        <div className="pointer-events-none absolute right-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 max-md:!right-auto max-md:!left-1/2 max-md:!top-auto max-md:!bottom-[18vh] max-md:!-translate-x-1/2 max-md:!translate-y-0">
+          <motion.span
+            style={{ opacity: labelOpacity, y: labelY }}
+            className="block font-['Poppins',_sans-serif] text-[min(1.04vw,1.61vh)] font-medium tracking-[0.2em] text-white/70 max-md:!text-[14px]"
+          >
+            OPERATOR-LED
+          </motion.span>
+        </div>
 
         <motion.p
           style={{ maxWidth: "min(52vw, 900px)" }}
@@ -476,10 +512,10 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 marginTop: dims.cardH / -2,
                 borderRadius: "2px",
               }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, y: "80vh" }}
+              animate={{ opacity: 1, y: "0vh" }}
               exit={{ opacity: 0, transition: { duration: 0.1 } }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
             >
               <AnimatePresence>
                 <motion.div
@@ -538,40 +574,36 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
           style={{ opacity: headingOpacity }}
           className="absolute inset-0 z-20 flex items-center justify-center px-[var(--section-px-wide)] max-md:!px-[24px] max-md:!items-start max-md:!pt-[clamp(80px,12dvh,120px)]"
         >
-          <div className="relative flex flex-col items-center">
+          <div className="relative flex flex-col items-center md:-translate-y-[8vh]">
             
             <h1
-              className="pointer-events-none m-0 hidden md:flex flex-col items-start text-left font-['Poppins',_sans-serif] font-black uppercase leading-[86%] text-white"
-              style={{ fontSize: "min(9.88vw, 15.2vh)" }}
+              className="pointer-events-none m-0 hidden md:flex flex-col items-center text-center font-['Poppins',_sans-serif] font-black uppercase leading-[86%] text-white"
+              style={{ fontSize: "min(9.88vw, 15.2vh)", gap: "min(0.2vw, 0.4vh)" }}
             >
               <RevealLine show={headingReady} delay={0}>Backing Founders</RevealLine>
+              <RevealLine show={headingReady} delay={0.5}>Building</RevealLine>
               <span
-                className="flex items-stretch"
-                style={{ gap: "min(0.8vw, 1.4vh)", marginTop: "min(0.2vw, 0.4vh)" }}
+                className="flex items-start justify-center"
+                style={{ gap: "min(0.8vw, 1.4vh)" }}
               >
-                <RevealLine show={headingReady} delay={0.5}>Building</RevealLine>
+                <RevealLine show={headingReady} delay={1.7}>The</RevealLine>
                 <span
                   ref={slotRef}
                   className="relative inline-block shrink-0 overflow-hidden"
                   style={{
                     width: SLOT_W,
+                    height: "1.72em",
                     borderRadius: "2px",
-                    alignSelf: "stretch",
-                    marginTop: "0.06em",
-                    marginBottom: "0.06em",
                   }}
                 >
                   <HeadingPhoto founder={headingFounder} tick={headingTick} show={headingReady} />
                 </span>
-                <span className="flex flex-col items-start leading-[86%]">
-                  <RevealLine show={headingReady} delay={1.7}>The</RevealLine>
-                  <RevealLine show={headingReady} delay={2.0}>Future</RevealLine>
-                </span>
+                <RevealLine show={headingReady} delay={2.0}>Future</RevealLine>
               </span>
             </h1>
 
             <h1
-              className="pointer-events-none m-0 flex md:hidden flex-col items-start text-left font-['Poppins',_sans-serif] font-black uppercase text-white"
+              className="pointer-events-none m-0 flex md:hidden flex-col items-center text-center font-['Poppins',_sans-serif] font-black uppercase text-white"
               style={{ fontSize: "clamp(36px, 12vw, 50px)", lineHeight: "96%" }}
             >
               <RevealLine show={headingReady} delay={0}>Backing</RevealLine>
@@ -711,38 +743,11 @@ function HeadingPhoto({
               ...IMG_STYLE,
               objectFit: founder.isLogo ? "contain" : "scale-down",
               objectPosition: "center center",
-              // Punch up the photo so the halftone dither reads (skip logo).
-              filter: founder.isLogo ? "none" : "contrast(1.14) saturate(1.12)",
             }}
           />
         </div>
-        {/* Grainy / halftone print effect (skip the clean logo card) */}
-        {!founder.isLogo && (
-          <>
-            {/* Halftone dot grid */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 z-10"
-              style={{
-                backgroundImage:
-                  "radial-gradient(circle at center, rgba(0,0,0,0.9) 0.75px, transparent 1.15px)",
-                backgroundSize: "3px 3px",
-                mixBlendMode: "overlay",
-                opacity: 0.6,
-              }}
-            />
-            {/* Fine film grain */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 z-10"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-                mixBlendMode: "overlay",
-                opacity: 0.28,
-              }}
-            />
-          </>
-        )}
+        {/* Film-grain texture (skip the clean logo card) */}
+        {!founder.isLogo && <GrainOverlay opacity={0.18} />}
       </motion.div>
     </AnimatePresence>
   );

@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 import { motion, useScroll, useTransform, type MotionValue, useSpring } from "framer-motion";
+import GrainOverlay from "@/components/ui/GrainOverlay";
 
 /* ─────────────────────────────────────────────────────────
    Types
@@ -35,10 +36,10 @@ export interface ImpactAtGlanceData {
 
 const FALLBACK_IMPACT_DATA: ImpactStat[] = [
   { num: "300+", label: "Companies Backed" },
-  { num: "7",    label: "Unicorns $1B+" },
   { num: "4",    label: "IPOs 2023-2026" },
-  { num: "250M+",   label: "Lives Impacted" },
+  { num: "7",    label: "Unicorns $1B+" },
   { num: "30+",  label: "Values > $100M" },
+  { num: "250M+",   label: "Lives Impacted" },
 ];
 
 export const FALLBACK_SLIDES: FounderStory[] = [
@@ -551,6 +552,10 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
 
   return (
     <div ref={wrapperRef} className="relative w-full bg-[#FBF7F0]">
+      {/* Square grain on the beige wrapper so the rounded impact card's corner
+          triangles (which reveal this wrapper) are textured too. Sits behind
+          the sticky card (z-1) and the opaque white StoriesSection (z-10). */}
+      <GrainOverlay opacity={0.22} zIndex={0} />
       <section
         className="relative w-full bg-[#FBF7F0] max-md:!h-auto max-md:!min-h-[100dvh] max-md:!pt-[50px] max-md:!pb-[50px] max-md:!px-0"
         style={{
@@ -568,8 +573,13 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
           zIndex: 1,
         }}
       >
+        <GrainOverlay
+          opacity={0.22}
+          zIndex={0}
+          style={{ borderRadius: "min(6.66vw, 10.30vh)" }}
+        />
         <motion.div
-          className="mx-auto flex w-full flex-col items-center justify-center"
+          className="relative z-10 mx-auto flex w-full flex-col items-center justify-center"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.15 }}

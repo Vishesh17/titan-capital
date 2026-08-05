@@ -8,6 +8,7 @@ import {
   useInView,
   type Variants,
 } from "framer-motion";
+import GrainOverlay from "@/components/ui/GrainOverlay";
 
 /* ─────────────────────────────────────────────────────────
    Types — shared with the server wrapper (WhatFoundersGet.tsx).
@@ -30,9 +31,9 @@ export interface WhatFoundersGetData {
 const SZ = {
   // typography
   heading: "min(4.51vw, 6.98vh)",
-  rowTitle: "min(2.08vw, 3.22vh)",
-  subHeading: "min(1.27vw, 1.97vh)",
-  desc: "min(1.16vw, 1.79vh)",
+  rowTitle: "min(2.31vw, 3.56vh)",
+  subHeading: "min(1.52vw, 2.36vh)",
+  desc: "min(1.39vw, 2.15vh)",
   rotTitle: "min(2.78vw, 4.30vh)",
   backLink: "min(1.51vw, 2.33vh)",
 
@@ -44,7 +45,7 @@ const SZ = {
   divider: "100%",
   openedDivider: "100%",
   descBox: "55vw",
-  rowTitleBox: "18vw",
+  rowTitleBox: "23vw",
   openedContentBox: "65.22vw",
 
   headingToDivider: "min(3.47vw, 5.37vh)",
@@ -229,7 +230,7 @@ function MobileClosedRow({ row }: { row: HowWeShowUpRow }) {
       <div className="flex w-full items-start justify-between gap-[16px]">
         <h3
           className="m-0 font-['Poppins',_sans-serif] font-normal text-black"
-          style={{ fontSize: "22px", lineHeight: "120%" }}
+          style={{ fontSize: "24px", lineHeight: "120%" }}
         >
           {row.title}
         </h3>
@@ -242,14 +243,14 @@ function MobileClosedRow({ row }: { row: HowWeShowUpRow }) {
 
       <h4
         className="m-0 mt-[20px] font-['Poppins',_sans-serif] font-medium text-black"
-        style={{ fontSize: "16px", lineHeight: "140%" }}
+        style={{ fontSize: "19px", lineHeight: "140%" }}
       >
         {row.shortHeading}
       </h4>
 
       <p
         className="m-0 mt-[8px] font-['Poppins',_sans-serif] font-normal text-[#1a1a1a]"
-        style={{ fontSize: "14px", lineHeight: "150%" }}
+        style={{ fontSize: "17px", lineHeight: "150%" }}
       >
         {row.shortDesc}
       </p>
@@ -273,7 +274,7 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
       }}
     >
       <h3
-        className="m-0 font-['Poppins',_sans-serif] font-normal capitalize text-black"
+        className="m-0 whitespace-nowrap font-['Poppins',_sans-serif] font-normal capitalize text-black"
         style={{
           fontSize: SZ.rowTitle,
           lineHeight: "120%",
@@ -650,7 +651,8 @@ function FullPageCard({
       role="dialog"
       aria-modal="true"
     >
-      <div className="w-full max-w-7xl mx-auto max-h-full overflow-y-auto scrollbar-hide">
+      <GrainOverlay opacity={0.22} zIndex={1} />
+      <div className="relative z-10 w-full max-w-7xl mx-auto max-h-full overflow-y-auto scrollbar-hide">
         <OpenedRow row={row} onBack={onBack} />
       </div>
     </motion.div>
@@ -712,8 +714,9 @@ export default function WhatFoundersGetClient({
         paddingRight: "var(--section-px-wide)",
       }}
     >
+      <GrainOverlay opacity={0.22} zIndex={1} />
       <motion.div
-        className="mx-auto flex w-full flex-col items-center"
+        className="relative z-10 mx-auto flex w-full flex-col items-center"
         variants={sectionVariants}
         initial="hidden"
         whileInView="visible"

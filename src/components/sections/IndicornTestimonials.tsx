@@ -217,44 +217,68 @@ export default function IndicornTestimonials() {
     return () => clearInterval(id);
   }, [inView, pos]);
 
-  // Hold the page here until all N cards have shown once, then release.
-  // Locks via Lenis + native wheel/touch/key blockers; a safety timeout
-  // guarantees the lock always releases so the user can never get stuck.
-  const releasedRef = useRef(false);
+  // ── Gentle speed-bump ──
+  // The first time the carousel centres in the viewport, briefly hold the page
+  // so it doesn't rocket straight past to the footer. After a short arm delay
+  // (to ignore the momentum that brought us here) the NEXT scroll releases it —
+  // "stop for one scroll". A safety timeout guarantees it can never get stuck.
+  const bumpedRef = useRef(false);
   useEffect(() => {
-    if (!inView || releasedRef.current) return;
+    if (!inView || bumpedRef.current) return;
 
     lenis?.stop();
-    const prevent = (e: Event) => e.preventDefault();
-    const preventKeys = (e: KeyboardEvent) => {
-      // space, pgup/pgdn, end, home, arrow up/down
+
+    let armed = false;
+    let armTimer: ReturnType<typeof setTimeout>;
+    let safety: ReturnType<typeof setTimeout>;
+
+    const block = (e: Event) => e.preventDefault();
+    const blockKeys = (e: KeyboardEvent) => {
       if ([" ", "PageUp", "PageDown", "End", "Home", "ArrowUp", "ArrowDown"].includes(e.key))
         e.preventDefault();
     };
-    window.addEventListener("wheel", prevent, { passive: false });
-    window.addEventListener("touchmove", prevent, { passive: false });
-    window.addEventListener("keydown", preventKeys, { passive: false } as AddEventListenerOptions);
-
     const release = () => {
-      if (releasedRef.current) return;
-      releasedRef.current = true;
+      if (bumpedRef.current) return;
+      bumpedRef.current = true;
       lenis?.start();
-      window.removeEventListener("wheel", prevent);
-      window.removeEventListener("touchmove", prevent);
-      window.removeEventListener("keydown", preventKeys);
+      window.removeEventListener("wheel", block);
+      window.removeEventListener("touchmove", block);
+      window.removeEventListener("keydown", blockKeys);
+      window.removeEventListener("wheel", onIntent);
+      window.removeEventListener("touchstart", onIntent);
+      window.removeEventListener("keydown", onIntent);
+      clearTimeout(armTimer);
+      clearTimeout(safety);
+    };
+    const onIntent = () => {
+      if (armed) release();
     };
 
-    // Release once the last card has spun to the front (~(N-1) intervals),
-    // with a hard safety a few seconds later in case anything stalls.
-    const primary = setTimeout(release, (N - 1) * INTERVAL_MS + SPIN_MS * 1000 + 300);
-    const safety = setTimeout(release, N * INTERVAL_MS + 4000);
+    window.addEventListener("wheel", block, { passive: false });
+    window.addEventListener("touchmove", block, { passive: false });
+    window.addEventListener("keydown", blockKeys);
+
+    armTimer = setTimeout(() => {
+      armed = true;
+      window.addEventListener("wheel", onIntent, { passive: true });
+      window.addEventListener("touchstart", onIntent, { passive: true });
+      window.addEventListener("keydown", onIntent);
+    }, 450);
+    safety = setTimeout(release, 2500);
 
     return () => {
-      clearTimeout(primary);
+      bumpedRef.current = true;
+      lenis?.start();
+      window.removeEventListener("wheel", block);
+      window.removeEventListener("touchmove", block);
+      window.removeEventListener("keydown", blockKeys);
+      window.removeEventListener("wheel", onIntent);
+      window.removeEventListener("touchstart", onIntent);
+      window.removeEventListener("keydown", onIntent);
+      clearTimeout(armTimer);
       clearTimeout(safety);
-      release();
     };
-  }, [inView, lenis, N]);
+  }, [inView, lenis]);
 
   return (
     <section

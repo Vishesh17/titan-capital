@@ -9,6 +9,7 @@ import {
   useMotionValue,
   type MotionValue,
 } from "framer-motion";
+import GrainOverlay from "@/components/ui/GrainOverlay";
 
 /* ─────────────────────────────────────────────────────────
    Types & Fallback Data
@@ -153,6 +154,7 @@ export default function WhatWeBelieveClient({
       className="relative w-full bg-[#FBF7F0] max-md:-mt-[60px] max-md:pt-[60px] max-md:!h-[180vh]"
       style={{ height: "250vh" }}
     >
+      <GrainOverlay opacity={0.22} zIndex={1} />
       <div className="sticky z-10 h-screen w-full overflow-hidden flex items-center justify-center" style={{ top: "64px", height: "calc(100vh - 64px)" }}>
         
         {/* ═══ DESKTOP DISPLAY ═══ */}

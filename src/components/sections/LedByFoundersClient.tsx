@@ -208,7 +208,8 @@ function FounderRow({ founder }: { founder: FounderProfile }) {
           style={{
             fontSize: "clamp(14px, min(1.38vw, 2.03vh), 18px)",
             lineHeight: "160%",
-            maxWidth: "600px",
+            width: "100%",
+            maxWidth: "100%",
           }}
         >
           {founder.bio}

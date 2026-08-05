@@ -112,8 +112,8 @@ function SocialLink({
       aria-label={label}
       className="inline-block transition-transform duration-200 hover:scale-110"
       style={{
-        width: "clamp(18px, min(1.6vw, 2.2vh), 24px)",
-        height: "clamp(18px, min(1.6vw, 2.2vh), 24px)",
+        width: "clamp(22px, min(1.92vw, 2.64vh), 29px)",
+        height: "clamp(22px, min(1.92vw, 2.64vh), 29px)",
         aspectRatio: "1 / 1",
       }}
     >
@@ -225,7 +225,7 @@ function TeamCard({
         <h3
           className="m-0 text-left font-['Poppins',_sans-serif] font-semibold text-[#0E0E0E]"
           style={{
-            fontSize: "clamp(16px, min(1.8vw, 2.5vh), 22px)",
+            fontSize: "clamp(19px, min(2.16vw, 3vh), 26px)",
             lineHeight: "130%",
             marginTop: "clamp(12px, min(1.5vw, 2.2vh), 20px)",
             maxWidth: "300px",
@@ -239,7 +239,7 @@ function TeamCard({
         <p
           className="m-0 text-left font-['Poppins',_sans-serif] font-normal text-[#323232]"
           style={{
-            fontSize: "clamp(12px, min(1.1vw, 1.6vh), 14px)",
+            fontSize: "clamp(14px, min(1.32vw, 1.92vh), 17px)",
             lineHeight: "158%",
             marginTop: "clamp(4px, 0.5vw, 8px)",
             maxWidth: "280px",

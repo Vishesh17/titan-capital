@@ -223,10 +223,12 @@ export default function IndicornCompanies({
                 />
               </div>
 
-              {/* Logo (No white background box) */}
+              {/* Logo (No white background box) — center-aligned so logos of
+                  different optical sizes (via per-logo scale) line up on a
+                  common centre line. */}
               <div
                 className="w-full flex items-center justify-start"
-                style={{ height: "clamp(72px,8vw,100px)", marginBottom: "clamp(16px,min(2vw,2.86vh),28px)" }}
+                style={{ height: "clamp(72px,8vw,100px)", marginBottom: "clamp(8px,min(1.1vw,1.6vh),16px)" }}
               >
                 <img
                   src={company.logoUrl}
@@ -241,8 +243,8 @@ export default function IndicornCompanies({
 
               {/* Description */}
               <p
-                className="m-0 text-[#1a1a1a] max-md:!text-[15px]"
-                style={{ fontSize: "min(1.11vw, 1.72vh)", lineHeight: "160%" }}
+                className="m-0 text-[#1a1a1a] max-md:!text-[18px]"
+                style={{ fontSize: "min(1.33vw, 2.06vh)", lineHeight: "160%" }}
               >
                 {company.description}
               </p>

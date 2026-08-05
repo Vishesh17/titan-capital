@@ -205,14 +205,15 @@ export default function WhyIndicorns() {
         {/* Top Story Section (desktop / tablet only) */}
         <motion.div
           variants={itemVariants}
-          className="max-md:hidden grid grid-cols-1 lg:grid-cols-2 items-center gap-[clamp(32px,min(4vw,6vh),64px)] mb-[clamp(48px,min(7vw,10vh),120px)]"
+          className="max-md:hidden grid grid-cols-1 lg:grid-cols-2 items-center gap-[clamp(48px,min(6vw,8vh),96px)] mb-[clamp(48px,min(7vw,10vh),120px)]"
         >
-          {/* Image */}
-          <div className="w-full overflow-hidden rounded-[2px] shadow-sm">
+          {/* Image — fixed SQUARE (1:1), sized down via a capped width. Aligned
+              to the RIGHT of its column so it sits closer to the text. */}
+          <div className="w-full flex justify-end">
             <img
               src="/images/indicorns/skyscrappers.png"
               alt="Skyscrapers looking up"
-              className="w-full h-full object-cover max-h-[clamp(280px,40vw,480px)]"
+              className="aspect-square w-full max-w-[clamp(320px,36vw,520px)] object-cover rounded-[2px] shadow-sm"
             />
           </div>
 
@@ -247,20 +248,28 @@ export default function WhyIndicorns() {
 
         {/* Timeline Section (desktop / tablet only) */}
         <div className="max-md:hidden relative w-full">
-          {/* Background Timeline Line (Desktop) */}
-          <div className="hidden md:block absolute top-[44px] left-[16.66%] right-[16.66%] h-[1px] bg-[#d3cec4] z-0" />
-          
-          {/* Animated Active Timeline Line (Desktop) */}
-          <motion.div 
-            className="hidden md:block absolute top-[43px] left-[16.66%] h-[3px] z-0 origin-left"
+          {/* Background Timeline Line (Desktop) — spans bullet-1 → bullet-3.
+              Each bullet sits 43px from its card's left (1px border + 32px p-8
+              + 10px radius); the span between the outer bullets is two column
+              pitches = (200% - 2*gap)/3 + gap  with gap = 16px (md:gap-4). */}
+          <div
+            className="hidden md:block absolute top-[44px] h-[1px] bg-[#d3cec4] z-0"
+            style={{ left: "43px", width: "calc((200% - 64px) / 3 + 32px)" }}
+          />
+
+          {/* Animated Active Timeline Line (Desktop) — same start/width, grows
+              from the first bullet (origin-left). */}
+          <motion.div
+            className="hidden md:block absolute top-[43px] h-[3px] z-0 origin-left"
             initial={{ scaleX: 0 }}
-            animate={{ 
-              scaleX: activeIndex === 0 ? 0 : activeIndex === 1 ? 0.5 : 1 
+            animate={{
+              scaleX: activeIndex === 0 ? 0 : activeIndex === 1 ? 0.5 : 1
             }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
-            style={{ 
-              width: "66.66%",
-              background: "linear-gradient(90deg, #0f2143 0%, #4060a8 100%)" 
+            style={{
+              left: "43px",
+              width: "calc((200% - 64px) / 3 + 32px)",
+              background: "linear-gradient(90deg, #0f2143 0%, #4060a8 100%)"
             }}
           />
 

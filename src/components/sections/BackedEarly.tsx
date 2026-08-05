@@ -297,7 +297,7 @@ const LOGO_H = 40;
 const companies = [
   { name: "Shadowfax",     bgImage: "/images/portfolio/shadowfax.webp",     logo: "/images/logos_backup/Shadowfax.svg",                logoScale: 1.2 },
   { name: "Credgenics",    bgImage: "/images/portfolio/credgenics.webp",    logo: "/images/logos_backup/Credgenics.svg",               logoScale: 0.9 },
-  { name: "OLA",           bgImage: "/images/portfolio/ola.webp",           logo: "/images/logos_backup/ola.svg",                      logoScale: 0.7 },
+  { name: "OLA",           bgImage: "/images/portfolio/ola_bg.webp",           logo: "/images/logos_backup/ola.svg",                      logoScale: 0.7 },
   { name: "Zouk",          bgImage: "/images/portfolio/zouk.webp",          logo: "/images/logos_backup/zouk_new_logo.webp",           logoScale: 0.8 },
   { name: "Unicommerce",   bgImage: "/images/portfolio/unicommerce.webp",   logo: "/images/logos_backup/unicommerce-logo.svg",         logoScale: 1.0 },
   { name: "Khatabook",     bgImage: "/images/portfolio/khatabook.webp",     logo: "/images/logos_backup/khatabook.png",                logoScale: 1.2, logoClass: "translate-y-[5px]" },
@@ -684,7 +684,7 @@ export default function BackedEarly() {
               <RevealLine show={show} delay={0.5}>Built To Last</RevealLine>
             </h2>
 
-            <motion.p
+            {/* <motion.p
               className="mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[800px] font-['Poppins',_sans-serif] font-normal leading-[1.6] text-white/90 text-center"
               style={{
                 fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)",
@@ -696,7 +696,7 @@ export default function BackedEarly() {
               transition={{ duration: 0.8, ease: "easeOut", delay: 1.2 }}
             >
               We partner with entrepreneurs from day one. We invest conviction, not just capital, and stay by their side through every stage of their journey.
-            </motion.p>
+            </motion.p> */}
           </div>
         </div>
 

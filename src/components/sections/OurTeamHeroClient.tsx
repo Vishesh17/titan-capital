@@ -105,7 +105,7 @@ const Photo = ({ src }: { src: string }) => (
       alt="Team Member"
       fill
       sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
-      className="object-cover object-center"
+      className="object-cover object-center grayscale"
       onError={(e) => (e.currentTarget.style.display = "none")}
     />
   </div>

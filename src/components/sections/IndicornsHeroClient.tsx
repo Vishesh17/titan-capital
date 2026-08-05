@@ -293,12 +293,15 @@ export default function IndicornsHeroClient() {
               What is an
             </h1>
 
-            {/* "indicorns" wordmark — coloured Hindi-styled graphic. */}
+            {/* "indicorns" wordmark — coloured Hindi-styled graphic.
+                Slightly larger, and nudged up a touch relative to the
+                "What is an" text via a small negative translateY. */}
             <div
               className="relative shrink-0"
               style={{
-                height: "clamp(40px, min(7.5vw, 9.6vh), 108px)",
+                height: "clamp(48px, min(9vw, 11.5vh), 128px)",
                 aspectRatio: "3.5 / 1",
+                transform: "translateY(clamp(-16px, -1.2vw, -8px))",
               }}
             >
               <Image
