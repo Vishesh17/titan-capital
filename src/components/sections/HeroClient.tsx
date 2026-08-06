@@ -422,12 +422,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   const [subtitleReady, setSubtitleReady] = useState(skipIntro);
   const [headingTick, setHeadingTick] = useState(0);
 
-  // Heading's rotating photo slot also cycles through EVERY founder (logo first
-  // if present, then all the faces), so the heading showcases them all too.
-  const logoFounder = founders.find(f => f.isLogo);
-  const headingFounder = logoFounder
-    ? (headingTick === 0 ? logoFounder : allFounders[(headingTick - 1) % allFounders.length])
-    : allFounders[headingTick % allFounders.length];
+  const headingFounder = allFounders[headingTick % allFounders.length];
 
   useEffect(() => {
     // Only hide the navbar while the full intro plays — on a soft-nav skip

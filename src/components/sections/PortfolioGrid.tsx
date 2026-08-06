@@ -387,9 +387,16 @@ export default function PortfolioGrid() {
     });
   }, []);
 
+  const STAGE_ORDER = ["Pre-Seed", "Seed", "Pre-Series A", "Series A"];
   const filterOptions = useMemo((): Record<FilterKey, string[]> => {
+    const stages = data?.filters.investmentStage ?? [];
+    const sorted = [...stages].sort((a, b) => {
+      const ai = STAGE_ORDER.indexOf(a);
+      const bi = STAGE_ORDER.indexOf(b);
+      return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+    });
     return {
-      investmentStage: data?.filters.investmentStage ?? [],
+      investmentStage: sorted,
       sector: data?.filters.sector ?? [],
       year: data?.filters.year ?? [],
       status: data?.filters.status ?? [],
