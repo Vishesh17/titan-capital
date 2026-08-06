@@ -491,7 +491,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
         <motion.p
           style={{ maxWidth: "min(52vw, 900px)" }}
-          className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 text-center font-['Poppins',_sans-serif] text-[min(1.62vw,2.51vh)] font-normal leading-[145%] text-white/90 max-md:!bottom-[clamp(48px,12dvh,80px)] max-md:!text-[clamp(11px,3vw,14px)] max-md:!w-[75vw] max-md:!max-w-[75vw]"
+          className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 text-center font-['Poppins',_sans-serif] text-[min(1.62vw,2.51vh)] font-normal leading-[145%] text-white/90 max-md:!hidden"
           initial={false}
           animate={{ opacity: subtitleReady ? 1 : 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
@@ -573,7 +573,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
         <motion.div
           style={{ opacity: headingOpacity }}
-          className="absolute inset-0 z-20 flex items-center justify-center px-[var(--section-px-wide)] max-md:!px-[24px] max-md:!items-start max-md:!pt-[clamp(80px,12dvh,120px)]"
+          className="absolute inset-0 z-20 flex items-center justify-center px-[var(--section-px-wide)] max-md:!px-[24px] max-md:!items-start max-md:!pt-[clamp(100px,16dvh,150px)]"
         >
           <div className="relative flex flex-col items-center md:-translate-y-[8vh]">
             
@@ -610,21 +610,22 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
               <RevealLine show={headingReady} delay={0}>Backing</RevealLine>
               <RevealLine show={headingReady} delay={0.3}>Founders</RevealLine>
               <RevealLine show={headingReady} delay={0.6}>Building</RevealLine>
-
-              <span
-                className="relative inline-block shrink-0 overflow-hidden my-[clamp(4px,1dvh,8px)]"
-                style={{ width: "min(70vw, 300px)", height: "min(54vw, 231px)", borderRadius: "4px" }}
-                ref={mobileSlotRef}
-              >
-                <HeadingPhoto founder={headingFounder} tick={headingTick} show={headingReady} enterDelay={1.25} />
+              <span className="inline-flex gap-[0.3em]">
+                <RevealLine show={headingReady} delay={0.9}>The</RevealLine>
+                <RevealLine show={headingReady} delay={1.2}>Future</RevealLine>
               </span>
 
-              <RevealLine show={headingReady} delay={1.7}>The</RevealLine>
-              <RevealLine show={headingReady} delay={2.0}>Future</RevealLine>
+              <span
+                className="relative inline-block shrink-0 overflow-hidden mt-[clamp(12px,2.5dvh,20px)]"
+                style={{ width: "min(50vw, 210px)", height: "min(31.95vw, 134px)", borderRadius: "2px" }}
+                ref={mobileSlotRef}
+              >
+                <HeadingPhoto founder={headingFounder} tick={headingTick} show={headingReady} enterDelay={1.5} mobile />
+              </span>
             </h1>
 
             <motion.div
-              className="absolute left-1/2 top-full flex -translate-x-1/2 flex-col items-center mt-[min(4.63vw,7.16vh)] max-md:!static max-md:!translate-x-0 max-md:!mt-[clamp(8px,2dvh,16px)] max-md:!items-center max-md:!w-full"
+              className="absolute left-1/2 top-full flex -translate-x-1/2 flex-col items-center mt-[min(4.63vw,7.16vh)] max-md:!static max-md:!translate-x-0 max-md:!mt-[clamp(32px,6dvh,52px)] max-md:!items-center max-md:!w-full"
               initial={{ opacity: 0, y: 12 }}
               animate={uiReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
@@ -642,6 +643,14 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 </Link>
                 <CursorFillButton href="/getinvestment" label="Get Investment" />
               </div>
+              <motion.p
+                className="hidden max-md:!block mt-[clamp(32px,6dvh,52px)] text-center font-['Poppins',_sans-serif] text-[clamp(11px,3vw,14px)] font-normal leading-[145%] text-white/90 w-[75vw]"
+                initial={false}
+                animate={{ opacity: subtitleReady ? 1 : 0 }}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {subtitle}
+              </motion.p>
             </motion.div>
 
           </div>
@@ -703,18 +712,19 @@ function HeadingPhoto({
   tick,
   show,
   enterDelay = 1.25,
+  mobile = false,
 }: {
   founder: HeroFounder;
   tick: number;
   show: boolean;
   /** Delay (s) before the FIRST photo slides up into the heading slot. */
   enterDelay?: number;
+  mobile?: boolean;
 }) {
   const isFirst = tick === 0;
   const scale = clampScale(founder.scaleFactor);
   const imageOffsetX = founder.positionX ?? 0;
   const imageOffsetY = founder.positionY ?? 0;
-  
 
   return (
     <AnimatePresence>
@@ -730,25 +740,25 @@ function HeadingPhoto({
           : { duration: 1.0, ease: [0.22, 1, 0.36, 1] }
         }
       >
-        <div className="absolute inset-0"
-          style={{
+        <div
+          className="absolute inset-0"
+          style={mobile ? undefined : {
             transform: `scale(${scale}) translate(${imageOffsetX}px, ${imageOffsetY}px)`,
             transformOrigin: "center center",
-          }}>
+          }}
+        >
           <Image
             src={heroImageSrc(founder.image, 600)}
             alt={founder.name}
             fill
             sizes="(max-width: 768px) 50vw, 25vw"
             priority
-            style={{
-              ...IMG_STYLE,
-              objectFit: founder.isLogo ? "contain" : "scale-down",
-              objectPosition: "center center",
-            }}
+            style={mobile
+              ? { objectFit: founder.isLogo ? "contain" : "cover", objectPosition: founder.isLogo ? "center center" : "top center" }
+              : { ...IMG_STYLE, objectFit: founder.isLogo ? "contain" : "scale-down", objectPosition: "center center" }
+            }
           />
         </div>
-        {/* Film-grain texture (skip the clean logo card) */}
         {!founder.isLogo && <GrainOverlay opacity={0.18} />}
       </motion.div>
     </AnimatePresence>
