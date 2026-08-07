@@ -302,11 +302,11 @@ const companies = [
   { name: "Unicommerce",   bgImage: "/images/portfolio/unicommerce.webp",   logo: "/images/logos_backup/unicommerce-logo.svg",         logoScale: 1.0 },
   { name: "Khatabook",     bgImage: "/images/portfolio/khatabook.webp",     logo: "/images/logos_backup/khatabook.png",                logoScale: 1.2, logoClass: "translate-y-[5px]" },
   { name: "Mamaearth",     bgImage: "/images/portfolio/mamaearth.webp",     logo: "/images/logos_backup/mamaearthpng-logo.webp",       logoScale: 1.0 },
-  { name: "Ofbusiness",    bgImage: "/images/portfolio/ofbusiness.webp",    logo: "/images/logos_backup/ofbusiness_white.svg",         logoScale: 1.0 },
   { name: "Cart.com",      bgImage: "/images/portfolio/cartdotcom.webp",    logo: "/images/logos_backup/cartdotcom.svg",               logoScale: 1.0, noInvert: true },
   { name: "Razorpay",      bgImage: "/images/portfolio/razorpay.webp",      logo: "/images/logos_backup/Razorpay-logo.webp",           logoScale: 1.0 },
   { name: "Snapdeal",      bgImage: "/images/portfolio/snapdeal.webp",      logo: "/images/logos_backup/snapdeal-company-1-logo.webp", logoScale: 1.0 },
   { name: "Urban Company", bgImage: "/images/portfolio/urbancompany.webp",  logo: "/images/logos_backup/uc_white.png",                 logoScale: 1.0 },
+  { name: "Ofbusiness",    bgImage: "/images/portfolio/ofbusiness.webp",    logo: "/images/logos_backup/ofbusiness_white.svg",         logoScale: 1.0 },
 ];
 
 /* ═══════════════════════════════════════════════════════
