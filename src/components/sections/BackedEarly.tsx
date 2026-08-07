@@ -191,9 +191,16 @@ export function AnimatedGrid() {
     let animationId: number;
     const startTime = performance.now();
 
+    // Cached CSS size. `draw` used to call getBoundingClientRect() twice per
+    // frame, forcing a synchronous layout read on every single frame.
+    let cssW = 0;
+    let cssH = 0;
+
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
+      cssW = rect.width;
+      cssH = rect.height;
       canvas.width = rect.width * dpr;
       canvas.height = rect.height * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -207,8 +214,8 @@ export function AnimatedGrid() {
 
     const draw = (now: number) => {
       const elapsed = (now - startTime) / 1000;
-      const w = canvas.getBoundingClientRect().width;
-      const h = canvas.getBoundingClientRect().height;
+      const w = cssW;
+      const h = cssH;
       const mx = mouseRef.current.x;
       const my = mouseRef.current.y;
       const cx = w / 2;
@@ -249,29 +256,77 @@ export function AnimatedGrid() {
         return { offset, alpha };
       };
 
+      // Consecutive segments that share an alpha are batched into ONE path.
+      // Previously every 4px segment issued its own strokeStyle assignment +
+      // beginPath + stroke — ~2,000 rasterizer flushes and ~2,000 string
+      // allocations per frame. Alpha is quantised to 1/200, far below the
+      // ~1/255 the display can resolve, so the gradient is unchanged.
       for (let x = 0; x <= w; x += GRID_SIZE) {
-        ctx.beginPath();
+        let runAlpha = -1;
         let started = false;
+
         for (let y = 0; y <= h; y += 4) {
           const { offset, alpha } = getWave(x, y);
-          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+          const q = Math.round(alpha * 200) / 200;
           const dx = x + offset;
-          if (!started) { ctx.moveTo(dx, y); started = true; }
-          else { ctx.lineTo(dx, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(dx, y); }
+
+          if (!started) {
+            ctx.beginPath();
+            ctx.moveTo(dx, y);
+            runAlpha = q;
+            started = true;
+          } else if (q !== runAlpha) {
+            // Close the run ON this point so the line stays continuous,
+            // then start the next run from the same point.
+            ctx.lineTo(dx, y);
+            ctx.strokeStyle = `rgba(255, 255, 255, ${runAlpha})`;
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(dx, y);
+            runAlpha = q;
+          } else {
+            ctx.lineTo(dx, y);
+          }
         }
-        ctx.stroke();
+
+        if (started) {
+          ctx.strokeStyle = `rgba(255, 255, 255, ${runAlpha})`;
+          ctx.stroke();
+        }
       }
 
       animationId = requestAnimationFrame(draw);
     };
 
     resize();
-    animationId = requestAnimationFrame(draw);
     window.addEventListener("resize", resize);
+
+    // The loop used to run for the lifetime of the page, burning frames on
+    // every other section too. Only draw while the canvas is actually on
+    // screen. Wave position stays time-based off `startTime`, so re-entering
+    // resumes exactly where it would have been — no visible jump.
+    let running = false;
+    const start = () => {
+      if (running) return;
+      running = true;
+      animationId = requestAnimationFrame(draw);
+    };
+    const stop = () => {
+      if (!running) return;
+      running = false;
+      cancelAnimationFrame(animationId);
+    };
+
+    const io = new IntersectionObserver(
+      ([entry]) => (entry.isIntersecting ? start() : stop()),
+      { rootMargin: "200px" }
+    );
+    io.observe(canvas);
 
     return () => {
       window.removeEventListener("resize", resize);
-      cancelAnimationFrame(animationId);
+      io.disconnect();
+      stop();
       if (section) {
         section.removeEventListener("mousemove", onMouseMove);
         section.removeEventListener("mouseleave", onMouseLeave);
