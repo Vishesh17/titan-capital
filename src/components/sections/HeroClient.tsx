@@ -107,6 +107,12 @@ const IMG_STYLE: React.CSSProperties = {
 
 const SLOT_W = "min(23.1vw, 35.8vh)";
 
+/* Per-slot `sizes` hints. One shared string used to serve three very different
+   boxes, so the browser picked an oversized candidate for the tiny deck cards
+   and wasted bandwidth that the flicker needed. */
+const SLIDESHOW_SIZES = "(max-width: 768px) 20vw, 8vw";
+const HEADING_SIZES = "(max-width: 768px) 50vw, 24vw";
+
 function computeDims(w: number, h: number) {
   const isMobile = w < 768;
   const cardW = isMobile ? w * 0.20 : Math.min(0.072 * w, 0.115 * h);
@@ -422,7 +428,6 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   const [subtitleReady, setSubtitleReady] = useState(skipIntro);
   const [headingTick, setHeadingTick] = useState(0);
 
-  const headingFounder = allFounders[headingTick % allFounders.length];
 
   useEffect(() => {
     // Only hide the navbar while the full intro plays — on a soft-nav skip
@@ -452,7 +457,9 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
   useEffect(() => {
     if (!headingReady || !heroInView) return;
-    const delay = headingTick === 0 ? 4100 : 1500;
+    // Tick 0 holds until the entrance choreography ("Future" lands ~3.6 s) is
+    // done, so the first face isn't swapped out mid-reveal.
+    const delay = headingTick === 0 ? 3700 : 1500;
     const timer = setTimeout(() => {
       setHeadingTick((t) => t + 1);
     }, delay);
@@ -513,39 +520,35 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
               exit={{ opacity: 0, transition: { duration: 0.1 } }}
               transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
             >
-              <AnimatePresence>
-                <motion.div
-                  key={slideIndex}
-                  className="absolute inset-0"
-                  style={{ zIndex: slideIndex, background: CARD_BG }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0, transition: { duration: 0 } }} 
-                  transition={{ duration: 0.1, ease: "easeOut" }}
-                >
-                  {(() => {
-                    const sf = slideshowFounders[slideIndex % slideshowFounders.length];
-                    return (
-                      <div
-                        className="absolute inset-0"
-                        style={{
-                          transform: `scale(${clampScale(sf.squareScaleFactor)}) translate(${sf.squarePositionX ?? 0}px, ${sf.squarePositionY ?? 0}px)`,
-                          transformOrigin: "center center",
-                        }}
-                      >
-                        <Image
-                          src={heroImageSrc(sf.image, 600)}
-                          alt={sf.name}
-                          fill
-                          sizes="(max-width: 768px) 50vw, 25vw"
-                          priority
-                          style={{ objectFit: "cover", objectPosition: "center center", filter: "grayscale(0.9)" }}
-                        />
-                      </div>
-                    );
-                  })()}
-                </motion.div>
-              </AnimatePresence>
+              {/* Every founder is mounted ONCE and stays mounted; the flicker is
+                  a pure opacity swap. Mounting/unmounting per tick used to start
+                  the image download only at the moment it had to be on screen —
+                  at 200 ms/tick a cold image never arrived in time and the card
+                  flashed empty. Keeping them mounted also lets the browser fetch
+                  the whole set during the 1.05 s pre-roll. */}
+              <div className="absolute inset-0" style={{ background: CARD_BG }}>
+                {slideshowFounders.map((sf, i) => (
+                  <div
+                    key={sf.image}
+                    className="absolute inset-0"
+                    style={{
+                      opacity: i === slideIndex ? 1 : 0,
+                      transform: `scale(${clampScale(sf.squareScaleFactor)}) translate(${sf.squarePositionX ?? 0}px, ${sf.squarePositionY ?? 0}px)`,
+                      transformOrigin: "center center",
+                      willChange: "opacity",
+                    }}
+                  >
+                    <Image
+                      src={heroImageSrc(sf.image, 600)}
+                      alt={sf.name}
+                      fill
+                      sizes={SLIDESHOW_SIZES}
+                      priority
+                      style={{ objectFit: "cover", objectPosition: "center center", filter: "grayscale(0.9)" }}
+                    />
+                  </div>
+                ))}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -582,7 +585,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 className="flex items-start justify-start self-end"
                 style={{ gap: "min(0.8vw, 1.4vh)", marginRight: "min(6vw, 9vh)" }}
               >
-                <RevealLine show={headingReady} delay={1.7}>The</RevealLine>
+                <RevealLine show={headingReady} delay={1.25}>The</RevealLine>
                 <span
                   ref={slotRef}
                   className="relative inline-block shrink-0 overflow-hidden"
@@ -592,9 +595,9 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                     borderRadius: "2px",
                   }}
                 >
-                  <HeadingPhoto founder={headingFounder} tick={headingTick} show={headingReady} enterDelay={2.5} />
+                  <HeadingPhoto founders={allFounders} activeIndex={headingTick} show={headingReady} enterDelay={2.1} />
                 </span>
-                <RevealLine show={headingReady} delay={3.1}>Future</RevealLine>
+                <RevealLine show={headingReady} delay={2.7}>Future</RevealLine>
               </span>
             </h1>
 
@@ -615,7 +618,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 style={{ width: "min(50vw, 210px)", height: "min(31.95vw, 134px)", borderRadius: "2px" }}
                 ref={mobileSlotRef}
               >
-                <HeadingPhoto founder={headingFounder} tick={headingTick} show={headingReady} enterDelay={1.5} mobile />
+                <HeadingPhoto founders={allFounders} activeIndex={headingTick} show={headingReady} enterDelay={1.5} mobile />
               </span>
             </h1>
 
@@ -702,61 +705,77 @@ function CursorFillButton({ href, label }: { href: string; label: string }) {
   );
 }
 
+/**
+ * Rotating photo inside the heading slot.
+ *
+ * Every founder is mounted once and never unmounted; only `opacity` changes.
+ * The previous version keyed a `motion.div` on `tick` inside `AnimatePresence`
+ * with `exit={{ opacity: 1 }}` — a no-op exit target that framer never resolves
+ * as "finished", so exiting nodes piled up (13 stacked `<img>`s measured) and
+ * each new tick started its image download only at the instant it had to be
+ * visible. Both effects showed up as flashes of empty card.
+ *
+ * The container does the one-time slide-up; the crossfade is composited.
+ */
 function HeadingPhoto({
-  founder,
-  tick,
+  founders,
+  activeIndex,
   show,
   enterDelay = 1.25,
   mobile = false,
 }: {
-  founder: HeroFounder;
-  tick: number;
+  founders: HeroFounder[];
+  activeIndex: number;
   show: boolean;
-  /** Delay (s) before the FIRST photo slides up into the heading slot. */
+  /** Delay (s) before the slot slides up into place. */
   enterDelay?: number;
   mobile?: boolean;
 }) {
-  const isFirst = tick === 0;
-  const scale = clampScale(founder.scaleFactor);
-  const imageOffsetX = founder.positionX ?? 0;
-  const imageOffsetY = founder.positionY ?? 0;
+  const active = ((activeIndex % founders.length) + founders.length) % founders.length;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        key={tick}
-        className="absolute inset-0 flex items-center justify-center"
-        style={{ zIndex: tick, background: CARD_BG }}
-        initial={isFirst ? { y: "100%" } : { opacity: 0 }}
-        animate={show ? (isFirst ? { y: "0%" } : { opacity: 1 }) : (isFirst ? { y: "100%" } : { opacity: 0 })}
-        exit={{ opacity: 1 }}
-        transition={isFirst
-          ? { duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: enterDelay }
-          : { duration: 1.0, ease: [0.22, 1, 0.36, 1] }
-        }
-      >
+    <motion.div
+      className="absolute inset-0"
+      style={{ background: CARD_BG }}
+      initial={{ y: "100%" }}
+      animate={{ y: show ? "0%" : "100%" }}
+      transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: enterDelay }}
+    >
+      {founders.map((f, i) => (
         <div
+          key={f.image}
           className="absolute inset-0"
-          style={mobile ? undefined : {
-            transform: `scale(${scale}) translate(${imageOffsetX}px, ${imageOffsetY}px)`,
-            transformOrigin: "center center",
+          style={{
+            opacity: i === active ? 1 : 0,
+            transition: "opacity 1s cubic-bezier(0.22, 1, 0.36, 1)",
+            willChange: "opacity",
           }}
         >
-          <Image
-            src={heroImageSrc(founder.image, 600)}
-            alt={founder.name}
-            fill
-            sizes="(max-width: 768px) 50vw, 25vw"
-            priority
-            style={mobile
-              ? { objectFit: founder.isLogo ? "contain" : "cover", objectPosition: founder.isLogo ? "center center" : "top center" }
-              : { ...IMG_STYLE, objectFit: founder.isLogo ? "contain" : "scale-down", objectPosition: "center center" }
-            }
-          />
+          <div
+            className="absolute inset-0"
+            style={mobile ? undefined : {
+              transform: `scale(${clampScale(f.scaleFactor)}) translate(${f.positionX ?? 0}px, ${f.positionY ?? 0}px)`,
+              transformOrigin: "center center",
+            }}
+          >
+            <Image
+              src={heroImageSrc(f.image, 600)}
+              alt={f.name}
+              fill
+              sizes={HEADING_SIZES}
+              priority
+              style={mobile
+                ? { objectFit: f.isLogo ? "contain" : "cover", objectPosition: f.isLogo ? "center center" : "top center" }
+                : { ...IMG_STYLE, objectFit: f.isLogo ? "contain" : "scale-down", objectPosition: "center center" }
+              }
+            />
+          </div>
         </div>
-        {!founder.isLogo && <GrainOverlay opacity={0.18} />}
-      </motion.div>
-    </AnimatePresence>
+      ))}
+      {/* Rendered once for the whole stack — re-mounting the SVG turbulence
+          filter on every tick forced a filter re-rasterise mid-crossfade. */}
+      <GrainOverlay opacity={0.18} />
+    </motion.div>
   );
 }
 
