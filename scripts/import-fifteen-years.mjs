@@ -50,8 +50,8 @@ const HEADING_HIGHLIGHT = "Showing Up";
    (Both empty → that year is skipped.)
    ───────────────────────────────────────────────────────── */
 const YEARS = [
-  { year: 2011, subtitle: "", description: "" },
-  { year: 2012, subtitle: "", description: "" },
+  { year: 2011, subtitle: "First seed investments", description: "Backing founders from personal conviction, out of our own pockets. Ola Cabs was Titan Capital’s first investment, when it was doing 5 rides a day." },
+  { year: 2014, subtitle: "", description: "" },
   { year: 2013, subtitle: "", description: "" },
   { year: 2014, subtitle: "", description: "" },
   { year: 2015, subtitle: "", description: "" },

@@ -165,36 +165,52 @@ function TeamCard({
             aspectRatio: `${BLOB_VIEWBOX_W} / ${BLOB_VIEWBOX_H}`,
           }}
         >
-          {/* ── BACKGROUND BLOB ── */}
-          <img
-            src={BLOB_SRC}
-            alt=""
-            aria-hidden
-            draggable={false}
-            className="absolute h-full w-full select-none"
-            style={{
-              top: "6%",
-              left: "5%",
-              transform: `rotate(${rotateBlob}deg)`,
-              transformOrigin: "center",
-              objectFit: "contain",
-            }}
-          />
-
-          {/* ── PHOTO CROP/MASK ── */}
+          {/* ── ROTATED BLOB SPACE ──
+              The painted blob and the mask that clips the photo MUST be the
+              same shape. Rotating only the <img> (as this used to) left the
+              mask on the un-rotated silhouette, so the cutout drifted away
+              from the blob edge by up to 10° — the visible gap. Rotating a
+              shared parent keeps paint and mask in lockstep; the photo is
+              counter-rotated below so the person stays upright. */}
           <div
             className="absolute h-full w-full"
             style={{
               top: "6%",
               left: "5%",
-              WebkitMaskImage: `url(${BLOB_SRC})`,
-              maskImage: `url(${BLOB_SRC})`,
-              WebkitMaskSize: "100% 100%",
-              maskSize: "100% 100%",
-              WebkitMaskRepeat: "no-repeat",
-              maskRepeat: "no-repeat",
+              transform: `rotate(${rotateBlob}deg)`,
+              transformOrigin: "center",
             }}
           >
+            <img
+              src={BLOB_SRC}
+              alt=""
+              aria-hidden
+              draggable={false}
+              className="absolute inset-0 h-full w-full select-none"
+              style={{ objectFit: "fill" }}
+            />
+
+            {/* ── PHOTO CROP/MASK ── */}
+            <div
+              className="absolute inset-0 h-full w-full"
+              style={{
+                WebkitMaskImage: `url(${BLOB_SRC})`,
+                maskImage: `url(${BLOB_SRC})`,
+                WebkitMaskSize: "100% 100%",
+                maskSize: "100% 100%",
+                WebkitMaskRepeat: "no-repeat",
+                maskRepeat: "no-repeat",
+              }}
+            >
+              {/* Cancels the parent rotation about the same centre, so the
+                  portrait renders upright inside a rotated mask. */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  transform: `rotate(${-rotateBlob}deg)`,
+                  transformOrigin: "center",
+                }}
+              >
             {member.image ? (
               <div
                 className="absolute"
@@ -221,6 +237,8 @@ function TeamCard({
                   .toUpperCase()}
               </div>
             )}
+              </div>
+            </div>
           </div>
         </div>
 
