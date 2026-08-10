@@ -46,6 +46,9 @@ export default function FoundersStoryGrid({
   ctaLabel,
   slides,
 }: FoundersStoryGridProps) {
+  /* Shared across all pills so their width is constant. */
+  const allTags = slides.flatMap((s) => s.tags ?? []);
+
   const sectionRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -129,7 +132,7 @@ export default function FoundersStoryGrid({
           >
             {padStories(slides, CARD_COUNT).map((story, i) => (
               <Link key={`${story.name}-${i}`} href={`/foundersstory/${storySlug(story)}`} className="block">
-                <StoryCard story={story} />
+                <StoryCard story={story} sizerTags={allTags} />
               </Link>
             ))}
           </div>

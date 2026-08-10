@@ -417,7 +417,8 @@ export const impactAtGlanceQuery = groq`
       role,
       text,
       logoScale,
-      tag,
+      logoOffsetY,
+      tags,
       "image": image.asset->url,
       "logo": logo.asset->url
     }
@@ -638,6 +639,24 @@ export const ledByFoundersQuery = groq`
       bio,
       imagePosition,
       "image": image.asset->url
+    }
+  }
+`;
+/**
+ * Portfolio page — "Backed Early" hero. Singleton.
+ * Asset URLs resolved here so the client receives plain strings.
+ */
+export const backedEarlyQuery = groq`
+  *[_type == "backedEarly"][0]{
+    headingFirst,
+    headingSecond,
+    companies[]{
+      name,
+      logoScale,
+      logoClass,
+      noInvert,
+      "bgImage": bgImage.asset->url,
+      "logo": logo.asset->url
     }
   }
 `;

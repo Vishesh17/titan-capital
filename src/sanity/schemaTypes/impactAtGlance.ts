@@ -130,10 +130,22 @@ export const impactAtGlance = defineType({
               name: "logoScale",
               title: "Logo size (1 = default)",
               description:
-                "Fine-tune this logo's size so all four look balanced. 1 = base height; try 0.8–1.4 to even out a logo that reads too big or too small.",
+                "Fine-tune this logo's size so they all look balanced. 1 = base height. Marks taken from the portfolio grid sit small inside a square canvas and typically need 2–4.5; a tightly-cropped logo needs closer to 1.",
               type: "number",
               initialValue: 1,
-              validation: (r) => r.min(0.3).max(3),
+              // Ceiling raised from 3 — the portfolio-grid marks are letterboxed
+              // in a 400x400 canvas, so several need well above 3 to match the
+              // others visually.
+              validation: (r) => r.min(0.3).max(6),
+            }),
+            defineField({
+              name: "logoOffsetY",
+              title: "Logo vertical nudge (%)",
+              description:
+                "Shifts the logo up or down as a % of its height. Positive = down, negative = up. 0 for most. Needed because each mark sits centred in a square canvas with different amounts of blank space, so some float higher than others once scaled. Try ±10-50.",
+              type: "number",
+              initialValue: 0,
+              validation: (r) => r.min(-100).max(100),
             }),
             defineField({
               name: "text",
@@ -144,11 +156,14 @@ export const impactAtGlance = defineType({
               validation: (r) => r.required(),
             }),
             defineField({
-              name: "tag",
-              title: "Tag (top-left pill)",
+              name: "tags",
+              title: "Tags (top-left pill — rotates)",
               description:
-                'Optional short label shown in a white pill on the top-left of the card. e.g. "Unicorn", "Recent Investment", "IPO 2024". Leave empty to hide the tag.',
-              type: "string",
+                'Up to 3 short labels. They cycle in the white pill on the card\'s top-left, one every ~2 seconds. Convention: 1) sector, 2) stage + year, 3) milestone. e.g. "Home Services", "Series A · 2015", "Listed 2025". Leave empty to hide the pill.',
+              type: "array",
+              of: [{ type: "string" }],
+              validation: (r) => r.max(3),
+              options: { layout: "tags" },
             }),
           ],
           preview: {

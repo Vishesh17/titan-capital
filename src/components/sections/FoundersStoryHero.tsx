@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
-import { HeroGlow, AnimatedGrid, RevealLine } from "./BackedEarly";
+import { HeroGlow, AnimatedGrid, RevealLine } from "./BackedEarlyClient";
 import {
   HERO_HEADING_DARK_CLASS,
   HERO_HEADING_DARK_STYLE,

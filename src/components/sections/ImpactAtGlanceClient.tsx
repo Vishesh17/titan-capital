@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { motion, useScroll, useTransform, type MotionValue, useSpring } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform, type MotionValue, useSpring } from "framer-motion";
 import GrainOverlay from "@/components/ui/GrainOverlay";
 
 /* ─────────────────────────────────────────────────────────
@@ -20,9 +20,20 @@ export interface FounderStory {
   image: string;
   logo: string;
   logoScale?: number;
+  /**
+   * Nudges the logo vertically, as a % of the logo box height. Positive = down.
+   * Needed because each mark sits centred in a 400x400 canvas: `logoScale`
+   * scales that transparent padding along with the artwork, so marks with more
+   * of it float higher. This cancels the difference out.
+   */
+  logoOffsetY?: number;
   text: string;
-  tag?: string;
+  /** Up to 3 pills, cycled one at a time in the card's top-left corner. */
+  tags?: string[];
 }
+
+/** How long each tag holds before the next one takes its place. */
+const TAG_ROTATE_MS = 2200;
 
 export interface ImpactAtGlanceData {
   impactHeadingFirst?: string;
@@ -42,30 +53,71 @@ const FALLBACK_IMPACT_DATA: ImpactStat[] = [
   { num: "250M+",   label: "Lives Impacted" },
 ];
 
+/* Photos live under /images/FounderStories; logos are the portfolio-grid marks
+   used as-is. They are 400x400 canvases with the wordmark centred inside, and
+   CardLogo renders them at `height: H; width: auto` — so the element is H x H
+   and `logoScale` sizes the wordmark within it. Do NOT trim these: a trimmed
+   400x59 mark at height H becomes ~7H wide and overflows the card. */
+const STORY_IMG = "/images/FounderStories";
+const STORY_LOGO = "/images/portfolio_grid";
+
 export const FALLBACK_SLIDES: FounderStory[] = [
   {
-    name: "Ashish Mohapatra",
-    role: "Co-Founder & CEO, Ofbusiness",
-    image: "/images/misc/5.webp",
-    logo: "/images/logos/Ofbusiness.png",
-    text: `"Building anything meaningful demands everything you have. It's never easy, but it's always worth it."`,
-    tag: "Unicorn",
+    name: "Abhiraj Singh Bhal",
+    role: "Cofounder & CEO, Urban Company",
+    image: `${STORY_IMG}/Urban Company.webp`,
+    logo: `${STORY_LOGO}/Urban Company.png`,
+    logoOffsetY: -20,
+    logoScale: 1.52,
+    text: `"Nobody wants a marketplace of plumbers. They want the plumber to show up and do the job well."`,
+    tags: ["Home Services", "Series A · 2015", "Listed 2025"],
   },
   {
-    name: "Abhishek Bansal",
-    role: "Co-Founder and CEO, Shadowfax",
-    image: "/images/misc/6.webp",
-    logo: "/images/logos/Shadowfax.svg",
-    text: `"In India, logistics isn't just about speed. It's about reaching the right place even when the address is wrong."`,
-    tag: "Unicorn",
+    name: "Varun Alagh",
+    role: "Co-Founder, Mamaearth",
+    image: `${STORY_IMG}/Mamaearth.webp`,
+    logo: `${STORY_LOGO}/mamaearth_new.png`,
+    logoOffsetY: 67,
+    logoScale: 3.25,
+    text: `"Every brand says it wants to be in every home in India. Very few are willing to rebuild their distribution to actually get there."`,
+    tags: ["Consumer Brands", "Series B · 2017", "Listed 2023"],
+  },
+  {
+    name: "Asish Mohapatra",
+    role: "Co-Founder & CEO, Ofbusiness",
+    image: `${STORY_IMG}/Ofbusiness.webp`,
+    logo: `${STORY_LOGO}/Ofbusiness.png`,
+    logoScale: 2,
+    text: `"Whatever is unsexy, there's more profit. Everybody wants to be glamorous, so that's where the competition is."`,
+    tags: ["B2B Commerce & Lending", "Seed · 2015", "Profitable at scale"],
   },
   {
     name: "Harshil Mathur",
-    role: "Co-founder and CEO of Razorpay",
-    image: "/images/misc/3.webp",
-    logo: "/images/logos/Razorpay-logo.webp",
-    text: `"The vision was never just to be a payment gateway. It was to be the financial nervous system for a business."`,
-    tag: "Unicorn",
+    role: "CEO & Co-Founder, Razorpay",
+    image: `${STORY_IMG}/Razorpay.webp`,
+    logo: `${STORY_LOGO}/Razorpay-logo.png`,
+    logoScale: 2,
+    text: `"A payment gateway that takes three weeks to integrate isn't infrastructure. It's a project."`,
+    tags: ["Payments Infrastructure", "Seed · 2015", "10M+ businesses"],
+  },
+  {
+    name: "Vaibhav Khandelwal",
+    role: "Co-founder & CTO, Shadowfax",
+    image: `${STORY_IMG}/Shadowfax.webp`,
+    logo: `${STORY_LOGO}/Shadowfax.png`,
+    logoScale: 2,
+    text: `"In India, logistics isn't about speed. It is about reaching the right place even when the address is wrong."`,
+    tags: ["Last-Mile Logistics", "Seed · 2015", "Listed 2026"],
+  },
+  {
+    name: "Rishabh Goel",
+    role: "Co-founder & CEO, Credgenics",
+    image: `${STORY_IMG}/Credgenics.webp`,
+    logo: `${STORY_LOGO}/Credgenics.png`,
+    logoOffsetY: 14,
+    logoScale: 2.21,
+    text: `"Lending is a collections industry. Money can be distributed easily; the core of the business is getting it back."`,
+    tags: ["AI-first Collections Software", "Pre-seed · 2019", "Profitable, SE Asia"],
   },
 ];
 
@@ -201,6 +253,78 @@ function ImpactStatCell({
   );
 }
 
+/**
+ * The card's top-left pill, cycling through the story's tags one at a time.
+ *
+ * The pill hugs its text rather than using a fixed width — the tags range from
+ * "Home Services" to "AI-first Collections Software", which a fixed 120px pill
+ * would clip. `layout` animates the width change so the swap doesn't jump.
+ */
+function RotatingTag({ tags, sizerTags }: { tags: string[]; sizerTags: string[] }) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (tags.length < 2) return;
+    const id = setInterval(
+      () => setIndex((i) => (i + 1) % tags.length),
+      TAG_ROTATE_MS
+    );
+    return () => clearInterval(id);
+  }, [tags.length]);
+
+  if (tags.length === 0) return null;
+  const safeIndex = index % tags.length;
+
+  return (
+    <div
+      className="absolute left-0 z-20 flex items-center overflow-hidden text-[#001A4D]"
+      style={{
+        top: "clamp(10px, min(1.2vw, 1.8vh), 18px)",
+        height: "clamp(28px, min(2.6vw, 3.8vh), 38px)",
+        paddingLeft: "clamp(10px, min(1vw, 1.5vh), 14px)",
+        paddingRight: "clamp(14px, min(1.4vw, 2vh), 20px)",
+        borderRadius: "0 70px 70px 0",
+        background: "#FFFFFF",
+        boxShadow: "0 4px 18.6px 0 rgba(0,0,0,0.18)",
+        fontSize: "clamp(10px, min(1vw, 1.5vh), 14px)",
+        fontFamily: "'Poppins', sans-serif",
+        fontWeight: 500,
+        lineHeight: "150%",
+        whiteSpace: "nowrap",
+      }}
+    >
+      <span className="sr-only">{tags.join(". ")}</span>
+
+      {/* Invisible sizer. Every label across every card is stacked in a single
+          grid cell, so the pill is always as wide as the longest one site-wide
+          and its width never shifts as the label rotates. Measuring in CSS
+          rather than JS keeps it exact across fonts and breakpoints. */}
+      <span aria-hidden className="invisible grid">
+        {sizerTags.map((t, i) => (
+          <span key={i} className="col-start-1 row-start-1 whitespace-nowrap">
+            {t}
+          </span>
+        ))}
+      </span>
+
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={safeIndex}
+          aria-hidden="true"
+          className="absolute inset-y-0 flex items-center whitespace-nowrap"
+          style={{ left: "clamp(10px, min(1vw, 1.5vh), 14px)" }}
+          initial={{ opacity: 0, y: 9 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -9 }}
+          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {tags[safeIndex]}
+        </motion.span>
+      </AnimatePresence>
+    </div>
+  );
+}
+
 function deriveCompany(story: FounderStory): string {
   const role = story.role || "";
   if (role.includes(",")) return role.split(",").pop()!.trim();
@@ -243,7 +367,7 @@ function CardLogo({ story, company, origin }: { story: FounderStory; company: st
         width: "auto",
         objectPosition: origin,
         filter: "brightness(0) invert(1)",
-        transform: `scale(${story.logoScale ?? 1})`,
+        transform: `translateY(${story.logoOffsetY ?? 0}%) scale(${story.logoScale ?? 1})`,
         transformOrigin: origin,
         display: "block",
         margin: 0,
@@ -252,7 +376,7 @@ function CardLogo({ story, company, origin }: { story: FounderStory; company: st
   );
 }
 
-export function StoryCard({ story }: { story: FounderStory }) {
+export function StoryCard({ story, sizerTags = [] }: { story: FounderStory; sizerTags?: string[] }) {
   const [hovered, setHovered] = useState(false);
   const company = deriveCompany(story);
 
@@ -272,30 +396,17 @@ export function StoryCard({ story }: { story: FounderStory }) {
         alt={story.name}
         fill
         sizes="(max-width: 768px) 100vw, 33vw"
-        className="object-cover object-top transition-transform duration-700 scale-[1.03] group-hover:scale-[1.08]"
+        /* scale-100 at rest, not 1.03 — the resting zoom cropped ~3% off each
+           edge, so a square photo no longer filled the square frame edge to
+           edge. The zoom now only happens on hover. */
+        className="object-cover object-top transition-transform duration-700 scale-100 group-hover:scale-[1.05]"
       />
       <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(21, 21, 21, 0.00) 0%, rgba(21, 21, 21, 0.82) 82%)" }} aria-hidden />
 
-      <div
-        className="absolute left-0 z-20 flex items-center text-[#001A4D]"
-        style={{
-          top: "clamp(10px, min(1.2vw, 1.8vh), 18px)",
-          width: "clamp(80px, min(7.5vw, 11vh), 120px)",
-          height: "clamp(28px, min(2.6vw, 3.8vh), 38px)",
-          padding: "clamp(8px, min(0.8vw, 1.2vh), 12px)",
-          gap: "10px",
-          borderRadius: "0 70px 70px 0",
-          background: "#FFFFFF",
-          boxShadow: "0 4px 18.6px 0 rgba(0,0,0,0.18)",
-          fontSize: "clamp(10px, min(1vw, 1.5vh), 14px)",
-          fontFamily: "'Poppins', sans-serif",
-          fontWeight: 500,
-          lineHeight: "150%",
-          whiteSpace: "nowrap",
-        }}
-      >
-        {story.tag || "Portfolio"}
-      </div>
+      <RotatingTag
+        tags={story.tags?.length ? story.tags : ["Portfolio"]}
+        sizerTags={sizerTags.length ? sizerTags : story.tags ?? ["Portfolio"]}
+      />
 
       <motion.div
         className="absolute z-10"
@@ -413,6 +524,10 @@ function StoriesSection({
     offset: ["start end", "end start"],
   });
 
+  /* Every label across every card — the pills all size to the longest of
+     these, so they stay a constant, identical width. */
+  const allTags = padStories(slides, 6).flatMap((s) => s.tags ?? []);
+
   const lineProgress = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
   const smoothLineProgress = useSpring(lineProgress, { stiffness: 40, damping: 25 });
   const vRuleScale = smoothLineProgress;
@@ -473,7 +588,7 @@ function StoriesSection({
         >
           <div className="grid w-full grid-cols-3 max-md:!grid-cols-1 max-md:!gap-[24px]" style={{ gap: STORY_GAP }}>
             {padStories(slides, 6).map((story, i) => (
-              <StoryCard key={`${story.name}-${i}`} story={story} />
+              <StoryCard key={`${story.name}-${i}`} story={story} sizerTags={allTags} />
             ))}
           </div>
 

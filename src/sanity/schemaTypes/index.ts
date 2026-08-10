@@ -1,6 +1,7 @@
 import type { SchemaTypeDefinition } from "sanity";
 import { aboutTheFund } from "./aboutTheFund";
 import { backedBefore } from "./backedBefore";
+import { backedEarly } from "./backedEarly";
 import { company } from "./company";
 import { footer } from "./footer";
 import { foundersTestimonial } from "./foundersTestimonial";
@@ -41,6 +42,7 @@ export const schemaTypes: SchemaTypeDefinition[] = [
   indicornSpotlight,
   foundersTestimonial,
   backedBefore,
+  backedEarly,
   whatWeBelieve,
   whatFoundersGet,
   /* Titan Seed page */
