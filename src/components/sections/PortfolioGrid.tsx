@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLenis } from "lenis/react";
 
 /** URL slug from brand name: lowercase, alphanumerics joined by hyphens. */
 function companySlug(name: string): string {
@@ -43,9 +44,20 @@ interface APIResponse {
   filters: Filters;
 }
 
+/** Anchor the "Back" link on /portfolio/[slug] targets. */
+export const PORTFOLIO_GRID_ANCHOR = "portfolio-grid";
+
+/**
+ * Cached for the lifetime of the tab. Returning from a company detail page
+ * would otherwise re-run the fetch and flash the skeleton — which also breaks
+ * the anchor scroll below, since the skeleton and the real grid have
+ * different heights.
+ */
+let cachedResponse: APIResponse | null = null;
+
 const FILTER_CONFIG = [
-  { key: "investmentStage" as const, label: "Stage" },
   { key: "sector" as const, label: "Sector" },
+  { key: "investmentStage" as const, label: "Stage" },
   { key: "status" as const, label: "Status" },
 ];
 
@@ -328,9 +340,10 @@ function SkeletonGrid() {
    ═══════════════════════════════════════════════════════ */
 
 export default function PortfolioGrid() {
-  const [data, setData] = useState<APIResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<APIResponse | null>(cachedResponse);
+  const [loading, setLoading] = useState(!cachedResponse);
   const [error, setError] = useState<string | null>(null);
+  const lenis = useLenis();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<Record<FilterKey, Set<string>>>({
@@ -343,12 +356,14 @@ export default function PortfolioGrid() {
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    if (cachedResponse) return;
     let cancelled = false;
     async function fetchData() {
       try {
         const res = await fetch("/api/portfolio");
         if (!res.ok) throw new Error("Failed to load portfolio data");
         const json: APIResponse = await res.json();
+        cachedResponse = json;
         if (!cancelled) {
           setData(json);
           setLoading(false);
@@ -365,6 +380,22 @@ export default function PortfolioGrid() {
       cancelled = true;
     };
   }, []);
+
+  /* Land on the grid when arriving via /portfolio#portfolio-grid (the "Back"
+     link on a company detail page). Waits for the grid to render so we measure
+     its real offset, not the skeleton's. */
+  const didAnchorScroll = useRef(false);
+  useEffect(() => {
+    if (loading || didAnchorScroll.current) return;
+    if (window.location.hash !== `#${PORTFOLIO_GRID_ANCHOR}`) return;
+    const el = sectionRef.current;
+    if (!el) return;
+    didAnchorScroll.current = true;
+    requestAnimationFrame(() => {
+      if (lenis) lenis.scrollTo(el, { immediate: true });
+      else el.scrollIntoView();
+    });
+  }, [loading, lenis]);
 
   const toggleFilter = useCallback((key: FilterKey, value: string) => {
     setActiveFilters((prev) => {
@@ -443,6 +474,7 @@ export default function PortfolioGrid() {
   return (
     <section
       ref={sectionRef}
+      id="portfolio-grid"
       // REMOVED overflow-hidden, ADDED overflow-x-clip if needed for animations
       className="relative flex w-full flex-col items-center overflow-x-clip bg-[#FBF7F0]"
       style={{
@@ -455,8 +487,11 @@ export default function PortfolioGrid() {
       <div className="mx-auto flex w-full max-w-[1440px] flex-col lg:flex-row items-start relative">
         
         {/* ── LEFT SIDEBAR FILTERS ── */}
-        <div 
-          className="w-full lg:w-[280px] shrink-0 flex flex-col items-start lg:sticky lg:top-[calc(var(--nav-height,80px)+20px)] lg:max-h-[calc(100vh-100px)] lg:overflow-y-auto"
+        {/* data-lenis-prevent: Lenis runs in `root` mode and would otherwise
+            swallow wheel events here and scroll the page instead of this list. */}
+        <div
+          data-lenis-prevent
+          className="w-full lg:w-[280px] shrink-0 flex flex-col items-start lg:sticky lg:top-[calc(var(--nav-height,80px)+20px)] lg:max-h-[calc(100vh-100px)] lg:overflow-y-auto [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-transparent [&:hover::-webkit-scrollbar-thumb]:bg-black/25 [scrollbar-width:thin] [scrollbar-color:transparent_transparent] [&:hover]:[scrollbar-color:rgba(0,0,0,0.25)_transparent]"
           style={{ paddingRight: "clamp(12px, 1.5vw, 20px)" }}
         >
           <div className="flex w-full items-center justify-between pb-4 border-b border-[#000]/10">

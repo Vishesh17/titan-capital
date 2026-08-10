@@ -1,7 +1,8 @@
 "use client";
 
-import { ReactLenis } from "lenis/react";
-import { useEffect, type ReactNode } from "react";
+import { ReactLenis, useLenis } from "lenis/react";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, type ReactNode } from "react";
 import { markAppMounted } from "@/lib/appNavState";
 
 /**
@@ -16,15 +17,32 @@ import { markAppMounted } from "@/lib/appNavState";
  * madeinmay.studio-ish weight the design leans on — not too glassy, not
  * jittery either. Bump higher for more inertia, lower for tighter feel.
  */
+/**
+ * Next.js only restores scroll on browser back/forward, so a <Link> that lands
+ * on a new route keeps the previous offset. Reset to the top on every route
+ * change — unless the URL carries a hash, in which case the destination page
+ * owns the scroll (it may need to wait for async content before measuring).
+ */
+function ScrollToTopOnNav({ children }: { children: ReactNode }) {
+  const lenis = useLenis();
+  const pathname = usePathname();
+  const prevPathname = useRef(pathname);
+
+  useEffect(() => {
+    if (pathname === prevPathname.current) return;
+    prevPathname.current = pathname;
+    if (window.location.hash) return;
+    lenis?.scrollTo(0, { immediate: true });
+  }, [pathname, lenis]);
+
+  return <>{children}</>;
+}
+
 export default function LenisProvider({
   children,
 }: {
   children: ReactNode;
 }) {
-  // Runs once on the app's first client render and never again (this
-  // provider is mounted once at the root and persists across soft navs).
-  // After this, hasAppMounted() reports true for any later route change —
-  // letting the homepage hero know it was reached via client navigation.
   useEffect(() => {
     markAppMounted();
   }, []);
@@ -35,12 +53,10 @@ export default function LenisProvider({
       options={{
         duration: 1.2,
         smoothWheel: true,
-        /* Cubic-bezier equivalent to the site's global EASE
-           [0.22, 1, 0.36, 1] — snappy start, smooth deceleration. */
         easing: (t: number) => 1 - Math.pow(1 - t, 3),
       }}
     >
-      {children}
+      <ScrollToTopOnNav>{children}</ScrollToTopOnNav>
     </ReactLenis>
   );
 }

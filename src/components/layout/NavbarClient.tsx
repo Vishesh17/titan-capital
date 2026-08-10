@@ -150,9 +150,11 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
   // Match the route itself AND any sub-page (e.g. /ourTeam/<slug> team detail
   // pages, which also render on a light background). Without the prefix check
   // the nav stays white-on-white and disappears on those detail pages.
-  const isInvertedRoute = [...INVERTED_HERO_ROUTES].some(
-    (r) => pathname === r || pathname.startsWith(`${r}/`)
-  );
+  const isInvertedRoute =
+    [...INVERTED_HERO_ROUTES].some(
+      (r) => pathname === r || pathname.startsWith(`${r}/`)
+    ) ||
+    (pathname.startsWith("/portfolio/") && pathname !== "/portfolio");
   const inverted = isInvertedRoute && !scrolled;
 
   const lenis = useLenis();

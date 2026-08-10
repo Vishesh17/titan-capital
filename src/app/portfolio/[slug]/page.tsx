@@ -510,7 +510,7 @@ function FoundingTeam({ founders }: { founders: Founder[] }) {
         style={{ gap: "clamp(28px, min(3.88vw, 5.7vh), 56px)" }}
       >
         <h2
-          className="m-0 font-['Libre_Baskerville',_serif] font-semibold text-[#001A4D]"
+          className="m-0 font-['Poppins',_sans-serif] font-bold text-black"
           style={{
             fontSize: "clamp(28px, min(3.33vw, 4.89vh), 48px)",
             lineHeight: "120%",
@@ -598,7 +598,7 @@ function NewsBlogs({ items, brandName }: { items: NewsBlog[]; brandName: string 
         style={{ gap: "clamp(28px, min(3.88vw, 5.7vh), 56px)" }}
       >
         <h2
-          className="m-0 font-['Libre_Baskerville',_serif] font-semibold text-[#001A4D]"
+          className="m-0 font-['Poppins',_sans-serif] font-bold text-black"
           style={{
             fontSize: "clamp(28px, min(3.33vw, 4.89vh), 48px)",
             lineHeight: "120%",
@@ -713,7 +713,7 @@ export default async function PortfolioCompanyPage({
           padding to clear it on every breakpoint.
           ════════════════════════════════════════════════ */}
       <section
-        className="relative flex w-full flex-col bg-[#FBF7F0]"
+        className="relative flex w-full flex-col bg-white"
         style={{
           // Mobile navbar is ~65px, desktop ~80px. Top padding must clear
           // the navbar on every viewport without leaving dead space on phones.
@@ -726,28 +726,16 @@ export default async function PortfolioCompanyPage({
         <div className="mx-auto flex w-full max-w-[1440px] flex-col">
           {/* ── Row 1: Back + Breadcrumb ── */}
           <div className="flex w-full flex-row items-center justify-between">
-            {/* Back button */}
+            {/* Returns to the company grid rather than the top of /portfolio.
+                scroll={false} keeps Next from jumping to the anchor before the
+                grid has loaded — PortfolioGrid performs the scroll itself. */}
             <Link
-              href="/portfolio"
+              href="/portfolio#portfolio-grid"
+              scroll={false}
               aria-label="Back to portfolio"
               className="group inline-flex items-center transition-transform duration-300 hover:scale-105 hover:opacity-80"
               style={{ gap: "clamp(8px, min(0.8vw, 1.2vh), 14px)" }}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 57 57"
-                fill="none"
-                style={{
-                  width: "clamp(38px, min(3.96vw, 5.8vh), 57px)",
-                  height: "clamp(38px, min(3.96vw, 5.8vh), 57px)",
-                  aspectRatio: "1 / 1",
-                }}
-              >
-                <path
-                  d="M5.34375 28.5C5.34375 41.2883 15.7117 51.6562 28.5 51.6562C41.2883 51.6562 51.6562 41.2883 51.6562 28.5C51.6562 15.7117 41.2883 5.34375 28.5 5.34375C15.7117 5.34375 5.34375 15.7117 5.34375 28.5ZM29.0177 18.3291C29.1838 18.4938 29.3158 18.6897 29.4062 18.9055C29.4966 19.1212 29.5436 19.3527 29.5445 19.5867C29.5455 19.8206 29.5003 20.0525 29.4116 20.269C29.3229 20.4854 29.1925 20.6824 29.0277 20.8484L23.203 26.7188H38.0742C38.5466 26.7188 38.9997 26.9064 39.3338 27.2405C39.6678 27.5745 39.8555 28.0276 39.8555 28.5C39.8555 28.9724 39.6678 29.4255 39.3338 29.7595C38.9997 30.0936 38.5466 30.2812 38.0742 30.2812H23.203L29.0277 36.1516C29.1925 36.3178 29.3229 36.5149 29.4115 36.7315C29.5001 36.9481 29.5452 37.1801 29.5441 37.4141C29.5431 37.6482 29.496 37.8797 29.4055 38.0956C29.3149 38.3114 29.1828 38.5073 29.0166 38.6721C28.8503 38.8368 28.6533 38.9672 28.4367 39.0558C28.22 39.1445 27.9881 39.1895 27.754 39.1885C27.52 39.1875 27.2884 39.1403 27.0726 39.0498C26.8568 38.9593 26.6609 38.8271 26.4961 38.6609L17.6578 29.7547C17.3267 29.421 17.1409 28.97 17.1409 28.5C17.1409 28.03 17.3267 27.579 17.6578 27.2453L26.4961 18.3391C26.6609 18.1726 26.8569 18.0403 27.0729 17.9497C27.2889 17.8591 27.5206 17.812 27.7548 17.8111C27.989 17.8102 28.2211 17.8554 28.4378 17.9443C28.6545 18.0332 28.8516 18.1639 29.0177 18.3291Z"
-                  fill="black"
-                />
-              </svg>
               <span
                 className="font-['Poppins',_sans-serif] font-light text-black"
                 style={{
@@ -759,7 +747,6 @@ export default async function PortfolioCompanyPage({
               </span>
             </Link>
 
-            {/* Breadcrumb — Portfolio (light) / slug (medium) */}
             <p
               className="m-0 font-['Poppins',_sans-serif] text-black"
               style={{
@@ -774,7 +761,7 @@ export default async function PortfolioCompanyPage({
                 Portfolio
               </Link>
               <span className="font-light">/</span>
-              <span className="font-medium">{company.slug}</span>
+              <span className="font-medium">{company.brandName}</span>
             </p>
           </div>
 
@@ -816,7 +803,7 @@ export default async function PortfolioCompanyPage({
         }}
       >
         <p
-          className="m-0 text-center font-['Libre_Baskerville',_serif] font-medium text-white"
+          className="m-0 text-center font-['Poppins',_sans-serif] font-medium text-white"
           style={{
             maxWidth: "clamp(260px, min(52.08vw, 76.35vh), 750px)",
             fontSize: "clamp(13px, min(1.67vw, 2.44vh), 24px)",
@@ -854,7 +841,7 @@ export default async function PortfolioCompanyPage({
             style={{ flex: "1 1 0", minWidth: 0 }}
           >
             <h2
-              className="m-0 font-['Libre_Baskerville',_serif] font-semibold text-[#001A4D] lg:whitespace-nowrap"
+              className="m-0 font-['Poppins',_sans-serif] font-bold text-black lg:whitespace-nowrap"
               style={{
                 fontSize: "clamp(28px, min(3.33vw, 4.89vh), 48px)",
                 lineHeight: "120%",
