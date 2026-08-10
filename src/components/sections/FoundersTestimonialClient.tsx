@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useInView, useMotionValue, useAnimationFrame, cubicBezier } from "framer-motion";
+import { CTA_BUTTON_STYLE, CTA_BUTTON_MOBILE_CLASS } from "@/styles/ctaButton";
 import {
   Noto_Sans_Devanagari,
   Noto_Sans_Kannada,
@@ -690,11 +691,11 @@ function CursorFillButtonTestimonial({ href, label }: { href: string; label: str
       href={href}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="relative flex shrink-0 items-center justify-center overflow-hidden font-['Poppins',_sans-serif] font-medium leading-[107%] transition-colors duration-300 max-md:!w-[clamp(160px,45vw,220px)] max-md:!h-[clamp(44px,6dvh,50px)] max-md:!text-[clamp(14px,3.5vw,16px)] max-md:!rounded-[25px] max-md:!px-0"
+      className={`relative flex shrink-0 items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] font-medium leading-[107%] transition-colors duration-300 ${CTA_BUTTON_MOBILE_CLASS}`}
       style={{
+        ...CTA_BUTTON_STYLE,
         background: hovered ? "#FFF" : "#001A4D",
-        height: "min(4.4vw, 6.8vh)", padding: "0 min(3.24vw, 5.01vh)", fontSize: "min(1.5vw, 2.32vh)",
-        borderRadius: "min(2.2vw, 3.4vh)", color: hovered ? "#001A4D" : "#FFF",
+        color: hovered ? "#001A4D" : "#FFF",
       }}
     >
       <span

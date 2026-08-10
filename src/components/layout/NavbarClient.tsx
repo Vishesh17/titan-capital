@@ -12,6 +12,7 @@ import {
   cubicBezier,
 } from "framer-motion";
 import { useLenis } from "lenis/react";
+import { CTA_BUTTON_STYLE, CTA_BUTTON_MOBILE_CLASS } from "@/styles/ctaButton";
 
 /** Site-wide easing — slow settle, never snappy. */
 const EASE = cubicBezier(0.22, 1, 0.36, 1);
@@ -61,11 +62,9 @@ function NavCursorFillButton({
       href={href}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="relative flex shrink-0 items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] text-[min(1.16vw,1.79vh)] font-normal transition-colors duration-300 max-md:!w-[clamp(130px,35vw,160px)] max-md:!h-[clamp(38px,6dvh,44px)] max-md:!text-[clamp(12px,3.5vw,14px)]"
+      className={`relative flex shrink-0 items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] font-normal transition-colors duration-300 ${CTA_BUTTON_MOBILE_CLASS}`}
       style={{
-        width: "min(12.15vw, 18.8vh)",
-        height: "min(3.36vw, 5.19vh)",
-        borderRadius: "53px",
+        ...CTA_BUTTON_STYLE,
         border: `1px solid ${borderColor}`,
         color: hovered ? hoverColor : baseColor,
       }}
