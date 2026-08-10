@@ -4,8 +4,17 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useScroll, useMotionValueEvent } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useScroll,
+  useMotionValueEvent,
+  cubicBezier,
+} from "framer-motion";
 import { useLenis } from "lenis/react";
+
+/** Site-wide easing — slow settle, never snappy. */
+const EASE = cubicBezier(0.22, 1, 0.36, 1);
 
 /* Routes whose hero renders on a LIGHT background — the navbar
    flips to dark-on-light while the user is above the scroll
@@ -72,6 +81,57 @@ function NavCursorFillButton({
       />
       <span className="relative z-10">{label}</span>
     </Link>
+  );
+}
+
+/**
+ * The glossy hover treatment for menu rows. Same visual language at both
+ * levels, but deliberately NOT identical — a category and its sub-item sit
+ * directly adjacent, so matching them exactly makes the pair read as one merged
+ * block. The hierarchy is carried by the accent:
+ *
+ *   category — a full-height 3px bar owning the panel edge, bright, with a
+ *              blue bloom, plus a hairline along the top edge
+ *   sub-item — a short centred 2px tick, indented one level in to where the
+ *              category's text starts, dimmer and with no top hairline
+ *
+ * The wash follows the same split: strong and far-reaching for a category,
+ * faint and short for a sub-item. `active` pins the state on.
+ */
+function RowSheen({ active = false, sub = false }: { active?: boolean; sub?: boolean }) {
+  const fade = active ? "opacity-100" : "opacity-0 group-hover:opacity-100";
+  const wipe = active ? "scale-y-100" : "scale-y-0 group-hover:scale-y-100";
+
+  if (sub) {
+    return (
+      <>
+        <span
+          aria-hidden
+          className={`pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0.02)_26%,rgba(255,255,255,0)_58%)] transition-opacity duration-500 ease-out ${fade}`}
+        />
+        <span
+          aria-hidden
+          className={`pointer-events-none absolute left-[21px] top-1/2 h-[44%] w-[2px] -translate-y-1/2 rounded-full bg-[#4D8AFF]/60 transition-transform duration-500 ease-out max-md:!left-[clamp(16px,4vw,24px)] lg:left-[33px] ${wipe}`}
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <span
+        aria-hidden
+        className={`pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.13)_0%,rgba(255,255,255,0.045)_30%,rgba(255,255,255,0)_72%)] transition-opacity duration-500 ease-out ${fade}`}
+      />
+      <span
+        aria-hidden
+        className={`pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-white/30 via-white/10 to-transparent transition-opacity duration-500 ease-out ${fade}`}
+      />
+      <span
+        aria-hidden
+        className={`pointer-events-none absolute left-0 top-0 h-full w-[3px] origin-top bg-gradient-to-b from-[#8FBBFF] via-[#4D8AFF] to-[#4D8AFF]/0 shadow-[0_0_14px_rgba(77,138,255,0.65)] transition-transform duration-500 ease-out ${wipe}`}
+      />
+    </>
   );
 }
 
@@ -235,11 +295,25 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
         />
 
         <div
-          className={`relative z-10 flex h-full w-full max-w-full flex-col shadow-2xl transition-transform duration-500 ease-in-out lg:w-auto ${
+          className={`relative z-10 flex h-full w-full max-w-full flex-col overflow-hidden border-r border-white/[0.11] bg-[#001640]/[0.75] shadow-[0_0_70px_rgba(0,0,0,0.58)] backdrop-blur-2xl backdrop-saturate-[1.45] backdrop-brightness-[0.7] transition-transform duration-500 ease-in-out lg:w-[480px] ${
             isMenuOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <div className="relative flex min-h-[70px] max-md:!min-h-[clamp(60px,10dvh,70px)] w-full shrink-0 items-center justify-between bg-[#001A4D] px-[24px] max-md:!px-[clamp(16px,4vw,24px)] lg:h-[var(--nav-height)] lg:px-[62px]">
+          {/* Gloss. A sheen off the top plus a specular hairline down the
+              trailing edge — that pairing is what reads as *glass* rather than
+              as a merely see-through panel. backdrop-brightness keeps the panel
+              from picking up the colour of whatever page is behind it, so the
+              menu looks the same over the dark hero and the white detail pages. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[46%] bg-gradient-to-b from-white/[0.12] via-white/[0.035] to-transparent"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 right-0 z-0 w-px bg-gradient-to-b from-white/[0.32] via-white/[0.08] to-transparent"
+          />
+
+          <div className="relative z-10 flex min-h-[70px] max-md:!min-h-[clamp(60px,10dvh,70px)] w-full shrink-0 items-center justify-between border-b border-white/[0.12] px-[24px] max-md:!px-[clamp(16px,4vw,24px)] lg:h-[var(--nav-height)] lg:px-[62px]">
             <button
               onClick={() => setIsMenuOpen(false)}
               className="relative z-10 cursor-pointer transition-opacity hover:opacity-70"
@@ -257,108 +331,136 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
                   alt="Titan Capital"
                   width={100}
                   height={32}
-                  className="h-[32px] w-[100px] object-cover brightness-0 invert max-md:!h-[clamp(24px,4dvh,30px)] max-md:!w-[clamp(74px,12vw,92px)]"
+                  className="h-[32px] w-[100px] object-contain brightness-0 invert max-md:!h-[clamp(24px,4dvh,30px)] max-md:!w-[clamp(74px,12vw,92px)]"
                 />
             </div>
 
+            {/* Always present now — the menu carries the brand itself, rather
+                than only appearing once a sub-panel was opened. */}
             <div className="hidden lg:block">
-              {activeSubMenu && (
-                <Image
-                  src="/images/logos/titancapitallogo.svg"
-                  alt="Titan Capital"
-                  width={127}
-                  height={42}
-                  className="h-[42px] w-[127px] object-cover brightness-0 invert"
-                />
-              )}
+              <Image
+                src="/images/logos/titancapitallogo.svg"
+                alt="Titan Capital"
+                width={127}
+                height={42}
+                className="h-[38px] w-[115px] object-contain brightness-0 invert"
+              />
             </div>
           </div>
 
-          <div className="flex flex-1 overflow-hidden bg-transparent">
-
-            <div className={`h-full shrink-0 flex-col overflow-y-auto bg-[#001A4D] pb-[98px] pt-[20px] max-md:!pb-[clamp(60px,10dvh,98px)] max-md:!pt-[clamp(16px,3dvh,24px)] w-full lg:w-[480px] ${
-                activeSubMenu ? "hidden lg:flex" : "flex"
-              }`}
-            >
-              {/* <div className="mb-[20px]">
-                <Link
-                  href="/"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="group flex w-full items-center border-l-[3px] border-transparent px-[21px] py-[8px] max-md:!px-[clamp(16px,4vw,24px)] max-md:!py-[clamp(8px,2dvh,12px)] transition-all duration-300 ease-out hover:border-l-[#4D8AFF] hover:bg-[#002868]/30 lg:px-[33px]"
-                >
-                  <span className="font-['Poppins',_sans-serif] text-[14px] max-md:!text-[clamp(13px,3.5vw,15px)] font-medium tracking-wide text-white/80 transition-all duration-300 group-hover:text-white">
-                    HOME
-                  </span>
-                </Link>
-              </div> */}
-
+          <div className="relative z-10 flex flex-1 overflow-hidden">
+            <div className="flex h-full w-full shrink-0 flex-col overflow-y-auto pb-[98px] pt-[20px] max-md:!pb-[clamp(60px,10dvh,98px)] max-md:!pt-[clamp(16px,3dvh,24px)]">
               <div className="flex w-full flex-col">
-                {sections.map((item) => (
-                  (item.subItems?.length ?? 0) > 0 ? (
-                    <button
-                      key={item.id}
-                      onClick={() => setActiveSubMenu(item.id === activeSubMenu ? null : item.id)}
-                      className={`group flex w-full cursor-pointer items-center justify-between border-l-[3px] px-[21px] py-[16px] max-md:!px-[clamp(16px,4vw,24px)] max-md:!py-[clamp(12px,3dvh,20px)] transition-all duration-300 ease-out lg:px-[33px] ${
-                        activeSubMenu === item.id
-                          ? "border-l-[#4D8AFF] bg-[#002868]"
-                          : "border-l-transparent hover:border-l-[#4D8AFF]/70 hover:bg-[#002868]/30"
-                      }`}
-                    >
-                      <span className={`font-['Poppins',_sans-serif] text-[22px] max-md:!text-[clamp(18px,6vw,24px)] font-medium leading-[150%] transition-all duration-300 lg:text-[28px] ${
-                        activeSubMenu === item.id ? "text-white" : "text-white/85 group-hover:text-white"
-                      }`}>
-                        {item.title}
-                      </span>
+                {sections.map((item, idx) => {
+                  const hasSub = (item.subItems?.length ?? 0) > 0;
+                  const isOpen = activeSubMenu === item.id;
 
-                      <svg
-                        className={`transition-transform duration-300 ease-out ${
-                          activeSubMenu === item.id ? "translate-x-[2px]" : "group-hover:translate-x-[3px]"
-                        }`}
-                        width="12" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                      >
-                        <path d="M9 18l6-6-6-6" />
-                      </svg>
-                    </button>
-                  ) : (
-                    <Link
-                      key={item.id}
-                      href={item.directUrl || `/${item.id}`}
-                      onClick={() => setIsMenuOpen(false)}
-                      className="group flex w-full cursor-pointer items-center justify-between border-l-[3px] border-transparent px-[21px] py-[16px] max-md:!px-[clamp(16px,4vw,24px)] max-md:!py-[clamp(12px,3dvh,20px)] transition-all duration-300 ease-out hover:border-l-[#4D8AFF]/70 hover:bg-[#002868]/30 lg:px-[33px]"
-                    >
-                      <span className="font-['Poppins',_sans-serif] text-[22px] max-md:!text-[clamp(18px,6vw,24px)] font-medium leading-[150%] text-white/85 transition-all duration-300 group-hover:text-white lg:text-[28px]">
-                        {item.title}
-                      </span>
-                    </Link>
-                  )
-                ))}
+                  return (
+                    <div key={item.id} className="flex w-full flex-col">
+                      {hasSub ? (
+                        <button
+                          onClick={() => setActiveSubMenu(isOpen ? null : item.id)}
+                          aria-expanded={isOpen}
+                          className="group relative flex w-full cursor-pointer items-center justify-between overflow-hidden px-[21px] py-[16px] max-md:!px-[clamp(16px,4vw,24px)] max-md:!py-[clamp(12px,3dvh,20px)] lg:px-[33px]"
+                        >
+                          <RowSheen active={isOpen} />
+
+                          <span
+                            className={`relative z-10 font-['Poppins',_sans-serif] text-[15px] max-md:!text-[clamp(13px,4.2vw,17px)] font-medium leading-[150%] transition-all duration-500 ease-out group-hover:translate-x-[3px] lg:text-[20px] ${
+                              isOpen ? "text-white" : "text-white/85 group-hover:text-white"
+                            }`}
+                          >
+                            {item.title}
+                          </span>
+
+                          {/* Points right when collapsed, down when open. */}
+                          <motion.svg
+                            animate={{ rotate: isOpen ? 90 : 0 }}
+                            transition={{ duration: 0.45, ease: EASE }}
+                            width="12"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className={`relative z-10 transition-opacity duration-500 ease-out ${
+                              isOpen ? "opacity-100" : "opacity-70 group-hover:opacity-100"
+                            }`}
+                          >
+                            <path d="M9 18l6-6-6-6" />
+                          </motion.svg>
+                        </button>
+                      ) : (
+                        <Link
+                          href={item.directUrl || `/${item.id}`}
+                          onClick={() => setIsMenuOpen(false)}
+                          className="group relative flex w-full cursor-pointer items-center justify-between overflow-hidden px-[21px] py-[16px] max-md:!px-[clamp(16px,4vw,24px)] max-md:!py-[clamp(12px,3dvh,20px)] lg:px-[33px]"
+                        >
+                          <RowSheen />
+
+                          <span className="relative z-10 font-['Poppins',_sans-serif] text-[15px] max-md:!text-[clamp(13px,4.2vw,17px)] font-medium leading-[150%] text-white/85 transition-all duration-500 ease-out group-hover:translate-x-[3px] group-hover:text-white lg:text-[20px]">
+                            {item.title}
+                          </span>
+                        </Link>
+                      )}
+
+                      {/* Sub-items drop down in place — the old second panel is gone. */}
+                      {hasSub && (
+                        <AnimatePresence initial={false}>
+                          {isOpen && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.6, ease: EASE }}
+                              className="overflow-hidden"
+                            >
+                              {/* Rows run full-bleed (indent lives in their own
+                                  padding) so each accent bar lands on the same
+                                  x as the category bars above. */}
+                              <div className="flex flex-col pb-[10px] pt-[2px]">
+                                {item.subItems?.map((subItem, subIdx) => (
+                                  <Link
+                                    key={subIdx}
+                                    href={
+                                      subItem.url ||
+                                      `/${subItem.label.toLowerCase().replace(/\s+/g, "-")}`
+                                    }
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="group relative flex w-full items-center overflow-hidden py-[10px] pl-[42px] pr-[21px] max-md:!py-[clamp(10px,2.5dvh,14px)] max-md:!pl-[clamp(34px,9vw,46px)] max-md:!pr-[clamp(16px,4vw,24px)] lg:pl-[54px] lg:pr-[33px]"
+                                  >
+                                    <RowSheen sub />
+
+                                    <span className="relative z-10 font-['Poppins',_sans-serif] text-[18px] max-md:!text-[clamp(16px,5vw,20px)] font-normal leading-[150%] text-white/60 transition-all duration-500 ease-out group-hover:translate-x-[3px] group-hover:text-white/90 lg:text-[20px]">
+                                      {subItem.label}
+                                    </span>
+                                  </Link>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      )}
+
+                      {idx < sections.length - 1 && (
+                        <motion.div
+                          className="mx-[21px] h-px origin-left bg-white/[0.10] max-md:!mx-[clamp(16px,4vw,24px)] lg:mx-[33px]"
+                          initial={false}
+                          animate={{ scaleX: isMenuOpen ? 1 : 0 }}
+                          transition={{
+                            duration: 0.9,
+                            ease: EASE,
+                            delay: isMenuOpen ? 0.15 + idx * 0.07 : 0,
+                          }}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
-
-            <div
-              className={`h-full shrink-0 overflow-hidden bg-[#FBF7F0] transition-[width] duration-500 ease-in-out ${
-                activeSubMenu ? "w-full lg:w-[400px]" : "w-0"
-              }`}
-              aria-hidden={!activeSubMenu}
-            >
-              <div className="flex h-full w-full flex-col overflow-y-auto lg:w-[400px]">
-                <div className="flex flex-col items-stretch gap-[4px] px-[16px] pb-[40px] pt-[40px] max-md:!px-[clamp(16px,4vw,24px)] max-md:!pt-[clamp(24px,5dvh,40px)] lg:px-[28px] lg:pt-[60px]">
-                  {sections
-                    .find((m) => m.id === activeSubMenu)
-                    ?.subItems?.map((subItem, idx) => (
-                      <Link
-                        key={idx}
-                        href={subItem.url || `/${subItem.label.toLowerCase().replace(/\s+/g, "-")}`}
-                        onClick={() => setIsMenuOpen(false)}
-                        className="group flex items-center rounded-[10px] px-[12px] py-[12px] max-md:!px-[clamp(12px,3vw,16px)] max-md:!py-[clamp(10px,2.5dvh,14px)] font-['Poppins',_sans-serif] text-[18px] max-md:!text-[clamp(16px,5vw,20px)] font-normal leading-[150%] text-[#0E0E0E]/75 transition-all duration-300 ease-out hover:bg-[#001A4D]/[0.06] hover:text-[#001A4D] hover:translate-x-[4px] lg:text-[20px]"
-                      >
-                        {subItem.label}
-                      </Link>
-                    ))}
-                </div>
-              </div>
-            </div>
-
           </div>
         </div>
       </div>
