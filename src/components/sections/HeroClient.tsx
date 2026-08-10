@@ -135,6 +135,16 @@ const FINAL_WORD = "Future";
  */
 const FINAL_WORD_DELAY = { desktop: 2.7, mobile: 1.2 } as const;
 
+/**
+ * Entrance for the hero's tail — description and CTAs rise together from below
+ * once the headline has landed. Shared so the two stay locked in step.
+ */
+const TAIL_RISE_PX = 48;
+const TAIL_TRANSITION = {
+  duration: 1.1,
+  ease: cubicBezier(0.22, 1, 0.36, 1),
+};
+
 function computeDims(w: number, h: number) {
   const isMobile = w < 768;
   const cardW = isMobile ? w * 0.20 : Math.min(0.072 * w, 0.115 * h);
@@ -525,15 +535,23 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
           </motion.span>
         </div>
 
-        <motion.p
-          style={{ maxWidth: "min(52vw, 900px)", ...HERO_BODY_STYLE }}
-          className={`pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 text-center text-white/90 max-md:!hidden ${HERO_BODY_CLASS}`}
-          initial={false}
-          animate={{ opacity: subtitleReady ? 1 : 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        >
-          {subtitle}
-        </motion.p>
+        {/* Positioning stays on this plain wrapper. Framer writes an inline
+            `transform` for `y`, which would otherwise clobber the Tailwind
+            `-translate-x-1/2` that centres this and knock it off-axis. */}
+        <div className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 max-md:!hidden">
+          <motion.p
+            style={{ maxWidth: "min(52vw, 900px)", ...HERO_BODY_STYLE }}
+            className={`m-0 text-center text-white/90 ${HERO_BODY_CLASS}`}
+            initial={false}
+            animate={{
+              opacity: subtitleReady ? 1 : 0,
+              y: subtitleReady ? 0 : TAIL_RISE_PX,
+            }}
+            transition={TAIL_TRANSITION}
+          >
+            {subtitle}
+          </motion.p>
+        </div>
 
         <AnimatePresence>
           {ready && stage === "slideshow" && (
@@ -656,11 +674,18 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
               </span>
             </h1>
 
+            {/* Same split as the description above: this wrapper owns the
+                positioning (including `-translate-x-1/2`), the motion child
+                owns the transform. */}
+            <div className="absolute left-1/2 top-full -translate-x-1/2 mt-[min(4.63vw,7.16vh)] max-md:!static max-md:!translate-x-0 max-md:!mt-[clamp(32px,6dvh,52px)] max-md:!w-full">
             <motion.div
-              className="absolute left-1/2 top-full flex -translate-x-1/2 flex-col items-center mt-[min(4.63vw,7.16vh)] max-md:!static max-md:!translate-x-0 max-md:!mt-[clamp(32px,6dvh,52px)] max-md:!items-center max-md:!w-full"
-              initial={{ opacity: 0, y: 12 }}
-              animate={uiReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              className="flex flex-col items-center"
+              initial={false}
+              animate={{
+                opacity: uiReady ? 1 : 0,
+                y: uiReady ? 0 : TAIL_RISE_PX,
+              }}
+              transition={TAIL_TRANSITION}
             >
               <div
                 className="pointer-events-auto flex items-center justify-center gap-[min(2.31vw,3.58vh)] max-md:!gap-[clamp(12px,4vw,24px)]"
@@ -684,6 +709,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 {subtitle}
               </motion.p>
             </motion.div>
+            </div>
 
           </div>
         </motion.div>

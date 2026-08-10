@@ -116,7 +116,7 @@ const FALLBACK_ROWS: HowWeShowUpRow[] = [
     shortHeading: "Global Founder Network",
     shortDesc:
       "Access to a 15-year network; 650+ founders, corporate partners, domain experts",
-    longHeading: "The Network is the Moat.",
+    longHeading: "The Network is the Moat",
     longDesc:
       "The Titan network represents 15 years of cultivated relationships, trust, and institutional knowledge across different sectors. Being part of the Titan portfolio gives you access to that collective intelligence.",
     valueTitle: "Strategic Value",
@@ -130,8 +130,8 @@ const FALLBACK_ROWS: HowWeShowUpRow[] = [
     title: "Founder's Playbook",
     shortHeading: "Operational Rigor at Scale",
     shortDesc:
-      "Frameworks drawn from operators who've scaled companies to IPO.",
-    longHeading: "Institutional-Grade Frameworks, Founder-Speed Execution.",
+      "Frameworks drawn from operators who have scaled companies to IPO",
+    longHeading: "Institutional-Grade Frameworks, Founder-Speed Execution",
     longDesc:
       "We draw on the collective experience of our team and 650+ portfolio founders to shorten the learning curve, sharing the frameworks that have already taken companies from inception to public markets.",
     valueTitle: "Strategic Value",
@@ -146,7 +146,7 @@ const FALLBACK_ROWS: HowWeShowUpRow[] = [
     shortHeading: "Fundraising Navigation",
     shortDesc:
       "End-to-end fundraising support from targeting to close",
-    longHeading: "Support Across Every Round.",
+    longHeading: "Support Across Every Round",
     longDesc:
       "Raising capital requires more than access; it takes the right positioning. Our team helps you walk into every institutional conversation prepared.",
     valueTitle: "Strategic Value",
@@ -160,8 +160,8 @@ const FALLBACK_ROWS: HowWeShowUpRow[] = [
     title: "Talent & Hiring",
     shortHeading: "High-Signal Talent Acquisition",
     shortDesc:
-      "Warm introductions to 20,000+ vetted professionals, skipping the traditional funnel.",
-    longHeading: "Talent Is the Lever.",
+      "Warm introductions to 20,000+ vetted professionals, skipping the traditional funnel",
+    longHeading: "Talent Is the Lever",
     longDesc:
       "Exceptional talent is one of the hardest things to find at speed. We treat hiring as seriously as everything else we do for a portfolio company.",
     valueTitle: "Strategic Value",
@@ -173,12 +173,12 @@ const FALLBACK_ROWS: HowWeShowUpRow[] = [
   },
   {
     title: "Firefighting",
-    shortHeading: "Crisis Counsel:",
+    shortHeading: "Crisis Counsel",
     shortDesc:
       "Objective counsel for the hardest moments",
-    longHeading: "Present in the Hard Moments.",
+    longHeading: "Present in the Hard Moments",
     longDesc:
-      "Real partnership shows up most in the tough moments. We've been through enough of them to offer steady, objective counsel when the stakes are the highest.",
+      "Real partnership shows up most in the tough moments. We have been through enough of them to offer steady, objective counsel when the stakes are the highest.",
     valueTitle: "Strategic Value",
     valueBullets: [
       "Second Opinion: An outside perspective before sensitive board updates or high-stakes announcements.",
@@ -190,13 +190,13 @@ const FALLBACK_ROWS: HowWeShowUpRow[] = [
     title: "Follow-On-Capital",
     shortHeading: "Capital That Stays",
     shortDesc:
-      "High-conviction capital, doubled down on our best companies.",
-    longHeading: "Conviction Is Compounded.",
+      "High-conviction capital, doubled down on our best companies",
+    longHeading: "Conviction Is Compounded",
     longDesc:
-      "When a Titan-backed company is ready to raise more, we lead with conviction and follow with capital. Our follow-on rate is among the highest in Indian early-stage venture — a signal to future investors, and a promise to founders.",
+      "When a Titan-backed company breaks out, we back it further, from seed through early-growth, with the same conviction that got us in.",
     valueTitle: "Strategic Value",
     valueBullets: [
-      "Growth Commitment: Meaningful capital deployed at the moment a company is scaling fastest.",
+      "Growth Commitment: Meaningful capital deployed at the moment the company is scaling fastest.",
       "Efficiency: Streamlined processes that leverage existing diligence and relationship, so rounds move faster.",
       "Market Signal: A high-confidence endorsement to the market that initial investors continue to believe in the trajectory.",
     ],
