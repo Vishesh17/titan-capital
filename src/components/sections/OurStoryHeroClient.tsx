@@ -1,5 +1,12 @@
 "use client";
 
+import {
+  HERO_HEADING_LIGHT_CLASS,
+  HERO_HEADING_LIGHT_STYLE,
+  HERO_BODY_CLASS,
+  HERO_BODY_STYLE,
+} from "@/styles/heroTypography";
+
 /* ─────────────────────────────────────────────────────────
    Types — shared with the server wrapper (OurStoryHero.tsx).
    ───────────────────────────────────────────────────────── */
@@ -102,10 +109,9 @@ export default function OurStoryHeroClient({
       {/* ── HEADING + DESCRIPTION (centered, above the field) ── */}
       <div className="relative z-10 flex max-w-[760px] flex-col items-center text-center">
         <h1
-          className="m-0 font-['Poppins',_sans-serif] font-bold uppercase text-[#0E0E0E]"
+          className={`m-0 text-[#0E0E0E] ${HERO_HEADING_LIGHT_CLASS}`}
           style={{
-            fontSize: "clamp(44px, min(6.3vw, 9.7vh), 112px)",
-            lineHeight: "132%",
+            ...HERO_HEADING_LIGHT_STYLE,
             opacity: 0,
             animation: "ourstory-rise 0.8s cubic-bezier(0.22,1,0.36,1) 0.1s forwards",
           }}
@@ -126,10 +132,10 @@ export default function OurStoryHeroClient({
         </h1>
 
         <p
-          className="m-0 font-['Poppins',_sans-serif] font-normal leading-[1.6] text-[#1a1a1a] max-md:!text-[14px]"
+          className={`m-0 text-[#1a1a1a] ${HERO_BODY_CLASS}`}
           style={{
+            ...HERO_BODY_STYLE,
             marginTop: "clamp(16px, min(2.5vw, 4vh), 36px)",
-            fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)",
             opacity: 0,
             animation: "ourstory-rise 0.8s cubic-bezier(0.22,1,0.36,1) 0.46s forwards",
           }}

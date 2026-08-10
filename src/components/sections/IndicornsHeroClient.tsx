@@ -3,6 +3,10 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
+import {
+  HERO_HEADING_LIGHT_STYLE,
+  HERO_BODY_STYLE,
+} from "@/styles/heroTypography";
 
 /**
  * /indicorns page hero — a folded "WHAT IS AN indicorns" card that
@@ -22,17 +26,15 @@ const CARD_BG_LIGHT = "#FBF7F0";
 const CARD_BG_MID = "#F3E6CF";
 const HIGHLIGHT_BG = "#D3E2FF";
 
-const HEADING_STYLE: React.CSSProperties = {
-  fontSize: "clamp(32px, min(6.66vw, 8.6vh), 96px)",
-  lineHeight: "140%",
-};
+const HEADING_STYLE: React.CSSProperties = HERO_HEADING_LIGHT_STYLE;
 
 const PANEL_PADDING =
   "clamp(28px, min(4vw, 5.5vh), 64px) clamp(24px, min(6vw, 8vh), 96px)";
 
+/** Hero body copy — the description and the bullets beneath it. */
 const BODY_TEXT_STYLE: React.CSSProperties = {
-  fontSize: "clamp(15px, min(1.55vw, 2.05vh), 22px)",
-  lineHeight: "165%",
+  ...HERO_BODY_STYLE,
+  lineHeight: "1.6",
 };
 
 /** Small helper — inline blue chip behind a phrase in the bullets. */

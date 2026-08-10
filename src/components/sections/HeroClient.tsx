@@ -17,6 +17,12 @@ import {
   type MotionValue,
   type TargetAndTransition,
 } from "framer-motion";
+import {
+  HERO_HEADING_DARK_CLASS,
+  HERO_HEADING_DARK_STYLE,
+  HERO_BODY_CLASS,
+  HERO_BODY_STYLE,
+} from "@/styles/heroTypography";
 
 /* ─────────────────────────────────────────────────────────
    Types
@@ -112,6 +118,22 @@ const SLOT_W = "min(23.1vw, 35.8vh)";
    and wasted bandwidth that the flicker needed. */
 const SLIDESHOW_SIZES = "(max-width: 768px) 20vw, 8vw";
 const HEADING_SIZES = "(max-width: 768px) 50vw, 24vw";
+
+/** Matches the `max-md:` breakpoint the hero's two layouts switch on. */
+const MOBILE_QUERY = "(max-width: 767px)";
+
+/** The last word of the hero headline, on both breakpoints. */
+const FINAL_WORD = "Future";
+
+/**
+ * Start delay (seconds) of the final heading word, per breakpoint. The two
+ * layouts run different sequences:
+ *   desktop — Backing 0 · Founders Building 0.5 · The 1.25 · Future 2.7
+ *   mobile  — Backing 0 · Founders 0.3 · Building 0.6 · The 0.9 · Future 1.2
+ * These feed the RevealLine `delay` props directly, so the sequence and the
+ * timings below can't drift apart.
+ */
+const FINAL_WORD_DELAY = { desktop: 2.7, mobile: 1.2 } as const;
 
 function computeDims(w: number, h: number) {
   const isMobile = w < 768;
@@ -424,7 +446,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   // progress change-listener, which registers in a later effect than the one
   // that snaps progress to 1 — so the set(1) event would be missed).
   const [headingReady, setHeadingReady] = useState(skipIntro);
-  const [uiReady, setUiReady] = useState(false);
+  const [uiReady, setUiReady] = useState(skipIntro);
   const [subtitleReady, setSubtitleReady] = useState(skipIntro);
   const [headingTick, setHeadingTick] = useState(0);
 
@@ -437,11 +459,23 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
   useEffect(() => {
     if (!headingReady) return;
-    setUiReady(true);
+
+    // The navbar comes back as soon as the heading starts — it's chrome, and
+    // holding it until the end of the sequence just looks broken.
     document.body.classList.remove("hero-hide-nav");
-    const t = setTimeout(() => setSubtitleReady(true), 2700);
+
+    // Soft-nav skip: the intro never played, so there's nothing to wait behind.
+    if (skipIntro) return;
+
+    const isMobile = window.matchMedia(MOBILE_QUERY).matches;
+
+    // Description and CTAs enter together, only once "Future" has fully landed.
+    const t = setTimeout(() => {
+      setUiReady(true);
+      setSubtitleReady(true);
+    }, heroTailDelayMs(isMobile));
     return () => clearTimeout(t);
-  }, [headingReady]);
+  }, [headingReady, skipIntro]);
 
   useEffect(() => {
     const unsub = progress.on("change", (v) => {
@@ -492,8 +526,8 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
         </div>
 
         <motion.p
-          style={{ maxWidth: "min(52vw, 900px)" }}
-          className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 text-center font-['Poppins',_sans-serif] text-[min(1.62vw,2.51vh)] font-normal leading-[145%] text-white/90 max-md:!hidden"
+          style={{ maxWidth: "min(52vw, 900px)", ...HERO_BODY_STYLE }}
+          className={`pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 text-center text-white/90 max-md:!hidden ${HERO_BODY_CLASS}`}
           initial={false}
           animate={{ opacity: subtitleReady ? 1 : 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
@@ -576,8 +610,8 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
           <div className="relative flex flex-col items-center md:-translate-y-[8vh]">
             
             <h1
-              className="pointer-events-none m-0 hidden md:flex flex-col items-start text-left font-['Poppins',_sans-serif] font-black uppercase leading-[86%] text-white"
-              style={{ fontSize: "min(9.88vw, 15.2vh)", gap: "min(0.2vw, 0.4vh)" }}
+              className={`pointer-events-none m-0 hidden md:flex flex-col items-start text-left text-white ${HERO_HEADING_DARK_CLASS}`}
+              style={{ ...HERO_HEADING_DARK_STYLE, gap: "min(0.2vw, 0.4vh)" }}
             >
               <RevealLine show={headingReady} delay={0}>Backing</RevealLine>
               <RevealLine show={headingReady} delay={0.5}>Founders Building</RevealLine>
@@ -597,7 +631,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 >
                   <HeadingPhoto founders={allFounders} activeIndex={headingTick} show={headingReady} enterDelay={2.1} />
                 </span>
-                <RevealLine show={headingReady} delay={2.7}>Future</RevealLine>
+                <RevealLine show={headingReady} delay={FINAL_WORD_DELAY.desktop}>{FINAL_WORD}</RevealLine>
               </span>
             </h1>
 
@@ -610,7 +644,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
               <RevealLine show={headingReady} delay={0.6}>Building</RevealLine>
               <span className="inline-flex gap-[0.3em]">
                 <RevealLine show={headingReady} delay={0.9}>The</RevealLine>
-                <RevealLine show={headingReady} delay={1.2}>Future</RevealLine>
+                <RevealLine show={headingReady} delay={FINAL_WORD_DELAY.mobile}>{FINAL_WORD}</RevealLine>
               </span>
 
               <span
@@ -780,6 +814,27 @@ function HeadingPhoto({
 }
 
 const CHAR_STAGGER = 0.025;
+/** Per-character flip duration inside RevealLine. */
+const REVEAL_DURATION = 0.7;
+
+/**
+ * When the hero's final word has *finished* revealing, in ms after
+ * `headingReady` — the moment the description and CTAs are allowed in.
+ *
+ * RevealLine animates each character on its own timeline, so the word is only
+ * done once its LAST character lands:
+ *
+ *     start + (chars - 1) * CHAR_STAGGER + REVEAL_DURATION
+ *
+ * Deriving it here rather than hard-coding a number is the whole point: tweak
+ * the stagger, the duration, or the word itself and this stays correct.
+ */
+function heroTailDelayMs(isMobile: boolean): number {
+  const start = isMobile ? FINAL_WORD_DELAY.mobile : FINAL_WORD_DELAY.desktop;
+  const finish =
+    start + (FINAL_WORD.length - 1) * CHAR_STAGGER + REVEAL_DURATION;
+  return Math.round(finish * 1000);
+}
 function RevealLine({
   children,
   show,
@@ -823,7 +878,7 @@ function RevealLine({
             opacity: show ? 1 : 0,
           } as TargetAndTransition}
           transition={{
-            duration: 0.7,
+            duration: REVEAL_DURATION,
             ease: [0.76, 0, 0.24, 1],
             delay: delay + i * CHAR_STAGGER,
           }}

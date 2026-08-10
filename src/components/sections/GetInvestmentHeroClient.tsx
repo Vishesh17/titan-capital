@@ -9,6 +9,12 @@ import {
   useInView,
   type TargetAndTransition,
 } from "framer-motion";
+import {
+  HERO_HEADING_DARK_CLASS,
+  HERO_HEADING_DARK_STYLE,
+  HERO_BODY_CLASS,
+  HERO_BODY_STYLE,
+} from "@/styles/heroTypography";
 
 /* ─────────────────────────────────────────────────────────
    Types
@@ -376,18 +382,15 @@ export default function GetInvestmentHeroClient({
 
         <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col items-center justify-center text-center">
           <h1
-            className="m-0 flex flex-col items-center justify-center font-['Poppins',_sans-serif] font-black uppercase text-white max-md:!text-[32px]"
-            style={{
-              fontSize: "min(9.88vw, 15.2vh)",
-              lineHeight: "86%",
-            }}
+            className={`m-0 flex flex-col items-center justify-center text-white ${HERO_HEADING_DARK_CLASS}`}
+            style={HERO_HEADING_DARK_STYLE}
           >
             <RevealLine show={show} delay={0}>{headingFirst}</RevealLine>
           </h1>
 
           <motion.p
-            className="mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[800px] font-['Poppins',_sans-serif] font-normal leading-[1.6] text-white/90 text-center"
-            style={{ fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)" }}
+            className={`mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[800px] text-center text-white/90 ${HERO_BODY_CLASS}`}
+            style={HERO_BODY_STYLE}
             initial={{ opacity: 0, y: 20 }}
             animate={show ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.8 }}

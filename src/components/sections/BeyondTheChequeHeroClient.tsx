@@ -2,6 +2,10 @@
 
 import { useEffect, useRef, useCallback } from "react";
 import { motion, Variants } from "framer-motion";
+import {
+  HERO_BODY_CLASS,
+  HERO_BODY_STYLE,
+} from "@/styles/heroTypography";
 
 /* ─────────────────────────────────────────────────────────
    Types — shared with the server wrapper (TitanSeedHero.tsx).
@@ -259,8 +263,8 @@ export default function BeyondTheChequeHeroClient({
 
         {/* ── SUBTITLE ── */}
         <motion.p
-          className="mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[600px] font-['Poppins',_sans-serif] font-normal leading-[1.6] text-[#323232] text-center"
-          style={{ fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)" }}
+          className={`mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[600px] text-center text-[#323232] ${HERO_BODY_CLASS}`}
+          style={HERO_BODY_STYLE}
           variants={{
             hidden: { opacity: 0, y: 30 },
             visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut", delay: 0.6 } }

@@ -4,6 +4,10 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { HeroGlow, AnimatedGrid, RevealLine } from "./BackedEarly";
+import {
+  HERO_HEADING_DARK_CLASS,
+  HERO_HEADING_DARK_STYLE,
+} from "@/styles/heroTypography";
 
 /*
   FoundersStoryHero
@@ -46,11 +50,8 @@ export default function FoundersStoryHero() {
         {/* ── HEADING ── */}
         <div className="flex w-full flex-1 flex-col items-center justify-center px-[var(--section-px-wide)]">
           <h1
-            className="m-0 flex w-full flex-col items-center justify-center text-center font-['Poppins',_sans-serif] font-black uppercase text-white max-md:!text-[36px]"
-            style={{
-              fontSize: "min(8.6vw, 13.2vh)",
-              lineHeight: "92%",
-            }}
+            className={`m-0 flex w-full flex-col items-center justify-center text-center text-white ${HERO_HEADING_DARK_CLASS}`}
+            style={HERO_HEADING_DARK_STYLE}
           >
             <RevealLine show={show} delay={0}>A Central Hub</RevealLine>
             <RevealLine show={show} delay={0.5}>For Founders</RevealLine>

@@ -3,6 +3,12 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import {
+  HERO_HEADING_LIGHT_CLASS,
+  HERO_HEADING_LIGHT_STYLE,
+  HERO_BODY_CLASS,
+  HERO_BODY_STYLE,
+} from "@/styles/heroTypography";
 
 /* ─────────────────────────────────────────────────────────
    Shared motion variants — same scaleX-highlight + fadeUp
@@ -319,23 +325,19 @@ export default function OurTeamHeroClient({
             {headingLines.map((line, i) => (
               <motion.h1
                 key={i}
-                className="pointer-events-auto m-0 font-['Poppins',_sans-serif] font-bold uppercase text-[#0E0E0E]"
-                style={{
-                  fontSize: "clamp(38px, min(6.8vw, 8.8vh), 112px)",
-                  lineHeight: "110%",
-                }}
+                className={`pointer-events-auto m-0 text-[#0E0E0E] ${HERO_HEADING_LIGHT_CLASS}`}
+                style={HERO_HEADING_LIGHT_STYLE}
                 variants={fadeUp(i * 0.15)}
               >
                 {line}
               </motion.h1>
             ))}
             <motion.p
-              className="pointer-events-auto m-0 font-['Poppins',_sans-serif] font-normal text-[#000]"
+              className={`pointer-events-auto m-0 text-[#000] ${HERO_BODY_CLASS}`}
               style={{
+                ...HERO_BODY_STYLE,
                 marginTop: "clamp(12px, min(1.4vw, 2vh), 24px)",
                 maxWidth: "100%",
-                fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)",
-                lineHeight: "150%",
               }}
               variants={fadeUp(0.45)}
             >

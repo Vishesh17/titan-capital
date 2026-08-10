@@ -12,6 +12,10 @@ import {
   useInView,
   type TargetAndTransition,
 } from "framer-motion";
+import {
+  HERO_HEADING_DARK_CLASS,
+  HERO_HEADING_DARK_STYLE,
+} from "@/styles/heroTypography";
 
 /*
   "Backed Early. Built to last"
@@ -729,11 +733,8 @@ export default function BackedEarly() {
         <div className="flex w-full flex-1 flex-col items-center justify-center mb-[clamp(32px,min(4vw,6vh),60px)]">
           <div className="flex w-full flex-col items-center">
             <h2
-              className="m-0 flex w-full flex-col items-center justify-center font-['Poppins',_sans-serif] font-black uppercase text-white max-md:!text-[32px] text-center"
-              style={{
-                fontSize: "min(9.88vw, 15.2vh)",
-                lineHeight: "86%",
-              }}
+              className={`m-0 flex w-full flex-col items-center justify-center text-center text-white ${HERO_HEADING_DARK_CLASS}`}
+              style={HERO_HEADING_DARK_STYLE}
             >
               <RevealLine show={show} delay={0}>Backed Early</RevealLine>
               <RevealLine show={show} delay={0.5}>Built To Last</RevealLine>
