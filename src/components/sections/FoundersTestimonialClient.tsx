@@ -3,7 +3,58 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useInView, useMotionValue, useAnimationFrame } from "framer-motion";
+import { motion, useInView, useMotionValue, useAnimationFrame, cubicBezier } from "framer-motion";
+import {
+  Noto_Sans_Devanagari,
+  Noto_Sans_Kannada,
+  Noto_Sans_Tamil,
+  Noto_Sans_Telugu,
+  Noto_Sans_Gujarati,
+  Noto_Sans_Gurmukhi,
+  Noto_Sans_Bengali,
+} from "next/font/google";
+
+/* Poppins is loaded with `subsets: ["latin"]` and carries no Indic glyphs, so
+   every non-Latin spelling below would render as tofu without these. Weight
+   600 only, to match the heading's font-semibold, and each is restricted to
+   its own subset to keep the payload as small as next/font allows.
+   next/font statically analyses these calls, so the options must be inline
+   object literals — a shared spread object fails the build. */
+const devanagari = Noto_Sans_Devanagari({ subsets: ["devanagari"], weight: "600", display: "swap" });
+const kannada    = Noto_Sans_Kannada({ subsets: ["kannada"], weight: "600", display: "swap" });
+const tamil      = Noto_Sans_Tamil({ subsets: ["tamil"], weight: "600", display: "swap" });
+const telugu     = Noto_Sans_Telugu({ subsets: ["telugu"], weight: "600", display: "swap" });
+const gujarati   = Noto_Sans_Gujarati({ subsets: ["gujarati"], weight: "600", display: "swap" });
+const gurmukhi   = Noto_Sans_Gurmukhi({ subsets: ["gurmukhi"], weight: "600", display: "swap" });
+const bengali    = Noto_Sans_Bengali({ subsets: ["bengali"], weight: "600", display: "swap" });
+
+/* "Vision" transliterated — the English word spelled in each script, not
+   translated. Hindi and Marathi share Devanagari but differ in spelling:
+   Marathi writes the English /v/ as व्ह. Bengali has no /v/, so it uses ভ. */
+interface VisionWord { lang: string; bcp47: string; text: string; className: string }
+const VISION_WORDS: VisionWord[] = [
+  { lang: "English",  bcp47: "en",    text: "Vision.",  className: "" },
+  { lang: "Hindi",    bcp47: "hi",    text: "विज़न.",    className: devanagari.className },
+  { lang: "Marathi",  bcp47: "mr",    text: "व्हिजन.",   className: devanagari.className },
+  { lang: "Kannada",  bcp47: "kn",    text: "ವಿಷನ್.",    className: kannada.className },
+  { lang: "Tamil",    bcp47: "ta",    text: "விஷன்.",    className: tamil.className },
+  { lang: "Telugu",   bcp47: "te",    text: "విజన్.",    className: telugu.className },
+  { lang: "Gujarati", bcp47: "gu",    text: "વિઝન.",     className: gujarati.className },
+  { lang: "Punjabi",  bcp47: "pa",    text: "ਵਿਜ਼ਨ.",     className: gurmukhi.className },
+  { lang: "Bengali",  bcp47: "bn",    text: "ভিশন.",     className: bengali.className },
+];
+
+/* Type by GRAPHEME, never by code unit. "विज़न" is व + ि + ज + ़ + न — slicing
+   by index would flash a bare ज before its nukta lands, and Tamil ன் would
+   split from its virama. Intl.Segmenter groups user-perceived characters;
+   the regex fallback attaches combining marks (\p{M}) to their base. */
+function toGraphemes(text: string): string[] {
+  if (typeof Intl !== "undefined" && "Segmenter" in Intl) {
+    const seg = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+    return Array.from(seg.segment(text), (s) => s.segment);
+  }
+  return text.match(/\P{M}\p{M}*/gu) ?? Array.from(text);
+}
 
 export interface TestimonialItem {
   name: string;
@@ -123,40 +174,192 @@ function computeLinePositions(): number[] {
   return Array.from({ length: count }, (_, i) => startX + i * gap);
 }
 
+/* Cursor-follow wave, matching the Titan Seed hero grid. Lines near the
+   pointer bend on a travelling sine and deepen in tone, which reads as the
+   sheet of lines tilting in 3D. Tuned for dark-on-light instead of
+   light-on-dark — the beige background is untouched. */
+const LINE_BASE_RGB = [216, 216, 216] as const; // #D8D8D8 — resting colour
+const LINE_NEAR_RGB = [150, 150, 150] as const; // deepened under the cursor
+const CURSOR_RADIUS = 180;
+const WAVE_AMP = 6;
+const REVEAL_EASE = cubicBezier(0.22, 1, 0.36, 1);
+
 function VerticalLines({ active }: { active: boolean }) {
-  const [positions, setPositions] = useState<number[]>([]);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const mouseRef = useRef({ x: -9999, y: -9999 });
+  const positionsRef = useRef<number[]>([]);
+
+  // Per-line reveal state (0→1), driven with the same stagger/duration/easing
+  // the old scaleY variants used so the entrance is unchanged.
+  const revealRef = useRef<number[]>([]);
+  const fromRef = useRef<number[]>([]);
+  const targetRef = useRef(0);
+  const transitionStartRef = useRef(0);
 
   useEffect(() => {
-    setPositions(computeLinePositions());
-    const onResize = () => setPositions(computeLinePositions());
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const syncPositions = () => {
+      const next = computeLinePositions();
+      positionsRef.current = next;
+      if (revealRef.current.length !== next.length) {
+        revealRef.current = next.map((_, i) => revealRef.current[i] ?? 0);
+        fromRef.current = next.map((_, i) => fromRef.current[i] ?? 0);
+      }
+    };
+
+    let cssW = 0;
+    let cssH = 0;
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      cssW = rect.width;
+      cssH = rect.height;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      syncPositions();
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    };
+    const onMouseLeave = () => { mouseRef.current = { x: -9999, y: -9999 }; };
+
+    const section = canvas.parentElement;
+    section?.addEventListener("mousemove", onMouseMove);
+    section?.addEventListener("mouseleave", onMouseLeave);
+
+    const startTime = performance.now();
+    let animationId = 0;
+
+    const draw = (now: number) => {
+      const elapsed = (now - startTime) / 1000;
+      const xs = positionsRef.current;
+      const w = cssW;
+      const h = cssH;
+      const mx = mouseRef.current.x;
+      const my = mouseRef.current.y;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.lineWidth = 1;
+
+      // Advance the staggered reveal.
+      const target = targetRef.current;
+      const durationMs = target === 1 ? 2600 : 1200;
+      const staggerMs = target === 1 ? 180 : 120;
+      const sinceStart = now - transitionStartRef.current;
+
+      for (let i = 0; i < xs.length; i++) {
+        // Reverse the stagger order when hiding, as staggerDirection: -1 did.
+        const order = target === 1 ? i : xs.length - 1 - i;
+        const t = Math.min(1, Math.max(0, (sinceStart - order * staggerMs) / durationMs));
+        const from = fromRef.current[i] ?? 0;
+        revealRef.current[i] = from + (target - from) * REVEAL_EASE(t);
+      }
+
+      for (let i = 0; i < xs.length; i++) {
+        const x = xs[i];
+        const reveal = revealRef.current[i] ?? 0;
+        if (reveal <= 0.001) continue;
+        const lineBottom = h * reveal; // grows from the top, like transformOrigin: top
+
+        // Batch consecutive segments that share a colour into one path so the
+        // whole line costs a handful of stroke() calls, not one per 4px.
+        let runKey = -1;
+        let started = false;
+
+        for (let y = 0; y <= lineBottom; y += 4) {
+          const dist = Math.hypot(x - mx, y - my);
+          let offset = 0;
+          let smooth = 0;
+          if (dist < CURSOR_RADIUS) {
+            const proximity = 1 - dist / CURSOR_RADIUS;
+            smooth = proximity * proximity;
+            offset = Math.sin(elapsed * 3 + dist * 0.04) * WAVE_AMP * smooth;
+          }
+          const q = Math.round(smooth * 24); // quantise → few colour changes
+          const dx = x + offset;
+
+          if (!started) {
+            ctx.beginPath();
+            ctx.moveTo(dx, y);
+            runKey = q;
+            started = true;
+          } else if (q !== runKey) {
+            ctx.lineTo(dx, y);
+            ctx.strokeStyle = lineColour(runKey / 24);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(dx, y);
+            runKey = q;
+          } else {
+            ctx.lineTo(dx, y);
+          }
+        }
+        if (started) {
+          ctx.strokeStyle = lineColour(runKey / 24);
+          ctx.stroke();
+        }
+      }
+
+      animationId = requestAnimationFrame(draw);
+    };
+
+    let running = false;
+    const start = () => { if (!running) { running = true; animationId = requestAnimationFrame(draw); } };
+    const stop = () => { if (running) { running = false; cancelAnimationFrame(animationId); } };
+
+    resize();
+    window.addEventListener("resize", resize);
+
+    // The section's height changes after mount as fonts/images settle, which
+    // would leave the backing store stale and stretch the lines vertically.
+    // Window resize alone doesn't catch that.
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+
+    const io = new IntersectionObserver(
+      ([entry]) => (entry.isIntersecting ? start() : stop()),
+      { rootMargin: "200px" }
+    );
+    io.observe(canvas);
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      ro.disconnect();
+      io.disconnect();
+      stop();
+      section?.removeEventListener("mousemove", onMouseMove);
+      section?.removeEventListener("mouseleave", onMouseLeave);
+    };
   }, []);
 
+  // Kick off a new reveal transition whenever `active` flips.
+  useEffect(() => {
+    fromRef.current = revealRef.current.slice();
+    targetRef.current = active ? 1 : 0;
+    transitionStartRef.current = performance.now();
+  }, [active]);
+
   return (
-    <motion.div
-      className="pointer-events-none absolute inset-0 overflow-hidden"
+    <canvas
+      ref={canvasRef}
       aria-hidden="true"
-      initial="hidden"
-      animate={active ? "visible" : "hidden"}
-      variants={{
-        hidden: { transition: { staggerChildren: 0.12, staggerDirection: -1 } },
-        visible: { transition: { staggerChildren: 0.18 } },
-      }}
-    >
-      {positions.map((x, i) => (
-        <motion.div
-          key={i}
-          className="absolute top-0"
-          style={{ left: `${x}px`, width: 1, height: "100%", background: "#D8D8D8", transformOrigin: "top" }}
-          variants={{
-            hidden: { scaleY: 0, transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } },
-            visible: { scaleY: 1, transition: { duration: 2.6, ease: [0.22, 1, 0.36, 1] } },
-          }}
-        />
-      ))}
-    </motion.div>
+      className="pointer-events-none absolute inset-0 h-full w-full overflow-hidden"
+    />
   );
+}
+
+function lineColour(s: number): string {
+  const r = Math.round(LINE_BASE_RGB[0] + (LINE_NEAR_RGB[0] - LINE_BASE_RGB[0]) * s);
+  const g = Math.round(LINE_BASE_RGB[1] + (LINE_NEAR_RGB[1] - LINE_BASE_RGB[1]) * s);
+  const b = Math.round(LINE_BASE_RGB[2] + (LINE_NEAR_RGB[2] - LINE_BASE_RGB[2]) * s);
+  return `rgb(${r}, ${g}, ${b})`;
 }
 
 function FlipCard({ item }: { item: TestimonialItem }) {
@@ -401,7 +604,7 @@ export default function FoundersTestimonialClient({
                 style={{ background: "#D3E2FF", transformOrigin: "left" }}
                 variants={{ hidden: { scaleX: 0 }, visible: { scaleX: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.8 } } }}
               />
-              <TypingText text="Vision." delay={1.4} />
+              <TypingText delay={1.4} />
             </span>
           </motion.h2>
           <motion.h2
@@ -419,7 +622,8 @@ export default function FoundersTestimonialClient({
   );
 }
 
-function TypingText({ text, delay = 0 }: { text: string; delay?: number }) {
+function TypingText({ delay = 0 }: { delay?: number }) {
+  const [wordIndex, setWordIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
   const [started, setStarted] = useState(false);
 
@@ -430,30 +634,38 @@ function TypingText({ text, delay = 0 }: { text: string; delay?: number }) {
 
   useEffect(() => {
     if (!started) return;
+    const graphemes = toGraphemes(VISION_WORDS[wordIndex].text);
     let index = 0;
-    let timeoutId: NodeJS.Timeout;
-    
+    let timeoutId: ReturnType<typeof setTimeout>;
+
     const typeNext = () => {
-      if (index <= text.length) {
-        setDisplayedText(text.slice(0, index));
+      if (index <= graphemes.length) {
+        setDisplayedText(graphemes.slice(0, index).join(""));
         index++;
-        timeoutId = setTimeout(typeNext, 150); 
+        timeoutId = setTimeout(typeNext, 150);
       } else {
+        // Hold the finished word, then hand over to the next script.
         timeoutId = setTimeout(() => {
-          index = 0;
           setDisplayedText("");
-          timeoutId = setTimeout(typeNext, 150);
+          setWordIndex((w) => (w + 1) % VISION_WORDS.length);
         }, 2000);
       }
     };
-    
+
     timeoutId = setTimeout(typeNext, 150);
     return () => clearTimeout(timeoutId);
-  }, [started, text]);
+  }, [started, wordIndex]);
+
+  const word = VISION_WORDS[wordIndex];
 
   return (
     <span className="relative inline-block">
-      <span className="relative">{displayedText}</span>
+      {/* The animated text is mid-word most of the time, so keep it out of the
+          accessibility tree and expose the settled word instead. */}
+      <span className="sr-only">Vision.</span>
+      <span aria-hidden="true" className={`relative ${word.className}`} lang={word.bcp47}>
+        {displayedText}
+      </span>
     </span>
   );
 }

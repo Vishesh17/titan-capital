@@ -482,7 +482,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
             FOUNDER-FIRST
           </motion.span>
         </div>
-        <div className="pointer-events-none absolute right-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 max-md:!right-auto max-md:!left-1/2 max-md:!top-auto max-md:!bottom-[18vh] max-md:!-translate-x-1/2 max-md:!translate-y-0">
+        <div className="pointer-events-none absolute right-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 max-md:!right-auto max-md:!left-1/2 max-md:!top-auto max-md:!bottom-[5vh] max-md:!-translate-x-1/2 max-md:!translate-y-0">
           <motion.span
             style={{ opacity: labelOpacity, y: labelY }}
             className="block font-['Poppins',_sans-serif] text-[min(1.4vw,2.15vh)] font-medium tracking-[0.2em] text-white/70 max-md:!text-[18px]"
