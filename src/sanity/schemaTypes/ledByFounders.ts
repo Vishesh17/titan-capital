@@ -78,7 +78,7 @@ export const ledByFounders = defineType({
               name: "imageNoBg",
               title: "Photo — cut out (detail page)",
               description:
-                "Background removed. Clipped into the blob shape on /founders/<slug>, so it must be a transparent PNG. The photo above (with its background) stays on the Led By Founders section.",
+                'Background removed — must be a transparent PNG, since it gets clipped into the blob shape on /founders/<slug>. Separate from "Photo — with background", which stays on the Led By Founders section.',
               type: "image",
               options: { hotspot: true },
             }),
@@ -99,7 +99,7 @@ export const ledByFounders = defineType({
               name: "image",
               title: "Photo — with background (Led By Founders section)",
               description:
-                "The rectangular portrait beside the bio on /ourTeam. Keeps its background. A different photo from the cut-out below.",
+                'The rectangular portrait beside the bio on /ourTeam. Keeps its background. Separate from "Photo — cut out", which is used on the detail page.',
               type: "image",
               options: { hotspot: true },
             }),

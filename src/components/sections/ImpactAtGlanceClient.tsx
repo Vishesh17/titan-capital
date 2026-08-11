@@ -284,11 +284,24 @@ function RotatingTag({ tags, sizerTags }: { tags: string[]; sizerTags: string[] 
         paddingLeft: "clamp(10px, min(1vw, 1.5vh), 14px)",
         paddingRight: "clamp(14px, min(1.4vw, 2vh), 20px)",
         borderRadius: "0 70px 70px 0",
-        background: "#FFFFFF",
-        boxShadow: "0 4px 18.6px 0 rgba(0,0,0,0.18)",
+        /* Frosted glass rather than flat white. The vertical falloff is the
+           gloss: brighter at the top edge, settling darker at the bottom, which
+           is what reads as a lit surface instead of a sticker. Saturate lifts
+           the photo's colour through the blur so the pill picks up the image
+           beneath it. */
+        background:
+          "linear-gradient(180deg, rgba(255,255,255,0.74) 0%, rgba(255,255,255,0.54) 100%)",
+        backdropFilter: "blur(20px) saturate(180%)",
+        WebkitBackdropFilter: "blur(20px) saturate(180%)",
+        /* Inset hairline = the glass edge catching light; the outer shadow is
+           much softer and wider than the old 0.18 drop so the pill sits on the
+           photo rather than floating above it. */
+        boxShadow:
+          "inset 0 1px 0 0 rgba(255,255,255,0.65), inset 0 -1px 0 0 rgba(255,255,255,0.18), 0 6px 22px 0 rgba(0,0,0,0.10)",
         fontSize: "clamp(10px, min(1vw, 1.5vh), 14px)",
         fontFamily: "'Poppins', sans-serif",
         fontWeight: 500,
+        letterSpacing: "0.01em",
         lineHeight: "150%",
         whiteSpace: "nowrap",
       }}
