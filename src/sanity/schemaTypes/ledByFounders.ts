@@ -97,7 +97,9 @@ export const ledByFounders = defineType({
             }),
             defineField({
               name: "image",
-              title: "Portrait photo",
+              title: "Photo — with background (Led By Founders section)",
+              description:
+                "The rectangular portrait beside the bio on /ourTeam. Keeps its background. A different photo from the cut-out below.",
               type: "image",
               options: { hotspot: true },
             }),
