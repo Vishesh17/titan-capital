@@ -2,6 +2,14 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  HERO_BODY_CLASS,
+  HERO_BODY_STYLE,
+  SECTION_HEADING_CLASS,
+  SECTION_HEADING_STYLE,
+  SUBHEADING_CLASS,
+  SUBHEADING_STYLE,
+} from "@/styles/heroTypography";
 
 /* ═══════════════════════════════════════════════════════
    Country codes — dial code, ISO, name, phone digit range
@@ -776,18 +784,14 @@ function SectionHeading({
   return (
     <div className="mb-[clamp(32px,min(3.5vw,5vh),56px)]">
       <div
-        className="mb-[clamp(12px,1.5vw,20px)] flex items-center justify-center gap-[10px] rounded-[39px] bg-[#D3E2FF] text-[#000]"
-        style={{
-          width: "fit-content",
-          padding: "6px 20px",
-          fontSize: "clamp(14px, 1vw, 16px)",
-        }}
+        className={`mb-[clamp(12px,1.5vw,20px)] flex items-center justify-center gap-[10px] rounded-[39px] bg-[#D3E2FF] text-[#000] ${HERO_BODY_CLASS}`}
+        style={{ ...HERO_BODY_STYLE, width: "fit-content", padding: "6px 20px" }}
       >
         {label}
       </div>
       <h3
-        className="mb-[clamp(8px,1vw,12px)] max-w-[421px] font-['Poppins',_sans-serif] font-medium text-[#0E0E0E] max-md:!text-[24px] max-md:!leading-[120%]"
-        style={{ fontSize: "clamp(22px, min(2.2vw, 3.3vh), 32px)", lineHeight: "140%" }}
+        className={`mb-[clamp(8px,1vw,12px)] max-w-[421px] text-[#0E0E0E] ${SUBHEADING_CLASS}`}
+        style={SUBHEADING_STYLE}
       >
         {title}
       </h3>
@@ -1053,11 +1057,11 @@ export default function GetInvestmentForm({
           viewport={{ once: true, amount: 0.5 }}
         >
           <motion.h2
-            className="m-0 max-w-[794px] font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
-            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
-            custom={0}
-            variants={fadeUp}
-          >
+   className={`m-0 max-w-[794px] text-black ${SECTION_HEADING_CLASS}`}
+   style={{ ...SECTION_HEADING_STYLE, }}
+   custom={0}
+   variants={fadeUp}
+   >
             Build Something<br />The World Needs
           </motion.h2>
 

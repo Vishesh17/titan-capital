@@ -8,6 +8,12 @@ import {
   useMotionValueEvent,
 } from "framer-motion";
 import { useLenis } from "lenis/react";
+import {
+  SECTION_HEADING_CLASS,
+  SECTION_HEADING_STYLE,
+  SUBHEADING_CLASS,
+  SUBHEADING_STYLE,
+} from "@/styles/heroTypography";
 
 /* ─────────────────────────────────────────────────────────
    Types — shared with server wrapper (FifteenYears.tsx).
@@ -392,17 +398,17 @@ export default function FifteenYearsClient({
           viewport={{ once: true, amount: 0.5 }}
         >
           <motion.h2
-            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
-            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
-            variants={{
-              hidden: { opacity: 0, y: 40 },
-              visible: {
-                opacity: 1,
-                y: 0,
-                transition: { duration: 0.6, ease: "easeOut" },
-              },
-            }}
-          >
+   className={`m-0 text-center text-black ${SECTION_HEADING_CLASS}`}
+   style={{ ...SECTION_HEADING_STYLE, }}
+   variants={{
+    hidden: { opacity: 0, y: 40 },
+    visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut" },
+    },
+   }}
+   >
             {headingFirst}
           </motion.h2>
 
@@ -429,8 +435,8 @@ export default function FifteenYearsClient({
               }}
             />
             <span
-              className="relative z-10 font-['Poppins',_serif] font-semibold italic leading-[120%] text-[#001A4D] max-md:!text-[32px]"
-              style={{ fontSize: "var(--heading-xl)" }}
+              className={`relative z-10 text-[#001A4D] ${SECTION_HEADING_CLASS}`}
+              style={SECTION_HEADING_STYLE}
             >
               {headingHighlight}
             </span>
@@ -479,12 +485,8 @@ export default function FifteenYearsClient({
                 style={{ gap: "clamp(14px, min(1.8vw, 2.6vh), 32px)" }}
               >
                 <h3
-                  className="m-0 font-['Poppins',_sans-serif] font-medium text-black"
-                  style={{
-                    fontSize: "clamp(20px, min(2.78vw, 4.07vh), 40px)",
-                    lineHeight: "158%",
-                    maxWidth: "711px",
-                  }}
+                  className={`m-0 text-black ${SUBHEADING_CLASS}`}
+                  style={{ ...SUBHEADING_STYLE, maxWidth: "711px" }}
                 >
                   {current.subtitle}
                 </h3>

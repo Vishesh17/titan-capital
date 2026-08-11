@@ -9,6 +9,11 @@ import {
   useScroll,
   useTransform,
 } from "framer-motion";
+import {
+  BODY_BOLD_CLASS,
+  SECTION_HEADING_CLASS,
+  SECTION_HEADING_STYLE,
+} from "@/styles/heroTypography";
 
 /* ─────────────────────────────────────────────────────────
    Types — shared with the server wrapper (OriginStory.tsx).
@@ -80,7 +85,7 @@ function renderDesc(desc: string): React.ReactNode[] {
   return parts.map((part, i) => {
     if (part.startsWith("**") && part.endsWith("**")) {
       return (
-        <strong key={i} style={{ fontWeight: 700 }}>
+        <strong key={i} className={BODY_BOLD_CLASS}>
           {part.slice(2, -2)}
         </strong>
       );
@@ -419,17 +424,17 @@ export default function OriginStoryClient({
         viewport={{ once: true, amount: 0.5 }}
       >
         <motion.h2
-          className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
-          style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
-          variants={{
-            hidden: { opacity: 0, y: 40 },
-            visible: {
-              opacity: 1,
-              y: 0,
-              transition: { duration: 0.6, ease: "easeOut" },
-            },
-          }}
-        >
+   className={`m-0 text-center text-black ${SECTION_HEADING_CLASS}`}
+   style={{ ...SECTION_HEADING_STYLE, }}
+   variants={{
+   hidden: { opacity: 0, y: 40 },
+   visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut" },
+   },
+   }}
+  >
           {headingFirst}
         </motion.h2>
 
@@ -456,8 +461,8 @@ export default function OriginStoryClient({
             }}
           />
           <span
-            className="relative z-10 font-['Libre_Baskerville',_serif] font-semibold italic leading-[120%] text-[#001A4D] max-md:!text-[32px]"
-            style={{ fontSize: "var(--heading-xl)" }}
+            className={`relative z-10 text-[#001A4D] ${SECTION_HEADING_CLASS}`}
+            style={SECTION_HEADING_STYLE}
           >
             {headingHighlight}
           </span>

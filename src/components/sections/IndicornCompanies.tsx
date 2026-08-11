@@ -2,6 +2,12 @@
 
 import { useEffect, useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import {
+  HERO_BODY_CLASS,
+  HERO_BODY_STYLE,
+  SECTION_HEADING_CLASS,
+  SECTION_HEADING_STYLE,
+} from "@/styles/heroTypography";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -192,14 +198,13 @@ export default function IndicornCompanies({
       >
         {/* Heading */}
         <motion.h2
-          variants={itemVariants}
-          className="m-0 text-center font-semibold text-white max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%] max-md:!mb-[clamp(32px,6dvh,48px)]"
-          style={{
-            fontSize: "min(4.51vw, 6.98vh)",
-            lineHeight: "150%",
-            marginBottom: "min(5.79vw, 8.95vh)",
-          }}
-        >
+     variants={itemVariants}
+     className={`m-0 text-center font-semibold text-white max-md:!mb-[clamp(32px,6dvh,48px)] ${SECTION_HEADING_CLASS}`}
+     style={{
+      ...SECTION_HEADING_STYLE,
+      marginBottom: "min(5.79vw, 8.95vh)",
+     }}
+    >
           Our Portfolio Companies
           <br />
           That Became The Indicorns
@@ -242,10 +247,7 @@ export default function IndicornCompanies({
               </div>
 
               {/* Description */}
-              <p
-                className="m-0 text-[#1a1a1a] max-md:!text-[18px]"
-                style={{ fontSize: "min(1.33vw, 2.06vh)", lineHeight: "160%" }}
-              >
+              <p className={`m-0 text-[#1a1a1a] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
                 {company.description}
               </p>
             </motion.div>

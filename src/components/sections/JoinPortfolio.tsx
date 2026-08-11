@@ -8,6 +8,12 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
+import {
+  HERO_BODY_CLASS,
+  HERO_BODY_STYLE,
+  SECTION_HEADING_CLASS,
+  SECTION_HEADING_STYLE,
+} from "@/styles/heroTypography";
 
 /* ─────────────────────────────────────────────────────────
    Hero Glow Background (With Local Cursor Tracking)
@@ -223,25 +229,20 @@ export default function JoinPortfolioCTA() {
       >
         {/* ── HEADING ── */}
         <h2
-          className="m-0 font-['Poppins',_sans-serif] font-semibold text-white max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
-          style={{
-            fontSize: "min(4.51vw, 6.98vh)",
-            lineHeight: "150%",
-            marginBottom: "clamp(16px, 2vw, 24px)",
-          }}
-        >
+   className={`m-0 text-white ${SECTION_HEADING_CLASS}`}
+   style={{
+   ...SECTION_HEADING_STYLE,
+   marginBottom: "clamp(16px, 2vw, 24px)",
+   }}
+  >
           Want To Join <br className="hidden md:block" />
           Our Portfolio?
         </h2>
 
         {/* ── SUBTITLE ── */}
         <p
-          className="font-['Poppins',_sans-serif] font-normal text-white/90 max-md:!text-[16px]"
-          style={{
-            fontSize: "clamp(16px, 1.8vw, 22px)",
-            lineHeight: "160%",
-            marginBottom: "clamp(32px, 4vw, 48px)",
-          }}
+          className={`text-white/90 ${HERO_BODY_CLASS}`}
+          style={{ ...HERO_BODY_STYLE, marginBottom: "clamp(32px, 4vw, 48px)" }}
         >
           It is never to late to be part of the <br className="hidden md:block" />
           Titan Capital

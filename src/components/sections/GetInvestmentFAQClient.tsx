@@ -2,6 +2,12 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  HERO_BODY_CLASS,
+  HERO_BODY_STYLE,
+  SECTION_HEADING_CLASS,
+  SECTION_HEADING_STYLE,
+} from "@/styles/heroTypography";
 
 /* ═══════════════════════════════════════════════════════
    FAQ data
@@ -86,11 +92,7 @@ function FAQItem({
         onClick={onToggle}
         className="flex w-full cursor-pointer items-center justify-between border-none bg-transparent text-left p-0 m-0"
       >
-        <span
-          className="font-['Poppins',_sans-serif] font-normal text-[#000]"
-          // Decreased question font size
-          style={{ fontSize: "clamp(18px, 2vw, 24px)", lineHeight: "140%" }}
-        >
+        <span className={`text-[#000] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
           {faq.question}
         </span>
 
@@ -208,16 +210,16 @@ export default function GetInvestmentFAQClient({
           viewport={{ once: true, amount: 0.5 }}
         >
           <motion.h2
-            className="m-0 max-w-[794px] font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
-            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
-            custom={0}
-            variants={fadeUp}
-            dangerouslySetInnerHTML={{ __html: headingFirst }}
-          />
+   className={`m-0 max-w-[794px] text-black ${SECTION_HEADING_CLASS}`}
+   style={{ ...SECTION_HEADING_STYLE, }}
+   custom={0}
+   variants={fadeUp}
+   dangerouslySetInnerHTML={{ __html: headingFirst }}
+   />
 
           <motion.h2
-            className="m-0 max-w-[794px] font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
-            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
+            className={`m-0 max-w-[794px] text-black ${SECTION_HEADING_CLASS}`}
+            style={{ ...SECTION_HEADING_STYLE, }}
             custom={0}
             variants={fadeUp}
             dangerouslySetInnerHTML={{ __html: headingSecond }}

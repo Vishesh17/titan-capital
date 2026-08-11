@@ -7,7 +7,14 @@ import { motion, Variants } from "framer-motion";
 import InstagramIcon from "@/components/icons/InstagramIcon";
 import XIcon from "@/components/icons/XIcon";
 import { founderSlug } from "@/lib/founderSlug";
-import { HERO_BODY_CLASS, HERO_BODY_STYLE } from "@/styles/heroTypography";
+import {
+  HERO_BODY_CLASS,
+  HERO_BODY_STYLE,
+  SECTION_HEADING_CLASS,
+  SECTION_HEADING_STYLE,
+  SUBHEADING_CLASS,
+  SUBHEADING_STYLE,
+} from "@/styles/heroTypography";
 
 /* ─────────────────────────────────────────────────────────
    Shared motion variants
@@ -198,10 +205,9 @@ function FounderRow({ founder }: { founder: FounderProfile }) {
       <div className="flex w-full flex-1 flex-col items-center text-center lg:min-h-[var(--photo-h)] lg:items-start lg:text-left lg:px-4">
         {/* Highlighted name */}
         <h3
-          className="m-0 font-['Poppins',_sans-serif] font-semibold text-[#0E0E0E]"
+          className={`m-0 text-[#0E0E0E] ${SUBHEADING_CLASS}`}
           style={{
-            fontSize: "clamp(28px, min(3.33vw, 4.88vh), 42px)",
-            lineHeight: "130%",
+            ...SUBHEADING_STYLE,
             marginBottom: "clamp(4px, min(0.55vw, 0.81vh), 8px)",
           }}
         >
@@ -210,10 +216,9 @@ function FounderRow({ founder }: { founder: FounderProfile }) {
 
         {/* Role */}
         <p
-          className="m-0 font-['Poppins',_sans-serif] font-normal text-[#323232]"
+          className={`m-0 text-[#323232] ${HERO_BODY_CLASS}`}
           style={{
-            fontSize: "clamp(16px, min(1.6vw, 2.4vh), 20px)",
-            lineHeight: "158%",
+            ...HERO_BODY_STYLE,
           }}
         >
           {founder.role}
@@ -337,19 +342,18 @@ export default function LedByFoundersClient({
           style={{ marginBottom: "min(3.47vw, 5.37vh)" }}
         >
           <motion.h2
-            className="m-0 font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
-            // Line height matched to WhatWeLookFor section (150%)
-            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
-            variants={fadeUp(0)}
-          >
+   className={`m-0 text-black ${SECTION_HEADING_CLASS}`}
+   // Line height matched to WhatWeLookFor section (150%)
+   style={{ ...SECTION_HEADING_STYLE, }}
+   variants={fadeUp(0)}
+   >
             {headingTop}
           </motion.h2>
 
           {/* <motion.h2
-            className="m-0 font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
+            className={`m-0 text-black ${SECTION_HEADING_CLASS}`}
             style={{
-              fontSize: "min(4.51vw, 6.98vh)",
-              lineHeight: "150%",
+              ...SECTION_HEADING_STYLE,
             }}
             variants={fadeUp(0.15)}
           >

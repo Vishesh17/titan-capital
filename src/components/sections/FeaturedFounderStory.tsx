@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, Variants } from "framer-motion";
+import { SECTION_HEADING_CLASS, SECTION_HEADING_STYLE } from "@/styles/heroTypography";
 
 /*
   Z-ORDER:
@@ -83,8 +84,8 @@ export default function FeaturedFounderStory() {
         viewport={{ once: true, amount: 0.3 }}
       >
         <motion.h2
-          className="m-0 text-center font-['Libre_Baskerville',_serif] font-bold italic leading-[1.2] text-[#001A4D]"
-          style={{ fontSize: "var(--heading-xl)" }}
+          className={`m-0 text-center text-[#001A4D] ${SECTION_HEADING_CLASS}`}
+          style={SECTION_HEADING_STYLE}
           variants={h1v}
         >
           <span className="relative inline-block overflow-hidden px-2.5" style={{ background: "transparent" }}>
@@ -94,8 +95,8 @@ export default function FeaturedFounderStory() {
         </motion.h2>
 
         <motion.h2
-          className="m-0 mt-1 text-center font-['Libre_Baskerville',_serif] font-semibold leading-[1.2] text-[#001A4D]"
-          style={{ fontSize: "var(--heading-xl)" }}
+          className={`m-0 mt-1 text-center text-[#001A4D] ${SECTION_HEADING_CLASS}`}
+          style={SECTION_HEADING_STYLE}
           variants={h2v}
         >
           our credentials

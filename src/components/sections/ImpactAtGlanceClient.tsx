@@ -4,6 +4,12 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, useScroll, useTransform, type MotionValue, useSpring } from "framer-motion";
 import GrainOverlay from "@/components/ui/GrainOverlay";
+import {
+  HERO_BODY_CLASS,
+  HERO_BODY_STYLE,
+  SECTION_HEADING_CLASS,
+  SECTION_HEADING_STYLE,
+} from "@/styles/heroTypography";
 
 /* ─────────────────────────────────────────────────────────
    Types
@@ -239,10 +245,9 @@ function ImpactStatCell({
           <RollingNumber value={stat.num} />
         </span>
         <span
-          className="whitespace-nowrap font-['Poppins',_sans-serif] font-normal capitalize text-black max-md:!text-[14px] max-md:!leading-[125%] max-md:!mt-[6px]"
+          className={`whitespace-nowrap capitalize text-black max-md:!mt-[6px] ${HERO_BODY_CLASS}`}
           style={{
-            fontSize: "min(1.6vw, 2.5vh)",
-            lineHeight: "160%",
+            ...HERO_BODY_STYLE,
             marginTop: "min(0.58vw, 0.90vh)",
           }}
         >
@@ -277,30 +282,47 @@ function RotatingTag({ tags, sizerTags }: { tags: string[]; sizerTags: string[] 
 
   return (
     <div
-      className="absolute left-0 z-20 flex items-center overflow-hidden text-[#001A4D]"
+      className="absolute left-0 z-20 flex items-center overflow-hidden text-white"
       style={{
         top: "clamp(10px, min(1.2vw, 1.8vh), 18px)",
         height: "clamp(28px, min(2.6vw, 3.8vh), 38px)",
         paddingLeft: "clamp(10px, min(1vw, 1.5vh), 14px)",
         paddingRight: "clamp(14px, min(1.4vw, 2vh), 20px)",
         borderRadius: "0 70px 70px 0",
-        /* Frosted glass rather than flat white. The vertical falloff is the
-           gloss: brighter at the top edge, settling darker at the bottom, which
-           is what reads as a lit surface instead of a sticker. Saturate lifts
-           the photo's colour through the blur so the pill picks up the image
-           beneath it. */
-        background:
-          "linear-gradient(180deg, rgba(255,255,255,0.74) 0%, rgba(255,255,255,0.54) 100%)",
-        backdropFilter: "blur(20px) saturate(180%)",
-        WebkitBackdropFilter: "blur(20px) saturate(180%)",
-        /* Inset hairline = the glass edge catching light; the outer shadow is
-           much softer and wider than the old 0.18 drop so the pill sits on the
-           photo rather than floating above it. */
+        /* Blue glass, same family as the navbar's hamburger panel
+           (bg-[#001640]/[0.75] + backdrop-blur-2xl/saturate-1.45/brightness-0.7)
+           but re-tuned for this size. The panel's gloss is a wide 90deg sheen
+           peaking at 0.13 — across 480px that reads as glass; across a 34px
+           pill it spans almost nothing and just looks like flat navy. What
+           sells gloss at this scale is a specular highlight, so the layers are,
+           topmost first:
+             1. the specular sweep — bright along the top edge and cut off hard
+                by 52%. The abrupt terminator is the whole trick: a soft fade
+                reads as matte shading, a sharp one reads as light glancing off
+                a curved surface;
+             2. the navbar's left-to-right sheen, kept so this still belongs to
+                the same family;
+             3. translucent #001640, deeper at the bottom.
+           brightness(0.7) knocks the backdrop down before the navy lands, so
+           white text holds up over a pale photo and a dark one alike. */
+        background: [
+          "linear-gradient(180deg, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0.10) 42%, rgba(255,255,255,0) 52%)",
+          "linear-gradient(90deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.045) 30%, rgba(255,255,255,0) 72%)",
+          "linear-gradient(180deg, rgba(0,22,64,0.70) 0%, rgba(0,22,64,0.84) 100%)",
+        ].join(", "),
+        backdropFilter: "blur(40px) saturate(1.45) brightness(0.7)",
+        WebkitBackdropFilter: "blur(40px) saturate(1.45) brightness(0.7)",
+        /* A bright top hairline caps the specular sweep — glass has a lit rim,
+           not a gradient that merely starts pale. The inset blue glow along the
+           bottom is light that entered the surface bouncing back up, which is
+           what gives it thickness instead of looking like a printed chip. No
+           full ring: the pill sits flush at left:0, where a vertical inset line
+           would read as a seam against the card edge. */
         boxShadow:
-          "inset 0 1px 0 0 rgba(255,255,255,0.65), inset 0 -1px 0 0 rgba(255,255,255,0.18), 0 6px 22px 0 rgba(0,0,0,0.10)",
+          "inset 0 1px 0 0 rgba(255,255,255,0.55), inset -1px 0 0 0 rgba(255,255,255,0.12), inset 0 -7px 13px -7px rgba(125,175,255,0.40), 0 6px 22px 0 rgba(0,0,0,0.28)",
         fontSize: "clamp(10px, min(1vw, 1.5vh), 14px)",
         fontFamily: "'Poppins', sans-serif",
-        fontWeight: 500,
+        fontWeight: 600,
         letterSpacing: "0.01em",
         lineHeight: "150%",
         whiteSpace: "nowrap",
@@ -453,8 +475,8 @@ export function StoryCard({ story, sizerTags = [] }: { story: FounderStory; size
         <div className="max-md:!mt-[4px]" style={{ paddingTop: 0, marginTop: "-28px" }}>
           <QuoteMarkIcon />
           <p
-            className="m-0 font-['Poppins',_sans-serif] font-medium text-white max-md:!text-[14px]"
-            style={{ fontSize: "min(1.39vw, 2.15vh)", lineHeight: "150%", maxWidth: "min(33.22vw, 51.39vh)", marginTop: "min(0.70vw, 1.07vh)" }}
+            className={`m-0 text-white ${HERO_BODY_CLASS}`}
+            style={{ ...HERO_BODY_STYLE, maxWidth: "min(33.22vw, 51.39vh)", marginTop: "min(0.70vw, 1.07vh)" }}
           >
             {story.text}
           </p>
@@ -582,14 +604,14 @@ function StoriesSection({
           style={{ marginBottom: "min(3.47vw, 5.37vh)" }}
         >
           <h2
-            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
-            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
-          >
+   className={`m-0 text-center text-black ${SECTION_HEADING_CLASS}`}
+   style={{ ...SECTION_HEADING_STYLE, }}
+   >
             {storiesHeadingFirst}
           </h2>
           <h2
-            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
-            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
+            className={`m-0 text-center text-black ${SECTION_HEADING_CLASS}`}
+            style={{ ...SECTION_HEADING_STYLE, }}
           >
             {storiesHeadingSecond}
           </h2>
@@ -720,14 +742,13 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
             variants={{
               hidden: { opacity: 0, y: 30 },
               visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
-            }}
-            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%] max-md:!mb-[clamp(32px,6dvh,48px)] max-md:whitespace-nowrap"
-            style={{
-              fontSize: "min(4.51vw, 6.98vh)",
-              lineHeight: "150%",
-              marginBottom: "min(3.47vw, 5.37vh)",
-            }}
-          >
+   }}
+   className={`m-0 text-center text-black max-md:!mb-[clamp(32px,6dvh,48px)] max-md:whitespace-nowrap ${SECTION_HEADING_CLASS}`}
+   style={{
+    ...SECTION_HEADING_STYLE,
+    marginBottom: "min(3.47vw, 5.37vh)",
+   }}
+   >
             {`${impactHeadingFirst} ${impactHeadingSecond}`}
           </motion.h2>
 

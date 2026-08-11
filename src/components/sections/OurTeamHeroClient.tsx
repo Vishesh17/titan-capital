@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import {
-  HERO_HEADING_LIGHT_CLASS,
-  HERO_HEADING_LIGHT_STYLE,
   HERO_BODY_CLASS,
   HERO_BODY_STYLE,
+  HERO_HEADING_LIGHT_CLASS,
+  HERO_HEADING_LIGHT_MOBILE_STYLE,
+  HERO_HEADING_LIGHT_STYLE,
 } from "@/styles/heroTypography";
 
 /* ─────────────────────────────────────────────────────────
@@ -288,19 +289,18 @@ export default function OurTeamHeroClient({
               <motion.h1
                 key={i}
                 className="m-0 font-['Poppins',_sans-serif] font-bold uppercase text-[#0E0E0E]"
-                style={{ fontSize: "clamp(30px, 9vw, 46px)", lineHeight: "128%" }}
+                // Inline, not the `max-md:` half of HERO_HEADING_LIGHT_CLASS:
+                // this block is `lg:hidden`, so it is still on screen from
+                // 768-1023px where that variant no longer applies.
+                style={HERO_HEADING_LIGHT_MOBILE_STYLE}
                 variants={fadeUp(i * 0.15)}
               >
                 {line}
               </motion.h1>
             ))}
             <motion.p
-              className="m-0 font-['Poppins',_sans-serif] font-normal text-[#000]"
-              style={{
-                marginTop: "clamp(10px, 2.5vw, 16px)",
-                fontSize: "clamp(13px, 3.6vw, 15px)",
-                lineHeight: "150%",
-              }}
+              className={`m-0 text-[#000] ${HERO_BODY_CLASS}`}
+              style={{ ...HERO_BODY_STYLE, marginTop: "clamp(10px, 2.5vw, 16px)" }}
               variants={fadeUp(0.45)}
             >
               {description}

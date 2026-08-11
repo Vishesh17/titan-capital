@@ -10,6 +10,14 @@ import {
   useSpring,
   useTransform
 } from "framer-motion";
+import {
+  HERO_BODY_CLASS,
+  HERO_BODY_STYLE,
+  SECTION_HEADING_CLASS,
+  SECTION_HEADING_STYLE,
+  SUBHEADING_CLASS,
+  SUBHEADING_STYLE,
+} from "@/styles/heroTypography";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -250,25 +258,20 @@ export default function IndicornSpotlightClient({
         <div className="relative">
           <div className="relative z-10 flex w-full flex-col items-start text-left max-md:!items-center max-md:!text-center">
             <h2
-              className="m-0 font-['Poppins',_sans-serif] font-semibold max-md:!whitespace-nowrap max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
-              style={{
-                color: "#FBF7F0",
-                fontSize: "min(4.51vw, 6.98vh)",
-                lineHeight: "110%", 
-              }}
-            >
+    className={`m-0 max-md:!whitespace-nowrap ${SECTION_HEADING_CLASS}`}
+    style={{
+    color: "#FBF7F0",
+    ...SECTION_HEADING_STYLE, 
+    }}
+   >
               {heading}
             </h2>
 
             <p
-              className="m-0 max-md:!text-[clamp(14px,4vw,18px)] max-md:!leading-[1.4] max-md:!mt-[12px]"
+              className={`m-0 max-md:!mt-[12px] ${SUBHEADING_CLASS}`}
               style={{
                 color: "#FBF7F0",
-                fontFamily: "'Poppins', sans-serif",
-                fontSize: "min(2.08vw, 3.22vh)",
-                fontStyle: "normal",
-                fontWeight: 300,
-                lineHeight: "172%",
+                ...SUBHEADING_STYLE,
                 marginTop: "min(0.29vw, 0.45vh)",
               }}
             >
@@ -407,10 +410,8 @@ export default function IndicornSpotlightClient({
             style={{ paddingTop: "min(0.25vw, 0.4vh)" }} 
           >
             <p
-              className="m-0 font-['Poppins',_sans-serif] max-md:!text-[clamp(14px,4vw,18px)] max-md:!leading-[1.6]"
-              style={{
-                color: "#FFF", fontSize: "min(1.62vw, 2.51vh)", fontWeight: 300, lineHeight: "150%",
-              }}
+              className={`m-0 ${HERO_BODY_CLASS}`}
+              style={{ color: "#FFF", ...HERO_BODY_STYLE }}
             >
               {quote}
             </p>

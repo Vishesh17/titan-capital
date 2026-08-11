@@ -9,6 +9,15 @@ import {
   type Variants,
 } from "framer-motion";
 import GrainOverlay from "@/components/ui/GrainOverlay";
+import {
+  BODY_BOLD_CLASS,
+  HERO_BODY_CLASS,
+  HERO_BODY_STYLE,
+  SECTION_HEADING_CLASS,
+  SECTION_HEADING_STYLE,
+  SUBHEADING_CLASS,
+  SUBHEADING_STYLE,
+} from "@/styles/heroTypography";
 
 /* ─────────────────────────────────────────────────────────
    Types — shared with the server wrapper (WhatFoundersGet.tsx).
@@ -30,15 +39,9 @@ export interface WhatFoundersGetData {
 
 const SZ = {
   // typography
-  heading: "min(4.51vw, 6.98vh)",
-  rowTitle: "min(2.31vw, 3.56vh)",
   subHeading: "min(1.52vw, 2.36vh)",
   desc: "min(1.39vw, 2.15vh)",
-  rotTitle: "min(2.78vw, 4.30vh)",
-  backLink: "min(1.51vw, 2.33vh)",
 
-  oSubHeading: "min(1.85vw, 2.86vh)",
-  oDesc: "min(1.62vw, 2.51vh)",
   oGap: "min(3.42vw, 5.28vh)",
   oPadY: "min(2.31vw, 3.58vh)",
 
@@ -228,12 +231,7 @@ function MobileClosedRow({ row }: { row: HowWeShowUpRow }) {
       className="flex w-full flex-col text-left"
     >
       <div className="flex w-full items-start justify-between gap-[16px]">
-        <h3
-          className="m-0 font-['Poppins',_sans-serif] font-normal text-black"
-          style={{ fontSize: "24px", lineHeight: "120%" }}
-        >
-          {row.title}
-        </h3>
+        <h3 className={`m-0 text-black ${SUBHEADING_CLASS}`}>{row.title}</h3>
         <div className="shrink-0 mt-[4px]">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M6 18L18 6M8 6h10v10"/>
@@ -241,17 +239,11 @@ function MobileClosedRow({ row }: { row: HowWeShowUpRow }) {
         </div>
       </div>
 
-      <h4
-        className="m-0 mt-[20px] font-['Poppins',_sans-serif] font-medium text-black"
-        style={{ fontSize: "19px", lineHeight: "140%" }}
-      >
+      <h4 className={`m-0 mt-[20px] text-black ${BODY_BOLD_CLASS}`} style={HERO_BODY_STYLE}>
         {row.shortHeading}
       </h4>
 
-      <p
-        className="m-0 mt-[8px] font-['Poppins',_sans-serif] font-normal text-[#1a1a1a]"
-        style={{ fontSize: "17px", lineHeight: "150%" }}
-      >
+      <p className={`m-0 mt-[8px] text-[#1a1a1a] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
         {row.shortDesc}
       </p>
     </motion.div>
@@ -273,12 +265,10 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
         minHeight: "min(8vw, 12.4vh)",
       }}
     >
+      {/* Same text as the opened card's vertical heading, so same level. */}
       <h3
-        className="m-0 whitespace-nowrap font-['Poppins',_sans-serif] font-normal capitalize text-black"
-        style={{
-          fontSize: SZ.rowTitle,
-          lineHeight: "120%",
-        }}
+        className={`m-0 whitespace-nowrap text-black ${SUBHEADING_CLASS}`}
+        style={SUBHEADING_STYLE}
       >
         {row.title}
       </h3>
@@ -289,22 +279,10 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
           gap: SZ.rowInnerGap,
         }}
       >
-        <h4
-          className="m-0 font-['Poppins',_sans-serif] font-medium text-black"
-          style={{
-            fontSize: SZ.subHeading,
-            lineHeight: "150%",
-          }}
-        >
+        <h4 className={`m-0 text-black ${BODY_BOLD_CLASS}`} style={HERO_BODY_STYLE}>
           {row.shortHeading}
         </h4>
-        <p
-          className="m-0 font-['Poppins',_sans-serif] font-normal text-[#0E0E0E]"
-          style={{
-            fontSize: SZ.desc,
-            lineHeight: "150%",
-          }}
-        >
+        <p className={`m-0 text-[#0E0E0E] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
           {row.shortDesc}
         </p>
       </div>
@@ -350,22 +328,19 @@ function OpenedRow({
               e.stopPropagation();
               onBack();
             }}
-            className="cursor-pointer border-0 bg-transparent p-0 font-['Poppins',_sans-serif] font-normal text-black underline underline-offset-4 transition-opacity hover:opacity-60"
-            style={{
-              fontSize: SZ.backLink,
-              lineHeight: "150%",
-              textAlign: "center",
-            }}
+            className={`cursor-pointer border-0 bg-transparent p-0 text-black underline underline-offset-4 transition-opacity hover:opacity-60 ${HERO_BODY_CLASS}`}
+            style={{ ...HERO_BODY_STYLE, textAlign: "center" }}
           >
             Back
           </button>
 
           <div className="flex items-center justify-center">
+            {/* The level-4 reference. Every other subheading on the site is
+                sized from this one, so it must stay on the token. */}
             <span
-              className="whitespace-nowrap text-center font-['Poppins',_sans-serif] font-normal capitalize text-black"
+              className={`whitespace-nowrap text-center text-black ${SUBHEADING_CLASS}`}
               style={{
-                fontSize: SZ.rotTitle,
-                lineHeight: "120%",
+                ...SUBHEADING_STYLE,
                 writingMode: "vertical-rl",
                 rotate: "180deg",
               }}
@@ -390,23 +365,11 @@ function OpenedRow({
             className="flex w-full flex-col"
             style={{ gap: SZ.oGap }}
           >
-            <h4
-              className="m-0 font-['Poppins',_sans-serif] font-medium text-[#0E0E0E]"
-              style={{
-                fontSize: SZ.oSubHeading,
-                lineHeight: "150%",
-              }}
-            >
+            <h4 className={`m-0 text-[#0E0E0E] ${BODY_BOLD_CLASS}`} style={HERO_BODY_STYLE}>
               {row.longHeading}
             </h4>
 
-            <p
-              className="m-0 font-['Poppins',_sans-serif] font-normal text-[#323232]"
-              style={{
-                fontSize: SZ.oDesc,
-                lineHeight: "150%",
-              }}
-            >
+            <p className={`m-0 text-[#323232] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
               {row.longDesc}
             </p>
 
@@ -424,13 +387,7 @@ function OpenedRow({
               }}
             />
 
-            <h5
-              className="m-0 text-left font-['Poppins',_sans-serif] font-medium text-black"
-              style={{
-                fontSize: SZ.oSubHeading,
-                lineHeight: "110%",
-              }}
-            >
+            <h5 className={`m-0 text-left text-black ${BODY_BOLD_CLASS}`} style={HERO_BODY_STYLE}>
               {row.valueTitle}
             </h5>
 
@@ -441,17 +398,10 @@ function OpenedRow({
               {row.valueBullets.map((bullet, i) => (
                 <li
                   key={i}
-                  className="relative font-['Poppins',_sans-serif] font-normal text-[#323232]"
-                  style={{
-                    fontSize: SZ.oDesc,
-                    lineHeight: "150%",
-                    paddingLeft: SZ.rowInnerGap,
-                  }}
+                  className={`relative text-[#323232] ${HERO_BODY_CLASS}`}
+                  style={{ ...HERO_BODY_STYLE, paddingLeft: SZ.rowInnerGap }}
                 >
-                  <span
-                    className="absolute left-0 top-0"
-                    style={{ fontSize: SZ.oDesc, lineHeight: "150%" }}
-                  >
+                  <span className="absolute left-0 top-0" style={HERO_BODY_STYLE}>
                     •
                   </span>
                   {bullet}
@@ -478,15 +428,13 @@ function OpenedRow({
             e.stopPropagation();
             onBack();
           }}
-          className="self-start cursor-pointer border-0 bg-transparent p-0 font-['Poppins',_sans-serif] text-[12px] font-medium tracking-[0.1em] text-black uppercase underline underline-offset-4 transition-opacity hover:opacity-60"
+          className={`self-start cursor-pointer border-0 bg-transparent p-0 tracking-[0.1em] text-black uppercase underline underline-offset-4 transition-opacity hover:opacity-60 ${HERO_BODY_CLASS}`}
+          style={HERO_BODY_STYLE}
         >
           Back
         </button>
 
-        <h2
-          className="m-0 mt-[20px] mb-[16px] font-['Poppins',_sans-serif] font-normal text-black"
-          style={{ fontSize: "32px", lineHeight: "120%" }}
-        >
+        <h2 className={`m-0 mt-[20px] mb-[16px] text-black ${SUBHEADING_CLASS}`}>
           {row.title}
         </h2>
 
@@ -500,16 +448,13 @@ function OpenedRow({
 
         <div className="flex flex-col py-[16px]">
           <h4
-            className="m-0 font-['Poppins',_sans-serif] font-bold text-black"
-            style={{ fontSize: "16px", letterSpacing: "0.5px", lineHeight: "140%" }}
+            className={`m-0 text-black ${BODY_BOLD_CLASS}`}
+            style={{ ...HERO_BODY_STYLE, letterSpacing: "0.5px" }}
           >
             {row.longHeading}
           </h4>
 
-          <p
-            className="m-0 mt-[12px] font-['Poppins',_sans-serif] font-normal text-[#1a1a1a]"
-            style={{ fontSize: "16px", lineHeight: "150%" }}
-          >
+          <p className={`m-0 mt-[12px] text-[#1a1a1a] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
             {row.longDesc}
           </p>
         </div>
@@ -526,8 +471,8 @@ function OpenedRow({
           {row.valueBullets.map((bullet, i) => (
             <li
               key={i}
-              className="relative font-['Poppins',_sans-serif] font-normal text-[#1a1a1a]"
-              style={{ fontSize: "16px", lineHeight: "150%", paddingLeft: "24px" }}
+              className={`relative text-[#1a1a1a] ${HERO_BODY_CLASS}`}
+              style={{ ...HERO_BODY_STYLE, paddingLeft: "24px" }}
             >
               <span className="absolute left-0 top-[2px] text-[20px] leading-[1]">
                 •
@@ -723,11 +668,8 @@ export default function WhatFoundersGetClient({
         viewport={{ once: false, amount: 0.15 }}
       >
         <h2
-          className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
-          style={{
-            fontSize: SZ.heading,
-            lineHeight: "120%",
-          }}
+          className={`m-0 text-center text-black ${SECTION_HEADING_CLASS}`}
+          style={SECTION_HEADING_STYLE}
         >
           {heading}
         </h2>

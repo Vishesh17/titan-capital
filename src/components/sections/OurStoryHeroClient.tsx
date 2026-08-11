@@ -120,10 +120,9 @@ export default function OurStoryHeroClient({
         </h1>
 
         <h1
-          className="m-0 font-['Poppins',_sans-serif] font-bold uppercase text-[#0E0E0E]"
+          className={`m-0 text-[#0E0E0E] ${HERO_HEADING_LIGHT_CLASS}`}
           style={{
-            fontSize: "clamp(44px, min(6.3vw, 9.7vh), 112px)",
-            lineHeight: "132%",
+            ...HERO_HEADING_LIGHT_STYLE,
             opacity: 0,
             animation: "ourstory-rise 0.8s cubic-bezier(0.22,1,0.36,1) 0.28s forwards",
           }}

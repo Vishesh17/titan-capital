@@ -10,6 +10,13 @@ import {
   type MotionValue,
 } from "framer-motion";
 import { useLenis } from "lenis/react";
+import {
+  BODY_BOLD_CLASS,
+  HERO_BODY_CLASS,
+  HERO_BODY_STYLE,
+  SECTION_HEADING_CLASS,
+  SECTION_HEADING_STYLE,
+} from "@/styles/heroTypography";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 const INTERVAL_MS = 5000; // auto-advance cadence
@@ -157,10 +164,7 @@ function CylinderCard({
         </p>
         {item.name && (
           <div style={{ marginTop: "clamp(14px, min(1.6vw, 2.4vh), 30px)" }}>
-            <p
-              className="m-0 font-['Poppins',_sans-serif] font-semibold text-black"
-              style={{ fontSize: "clamp(14px, min(1.3vw, 2vh), 21px)" }}
-            >
+            <p className={`m-0 text-black ${BODY_BOLD_CLASS}`} style={HERO_BODY_STYLE}>
               {item.name}
             </p>
             {item.role && (
@@ -302,16 +306,13 @@ export default function IndicornTestimonials() {
           style={{ marginBottom: "min(3.47vw, 5.37vh)" }}
         >
           <h2
-            className="m-0 font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
-            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "120%", marginBottom: "clamp(12px,min(1.5vw,2vh),24px)" }}
-          >
+   className={`m-0 text-black ${SECTION_HEADING_CLASS}`}
+   style={{ ...SECTION_HEADING_STYLE, marginBottom: "clamp(12px,min(1.5vw,2vh),24px)" }}
+   >
             What Founders Say <br className="hidden md:block" />
             About The Indicorns.
           </h2>
-          <p
-            className="m-0 font-['Poppins',_sans-serif] font-normal text-[#1a1a1a] max-md:!text-[16px]"
-            style={{ fontSize: "min(1.39vw, 2.15vh)", lineHeight: "160%" }}
-          >
+          <p className={`m-0 text-[#1a1a1a] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
             We asked founders from the Indicorn community what the recognition
             means to them — and how it changed the way they think about building
             a company.

@@ -3,6 +3,13 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import {
+  BODY_BOLD_CLASS,
+  HERO_BODY_STYLE,
+  SUBHEADING_CLASS,
+  SUBHEADING_MOBILE_STYLE,
+  SUBHEADING_STYLE,
+} from "@/styles/heroTypography";
 import { motion } from "framer-motion"; // Keep for buttonContent spinner animation
 
 /*
@@ -472,9 +479,9 @@ export default function Footer() {
             {/* Email — sits right under the social icons */}
             <a
               href="mailto:info@titancapital.vc"
-              className="inline-block break-words font-poppins font-semibold text-[#111] transition-transform duration-300 hover:scale-105 hover:opacity-70"
+              className={`inline-block break-words text-[#111] transition-transform duration-300 hover:scale-105 hover:opacity-70 ${SUBHEADING_CLASS}`}
               style={{
-                fontSize: "clamp(18px, min(2.78vw, 4.07vh), 40px)",
+                ...SUBHEADING_STYLE,
                 marginTop: "clamp(8px, min(1.25vw, 1.83vh), 18px)",
               }}
             >
@@ -494,10 +501,7 @@ export default function Footer() {
                   className="flex flex-col items-start"
                   style={{ gap: "clamp(8px, min(1.11vw, 1.63vh), 16px)" }}
                 >
-                  <h3
-                    className="font-poppins font-medium text-[#001A4D]"
-                    style={{ fontSize: "clamp(13px, min(1.67vw, 2.44vh), 24px)" }}
-                  >
+                  <h3 className={`text-[#001A4D] ${BODY_BOLD_CLASS}`} style={HERO_BODY_STYLE}>
                     {section.title}
                   </h3>
                   {section.links.length > 0 && (
@@ -565,8 +569,8 @@ export default function Footer() {
                 style={{ gap: "clamp(2px, 0.6vw, 6px)" }}
               >
                 <h3
-                  className="font-poppins font-medium text-[#001A4D] whitespace-nowrap"
-                  style={{ fontSize: "clamp(7px, 1.5vw, 13px)" }}
+                  className={`whitespace-nowrap text-[#001A4D] ${BODY_BOLD_CLASS}`}
+                  style={HERO_BODY_STYLE}
                 >
                   {section.title}
                 </h3>
@@ -636,8 +640,11 @@ export default function Footer() {
 
               <a
                 href="mailto:info@titancapital.vc"
-                className="inline-block break-words font-poppins font-semibold text-[#111] transition-transform duration-300 hover:opacity-70"
-                style={{ fontSize: "clamp(8px, 1.8vw, 12px)", lineHeight: "1.3" }}
+                className="inline-block break-words font-['Poppins',_sans-serif] font-medium text-[#111] transition-transform duration-300 hover:opacity-70"
+                // Inline, not the `max-md:` half of SUBHEADING_CLASS: this
+                // block is `lg:hidden`, so it is still on screen from
+                // 768-1023px where that variant no longer applies.
+                style={SUBHEADING_MOBILE_STYLE}
               >
                 info@titancapital.vc
               </a>

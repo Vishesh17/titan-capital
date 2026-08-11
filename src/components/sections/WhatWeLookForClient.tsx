@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, Variants } from "framer-motion";
+import { SECTION_HEADING_CLASS, SECTION_HEADING_STYLE } from "@/styles/heroTypography";
 
 /* ─────────────────────────────────────────────────────────
    Types — shared with the server wrapper
@@ -153,10 +154,10 @@ export default function WhatWeLookForClient({
           style={{ marginBottom: "min(3.47vw, 5.37vh)" }}
         >
           <motion.h2
-            className="m-0 font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
-            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "150%" }}
-            variants={fadeUp}
-          >
+   className={`m-0 text-black ${SECTION_HEADING_CLASS}`}
+   style={{ ...SECTION_HEADING_STYLE, }}
+   variants={fadeUp}
+   >
             {headingFirst} {headingSecond}
           </motion.h2>
         </motion.div>

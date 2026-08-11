@@ -18,10 +18,10 @@ import {
   type TargetAndTransition,
 } from "framer-motion";
 import {
-  HERO_HEADING_DARK_CLASS,
-  HERO_HEADING_DARK_STYLE,
   HERO_BODY_CLASS,
   HERO_BODY_STYLE,
+  HERO_HEADING_DARK_CLASS,
+  HERO_HEADING_DARK_STYLE,
 } from "@/styles/heroTypography";
 
 /* ─────────────────────────────────────────────────────────
@@ -653,9 +653,13 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
               </span>
             </h1>
 
+            {/* Mobile-only twin of the heading above — the words break
+                differently here and the photo slot moves below the text, so it
+                has to be its own element. Size comes from the same level-1
+                token; only the `max-md:` half of it ever applies, since this is
+                `md:hidden`. */}
             <h1
-              className="pointer-events-none m-0 flex md:hidden flex-col items-center text-center font-['Poppins',_sans-serif] font-black uppercase text-white"
-              style={{ fontSize: "clamp(36px, 12vw, 50px)", lineHeight: "96%" }}
+              className={`pointer-events-none m-0 flex md:hidden flex-col items-center text-center text-white ${HERO_HEADING_DARK_CLASS}`}
             >
               <RevealLine show={headingReady} delay={0}>Backing</RevealLine>
               <RevealLine show={headingReady} delay={0.3}>Founders</RevealLine>
@@ -701,7 +705,8 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 <CursorFillButton href="/getinvestment" label="Get Investment" />
               </div>
               <motion.p
-                className="hidden max-md:!block mt-[clamp(32px,6dvh,52px)] text-center font-['Poppins',_sans-serif] text-[clamp(11px,3vw,14px)] font-normal leading-[145%] text-white/90 w-[75vw]"
+                className={`hidden max-md:!block mt-[clamp(32px,6dvh,52px)] w-[75vw] text-center text-white/90 ${HERO_BODY_CLASS}`}
+                style={HERO_BODY_STYLE}
                 initial={false}
                 animate={{ opacity: subtitleReady ? 1 : 0 }}
                 transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}

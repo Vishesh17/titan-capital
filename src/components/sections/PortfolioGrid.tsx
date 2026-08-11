@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLenis } from "lenis/react";
+import { BODY_BOLD_CLASS, HERO_BODY_STYLE } from "@/styles/heroTypography";
 
 /** URL slug from brand name: lowercase, alphanumerics joined by hyphens. */
 function companySlug(name: string): string {
@@ -89,10 +90,7 @@ function SidebarFilterSection({
         onClick={() => setOpen((prev) => !prev)}
         className="flex w-full cursor-pointer items-center justify-between border-none bg-transparent py-1 text-left"
       >
-        <span
-          className="font-['Poppins',_sans-serif] font-normal text-[#000]"
-          style={{ fontSize: "clamp(18px, 1.8vw, 22px)" }}
-        >
+        <span className={`text-[#000] ${BODY_BOLD_CLASS}`} style={HERO_BODY_STYLE}>
           {label}
         </span>
         <motion.span
@@ -495,7 +493,7 @@ export default function PortfolioGrid() {
           style={{ paddingRight: "clamp(12px, 1.5vw, 20px)" }}
         >
           <div className="flex w-full items-center justify-between pb-4 border-b border-[#000]/10">
-            <span className="font-['Poppins',_sans-serif] font-medium text-[#000] text-[20px]">
+            <span className={`text-[#000] ${BODY_BOLD_CLASS}`} style={HERO_BODY_STYLE}>
               Filters
             </span>
             <button

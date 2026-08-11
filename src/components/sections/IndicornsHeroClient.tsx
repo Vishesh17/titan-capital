@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import {
+  HERO_HEADING_LIGHT_CLASS,
   HERO_HEADING_LIGHT_STYLE,
   HERO_BODY_STYLE,
 } from "@/styles/heroTypography";
@@ -289,7 +290,7 @@ export default function IndicornsHeroClient() {
         >
           <div className="flex flex-wrap items-center justify-center gap-[clamp(12px,min(1.5vw,2vh),24px)]">
             <h1
-              className="m-0 font-['Poppins',_sans-serif] font-bold uppercase text-[#0E0E0E]"
+              className={`m-0 text-[#0E0E0E] ${HERO_HEADING_LIGHT_CLASS}`}
               style={HEADING_STYLE}
             >
               What is an

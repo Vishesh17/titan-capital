@@ -14,6 +14,12 @@ import {
   Noto_Sans_Gurmukhi,
   Noto_Sans_Bengali,
 } from "next/font/google";
+import {
+  HERO_BODY_CLASS,
+  HERO_BODY_STYLE,
+  SECTION_HEADING_CLASS,
+  SECTION_HEADING_STYLE,
+} from "@/styles/heroTypography";
 
 /* Poppins is loaded with `subsets: ["latin"]` and carries no Indic glyphs, so
    every non-Latin spelling below would render as tofu without these. Weight
@@ -451,10 +457,7 @@ function FlipCard({ item }: { item: TestimonialItem }) {
       </div>
 
       <div className="mt-[min(1.16vw,1.79vh)] flex flex-col items-center text-center max-md:!mt-[16px]">
-        <p
-          className="m-0 font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[16px]"
-          style={{ fontSize: "min(1.62vw, 2.51vh)", lineHeight: "130%" }}
-        >
+        <p className={`m-0 text-black ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
           {item.name}
         </p>
         <p
@@ -566,14 +569,14 @@ export default function FoundersTestimonialClient({
         }}
       >
         <motion.h2
-          className="m-20 flex-col text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!mx-0 max-md:!mt-0 max-md:!mb-[40px] max-md:!leading-[120%] max-md:!px-[16px]"
-          style={{
-            fontSize: "min(4.51vw, 6.98vh)", lineHeight: "120%",
-            paddingLeft: "var(--section-px-wide)", paddingRight: "var(--section-px-wide)", marginBottom: "min(3.47vw, 5.37vh)",
-          }}
-          initial={{ opacity: 1 }}
-          viewport={{ once: true, amount: 0.4 }}
-        >
+     className={`m-20 flex-col text-center text-black max-md:!mx-0 max-md:!mt-0 max-md:!mb-[40px] max-md:!px-[16px] ${SECTION_HEADING_CLASS}`}
+     style={{
+      ...SECTION_HEADING_STYLE,
+      paddingLeft: "var(--section-px-wide)", paddingRight: "var(--section-px-wide)", marginBottom: "min(3.47vw, 5.37vh)",
+     }}
+     initial={{ opacity: 1 }}
+     viewport={{ once: true, amount: 0.4 }}
+    >
           {topHeading}
         </motion.h2>
 
@@ -593,8 +596,8 @@ export default function FoundersTestimonialClient({
         <motion.div className="flex flex-col items-center justify-center text-center max-md:!w-full" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }}>
           {/* FIXED: Removed whitespace-nowrap and max-width added on mobile so it breaks into 3-4 clean lines */}
           <motion.h2
-            className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[50px] max-md:!leading-[125%] max-md:!max-w-[280px]"
-            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "130%" }}
+            className={`m-0 text-center text-black max-md:!max-w-[280px] ${SECTION_HEADING_CLASS}`}
+            style={{ ...SECTION_HEADING_STYLE, }}
             variants={{ hidden: { opacity: 0, x: -50 }, visible: { opacity: 1, x: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } } }}
           >
             You Build the{" "}
@@ -609,8 +612,8 @@ export default function FoundersTestimonialClient({
             </span>
           </motion.h2>
           <motion.h2
-            className="m-0 mt-[min(0.58vw,0.90vh)] text-center font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[50px] max-md:!leading-[125%] max-md:!max-w-[340px] max-md:!mt-[8px]"
-            style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "130%" }}
+            className={`m-0 mt-[min(0.58vw,0.90vh)] text-center text-black max-md:!max-w-[340px] max-md:!mt-[8px] ${SECTION_HEADING_CLASS}`}
+            style={{ ...SECTION_HEADING_STYLE, }}
             variants={{ hidden: { opacity: 0, x: 50 }, visible: { opacity: 1, x: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.2 } } }}
           >
             {bottomHeadingSecond}

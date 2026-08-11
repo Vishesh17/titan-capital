@@ -9,6 +9,14 @@ import { blobPhotoStyle, BLOB_ASPECT } from "@/lib/blobPhotoStyle";
 import GmailIcon from "@/components/icons/GmailIcon";
 import LinkedInIcon from "@/components/icons/LinkedInIcon";
 import XIcon from "@/components/icons/XIcon";
+import {
+  BODY_BOLD_CLASS,
+  HERO_BODY_STYLE,
+  SECTION_HEADING_CLASS,
+  SECTION_HEADING_STYLE,
+  SUBHEADING_CLASS,
+  SUBHEADING_STYLE,
+} from "@/styles/heroTypography";
 
 /* ─────────────────────────────────────────────────────────
    Types
@@ -257,10 +265,9 @@ function TeamCard({
 
         {/* ── NAME ── */}
         <h3
-          className="m-0 text-left font-['Poppins',_sans-serif] font-semibold text-[#0E0E0E]"
+          className={`m-0 text-left text-[#0E0E0E] ${BODY_BOLD_CLASS}`}
           style={{
-            fontSize: "clamp(19px, min(2.16vw, 3vh), 26px)",
-            lineHeight: "130%",
+            ...HERO_BODY_STYLE,
             marginTop: "clamp(12px, min(1.5vw, 2.2vh), 20px)",
             maxWidth: "300px",
             // Removed minHeight so there are no forced blank gaps
@@ -350,11 +357,8 @@ function TeamGroup({
         />
         
         <motion.h3
-          className="m-0 text-center font-['Poppins',_sans-serif] font-medium text-black max-md:!text-[28px] whitespace-nowrap"
-          style={{
-            fontSize: "clamp(28px, min(3.3vw, 4.5vh), 48px)",
-            lineHeight: "120%",
-          }}
+          className={`m-0 whitespace-nowrap text-center text-black ${SUBHEADING_CLASS}`}
+          style={SUBHEADING_STYLE}
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: false, amount: 0.5 }}
@@ -460,16 +464,15 @@ export default function OurTeamClient({
           style={{ marginBottom: "min(3.47vw, 5.37vh)" }}
         >
           <motion.h2
-            className="m-0 font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(32px,8vw,40px)]"
-            style={{
-              fontSize: "min(4.51vw, 6.98vh)", 
-              lineHeight: "150%", 
-            }}
-            variants={{
-              hidden: { opacity: 0, y: 30 },
-              visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
-            }}
-          >
+      className={`m-0 text-black ${SECTION_HEADING_CLASS}`}
+      style={{
+       ...SECTION_HEADING_STYLE, 
+      }}
+      variants={{
+       hidden: { opacity: 0, y: 30 },
+       visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+      }}
+     >
             {headingFirst} {headingSecond}
           </motion.h2>
         </motion.div>

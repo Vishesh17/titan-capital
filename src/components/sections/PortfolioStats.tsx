@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { HERO_BODY_CLASS, HERO_BODY_STYLE } from "@/styles/heroTypography";
 
 /*
   Portfolio stats bar — 4 metrics in a single row.
@@ -150,13 +151,8 @@ export default function PortfolioStats() {
               <RollingNumber value={stat.value} />
             </div>
             <span
-              className="font-['Poppins',_sans-serif] font-normal text-[#001A4D] mt-1"
-              style={{
-                // ~40% larger than before.
-                fontSize: "clamp(10px, min(1.55vw, 2.28vh), 22px)",
-                lineHeight: "140%",
-                textAlign: "center",
-              }}
+              className={`mt-1 text-[#001A4D] ${HERO_BODY_CLASS}`}
+              style={{ ...HERO_BODY_STYLE, textAlign: "center" }}
             >
               {stat.label}
             </span>

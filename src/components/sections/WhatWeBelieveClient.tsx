@@ -10,6 +10,14 @@ import {
   type MotionValue,
 } from "framer-motion";
 import GrainOverlay from "@/components/ui/GrainOverlay";
+import {
+  HERO_BODY_CLASS,
+  HERO_BODY_STYLE,
+  SECTION_HEADING_CLASS,
+  SECTION_HEADING_STYLE,
+  SUBHEADING_CLASS,
+  SUBHEADING_STYLE,
+} from "@/styles/heroTypography";
 
 /* ─────────────────────────────────────────────────────────
    Types & Fallback Data
@@ -267,17 +275,16 @@ function DesktopCardsContainer({
         }}
       >
         <motion.h2
-          style={{
-            scale: headingScale,
-            transformOrigin: "center top",
-            marginTop: "72px",
-            fontSize: "min(4.51vw, 6.98vh)",
-            lineHeight: "150%",
-            textShadow: "0px 4px 20px rgba(0,0,0,0.1)",
-            willChange: "transform",
-          }}
-          className="m-0 text-center font-['Poppins',_sans-serif] font-semibold text-black whitespace-nowrap max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
-        >
+   style={{
+   scale: headingScale,
+   transformOrigin: "center top",
+   marginTop: "72px",
+   ...SECTION_HEADING_STYLE,
+   textShadow: "0px 4px 20px rgba(0,0,0,0.1)",
+   willChange: "transform",
+   }}
+   className={`m-0 text-center text-black whitespace-nowrap ${SECTION_HEADING_CLASS}`}
+  >
           {heading}
         </motion.h2>
       </motion.div>
@@ -597,8 +604,8 @@ function DesktopCardSlice({
         <div className="relative z-10 flex flex-col h-full" style={{ paddingTop: "min(3.47vw, 5.37vh)", paddingBottom: "min(2.78vw, 4.31vh)", paddingLeft: "min(2.08vw, 3.22vh)", paddingRight: "min(2.08vw, 3.22vh)", gap: "min(1.85vw, 2.86vh)" }}>
           <div className="flex justify-center">
             <h3
-              className="font-['Poppins',_sans-serif] font-semibold text-white capitalize text-center max-md:!text-[20px]"
-              style={{ fontSize: "min(3.01vw, 4.66vh)", lineHeight: "120%" }}
+              className={`text-center text-white ${SUBHEADING_CLASS}`}
+              style={SUBHEADING_STYLE}
             >
               {belief.title}
             </h3>
@@ -616,8 +623,8 @@ function DesktopCardSlice({
 
           <div className="flex justify-center">
             <p
-              className="font-['Poppins',_sans-serif] font-normal text-white/90 text-center max-md:!text-[13px]"
-              style={{ fontSize: "min(1.5vw, 2.3vh)", lineHeight: "160%" }}
+              className={`text-center text-white/90 ${HERO_BODY_CLASS}`}
+              style={HERO_BODY_STYLE}
             >
               {belief.description}
             </p>
@@ -725,8 +732,8 @@ function MobileCardSlice({
         >
           <div className="flex justify-center">
             <h3
-              className="font-['Poppins',_sans-serif] font-semibold text-white capitalize text-center max-md:!text-[clamp(16px,4.5vw,20px)]"
-              style={{ fontSize: "min(3.01vw, 4.66vh)", lineHeight: "120%" }}
+              className={`text-center text-white ${SUBHEADING_CLASS}`}
+              style={SUBHEADING_STYLE}
             >
               {belief.title}
             </h3>
@@ -744,8 +751,8 @@ function MobileCardSlice({
 
           <div className="flex justify-center">
             <p
-              className="font-['Poppins',_sans-serif] font-normal text-white/90 text-center max-md:!text-[clamp(10px,2.8vw,12px)] max-md:!leading-[140%]"
-              style={{ fontSize: "min(1.39vw, 2.15vh)", lineHeight: "155%" }}
+              className={`text-center text-white/90 ${HERO_BODY_CLASS}`}
+              style={HERO_BODY_STYLE}
             >
               {belief.description}
             </p>
