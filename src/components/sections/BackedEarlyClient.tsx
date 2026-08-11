@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef, useCallback, useState } from "react";
 import {
   motion,
@@ -40,6 +41,17 @@ const FALLBACK_HEADING_SECOND = "Built To Last";
   Desktop: Continuous smooth marquee with ultra-minimal background fade overlays.
   Mobile: 2x2 grid with independent, sequential 3D card-flip rotations.
 */
+
+/** URL slug from brand name — same rule PortfolioGrid uses, so these cards
+ *  resolve to the same /portfolio/[slug] pages. The name must match the
+ *  brandName in Sanity's portfolioGrid, e.g. "Olacabs" not "OLA". */
+function companySlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 export const MARQUEE_CSS = `
 @keyframes continuous-marquee {
@@ -374,8 +386,8 @@ const LOGO_H = 40;
 const FALLBACK_COMPANIES: BackedEarlyCompany[] = [
   { name: "Shadowfax",     bgImage: "/images/portfolio/shadowfax.webp",     logo: "/images/logos_backup/Shadowfax.svg",                logoScale: 1.2 },
   { name: "Credgenics",    bgImage: "/images/portfolio/credgenics.webp",    logo: "/images/logos_backup/Credgenics.svg",               logoScale: 0.9 },
-  { name: "OLA",           bgImage: "/images/portfolio/ola_bg.webp",           logo: "/images/logos_backup/ola.svg",                      logoScale: 0.7 },
-  { name: "Zouk",          bgImage: "/images/portfolio/zouk.webp",          logo: "/images/logos_backup/zouk_new_logo.webp",           logoScale: 0.8 },
+  { name: "Olacabs",       bgImage: "/images/portfolio/ola_bg.webp",           logo: "/images/logos_backup/ola.svg",                      logoScale: 0.7 },
+  { name: "Zouk (Sea Turtle)", bgImage: "/images/portfolio/zouk.webp",          logo: "/images/logos_backup/zouk_new_logo.webp",           logoScale: 0.8 },
   { name: "Unicommerce",   bgImage: "/images/portfolio/unicommerce.webp",   logo: "/images/logos_backup/unicommerce-logo.svg",         logoScale: 1.0 },
   { name: "Khatabook",     bgImage: "/images/portfolio/khatabook.webp",     logo: "/images/logos_backup/khatabook.png",                logoScale: 1.2, logoClass: "translate-y-[5px]" },
   { name: "Mamaearth",     bgImage: "/images/portfolio/mamaearth.webp",     logo: "/images/logos_backup/mamaearth_new.webp",           logoScale: 1.0 },
@@ -410,11 +422,13 @@ function CompanyCard({ company, mode = "marquee" }: { company: BackedEarlyCompan
   const isMarquee = mode === "marquee";
 
   return (
-    <div
-      className={`group/card relative shrink-0 overflow-hidden bg-[#0e1120] ${
+    <Link
+      href={`/portfolio/${companySlug(company.name)}`}
+      draggable={false}
+      className={`group/card relative block shrink-0 overflow-hidden bg-[#0e1120] cursor-pointer ${
         isMarquee
-          ? "pointer-events-none"                                       
-          : "cursor-pointer transition-all duration-300 ease-out hover:scale-105 hover:shadow-[0_0_20px_10px_rgba(0,0,0,0.5)]"
+          ? ""
+          : "transition-all duration-300 ease-out hover:scale-105 hover:shadow-[0_0_20px_10px_rgba(0,0,0,0.5)]"
       }`}
       style={modeStyles}
     >
@@ -462,7 +476,7 @@ function CompanyCard({ company, mode = "marquee" }: { company: BackedEarlyCompan
           />
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -485,7 +499,12 @@ function CardMarquee({ companies }: { companies: BackedEarlyCompany[] }) {
     velocity: 0,        
     lastPointerX: 0,    
     lastPointerTime: 0, 
+    capturedId: null as number | null,
   });
+
+  /* How far the pointer must travel before a press counts as a drag rather
+     than a click on a card. */
+  const DRAG_THRESHOLD_PX = 5;
 
   const SPEED = 1 / 55000;
   const FRICTION = 0.92;
@@ -548,15 +567,26 @@ function CardMarquee({ companies }: { companies: BackedEarlyCompany[] }) {
     st.dragStartScrollX = st.x;
     st.lastPointerX = e.clientX;
     st.lastPointerTime = performance.now();
+    st.capturedId = null;
     setIsDragging(true);
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    /* Deliberately NOT calling setPointerCapture here. Capturing on press
+       retargets the following `click` to this track, so a card's <Link> never
+       receives it and nothing navigates. Capture is taken in onPointerMove
+       instead, once the pointer has actually travelled far enough to count as
+       a drag — which also means a real drag still swallows the click. */
   }, []);
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     const st = s.current;
     if (!st.dragging) return;
 
-    st.x = st.dragStartScrollX + (e.clientX - st.dragStartX);
+    const dx = e.clientX - st.dragStartX;
+    if (st.capturedId === null && Math.abs(dx) > DRAG_THRESHOLD_PX) {
+      st.capturedId = e.pointerId;
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    }
+
+    st.x = st.dragStartScrollX + dx;
 
     const now = performance.now();
     const dtMs = now - st.lastPointerTime;
@@ -567,8 +597,17 @@ function CardMarquee({ companies }: { companies: BackedEarlyCompany[] }) {
     }
   }, []);
 
-  const onPointerUp = useCallback(() => {
-    s.current.dragging = false;
+  const onPointerUp = useCallback((e: React.PointerEvent) => {
+    const st = s.current;
+    if (st.capturedId !== null) {
+      try {
+        (e.currentTarget as HTMLElement).releasePointerCapture(st.capturedId);
+      } catch {
+        /* pointer already gone — nothing to release */
+      }
+      st.capturedId = null;
+    }
+    st.dragging = false;
     setIsDragging(false);
   }, []);
 

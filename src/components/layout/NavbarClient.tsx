@@ -21,7 +21,7 @@ const EASE = cubicBezier(0.22, 1, 0.36, 1);
    flips to dark-on-light while the user is above the scroll
    threshold. Once scrolled past 60px it snaps back to the
    default navy pill for consistency with every other section. */
-const INVERTED_HERO_ROUTES = new Set(["/ourTeam", "/indicorns", "/ourstory"]);
+const INVERTED_HERO_ROUTES = new Set(["/ourTeam", "/indicorns", "/ourstory", "/founders"]);
 
 /* ─── Cursor-origin fill button (shared) ─── */
 function NavCursorFillButton({

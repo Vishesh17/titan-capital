@@ -16,26 +16,22 @@ import { motion } from "framer-motion"; // Keep for buttonContent spinner animat
 
 /* Map specific footer link labels to custom routes */
 const footerHrefs: Record<string, string> = {
-  "Titan Winners Fund": "/winnersFund",
-  "Our Portfolio": "/portfolio",
-  "Titan Seed Fund": "/titanSeedFund",
-  "Home Page": "/",
-  "Get Investment": "/getinvestment",
-  "Our Team": "/ourTeam",
   "Our Story": "/ourstory",
-  "Beyond The Cheque": "/beyondTheCheque",
+  "Our Team": "/ourTeam",
+  "Our Portfolio": "/portfolio",
+  "Founders' Stories": "/foundersstory",
+  "Get Investment": "/getinvestment",
+  "Titan Ecosystem": "/beyondTheCheque",
   "Indicorns": "/indicorns",
-  "Founder Story": "/foundersstory",
-  "Blogs" : "/blogs"
+  "Blogs & News": "/blogs",
 };
 
+/* Fund Details sits last under About for SEBI compliance. The old "Home"
+   column is gone — the wordmark itself is the route home. */
 const navLinks = [
-  { title: "Home", links: ["Home Page"] },
-  { title: "About", links: ["Our Team", "Indicorns","Our Story"] },//Our Story, Teams, Indicorns
-  { title: "For Founder", links: ["Get Investment","Titan Seed Fund", "Titan Winners Fund"] },//"Beyond Cheque"
-  { title: "Portfolio", links: ["Our Portfolio"] },
-  { title: "Community", links: ["Founder Story"] }, //"Titan Ecosystem"
-  { title: "Perspective", links: ["Blogs"] }, //,"News","Events"
+  { title: "About", links: ["Our Story", "Our Team"] },
+  { title: "Portfolio", links: ["Our Portfolio", "Founders' Stories", "Get Investment"] },
+  { title: "Perspective", links: ["Titan Ecosystem", "Indicorns", "Blogs & News"] },
 ];
 
 /* ────────────────────────────────────────────────
@@ -406,17 +402,16 @@ export default function Footer() {
   return (
     <footer
       className="relative flex w-full flex-col items-center overflow-hidden bg-white shadow-[0_-3px_27.6px_0_rgba(178,178,178,0.25)]"
-      style={{ paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)", paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)" }}
+      style={{
+        paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
+        paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
+        paddingLeft: "var(--section-px-wide)",
+        paddingRight: "var(--section-px-wide)",
+      }}
     >
 
       {/* Inner Content Wrapper */}
-      <div
-        className="relative z-10 flex w-full max-w-[1440px] flex-col"
-        style={{
-          paddingLeft:  "var(--section-px-wide, 5%)",
-          paddingRight: "var(--section-px-wide, 5%)",
-        }}
-      >
+      <div className="relative z-10 flex w-full flex-col">
 
         {/* ============================================================
             DESKTOP (lg+): Original side-by-side layout — UNTOUCHED
@@ -428,8 +423,10 @@ export default function Footer() {
             className="flex flex-col"
             style={{ gap: "clamp(12px, min(1.67vw, 2.44vh), 24px)" }}
           >
-            <div
-              className="relative"
+            <Link
+              href="/"
+              aria-label="Titan Capital — home"
+              className="relative block transition-opacity duration-300 hover:opacity-80"
               style={{
                 width:  "clamp(140px, min(15.21vw, 22.3vh), 219px)",
                 height: "clamp(45px, min(4.93vw, 7.23vh), 71px)",
@@ -441,7 +438,7 @@ export default function Footer() {
                 fill
                 className="object-contain"
               />
-            </div>
+            </Link>
 
             <p
               className="font-poppins font-normal text-[#0E0E0E]"
@@ -535,8 +532,10 @@ export default function Footer() {
         <div className="flex w-full flex-col lg:hidden">
 
           {/* Logo */}
-          <div
-            className="relative"
+          <Link
+            href="/"
+            aria-label="Titan Capital — home"
+            className="relative block transition-opacity duration-300 hover:opacity-80"
             style={{
               width: "clamp(80px, 18vw, 140px)",
               height: "clamp(26px, 5.5vw, 44px)",
@@ -549,7 +548,7 @@ export default function Footer() {
               fill
               className="object-contain object-left"
             />
-          </div>
+          </Link>
 
           {/* Nav — forced single horizontal row */}
           <div
@@ -699,16 +698,20 @@ export default function Footer() {
       </div>
 
      {/* ── GIANT WATERMARK ── */}
+     {/* Same box as the content wrapper above — capped at 1440, centred, then
+         padded. It used to be padded at full viewport width and capped after,
+         which put the wordmark on a different left edge from the content on
+         any screen wider than 1440. */}
      <div
-        className="pointer-events-none absolute flex w-full justify-center overflow-hidden"
+        className="pointer-events-none absolute left-0 right-0 flex justify-center overflow-hidden"
         style={{
           bottom: "clamp(-15px, min(-3.82vw, -5.6vh), -45px)",
-          paddingLeft: "var(--section-px-wide, 5%)",
-          paddingRight: "var(--section-px-wide, 5%)",
+          paddingLeft: "var(--section-px-wide)",
+          paddingRight: "var(--section-px-wide)",
         }}
       >
         <svg
-          className="w-full max-w-[1440px]"
+          className="w-full"
           viewBox="0 0 1000 150"
           preserveAspectRatio="xMidYMax meet"
         >

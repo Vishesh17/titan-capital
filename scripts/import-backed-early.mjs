@@ -55,8 +55,8 @@ const LOGO = "public/images/logos_backup";
 const COMPANIES = [
   { name: "Shadowfax",     bg: `${BG}/shadowfax.webp`,    logo: `${LOGO}/Shadowfax.svg`,                logoScale: 1.2 },
   { name: "Credgenics",    bg: `${BG}/credgenics.webp`,   logo: `${LOGO}/Credgenics.svg`,               logoScale: 0.9 },
-  { name: "OLA",           bg: `${BG}/ola_bg.webp`,       logo: `${LOGO}/ola.svg`,                      logoScale: 0.7 },
-  { name: "Zouk",          bg: `${BG}/zouk.webp`,         logo: `${LOGO}/zouk_new_logo.webp`,           logoScale: 0.8 },
+  { name: "Olacabs",       bg: `${BG}/ola_bg.webp`,       logo: `${LOGO}/ola.svg`,                      logoScale: 0.7 },
+  { name: "Zouk (Sea Turtle)", bg: `${BG}/zouk.webp`,         logo: `${LOGO}/zouk_new_logo.webp`,           logoScale: 0.8 },
   { name: "Unicommerce",   bg: `${BG}/unicommerce.webp`,  logo: `${LOGO}/unicommerce-logo.svg`,         logoScale: 1.0 },
   { name: "Khatabook",     bg: `${BG}/khatabook.webp`,    logo: `${LOGO}/khatabook.png`,                logoScale: 1.2, logoClass: "translate-y-[5px]" },
   { name: "Mamaearth",     bg: `${BG}/mamaearth.webp`,    logo: `${LOGO}/mamaearth_new.webp`,           logoScale: 1.0 },

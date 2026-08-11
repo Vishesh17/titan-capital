@@ -4,30 +4,52 @@ import { notFound } from "next/navigation";
 
 import BackLink from "@/components/ui/BackLink";
 
-import GmailIcon from "@/components/icons/GmailIcon";
+import InstagramIcon from "@/components/icons/InstagramIcon";
 import LinkedInIcon from "@/components/icons/LinkedInIcon";
 import XIcon from "@/components/icons/XIcon";
 import Footer from "@/components/sections/Footer";
 import { sanityFetch } from "@/sanity/lib/client";
-import {
-  allTeamMemberSlugsQuery,
-  teamMemberBySlugQuery,
-} from "@/sanity/lib/queries";
+import { allFoundersQuery } from "@/sanity/lib/queries";
+import { BLOB_ASPECT } from "@/lib/blobPhotoStyle";
+import { founderSlug } from "@/lib/founderSlug";
 import { buildMetadata } from "@/sanity/lib/seo";
+import { HERO_BODY_CLASS, HERO_BODY_STYLE } from "@/styles/heroTypography";
 
-import { blobPhotoStyle, BLOB_ASPECT } from "@/lib/blobPhotoStyle";
-import type { TeamMember } from "@/components/sections/OurTeamClient";
+import type { FounderProfile } from "@/components/sections/LedByFoundersClient";
 
-export async function generateStaticParams() {
+/**
+ * /founders/[slug] — detail page for a Titan Capital founder.
+ *
+ * Mirrors /ourTeam/[slug]: same blob-cutout portrait, same type scale, same
+ * bio card. The one difference is the socials — these two use Instagram
+ * rather than email.
+ */
+
+async function getFounders(): Promise<FounderProfile[]> {
   try {
-    const slugs = await sanityFetch<string[] | null>({
-      query: allTeamMemberSlugsQuery,
-      tags: ["ourTeam"],
+    const rows = await sanityFetch<FounderProfile[] | null>({
+      query: allFoundersQuery,
+      tags: ["ledByFounders"],
     });
-    return (slugs || []).map((slug) => ({ slug }));
-  } catch {
+    return rows || [];
+  } catch (err) {
+    console.error("[founders/[slug]] Sanity fetch failed:", err);
     return [];
   }
+}
+
+/** Resolve by the explicit slug when one is set, else derive it from the
+ *  name — so the route works before anyone fills the slug field in Sanity. */
+async function getFounder(slug: string): Promise<FounderProfile | null> {
+  const founders = await getFounders();
+  return (
+    founders.find((f) => (f.slug || founderSlug(f.name)) === slug) ?? null
+  );
+}
+
+export async function generateStaticParams() {
+  const founders = await getFounders();
+  return founders.map((f) => ({ slug: f.slug || founderSlug(f.name) }));
 }
 
 export async function generateMetadata({
@@ -37,26 +59,13 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
   const base = await buildMetadata("ourteam");
-  const member = await getMember(slug);
-  if (!member) return base;
+  const founder = await getFounder(slug);
+  if (!founder) return base;
   return {
     ...base,
-    title: member.title ? `${member.name} — ${member.title}` : member.name,
-    description: member.bio?.slice(0, 160) || base.description,
+    title: founder.role ? `${founder.name} — ${founder.role}` : founder.name,
+    description: (founder.longBio || founder.bio)?.slice(0, 160) || base.description,
   };
-}
-
-async function getMember(slug: string): Promise<TeamMember | null> {
-  try {
-    return await sanityFetch<TeamMember | null>({
-      query: teamMemberBySlugQuery,
-      params: { slug },
-      tags: ["ourTeam", `ourTeam:${slug}`],
-    });
-  } catch (err) {
-    console.error("[ourteam/[slug]] Sanity fetch failed:", err);
-    return null;
-  }
 }
 
 function cdnImageSrc(url: string, width: number): string {
@@ -65,28 +74,25 @@ function cdnImageSrc(url: string, width: number): string {
   return `${url}?w=${width}&auto=format&q=85`;
 }
 
-/* ─────────────────────────────────────────────────────────
-   Detail page layout
-   ───────────────────────────────────────────────────────── */
-export default async function TeamMemberPage({
+export default async function FounderPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const member = await getMember(slug);
-  if (!member) notFound();
+  const founder = await getFounder(slug);
+  if (!founder) notFound();
 
-  // Show only what's filled in — empty fields are omitted from Sanity, so we
-  // render nothing for them (no placeholder title/bio, no dead social icons).
-  const linkedinHref = member.linkedinUrl || undefined;
-  const twitterHref = member.twitterUrl || undefined;
-  const emailHref = member.emailUrl
-    ? member.emailUrl.startsWith("mailto:")
-      ? member.emailUrl
-      : `mailto:${member.emailUrl}`
-    : undefined;
-  const hasSocials = Boolean(linkedinHref || twitterHref || emailHref);
+  const linkedinHref = founder.linkedin || undefined;
+  const instagramHref = founder.instagram || undefined;
+  const twitterHref = founder.twitter || undefined;
+  const hasSocials = Boolean(linkedinHref || instagramHref || twitterHref);
+
+  /* The section shows the photo WITH its background; this page clips a cut-out
+     into the blob. Fall back to the section photo so the page still renders
+     before the cut-out is uploaded — it just won't mask cleanly. */
+  const photo = founder.imageNoBg || founder.image;
+  const bio = founder.longBio || founder.bio;
 
   return (
     <main className="flex min-h-screen w-full flex-col bg-white">
@@ -108,7 +114,6 @@ export default async function TeamMemberPage({
               className="group inline-flex cursor-pointer items-center bg-transparent transition-transform duration-300 hover:scale-105 hover:opacity-80"
               style={{ gap: "clamp(8px, min(0.8vw, 1.2vh), 14px)" }}
             >
-              
               <span
                 className="font-['Poppins',_sans-serif] font-light text-black"
                 style={{
@@ -128,17 +133,17 @@ export default async function TeamMemberPage({
               }}
             >
               <Link
-                href="/ourteam"
+                href="/ourTeam"
                 className="font-light transition-opacity duration-200 hover:opacity-70"
               >
                 About
               </Link>
               <span className="font-light"> / </span>
-              <span className="font-medium">{member.name}</span>
+              <span className="font-medium">{founder.name}</span>
             </p>
           </div>
 
-          {/* ── Row 2: Photo  +  Name/Title/Icons  (Bio card overlaps) ── */}
+          {/* ── Row 2: Photo  +  Name/Role/Icons  (bio card overlaps) ── */}
           <div
             className="relative flex w-full flex-col max-lg:items-center lg:flex-row lg:items-start"
             style={{
@@ -146,13 +151,13 @@ export default async function TeamMemberPage({
               gap: "clamp(28px, min(3vw, 4.5vh), 56px)",
             }}
           >
-            {/* Photo with cream blob */}
-            <div className="relative shrink-0 z-0">
+            {/* Portrait with cream blob */}
+            <div className="relative z-0 shrink-0">
               <div
                 className="relative"
                 style={{
                   width: "clamp(280px, min(35.9vw, 52vh), 517px)",
-                  // Must match the grid — see BLOB_ASPECT.
+                  // Must match the team grid — see BLOB_ASPECT.
                   aspectRatio: BLOB_ASPECT,
                 }}
               >
@@ -162,17 +167,11 @@ export default async function TeamMemberPage({
                   aria-hidden
                   draggable={false}
                   className="absolute h-full w-full select-none"
-                  style={{
-                    top: "6%",
-                    left: "5%",
-                    // `fill`, not `contain`: the mask below stretches to
-                    // 100% 100%, so a letterboxed blob would paint a different
-                    // shape from the cutout it is meant to trace — the gap
-                    // between blob edge and photo.
-                    objectFit: "fill",
-                  }}
+                  // `fill`, not `contain`: the mask stretches to 100% 100%, so a
+                  // letterboxed blob paints a different shape from the cutout.
+                  style={{ top: "6%", left: "5%", objectFit: "fill" }}
                 />
-                {member.image && (
+                {photo && (
                   <div
                     className="absolute h-full w-full"
                     style={{
@@ -188,17 +187,11 @@ export default async function TeamMemberPage({
                   >
                     <div
                       className="absolute"
-                      style={{
-                        bottom: "0",
-                        left: "0",
-                        width: "75%",
-                        height: "85%",
-                        ...blobPhotoStyle(member),
-                      }}
+                      style={{ bottom: "0", left: "0", width: "75%", height: "85%" }}
                     >
                       <Image
-                        src={cdnImageSrc(member.image, 1000)}
-                        alt={member.name}
+                        src={cdnImageSrc(photo, 1000)}
+                        alt={founder.name}
                         fill
                         sizes="(max-width: 1024px) 60vw, 517px"
                         priority
@@ -210,10 +203,8 @@ export default async function TeamMemberPage({
               </div>
             </div>
 
-            {/* Right column: name, title, icons, bio 
-                Added max-lg:-mt-12 to create negative vertical padding between photo and text on mobile.
-                Added lg:pt-12 to align Name with the face on desktop rather than the high blob edge. */}
-            <div className="flex w-full flex-1 flex-col max-lg:items-center max-lg:mt-2 lg:pt-12 relative z-10">
+            {/* Right column: name, role, socials, bio */}
+            <div className="relative z-10 flex w-full flex-1 flex-col max-lg:mt-2 max-lg:items-center lg:pt-12">
               <h1
                 className="m-0 font-['Poppins',_sans-serif] font-medium text-[#0E0E0E] max-lg:!text-center"
                 style={{
@@ -221,23 +212,22 @@ export default async function TeamMemberPage({
                   lineHeight: "158%",
                 }}
               >
-                {member.name}
+                {founder.name}
               </h1>
-              
-              {/* Title (hidden when empty) — whitespace-pre-line respects line breaks */}
-              {member.title && (
+
+              {founder.role && (
                 <p
-                  className="m-0 font-['Poppins',_sans-serif] font-normal capitalize text-[#0E0E0E] whitespace-pre-line max-lg:!text-center"
+                  className="m-0 whitespace-pre-line font-['Poppins',_sans-serif] font-normal capitalize text-[#0E0E0E] max-lg:!text-center"
                   style={{
                     fontSize: "clamp(20px, min(2.22vw, 3.25vh), 32px)",
                     lineHeight: "158%",
                   }}
                 >
-                  {member.title}
+                  {founder.role}
                 </p>
               )}
 
-              {/* Social Icons — each rendered only if its link exists */}
+              {/* Socials — LinkedIn + Instagram (these two don't use email) */}
               {hasSocials && (
                 <div
                   className="flex items-center max-lg:justify-center"
@@ -251,7 +241,7 @@ export default async function TeamMemberPage({
                       href={linkedinHref}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={`${member.name} on LinkedIn`}
+                      aria-label={`${founder.name} on LinkedIn`}
                       className="inline-block transition-transform duration-200 hover:scale-110"
                       style={{
                         width: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
@@ -263,10 +253,12 @@ export default async function TeamMemberPage({
                     </a>
                   )}
 
-                  {emailHref && (
+                  {instagramHref && (
                     <a
-                      href={emailHref}
-                      aria-label={`Email ${member.name}`}
+                      href={instagramHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${founder.name} on Instagram`}
                       className="inline-block transition-transform duration-200 hover:scale-110"
                       style={{
                         width: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
@@ -274,7 +266,7 @@ export default async function TeamMemberPage({
                         aspectRatio: "1 / 1",
                       }}
                     >
-                      <GmailIcon className="h-full w-full" />
+                      <InstagramIcon className="h-full w-full" />
                     </a>
                   )}
 
@@ -283,7 +275,7 @@ export default async function TeamMemberPage({
                       href={twitterHref}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={`${member.name} on X`}
+                      aria-label={`${founder.name} on X`}
                       className="inline-block transition-transform duration-200 hover:scale-110"
                       style={{
                         width: "clamp(32px, min(3.33vw, 4.88vh), 48px)",
@@ -297,31 +289,27 @@ export default async function TeamMemberPage({
                 </div>
               )}
 
-              {/* Bio card (hidden when empty) — overlaps the image and shifts down. */}
-{member.bio && (
-<div
-  className="relative z-10 box-border flex self-stretch lg:self-end max-lg:mt-8 lg:mt-24 xl:mt-36 max-lg:w-full lg:-ml-[clamp(80px,8vw,140px)] lg:w-[calc(100%+clamp(80px,8vw,140px))]"
-  style={{
-    background: "#FBF7F0",
-    borderRadius: "2px",
-    padding: "clamp(20px, min(2.36vw, 3.45vh), 34px)",
-    maxWidth: "clamp(420px, 85vw, 1035px)",
-    justifyContent: "center",
-    alignItems: "center",
-  }}
->
-  {/* Added w-full to the className and removed the maxWidth from style */}
-  <p
-    className="m-0 w-full whitespace-pre-line font-['Poppins',_sans-serif] font-normal text-black"
-    style={{
-      fontSize: "clamp(14px, min(1.67vw, 2.44vh), 24px)",
-      lineHeight: "150%",
-    }}
-  >
-    {member.bio}
-  </p>
-</div>
-)}
+              {/* Bio card — overlaps the portrait, same as the team pages */}
+              {bio && (
+                <div
+                  className="relative z-10 box-border flex self-stretch max-lg:mt-8 max-lg:w-full lg:-ml-[clamp(80px,8vw,140px)] lg:mt-24 lg:w-[calc(100%+clamp(80px,8vw,140px))] lg:self-end xl:mt-36"
+                  style={{
+                    background: "#FBF7F0",
+                    borderRadius: "2px",
+                    padding: "clamp(20px, min(2.36vw, 3.45vh), 34px)",
+                    maxWidth: "clamp(420px, 85vw, 1035px)",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <p
+                    className={`m-0 w-full whitespace-pre-line text-black ${HERO_BODY_CLASS}`}
+                    style={HERO_BODY_STYLE}
+                  >
+                    {bio}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

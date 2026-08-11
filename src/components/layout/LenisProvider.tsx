@@ -23,6 +23,11 @@ import { markAppMounted } from "@/lib/appNavState";
  * change — unless the URL carries a hash, in which case the destination page
  * owns the scroll (it may need to wait for async content before measuring).
  */
+/* Detail pages whose Back button returns the reader to their exact scroll
+   position. Deliberately scoped to these two — every other route still snaps
+   to the top on navigation. */
+const RESTORE_SCROLL_FROM = ["/ourTeam/", "/founders/"];
+
 function ScrollToTopOnNav({ children }: { children: ReactNode }) {
   const lenis = useLenis();
   const pathname = usePathname();
@@ -30,8 +35,12 @@ function ScrollToTopOnNav({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (pathname === prevPathname.current) return;
+    const from = prevPathname.current;
     prevPathname.current = pathname;
     if (window.location.hash) return;
+    // Leaving one of the restore-scroll detail pages — stand aside and let the
+    // browser put the reader back where they were.
+    if (RESTORE_SCROLL_FROM.some((p) => from.startsWith(p))) return;
     lenis?.scrollTo(0, { immediate: true });
   }, [pathname, lenis]);
 

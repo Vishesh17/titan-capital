@@ -4,6 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
 
+import InstagramIcon from "@/components/icons/InstagramIcon";
+import XIcon from "@/components/icons/XIcon";
+import { founderSlug } from "@/lib/founderSlug";
+import { HERO_BODY_CLASS, HERO_BODY_STYLE } from "@/styles/heroTypography";
+
 /* ─────────────────────────────────────────────────────────
    Shared motion variants
    ───────────────────────────────────────────────────────── */
@@ -21,12 +26,23 @@ const fadeUp = (delay = 0): Variants => ({
    ───────────────────────────────────────────────────────── */
 export interface FounderProfile {
   name: string;
+  /** Powers /founders/<slug>. Falls back to a slug derived from the name. */
+  slug?: string;
   role: string;
   linkedin?: string;
+  instagram?: string;
+  twitter?: string;
+  /** Section photo — keeps its background. */
   image?: string;
+  /** Detail-page photo — background removed, clipped into the blob. */
+  imageNoBg?: string;
+  /** Short bio, shown in the Led By Founders section. */
   bio: string;
+  /** Full story, shown on /founders/<slug>. */
+  longBio?: string;
   imagePosition?: "left" | "right";
 }
+
 
 export interface LedByFoundersData {
   headingTopHighlight?: string;
@@ -40,6 +56,7 @@ const FALLBACK_HEADING_BOTTOM = "Who've Walked The Path.";
 const FALLBACK_FOUNDERS: FounderProfile[] = [
   {
     name: "Kunal Bahl",
+    slug: "kunal-bahl",
     role: "Co-Founder, Titan Capital",
     linkedin: "https://www.linkedin.com/in/kunalbahl/",
     image: "/images/kunal-bahl.jpg",
@@ -48,6 +65,7 @@ const FALLBACK_FOUNDERS: FounderProfile[] = [
   },
   {
     name: "Rohit Bansal",
+    slug: "rohit-bansal",
     role: "Co-Founder, Titan Capital",
     linkedin: "https://www.linkedin.com/in/rohitbansal/",
     image: "/images/rohit-bansal.jpg",
@@ -84,6 +102,36 @@ const LinkedInIcon = () => (
   </svg>
 );
 
+const ICON_BOX = {
+  width: "clamp(24px, min(2.5vw, 3.5vh), 32px)",
+  height: "clamp(24px, min(2.5vw, 3.5vh), 32px)",
+  aspectRatio: "1 / 1",
+} as const;
+
+/** One social link, sized to match the LinkedIn mark above. */
+function SocialLink({
+  href,
+  label,
+  children,
+}: {
+  href: string;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      className="inline-block transition-transform duration-200 hover:scale-110 hover:opacity-80"
+      style={ICON_BOX}
+    >
+      {children}
+    </Link>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════
    ONE FOUNDER PROFILE
    ═══════════════════════════════════════════════════════ */
@@ -100,7 +148,10 @@ function FounderRow({ founder }: { founder: FounderProfile }) {
         isImageLeft ? "lg:flex-row" : "lg:flex-row-reverse"
       }`}
       style={{
-        gap: "clamp(24px, min(4vw, 5vh), 56px)", 
+        gap: "clamp(24px, min(4vw, 5vh), 56px)",
+        // Shared so the vertical rule and the content column agree on height —
+        // that's what lets "Read More" land level with the end of the line.
+        ["--photo-h" as string]: PHOTO_HEIGHT,
       }}
     >
       {/* ── PORTRAIT ── */}
@@ -130,9 +181,9 @@ function FounderRow({ founder }: { founder: FounderProfile }) {
         whileInView="visible"
         viewport={{ once: false, amount: 0.5 }} 
         className="hidden lg:block w-[1px] bg-black shrink-0"
-        style={{ 
-          height: PHOTO_HEIGHT,
-          transformOrigin: "top" 
+        style={{
+          height: "var(--photo-h)",
+          transformOrigin: "top",
         }}
         variants={{
           hidden: { scaleY: 0, transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } },
@@ -144,7 +195,7 @@ function FounderRow({ founder }: { founder: FounderProfile }) {
       />
 
       {/* ── CONTENT ── (mobile: centered; desktop: left-aligned, unchanged) */}
-      <div className="flex w-full flex-1 flex-col items-center text-center lg:items-start lg:text-left lg:px-4">
+      <div className="flex w-full flex-1 flex-col items-center text-center lg:min-h-[var(--photo-h)] lg:items-start lg:text-left lg:px-4">
         {/* Highlighted name */}
         <h3
           className="m-0 font-['Poppins',_sans-serif] font-semibold text-[#0E0E0E]"
@@ -168,17 +219,35 @@ function FounderRow({ founder }: { founder: FounderProfile }) {
           {founder.role}
         </p>
 
-        {/* LinkedIn */}
-        {founder.linkedin && (
-          <div style={{ marginTop: "clamp(8px, min(1.2vw, 1.8vh), 16px)" }}>
-            <Link
-              href={founder.linkedin}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`${founder.name} on LinkedIn`}
-            >
-              <LinkedInIcon />
-            </Link>
+        {/* Socials — each renders only when its URL is set */}
+        {(founder.linkedin || founder.instagram || founder.twitter) && (
+          <div
+            className="flex items-center justify-center lg:justify-start"
+            style={{
+              gap: "clamp(8px, min(1vw, 1.5vh), 14px)",
+              marginTop: "clamp(8px, min(1.2vw, 1.8vh), 16px)",
+            }}
+          >
+            {founder.linkedin && (
+              <Link
+                href={founder.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${founder.name} on LinkedIn`}
+              >
+                <LinkedInIcon />
+              </Link>
+            )}
+            {founder.instagram && (
+              <SocialLink href={founder.instagram} label={`${founder.name} on Instagram`}>
+                <InstagramIcon className="h-full w-full" />
+              </SocialLink>
+            )}
+            {founder.twitter && (
+              <SocialLink href={founder.twitter} label={`${founder.name} on X`}>
+                <XIcon className="h-full w-full" />
+              </SocialLink>
+            )}
           </div>
         )}
 
@@ -204,16 +273,26 @@ function FounderRow({ founder }: { founder: FounderProfile }) {
 
         {/* Bio */}
         <p
-          className="m-0 whitespace-pre-line font-['Poppins',_sans-serif] font-normal text-[#323232]"
-          style={{
-            fontSize: "clamp(14px, min(1.38vw, 2.03vh), 18px)",
-            lineHeight: "160%",
-            width: "100%",
-            maxWidth: "100%",
-          }}
+          className={`m-0 whitespace-pre-line text-[#323232] ${HERO_BODY_CLASS}`}
+          style={{ ...HERO_BODY_STYLE, width: "100%", maxWidth: "100%" }}
         >
           {founder.bio}
         </p>
+
+        <Link
+          href={`/founders/${founder.slug || founderSlug(founder.name)}`}
+          aria-label={`Read more about ${founder.name}`}
+          // lg:mb-… lifts it clear of the rule's end rather than sitting flush
+          // on it; mt-auto still pins it to the bottom of the column.
+          className="group relative mt-[clamp(16px,min(2vw,3vh),32px)] inline-block w-fit whitespace-nowrap font-['Poppins',_sans-serif] font-normal text-[#0E0E0E]/55 transition-colors duration-300 hover:text-[#0E0E0E] lg:mb-[clamp(18px,min(2.2vw,3.2vh),36px)] lg:mt-auto lg:pt-[clamp(16px,min(2vw,3vh),32px)]"
+          style={{
+            fontSize: "clamp(13px, min(1.25vw, 1.83vh), 16px)",
+            lineHeight: "140%",
+          }}
+        >
+          Read More
+          <span className="absolute bottom-0 left-0 h-[1px] w-0 bg-[#0E0E0E] transition-all duration-300 ease-out group-hover:w-full" />
+        </Link>
       </div>
     </div>
   );
@@ -266,7 +345,7 @@ export default function LedByFoundersClient({
             {headingTop}
           </motion.h2>
 
-          <motion.h2
+          {/* <motion.h2
             className="m-0 font-['Poppins',_sans-serif] font-semibold text-black max-md:!text-[clamp(24px,7vw,28px)] max-md:!leading-[120%]"
             style={{
               fontSize: "min(4.51vw, 6.98vh)",
@@ -275,7 +354,7 @@ export default function LedByFoundersClient({
             variants={fadeUp(0.15)}
           >
             {headingBottom}
-          </motion.h2>
+          </motion.h2> */}
         </motion.div>
 
         {/* ── FOUNDERS LIST ── */}

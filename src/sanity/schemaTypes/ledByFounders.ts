@@ -53,6 +53,44 @@ export const ledByFounders = defineType({
               validation: (r) => r.required(),
             }),
             defineField({
+              name: "slug",
+              title: "Slug (detail-page URL)",
+              description:
+                'Powers /founders/<slug>. Click Generate to derive it from the name.',
+              type: "slug",
+              options: { source: "name", maxLength: 96 },
+              validation: (r) => r.required(),
+            }),
+            defineField({
+              name: "instagram",
+              title: "Instagram URL",
+              description:
+                "Detail page only. These two use Instagram rather than email.",
+              type: "url",
+            }),
+            defineField({
+              name: "twitter",
+              title: "X / Twitter URL",
+              description: "Detail page only.",
+              type: "url",
+            }),
+            defineField({
+              name: "imageNoBg",
+              title: "Photo — cut out (detail page)",
+              description:
+                "Background removed. Clipped into the blob shape on /founders/<slug>, so it must be a transparent PNG. The photo above (with its background) stays on the Led By Founders section.",
+              type: "image",
+              options: { hotspot: true },
+            }),
+            defineField({
+              name: "longBio",
+              title: "Long bio (detail page)",
+              description:
+                "The full story, shown on /founders/<slug>. The short bio above is what appears in the Led By Founders section.",
+              type: "text",
+              rows: 12,
+            }),
+            defineField({
               name: "linkedin",
               title: "LinkedIn URL",
               type: "url",

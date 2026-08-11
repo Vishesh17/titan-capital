@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
+import { blobPhotoStyle, BLOB_ASPECT } from "@/lib/blobPhotoStyle";
+
 import GmailIcon from "@/components/icons/GmailIcon";
 import LinkedInIcon from "@/components/icons/LinkedInIcon";
 import XIcon from "@/components/icons/XIcon";
@@ -20,7 +22,12 @@ export interface TeamMember {
   linkedinUrl?: string;
   emailUrl?: string;
   twitterUrl?: string;
+  /** Framing of the portrait inside the blob — see @/lib/blobPhotoStyle. */
+  imageScale?: number;
+  imageOffsetX?: number;
+  imageOffsetY?: number;
 }
+
 
 export interface OurTeamData {
   headingFirst?: string;
@@ -162,7 +169,7 @@ function TeamCard({
           className="relative w-full transition-transform duration-300 ease-out group-hover:-translate-y-1 max-md:!max-w-[45vw]"
           style={{
             maxWidth: "clamp(160px, min(18vw, 25vh), 240px)",
-            aspectRatio: `${BLOB_VIEWBOX_W} / ${BLOB_VIEWBOX_H}`,
+            aspectRatio: BLOB_ASPECT,
           }}
         >
           {/* ── ROTATED BLOB SPACE ──
@@ -214,7 +221,13 @@ function TeamCard({
             {member.image ? (
               <div
                 className="absolute"
-                style={{ bottom: "0", left: "0", width: "75%", height: "85%" }}
+                style={{
+                  bottom: "0",
+                  left: "0",
+                  width: "75%",
+                  height: "85%",
+                  ...blobPhotoStyle(member),
+                }}
               >
                 <Image
                   src={cdnImageSrc(member.image, 600)}
@@ -467,8 +480,8 @@ export default function OurTeamClient({
           style={{ gap: "clamp(80px, min(10vw, 15vh), 160px)" }}
         >
           <TeamGroup title="Corporate Team" members={corporate} />
-          <TeamGroup title="Seed Team" members={seed} />
-          <TeamGroup title="Winner Fund Team" members={winner} />
+          <TeamGroup title="Seed Investment Team" members={seed} />
+          <TeamGroup title="Early-growth Investment Team" members={winner} />
         </div>
       </div>
     </section>

@@ -93,6 +93,9 @@ export const ourTeamQuery = groq`
       linkedinUrl,
       emailUrl,
       twitterUrl,
+      imageScale,
+      imageOffsetX,
+      imageOffsetY,
       "image": image.asset->url
     },
     "seedTeam": seedTeam[]{
@@ -103,6 +106,9 @@ export const ourTeamQuery = groq`
       linkedinUrl,
       emailUrl,
       twitterUrl,
+      imageScale,
+      imageOffsetX,
+      imageOffsetY,
       "image": image.asset->url
     },
     "winnerFundTeam": winnerFundTeam[]{
@@ -113,6 +119,9 @@ export const ourTeamQuery = groq`
       linkedinUrl,
       emailUrl,
       twitterUrl,
+      imageScale,
+      imageOffsetX,
+      imageOffsetY,
       "image": image.asset->url
     }
   }
@@ -134,6 +143,9 @@ export const teamMemberBySlugQuery = groq`
       linkedinUrl,
       emailUrl,
       twitterUrl,
+      imageScale,
+      imageOffsetX,
+      imageOffsetY,
       "image": image.asset->url
     }
   }.member
@@ -621,7 +633,11 @@ export const ourTeamHeroQuery = `*[_type == "ourTeamHero"][0] {
   titleLine2,
   titleLine3,
   description,
-  "members": members[].asset->url
+  "members": members[]{
+    "url": asset->url,
+    offsetX,
+    offsetY
+  }
 }`;
 
 /**
@@ -634,8 +650,11 @@ export const ledByFoundersQuery = groq`
     headingBottom,
     founders[]{
       name,
+      "slug": slug.current,
       role,
       linkedin,
+      instagram,
+      twitter,
       bio,
       imagePosition,
       "image": image.asset->url
@@ -660,3 +679,24 @@ export const backedEarlyQuery = groq`
     }
   }
 `;
+
+/**
+ * Single founder by slug — used by /founders/[slug].
+ * Reads from the ledByFounders singleton's `founders` array.
+ */
+export const allFoundersQuery = groq`
+  *[_type == "ledByFounders"][0].founders[]{
+    name,
+    "slug": slug.current,
+    role,
+    linkedin,
+    instagram,
+    twitter,
+    bio,
+    longBio,
+    "image": image.asset->url,
+    "imageNoBg": imageNoBg.asset->url
+  }
+`;
+
+

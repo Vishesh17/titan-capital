@@ -26,12 +26,20 @@ const fadeUp = (delay = 0) => ({
 /* ─────────────────────────────────────────────────────────
    Types
    ───────────────────────────────────────────────────────── */
+/** One photo in the flip-card grid, with its per-image framing. */
+export interface TeamHeroMember {
+  url?: string;
+  /** Framing nudges, % of the frame. Negative = reveal more left / top. */
+  offsetX?: number;
+  offsetY?: number;
+}
+
 export interface OurTeamHeroData {
   titleLine1?: string;
   titleLine2?: string;
   titleLine3?: string;
   description?: string;
-  members?: string[];
+  members?: TeamHeroMember[];
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -104,14 +112,29 @@ const MOBILE_POSITIONS = [
 /* ─────────────────────────────────────────────────────────
    Sub-Components
    ───────────────────────────────────────────────────────── */
-const Photo = ({ src }: { src: string }) => (
+/**
+ * Framing uses `object-position`, not a transform. The photo is `object-cover`,
+ * so it always fills the card — shifting the focal point reveals a different
+ * part of the same image. Translating it instead would slide the picture off
+ * one edge and leave a grey gap.
+ */
+const Photo = ({
+  src,
+  offsetX = 0,
+  offsetY = 0,
+}: {
+  src: string;
+  offsetX?: number;
+  offsetY?: number;
+}) => (
   <div className="relative h-full w-full bg-[#f0f0f0]">
     <Image
       src={src}
       alt="Team Member"
       fill
       sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
-      className="object-cover object-center grayscale"
+      className="object-cover grayscale"
+      style={{ objectPosition: `${50 + offsetX}% ${50 + offsetY}%` }}
       onError={(e) => (e.currentTarget.style.display = "none")}
     />
   </div>
@@ -124,12 +147,17 @@ function FlipCard({
   frontIsBox,
   imgSrc,
   gridClass,
+  offsetX,
+  offsetY,
 }: {
   isFlipped: boolean;
   frontIsBox: boolean;
   imgSrc: string;
   gridClass: string;
+  offsetX?: number;
+  offsetY?: number;
 }) {
+  const photo = <Photo src={imgSrc} offsetX={offsetX} offsetY={offsetY} />;
   return (
     <div
       // Mobile keeps the near-square 100/103 ratio (untouched). Desktop
@@ -145,10 +173,10 @@ function FlipCard({
         }`}
       >
         <div className="absolute inset-0 flex items-center justify-center bg-white [backface-visibility:hidden]">
-          {frontIsBox ? <BlueBox /> : <Photo src={imgSrc} />}
+          {frontIsBox ? <BlueBox /> : photo}
         </div>
         <div className="absolute inset-0 flex items-center justify-center bg-white [backface-visibility:hidden] [transform:rotateY(180deg)]">
-          {frontIsBox ? <Photo src={imgSrc} /> : <BlueBox />}
+          {frontIsBox ? photo : <BlueBox />}
         </div>
       </div>
     </div>
@@ -191,13 +219,15 @@ export default function OurTeamHeroClient({
     // Cards beyond the number of CMS members cycle back through the
     // existing member photos (rather than 404ing on missing fallback
     // files). Add more members in Sanity for unique faces on all 15.
-    const cmsImage =
-      members[index] ||
-      (members.length ? members[index % members.length] : FALLBACK_IMAGES[index]);
+    const member = members.length
+      ? members[index] || members[index % members.length]
+      : undefined;
     return {
       ...struct,
       id: index,
-      imgSrc: cmsImage,
+      imgSrc: member?.url || FALLBACK_IMAGES[index],
+      offsetX: member?.offsetX ?? 0,
+      offsetY: member?.offsetY ?? 0,
     };
   });
 
@@ -242,6 +272,8 @@ export default function OurTeamHeroClient({
               isFlipped={isFlipped}
               frontIsBox={item.frontIsBox}
               imgSrc={item.imgSrc}
+              offsetX={item.offsetX}
+              offsetY={item.offsetY}
               gridClass={MOBILE_POSITIONS[i]}
             />
           ))}
@@ -282,6 +314,8 @@ export default function OurTeamHeroClient({
               isFlipped={isFlipped}
               frontIsBox={item.frontIsBox}
               imgSrc={item.imgSrc}
+              offsetX={item.offsetX}
+              offsetY={item.offsetY}
               gridClass={MOBILE_POSITIONS[4 + k]}
             />
           ))}
