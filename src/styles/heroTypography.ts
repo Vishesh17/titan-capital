@@ -99,7 +99,7 @@ export const HERO_BODY_STYLE: CSSProperties = {
   // increase would silently vanish on small and large screens where the
   // clamp, not the viewport, is deciding the size.
   //   14 -> 15.4   1.6vw -> 1.76vw   2.35vh -> 2.59vh   20 -> 22
-  fontSize: "clamp(15.4px, min(1.76vw, 2.59vh), 22px)",
+  fontSize: "clamp(14.2px, min(1.60vw, 2.44vh), 20px)",
 };
 
 /* ── LEVEL 5 — descriptions ────────────────────────────────────────────
@@ -139,7 +139,7 @@ export const BODY_BOLD_CLASS =
    ──────────────────────────────────────────────────────────────────────── */
 
 export const LABEL_STYLE: CSSProperties = {
-  fontSize: "clamp(13px, min(1.39vw, 2.15vh), 18px)",
+  fontSize: "clamp(12px, min(1.26vw, 2.0vh), 17px)",
 };
 
 /* ── LEVEL 3 — section headings ────────────────────────────────────────

@@ -541,7 +541,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
             `-translate-x-1/2` that centres this and knock it off-axis. */}
         <div className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 max-md:!hidden">
           <motion.p
-            style={{ maxWidth: "min(52vw, 900px)", ...HERO_BODY_STYLE }}
+            style={{ maxWidth: "min(60vw, 1000px)", ...HERO_BODY_STYLE }}
             className={`m-0 text-center text-white/90 ${HERO_BODY_CLASS}`}
             initial={false}
             animate={{
