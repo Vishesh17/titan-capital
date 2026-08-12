@@ -90,8 +90,17 @@ export const HERO_HEADING_LIGHT_MOBILE_STYLE: CSSProperties = {
    viewport without limit, which is what the homepage hero used to do.
    ──────────────────────────────────────────────────────────────────────── */
 
+/* NO font-weight. Levels 4-7 carry size only; each section picks its own
+   weight at the call site. Levels 1-3 keep their weights, because those are
+   the fixed display sizes and must not drift. */
+/* The mobile override is +15% on the 14.2px this clamp resolves to on a
+   phone (the fluid term is tiny there, so the floor always wins). It has to
+   be a `max-md:!` class rather than a value in HERO_BODY_STYLE: that style
+   object is applied inline at every call site, and only an !important class
+   beats an inline style. 16.33px still sits below level 4's 21px and above
+   level 6's 12px, so the order holds. */
 export const HERO_BODY_CLASS =
-  "font-['Poppins',_sans-serif] font-normal leading-[1.6]";
+  "font-['Poppins',_sans-serif] leading-[1.6] max-md:!text-[16.33px]";
 
 export const HERO_BODY_STYLE: CSSProperties = {
   // Every term scaled +10% together — floor, both fluid terms, and ceiling.
@@ -182,9 +191,16 @@ export const SECTION_HEADING_STYLE: CSSProperties = {
    "Info@titancapital.vc", and sentence-case subtitles become Title Case.
    ──────────────────────────────────────────────────────────────────────── */
 
+/* NO font-weight — see the note on HERO_BODY_CLASS. Sections set their own.
+ *
+ * The mobile size was a flat 32px, which put level 4 ABOVE level 3 on small
+ * screens (32px against level 3's 27px) — the scale inverted at the exact
+ * place it is supposed to step down. It is now 20-24px, which sits between
+ * level 3 (24-28px) and level 5 (14-20px) so the order holds on mobile the
+ * same way it does on desktop. */
 export const SUBHEADING_CLASS =
-  "font-['Poppins',_sans-serif] font-medium " +
-  "max-md:!text-[32px] max-md:!leading-[120%]";
+  "font-['Poppins',_sans-serif] " +
+  "max-md:!text-[clamp(20px,5.6vw,24px)] max-md:!leading-[120%]";
 
 export const SUBHEADING_STYLE: CSSProperties = {
   fontSize: "min(2.78vw, 4.30vh)",
@@ -195,6 +211,21 @@ export const SUBHEADING_STYLE: CSSProperties = {
  *  HERO_HEADING_DARK_MOBILE_STYLE for why both forms have to exist. Used
  *  by the footer, whose layout switches at `lg`, not `md`. */
 export const SUBHEADING_MOBILE_STYLE: CSSProperties = {
-  fontSize: "32px",
+  fontSize: "clamp(20px, 5.6vw, 24px)",
   lineHeight: "120%",
+};
+
+/* ── LEVEL 7 — the smallest tier ───────────────────────────────────────
+   Below level 6: legal lines, image credits, footnotes, micro-labels.
+
+   SIZE ONLY, exactly like level 6 — no family, weight, line-height or
+   colour, because these too are visually varied by design.
+
+   Bounds are not optional, for the same reason level 6's are not: the
+   fluid term alone would overtake level 6 on large screens and collapse to
+   a few pixels on the 932x187 strip. 14px keeps it under level 6's 17px
+   ceiling at every viewport; 10px keeps it legible at the floor, where
+   level 6 sits at 12px. */
+export const CAPTION_STYLE: CSSProperties = {
+  fontSize: "clamp(10px, min(1.05vw, 1.65vh), 14px)",
 };

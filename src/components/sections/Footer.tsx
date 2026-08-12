@@ -477,7 +477,7 @@ export default function Footer() {
             {/* Email — sits right under the social icons */}
             <a
               href="mailto:info@titancapital.vc"
-              className={`inline-block break-words text-[#111] transition-transform duration-300 hover:scale-105 hover:opacity-70 ${SUBHEADING_CLASS}`}
+              className={`font-medium inline-block break-words text-[#111] transition-transform duration-300 hover:scale-105 hover:opacity-70 ${SUBHEADING_CLASS}`}
               style={{
                 ...SUBHEADING_STYLE,
                 marginTop: "clamp(8px, min(1.25vw, 1.83vh), 18px)",

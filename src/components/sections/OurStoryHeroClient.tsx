@@ -131,7 +131,7 @@ export default function OurStoryHeroClient({
         </h1>
 
         <p
-          className={`m-0 text-[#1a1a1a] ${HERO_BODY_CLASS}`}
+          className={`font-normal m-0 text-[#1a1a1a] ${HERO_BODY_CLASS}`}
           style={{
             ...HERO_BODY_STYLE,
             marginTop: "clamp(16px, min(2.5vw, 4vh), 36px)",

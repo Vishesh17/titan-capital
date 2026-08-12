@@ -504,3 +504,27 @@ body.hero-hide-nav .site-navbar {
   transform: translateY(-120%);
   pointer-events: none;
 }
+
+/* ── PREMIUM REVEAL ANIMATIONS (For Server Components) ── */
+@keyframes premium-fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-reveal {
+  /* Changed 'forwards' to 'both' so opacity:0 applies DURING the delay */
+  animation: premium-fade-up 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: opacity, transform;
+}
+
+/* Renamed to anim-delay-* to avoid overriding Tailwind's built-in transition delays */
+.anim-delay-100 { animation-delay: 150ms; }
+.anim-delay-200 { animation-delay: 300ms; }
+.anim-delay-300 { animation-delay: 450ms; }
+.anim-delay-400 { animation-delay: 600ms; }

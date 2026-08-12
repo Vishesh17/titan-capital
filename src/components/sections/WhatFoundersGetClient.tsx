@@ -242,7 +242,7 @@ function MobileClosedRow({ row }: { row: HowWeShowUpRow }) {
       className="flex w-full flex-col text-left"
     >
       <div className="flex w-full items-start justify-between gap-[16px]">
-        <h3 className={`m-0 text-black ${SUBHEADING_CLASS}`}>{row.title}</h3>
+        <h3 className={`font-medium m-0 text-black ${SUBHEADING_CLASS}`}>{row.title}</h3>
         <div className="shrink-0 mt-[4px]">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M6 18L18 6M8 6h10v10"/>
@@ -254,7 +254,7 @@ function MobileClosedRow({ row }: { row: HowWeShowUpRow }) {
         {row.shortHeading}
       </h4>
 
-      <p className={`m-0 mt-[8px] text-[#1a1a1a] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
+      <p className={`font-normal m-0 mt-[8px] text-[#1a1a1a] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
         {row.shortDesc}
       </p>
     </motion.div>
@@ -278,7 +278,7 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
     >
       {/* Same text as the opened card's vertical heading, so same level. */}
       <h3
-        className={`m-0 whitespace-nowrap text-black ${SUBHEADING_CLASS}`}
+        className={`font-medium m-0 whitespace-nowrap text-black ${SUBHEADING_CLASS}`}
         style={SUBHEADING_STYLE}
       >
         {row.title}
@@ -293,7 +293,7 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
         <h4 className={`m-0 text-black ${BODY_BOLD_CLASS}`} style={HERO_BODY_STYLE}>
           {row.shortHeading}
         </h4>
-        <p className={`m-0 text-[#0E0E0E] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
+        <p className={`font-normal m-0 text-[#0E0E0E] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
           {row.shortDesc}
         </p>
       </div>
@@ -339,7 +339,7 @@ function OpenedRow({
               e.stopPropagation();
               onBack();
             }}
-            className={`cursor-pointer border-0 bg-transparent p-0 text-black underline underline-offset-4 transition-opacity hover:opacity-60 ${HERO_BODY_CLASS}`}
+            className={`font-normal cursor-pointer border-0 bg-transparent p-0 text-black underline underline-offset-4 transition-opacity hover:opacity-60 ${HERO_BODY_CLASS}`}
             style={{ ...HERO_BODY_STYLE, textAlign: "center" }}
           >
             Back
@@ -349,7 +349,7 @@ function OpenedRow({
             {/* The level-4 reference. Every other subheading on the site is
                 sized from this one, so it must stay on the token. */}
             <span
-              className={`whitespace-nowrap text-center text-black ${SUBHEADING_CLASS}`}
+              className={`font-medium whitespace-nowrap text-center text-black ${SUBHEADING_CLASS}`}
               style={{
                 ...SUBHEADING_STYLE,
                 writingMode: "vertical-rl",
@@ -380,7 +380,7 @@ function OpenedRow({
               {row.longHeading}
             </h4>
 
-            <p className={`m-0 text-[#323232] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
+            <p className={`font-normal m-0 text-[#323232] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
               {row.longDesc}
             </p>
 
@@ -409,7 +409,7 @@ function OpenedRow({
               {row.valueBullets.map((bullet, i) => (
                 <li
                   key={i}
-                  className={`relative text-[#323232] ${HERO_BODY_CLASS}`}
+                  className={`font-normal relative text-[#323232] ${HERO_BODY_CLASS}`}
                   style={{ ...HERO_BODY_STYLE, paddingLeft: SZ.rowInnerGap }}
                 >
                   <span className="absolute left-0 top-0" style={HERO_BODY_STYLE}>
@@ -439,13 +439,13 @@ function OpenedRow({
             e.stopPropagation();
             onBack();
           }}
-          className={`self-start cursor-pointer border-0 bg-transparent p-0 tracking-[0.1em] text-black uppercase underline underline-offset-4 transition-opacity hover:opacity-60 ${HERO_BODY_CLASS}`}
+          className={`font-normal self-start cursor-pointer border-0 bg-transparent p-0 tracking-[0.1em] text-black uppercase underline underline-offset-4 transition-opacity hover:opacity-60 ${HERO_BODY_CLASS}`}
           style={HERO_BODY_STYLE}
         >
           Back
         </button>
 
-        <h2 className={`m-0 mt-[20px] mb-[16px] text-black ${SUBHEADING_CLASS}`}>
+        <h2 className={`font-medium m-0 mt-[20px] mb-[16px] text-black ${SUBHEADING_CLASS}`}>
           {row.title}
         </h2>
 
@@ -465,7 +465,7 @@ function OpenedRow({
             {row.longHeading}
           </h4>
 
-          <p className={`m-0 mt-[12px] text-[#1a1a1a] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
+          <p className={`font-normal m-0 mt-[12px] text-[#1a1a1a] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
             {row.longDesc}
           </p>
         </div>
@@ -482,7 +482,7 @@ function OpenedRow({
           {row.valueBullets.map((bullet, i) => (
             <li
               key={i}
-              className={`relative text-[#1a1a1a] ${HERO_BODY_CLASS}`}
+              className={`font-normal relative text-[#1a1a1a] ${HERO_BODY_CLASS}`}
               style={{ ...HERO_BODY_STYLE, paddingLeft: "24px" }}
             >
               <span className="absolute left-0 top-[2px] text-[20px] leading-[1]">

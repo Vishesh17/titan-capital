@@ -151,7 +151,7 @@ export default function PortfolioStats() {
               <RollingNumber value={stat.value} />
             </div>
             <span
-              className={`mt-1 text-[#001A4D] ${HERO_BODY_CLASS}`}
+              className={`font-normal mt-1 text-[#001A4D] ${HERO_BODY_CLASS}`}
               style={{ ...HERO_BODY_STYLE, textAlign: "center" }}
             >
               {stat.label}

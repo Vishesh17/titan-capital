@@ -247,7 +247,7 @@ function ImpactStatCell({
           <RollingNumber value={stat.num} />
         </span>
         <span
-          className={`whitespace-nowrap capitalize text-black max-md:!mt-[6px] ${HERO_BODY_CLASS}`}
+          className={`font-normal whitespace-nowrap capitalize text-black max-md:!mt-[6px] ${HERO_BODY_CLASS}`}
           style={{
             ...HERO_BODY_STYLE,
             marginTop: "min(0.58vw, 0.90vh)",
@@ -476,7 +476,7 @@ export function StoryCard({ story, sizerTags = [] }: { story: FounderStory; size
         <div className="max-md:!mt-[4px]" style={{ paddingTop: 0, marginTop: "-28px" }}>
           <QuoteMarkIcon />
           <p
-            className={`m-0 text-white ${HERO_BODY_CLASS}`}
+            className={`font-normal m-0 text-white ${HERO_BODY_CLASS}`}
             style={{ ...HERO_BODY_STYLE, maxWidth: "min(33.22vw, 51.39vh)", marginTop: "min(0.70vw, 1.07vh)" }}
           >
             {story.text}

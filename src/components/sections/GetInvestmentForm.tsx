@@ -785,13 +785,13 @@ function SectionHeading({
   return (
     <div className="mb-[clamp(32px,min(3.5vw,5vh),56px)]">
       <div
-        className={`mb-[clamp(12px,1.5vw,20px)] flex items-center justify-center gap-[10px] rounded-[39px] bg-[#D3E2FF] text-[#000] ${HERO_BODY_CLASS}`}
+        className={`font-normal mb-[clamp(12px,1.5vw,20px)] flex items-center justify-center gap-[10px] rounded-[39px] bg-[#D3E2FF] text-[#000] ${HERO_BODY_CLASS}`}
         style={{ ...HERO_BODY_STYLE, width: "fit-content", padding: "6px 20px" }}
       >
         {label}
       </div>
       <h3
-        className={`mb-[clamp(8px,1vw,12px)] max-w-[421px] text-[#0E0E0E] ${SUBHEADING_CLASS}`}
+        className={`font-medium mb-[clamp(8px,1vw,12px)] max-w-[421px] text-[#0E0E0E] ${SUBHEADING_CLASS}`}
         style={SUBHEADING_STYLE}
       >
         {title}

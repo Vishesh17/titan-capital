@@ -247,7 +247,7 @@ export default function IndicornCompanies({
               </div>
 
               {/* Description */}
-              <p className={`m-0 text-[#1a1a1a] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
+              <p className={`font-normal m-0 text-[#1a1a1a] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
                 {company.description}
               </p>
             </motion.div>

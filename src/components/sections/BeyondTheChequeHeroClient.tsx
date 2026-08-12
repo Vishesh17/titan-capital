@@ -263,7 +263,7 @@ export default function BeyondTheChequeHeroClient({
 
         {/* ── SUBTITLE ── */}
         <motion.p
-          className={`mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[600px] text-center text-[#323232] ${HERO_BODY_CLASS}`}
+          className={`font-normal mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[600px] text-center text-[#323232] ${HERO_BODY_CLASS}`}
           style={HERO_BODY_STYLE}
           variants={{
             hidden: { opacity: 0, y: 30 },

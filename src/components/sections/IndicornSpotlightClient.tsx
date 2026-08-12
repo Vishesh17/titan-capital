@@ -274,7 +274,7 @@ export default function IndicornSpotlightClient({
             </h2>
 
             <p
-              className={`m-0 whitespace-nowrap max-md:!whitespace-normal max-md:!mt-[12px] ${SUBHEADING_CLASS}`}
+              className={`font-medium m-0 whitespace-nowrap max-md:!whitespace-normal max-md:!mt-[12px] ${SUBHEADING_CLASS}`}
               style={{
                 color: "#FBF7F0",
                 ...SUBHEADING_STYLE,
@@ -434,7 +434,7 @@ export default function IndicornSpotlightClient({
             style={{ paddingTop: "min(0.25vw, 0.4vh)" }} 
           >
             <p
-              className={`m-0 ${HERO_BODY_CLASS}`}
+              className={`font-normal m-0 ${HERO_BODY_CLASS}`}
               style={{ color: "#FFF", ...HERO_BODY_STYLE }}
             >
               {quote}

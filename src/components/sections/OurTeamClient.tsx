@@ -10,7 +10,7 @@ import GmailIcon from "@/components/icons/GmailIcon";
 import LinkedInIcon from "@/components/icons/LinkedInIcon";
 import XIcon from "@/components/icons/XIcon";
 import {
-  BODY_BOLD_CLASS,
+  HERO_BODY_CLASS,
   HERO_BODY_STYLE,
   LABEL_STYLE,
   SECTION_HEADING_CLASS,
@@ -160,7 +160,7 @@ function TeamCard({
 
   return (
     <motion.div
-      className="group flex w-full flex-col items-start"
+      className="group flex w-full flex-col items-start max-md:!items-center"
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
@@ -169,10 +169,13 @@ function TeamCard({
       <Link
         href={`/ourTeam/${slug}`}
         aria-label={`${member.name} — ${member.title}`}
-        className="flex w-full flex-col items-start focus:outline-none"
+        className="flex w-full flex-col items-start focus:outline-none max-md:!items-center"
       >
         <div
-          className="relative w-full transition-transform duration-300 ease-out group-hover:-translate-y-1 max-md:!max-w-[45vw]"
+          // max-w-full on mobile (was 45vw, sized for the old two-up grid):
+          // with one card per row the blob fills the column, so its left and
+          // right edges land on the section's own gutters.
+          className="relative w-full transition-transform duration-300 ease-out group-hover:-translate-y-1 max-md:!max-w-[60%]"
           style={{
             maxWidth: "80%",
             aspectRatio: BLOB_ASPECT,
@@ -251,10 +254,12 @@ function TeamCard({
           </div>
         </div>
 
-        <div className="flex w-full flex-col pl-[10%] xl:pl-[12%]">
+        <div className="flex w-full flex-col pl-[10%] xl:pl-[12%] max-md:!items-center max-md:!pl-0 max-md:!text-center">
           {/* ── NAME ── */}
           <h3
-            className={`m-0 text-left text-[#0E0E0E] ${BODY_BOLD_CLASS}`}
+            /* Level 5, semibold. Weight stated here rather than taken from a
+               token, since levels 4-7 carry size only now. */
+            className={`m-0 text-left font-semibold text-[#0E0E0E] max-md:!text-center ${HERO_BODY_CLASS}`}
             style={{
               ...HERO_BODY_STYLE,
               // INCREASED PADDING HERE
@@ -268,7 +273,8 @@ function TeamCard({
           {/* ── TITLE ── */}
           {member.title && (
             <p
-              className="m-0 text-left font-['Poppins',_sans-serif] font-normal text-[#323232]"
+              /* Level 6 — LABEL_STYLE is the level-6 size token. */
+              className="m-0 text-left font-['Poppins',_sans-serif] font-normal text-[#323232] max-md:!text-center"
               style={{
                 ...LABEL_STYLE,
                 lineHeight: "158%",
@@ -285,7 +291,7 @@ function TeamCard({
       {/* ── SOCIAL ICONS ── */}
       {hasSocials && (
         <div
-          className="flex w-full items-center justify-start pl-[10%] xl:pl-[12%]"
+          className="flex w-full items-center justify-start pl-[10%] xl:pl-[12%] max-md:!justify-center max-md:!pl-0"
           style={{
             gap: "clamp(8px, min(0.83vw, 1.22vh), 12px)",
             marginTop: "clamp(8px, min(1vw, 1.5vh), 12px)",
@@ -345,7 +351,7 @@ function TeamGroup({
         />
 
         <motion.h3
-          className={`m-0 whitespace-nowrap text-center text-black ${SUBHEADING_CLASS}`}
+          className={`font-medium m-0 whitespace-nowrap text-center text-black ${SUBHEADING_CLASS}`}
           style={SUBHEADING_STYLE}
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -370,7 +376,10 @@ function TeamGroup({
 
       {/* ── GRID ── */}
       <div
-        className="grid w-full grid-cols-2 sm:grid-cols-2 lg:grid-cols-4"
+        // One member per row below sm — the two-up grid left each card at
+        // roughly half width, so the blobs were small. At one per row the
+        // card can take the full column and sit flush to both gutters.
+        className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
         style={{
           rowGap: "clamp(48px, min(5.5vw, 8vh), 80px)",
           columnGap: "clamp(16px, min(2vw, 3vh), 40px)",

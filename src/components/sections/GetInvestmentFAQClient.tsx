@@ -92,7 +92,7 @@ function FAQItem({
         onClick={onToggle}
         className="flex w-full cursor-pointer items-center justify-between border-none bg-transparent text-left p-0 m-0"
       >
-        <span className={`text-[#000] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
+        <span className={`font-normal text-[#000] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
           {faq.question}
         </span>
 

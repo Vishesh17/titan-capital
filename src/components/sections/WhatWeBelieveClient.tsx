@@ -604,7 +604,7 @@ function DesktopCardSlice({
         <div className="relative z-10 flex flex-col h-full" style={{ paddingTop: "min(3.47vw, 5.37vh)", paddingBottom: "min(2.78vw, 4.31vh)", paddingLeft: "min(2.08vw, 3.22vh)", paddingRight: "min(2.08vw, 3.22vh)", gap: "min(1.85vw, 2.86vh)" }}>
           <div className="flex justify-center">
             <h3
-              className={`text-center text-white ${SUBHEADING_CLASS}`}
+              className={`font-medium text-center text-white ${SUBHEADING_CLASS}`}
               style={SUBHEADING_STYLE}
             >
               {belief.title}
@@ -623,7 +623,7 @@ function DesktopCardSlice({
 
           <div className="flex justify-center">
             <p
-              className={`text-center text-white/90 ${HERO_BODY_CLASS}`}
+              className={`font-normal text-center text-white/90 ${HERO_BODY_CLASS}`}
               style={HERO_BODY_STYLE}
             >
               {belief.description}
@@ -732,7 +732,7 @@ function MobileCardSlice({
         >
           <div className="flex justify-center">
             <h3
-              className={`text-center text-white ${SUBHEADING_CLASS}`}
+              className={`font-medium text-center text-white ${SUBHEADING_CLASS}`}
               style={SUBHEADING_STYLE}
             >
               {belief.title}
@@ -751,7 +751,7 @@ function MobileCardSlice({
 
           <div className="flex justify-center">
             <p
-              className={`text-center text-white/90 ${HERO_BODY_CLASS}`}
+              className={`font-normal text-center text-white/90 ${HERO_BODY_CLASS}`}
               style={HERO_BODY_STYLE}
             >
               {belief.description}

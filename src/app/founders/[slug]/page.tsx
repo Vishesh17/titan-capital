@@ -303,7 +303,7 @@ export default async function FounderPage({
                   }}
                 >
                   <p
-                    className={`m-0 w-full whitespace-pre-line text-black ${HERO_BODY_CLASS}`}
+                    className={`font-normal m-0 w-full whitespace-pre-line text-black ${HERO_BODY_CLASS}`}
                     style={HERO_BODY_STYLE}
                   >
                     {bio}

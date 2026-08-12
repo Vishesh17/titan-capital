@@ -100,17 +100,32 @@ const FALLBACK_IMAGES = Array.from(
 //   Row 1 : 4 cards (c1 c2 c3 c4)
 //   Rows 2-4 : heading block owns cols 1-2, 2 cards each on the right (c3 c4)
 // → 4, 2, 2, 2. Literal class strings so Tailwind's JIT generates them.
-const MOBILE_POSITIONS = [
-  "col-start-1 row-start-1", // 0
-  "col-start-2 row-start-1", // 1
-  "col-start-3 row-start-1", // 2
-  "col-start-4 row-start-1", // 3
-  "col-start-3 row-start-2", // 4
-  "col-start-4 row-start-2", // 5
-  "col-start-3 row-start-3", // 6
-  "col-start-4 row-start-3", // 7
-  "col-start-3 row-start-4", // 8
-  "col-start-4 row-start-4", // 9
+/*  frontIsBox alternates on (row + col), so no two touching cells show the
+    same face — across each row AND down each column. It cannot be inherited
+    from GRID_STRUCTURE: that pattern is a chessboard for the DESKTOP 7-col
+    grid, and these ten cards sit at completely different coordinates here.
+
+        col:      1      2      3      4
+        row 1:  [box]  photo  [box]  photo
+        row 2:                photo  [box]
+        row 3:                [box]  photo
+        row 4:                photo  [box]
+
+    `member` is the index into Sanity's members array. The five cards showing
+    a photo at rest take members 1, 3, 5, 7, 9 (1-based); the five that reveal
+    theirs on the flip take 11, 13, 15, 2, 4 — so the first pass is the
+    odd-numbered people and the flip brings in the rest.                    */
+const MOBILE_CARDS = [
+  { pos: "col-start-1 row-start-1", frontIsBox: true,  member: 11 }, // 11th, on flip
+  { pos: "col-start-2 row-start-1", frontIsBox: false, member: 1 },  //  1st, at rest
+  { pos: "col-start-3 row-start-1", frontIsBox: true,  member: 13 }, // 13th, on flip
+  { pos: "col-start-4 row-start-1", frontIsBox: false, member: 3 },  //  3rd, at rest
+  { pos: "col-start-3 row-start-2", frontIsBox: false, member: 5 },  //  5th, at rest
+  { pos: "col-start-4 row-start-2", frontIsBox: true,  member: 14 }, // 15th, on flip
+  { pos: "col-start-3 row-start-3", frontIsBox: true,  member: 4 },  //  2nd, on flip
+  { pos: "col-start-4 row-start-3", frontIsBox: false, member: 8 },  //  7th, at rest
+  { pos: "col-start-3 row-start-4", frontIsBox: false, member: 10 },  //  9th, at rest
+  { pos: "col-start-4 row-start-4", frontIsBox: true,  member: 6 },  //  4th, on flip
 ];
 
 /* ─────────────────────────────────────────────────────────
@@ -243,6 +258,24 @@ export default function OurTeamHeroClient({
     };
   });
 
+  /* Mobile resolves its own cards: different positions, its own chessboard,
+     and an explicit pick from Sanity — so it cannot reuse teamItems, which is
+     indexed by the desktop grid's slot order. */
+  const mobileItems = MOBILE_CARDS.map((card, i) => {
+    const members = data?.members ?? [];
+    const member = members.length
+      ? members[card.member] ?? members[card.member % members.length]
+      : undefined;
+    return {
+      ...card,
+      id: i,
+      imgSrc: member?.url || FALLBACK_IMAGES[card.member],
+      offsetX: member?.offsetX ?? 0,
+      offsetY: member?.offsetY ?? 0,
+      scale: member?.scale,
+    };
+  });
+
   useEffect(() => {
     const interval = setInterval(() => setIsFlipped((prev) => !prev), 5000);
     return () => clearInterval(interval);
@@ -292,10 +325,16 @@ export default function OurTeamHeroClient({
           style={{
             columnGap: "clamp(10px, 2.6vw, 16px)",
             rowGap: "clamp(10px, 2.6vw, 16px)",
+            /* Equal rows. Left to `auto`, row 1 collapsed to exactly the card
+               height while rows 2-4 were stretched by the heading+description
+               block spanning them — so the gap after row 1 was 10px and the
+               others 62px. With 1fr every row takes the same height, which is
+               what makes the three gaps identical. */
+            gridTemplateRows: "repeat(4, 1fr)",
           }}
         >
           {/* Row 1 — cards 0-3 */}
-          {teamItems.slice(0, 4).map((item, i) => (
+          {mobileItems.slice(0, 4).map((item) => (
             <FlipCard
               key={`m-${item.id}`}
               isFlipped={isFlipped}
@@ -303,7 +342,7 @@ export default function OurTeamHeroClient({
               imgSrc={item.imgSrc}
               offsetX={item.offsetX}
               offsetY={item.offsetY}
-              gridClass={MOBILE_POSITIONS[i]}
+              gridClass={item.pos}
             />
           ))}
 
@@ -329,7 +368,7 @@ export default function OurTeamHeroClient({
               </motion.h1>
             ))}
             <motion.p
-              className={`m-0 text-[#000] ${HERO_BODY_CLASS}`}
+              className={`font-normal m-0 text-[#000] ${HERO_BODY_CLASS}`}
               style={{ ...HERO_BODY_STYLE, marginTop: "clamp(10px, 2.5vw, 16px)" }}
               variants={fadeUp(0.45)}
             >
@@ -338,7 +377,7 @@ export default function OurTeamHeroClient({
           </motion.div>
 
           {/* Right cards — rows 2-4, cols 3-4 (cards 4-9) */}
-          {teamItems.slice(4, 10).map((item, k) => (
+          {mobileItems.slice(4, 10).map((item) => (
             <FlipCard
               key={`m-${item.id}`}
               isFlipped={isFlipped}
@@ -346,7 +385,7 @@ export default function OurTeamHeroClient({
               imgSrc={item.imgSrc}
               offsetX={item.offsetX}
               offsetY={item.offsetY}
-              gridClass={MOBILE_POSITIONS[4 + k]}
+              gridClass={item.pos}
             />
           ))}
         </div>
@@ -419,7 +458,7 @@ export default function OurTeamHeroClient({
               </motion.h1>
             ))}
             <motion.p
-              className={`pointer-events-auto m-0 text-[#000] ${HERO_BODY_CLASS}`}
+              className={`font-normal pointer-events-auto m-0 text-[#000] ${HERO_BODY_CLASS}`}
               style={{
                 ...HERO_BODY_STYLE,
                 marginTop: "clamp(12px, min(1.4vw, 2vh), 24px)",

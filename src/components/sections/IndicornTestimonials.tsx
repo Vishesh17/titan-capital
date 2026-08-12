@@ -313,7 +313,7 @@ export default function IndicornTestimonials() {
             What Founders Say <br className="hidden md:block" />
             About The Indicorns.
           </h2>
-          <p className={`m-0 text-[#1a1a1a] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
+          <p className={`font-normal m-0 text-[#1a1a1a] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
             We asked founders from the Indicorn community what the recognition
             means to them — and how it changed the way they think about building
             a company.

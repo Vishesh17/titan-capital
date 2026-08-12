@@ -485,7 +485,7 @@ export default function FifteenYearsClient({
                 style={{ gap: "clamp(14px, min(1.8vw, 2.6vh), 32px)" }}
               >
                 <h3
-                  className={`m-0 text-black ${SUBHEADING_CLASS}`}
+                  className={`font-medium m-0 text-black ${SUBHEADING_CLASS}`}
                   style={{ ...SUBHEADING_STYLE, maxWidth: "711px" }}
                 >
                   {current.subtitle}

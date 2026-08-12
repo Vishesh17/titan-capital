@@ -150,13 +150,13 @@ export default function WhyIndicorns() {
                 <h4 className={`m-0 mb-[12px] whitespace-pre-line text-black ${BODY_BOLD_CLASS}`} style={HERO_BODY_STYLE}>
                   {item.title}
                 </h4>
-                <p className={`m-0 text-[#4a4a4a] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
+                <p className={`font-normal m-0 text-[#4a4a4a] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
                   {item.desc}
                 </p>
                 {item.stats && (
                   <div className="mt-[20px]">
                     <div className="mb-[8px] flex items-center gap-[12px]">
-                      <span className={`text-black ${SUBHEADING_CLASS}`}>
+                      <span className={`font-medium text-black ${SUBHEADING_CLASS}`}>
                         {item.stats.number}
                       </span>
                       <span className="whitespace-pre-line leading-tight text-[#4a4a4a]" style={LABEL_STYLE}>
@@ -189,10 +189,10 @@ export default function WhyIndicorns() {
 
           {/* Story — text then image */}
           <div className="mt-[clamp(40px,10vw,64px)] flex flex-col">
-            <h3 className={`m-0 mb-[clamp(16px,4vw,24px)] text-black ${SUBHEADING_CLASS}`}>
+            <h3 className={`font-medium m-0 mb-[clamp(16px,4vw,24px)] text-black ${SUBHEADING_CLASS}`}>
               September 2024
             </h3>
-            <p className={`m-0 text-[#1a1a1a] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
+            <p className={`font-normal m-0 text-[#1a1a1a] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
               On the main stage of YourStory&apos;s TechSparks India&apos;s
               largest startup summit - Kunal Bahl introduced one word to the
               ecosystem: Indicorn.
@@ -229,7 +229,7 @@ export default function WhyIndicorns() {
           {/* Story Text */}
           <div className="flex flex-col justify-center">
             <h3
-              className={`m-0 text-black ${SUBHEADING_CLASS}`}
+              className={`font-medium m-0 text-black ${SUBHEADING_CLASS}`}
               style={{
                 ...SUBHEADING_STYLE,
                 marginBottom: "clamp(16px,min(1.85vw,2.86vh),28px)",
@@ -237,7 +237,7 @@ export default function WhyIndicorns() {
             >
               September 2024
             </h3>
-            <p className={`m-0 text-[#1a1a1a] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
+            <p className={`font-normal m-0 text-[#1a1a1a] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
               On the main stage of YourStory's TechSparks India's largest
               startup summit - Kunal Bahl introduced one word to the ecosystem:
               Indicorn.
@@ -332,7 +332,7 @@ export default function WhyIndicorns() {
                     {item.title}
                   </h4>
                   <p
-                    className={`m-0 relative z-20 text-[#4a4a4a] ${item.stats ? "mb-6" : ""} ${HERO_BODY_CLASS}`}
+                    className={`font-normal m-0 relative z-20 text-[#4a4a4a] ${item.stats ? "mb-6" : ""} ${HERO_BODY_CLASS}`}
                     style={HERO_BODY_STYLE}
                   >
                     {item.desc}
@@ -342,7 +342,7 @@ export default function WhyIndicorns() {
                     <div className="mt-auto relative z-20">
                       <div className="flex items-center gap-3 mb-2">
                         <span
-                          className={`text-black ${SUBHEADING_CLASS}`}
+                          className={`font-medium text-black ${SUBHEADING_CLASS}`}
                           style={SUBHEADING_STYLE}
                         >
                           {item.stats.number}

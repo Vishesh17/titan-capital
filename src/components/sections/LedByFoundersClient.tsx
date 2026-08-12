@@ -11,6 +11,7 @@ import { founderSlug } from "@/lib/founderSlug";
 import {
   HERO_BODY_CLASS,
   HERO_BODY_STYLE,
+  LABEL_STYLE,
   SECTION_HEADING_CLASS,
   SECTION_HEADING_STYLE,
   SUBHEADING_CLASS,
@@ -214,13 +215,16 @@ function SocialLink({
         <div className="flex w-full flex-1 flex-col items-center text-center lg:min-h-[var(--photo-h)] lg:items-start lg:text-left lg:px-4">
           
           <h3
-            className={`m-0 text-[#0E0E0E] ${SUBHEADING_CLASS}`}
+            /* Level 4. Weight steps back from 500 to 400 on mobile only —
+               at the smaller mobile size the medium reads heavier than it
+               does on desktop. */
+            className={`m-0 font-medium text-[#0E0E0E] max-md:!font-normal ${SUBHEADING_CLASS}`}
             style={{ ...SUBHEADING_STYLE, marginBottom: "clamp(4px, min(0.55vw, 0.81vh), 8px)" }}
           >
             {founder.name}
           </h3>
   
-          <p className={`m-0 text-[#323232] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
+          <p className={`m-0 font-normal text-black/70 ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
             {founder.role}
           </p>
   
@@ -270,7 +274,7 @@ function SocialLink({
   
           {/* Bio */}
           <p
-            className={`m-0 whitespace-pre-line text-[#323232] ${HERO_BODY_CLASS}`}
+            className={`m-0 whitespace-pre-line font-normal text-black/70 ${HERO_BODY_CLASS}`}
             style={{ ...HERO_BODY_STYLE, width: "100%", maxWidth: "100%" }}
           >
             {founder.bio}
@@ -279,7 +283,11 @@ function SocialLink({
           {/* ── EDITORIAL LINK SIGNPOST ── */}
           <Link
             href={profileUrl}
-            className="group/link mt-6 inline-flex items-center gap-3 text-sm font-semibold tracking-wide text-black uppercase focus:outline-none lg:mt-8"
+            /* Read full story — level 6, black/10, keeping the slight weight
+               it already had. `text-sm` is gone: the size now comes from the
+               level-6 token so it scales with the rest of the scale. */
+            className="group/link mt-6 inline-flex items-center gap-3 font-semibold tracking-wide text-black/90 uppercase focus:outline-none lg:mt-8"
+            style={LABEL_STYLE}
           >
             <span className="relative">
               Read full story

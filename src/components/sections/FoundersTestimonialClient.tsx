@@ -458,7 +458,7 @@ function FlipCard({ item }: { item: TestimonialItem }) {
       </div>
 
       <div className="mt-[min(1.16vw,1.79vh)] flex flex-col items-center text-center max-md:!mt-[16px]">
-        <p className={`m-0 text-black ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
+        <p className={`font-normal m-0 text-black ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
           {item.name}
         </p>
         <p
