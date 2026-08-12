@@ -9,12 +9,11 @@ import {
   useTransform,
 } from "framer-motion";
 import {
-  HERO_BODY_CLASS,
-  HERO_BODY_STYLE,
-  LABEL_STYLE,
   SECTION_HEADING_CLASS,
   SECTION_HEADING_STYLE,
 } from "@/styles/heroTypography";
+import { CTA_BUTTON_STYLE, CTA_BUTTON_MOBILE_CLASS } from "@/styles/ctaButton";
+import AnimatedGrid from "@/components/ui/AnimatedGrid";
 
 /* ─────────────────────────────────────────────────────────
    Hero Glow Background (With Local Cursor Tracking)
@@ -178,14 +177,15 @@ export function CursorFillButton({ href, label }: { href: string; label: string 
       href={href}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="relative flex items-center justify-center whitespace-nowrap font-['Poppins',_sans-serif] font-normal transition-colors duration-300 max-md:!w-[clamp(150px,45vw,200px)] max-md:!h-[clamp(44px,7dvh,52px)]"
+      /* Identical to the navbar's non-inverted pill: same geometry token, same
+         mobile overrides, same #CDCDCD hairline. It used to carry its own
+         larger width/height and a pure-white border, which is why it read as a
+         different control from every other Get Investment button. */
+      className={`relative flex shrink-0 items-center justify-center whitespace-nowrap font-['Poppins',_sans-serif] font-normal transition-colors duration-300 ${CTA_BUTTON_MOBILE_CLASS}`}
       style={{
-        width: "clamp(160px, min(14vw, 20vh), 220px)",
-        height: "clamp(48px, min(4.5vw, 6vh), 60px)",
-        borderRadius: "53px",
-        border: "1px solid #FFFFFF",
+        ...CTA_BUTTON_STYLE,
+        border: "1px solid #CDCDCD",
         color: hovered ? "#001A4D" : "white",
-        ...LABEL_STYLE,
       }}
     >
       <span
@@ -218,39 +218,46 @@ export default function JoinPortfolioCTA() {
         paddingRight: "var(--section-px-wide)",
       }}
     >
-      {/* ── BACKGROUND GLOWS ── */}
+      {/* ── BACKGROUND GLOWS + LINE GRID ──
+          Same pairing as the Get Investment hero: the glow blobs sit at z-0,
+          the grid at z-1, the cursor blob at z-5, content at z-10. The grid
+          binds its mouse tracking to its parent, so the whole section is the
+          hover area. */}
       <HeroGlow sectionRef={sectionRef} />
+      <AnimatedGrid />
 
       <motion.div
-        className="relative z-10 flex w-full max-w-[800px] flex-col items-center text-center"
+        /* Was max-w-[800px], which only ever constrained the description. The
+           heading now runs on one line and needs ~64% of the viewport width,
+           so the cap moves to the site-standard 1440px. */
+        className="relative z-10 flex w-full max-w-[1440px] flex-col items-center text-center"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.5 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
-        {/* ── HEADING ── */}
+        {/* ── HEADING ──
+            Same scale as "You Build the Vision" in FoundersTestimonial: both
+            take SECTION_HEADING_CLASS + SECTION_HEADING_STYLE untouched, so
+            weight, size and line-height match on both breakpoints. Only the
+            colour differs, because this one sits on navy. */}
         <h2
-   className={`m-0 text-white ${SECTION_HEADING_CLASS}`}
-   style={{
-   ...SECTION_HEADING_STYLE,
-   marginBottom: "clamp(16px, 2vw, 24px)",
-   }}
-  >
-          Want To Join <br className="hidden md:block" />
-          Our Portfolio?
+          /* One line on desktop. Not forced on mobile: at the ≤767px clamp the
+             full string is about as wide as a 390px screen, so nowrap there
+             would push it out of the gutters — it wraps instead. */
+          className={`m-0 whitespace-nowrap text-white max-md:!whitespace-normal ${SECTION_HEADING_CLASS}`}
+          style={{
+            ...SECTION_HEADING_STYLE,
+            // Takes over the gap the description used to hold, so the heading
+            // still stands clear of the button now that it's gone.
+            marginBottom: "clamp(32px, 4vw, 48px)",
+          }}
+        >
+          Want To Join Our Portfolio?
         </h2>
 
-        {/* ── SUBTITLE ── */}
-        <p
-          className={`text-white/90 ${HERO_BODY_CLASS}`}
-          style={{ ...HERO_BODY_STYLE, marginBottom: "clamp(32px, 4vw, 48px)" }}
-        >
-          It is never to late to be part of the <br className="hidden md:block" />
-          Titan Capital
-        </p>
-
         {/* ── BUTTON ── */}
-        <CursorFillButton href="/getinvestment" label="Get Investment" />
+        <CursorFillButton href="/getinvestment" label="Write To Us" />
       </motion.div>
     </section>
   );

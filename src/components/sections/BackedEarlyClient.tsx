@@ -59,7 +59,7 @@ const SLUG_OVERRIDES: Record<string, string> = {
  *  resolve to the same /portfolio/[slug] pages. The name should match the
  *  brandName in Sanity's portfolioGrid; where it can't, add a SLUG_OVERRIDES
  *  entry above rather than letting the card 404. */
-function companySlug(name: string): string {
+export function companySlug(name: string): string {
   const base = name
     .toLowerCase()
     .replace(/&/g, "and")

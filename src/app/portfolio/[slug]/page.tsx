@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BackLink from "@/components/ui/BackLink";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import Footer from "@/components/sections/Footer";
@@ -726,13 +727,16 @@ export default async function PortfolioCompanyPage({
         <div className="mx-auto flex w-full max-w-[1440px] flex-col">
           {/* ── Row 1: Back + Breadcrumb ── */}
           <div className="flex w-full flex-row items-center justify-between">
-            {/* Returns to the company grid rather than the top of /portfolio.
-                scroll={false} keeps Next from jumping to the anchor before the
-                grid has loaded — PortfolioGrid performs the scroll itself. */}
-            <Link
-              href="/portfolio#portfolio-grid"
-              scroll={false}
-              aria-label="Back to portfolio"
+            {/* Returns to wherever the user came from — this page is reached
+                from the portfolio grid, the Backed Early marquee and the
+                Backed Before logo rows alike. The href is the fallback for a
+                tab opened straight onto this URL: the company grid rather
+                than the top of /portfolio, with scroll={false} so Next doesn't
+                jump to the anchor before the grid has loaded (PortfolioGrid
+                performs that scroll itself). */}
+            <BackLink
+              fallbackHref="/portfolio#portfolio-grid"
+              ariaLabel="Back"
               className="group inline-flex items-center transition-transform duration-300 hover:scale-105 hover:opacity-80"
               style={{ gap: "clamp(8px, min(0.8vw, 1.2vh), 14px)" }}
             >
@@ -745,7 +749,7 @@ export default async function PortfolioCompanyPage({
               >
                 Back
               </span>
-            </Link>
+            </BackLink>
 
             <p
               className="m-0 font-['Poppins',_sans-serif] text-black"

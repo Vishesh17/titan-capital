@@ -284,45 +284,52 @@ function RotatingTag({ tags, sizerTags }: { tags: string[]; sizerTags: string[] 
 
   return (
     <div
-      className="absolute left-0 z-20 flex items-center overflow-hidden text-white"
+      className="absolute left-0 z-20 flex items-center overflow-hidden"
       style={{
         top: "clamp(10px, min(1.2vw, 1.8vh), 18px)",
         height: "clamp(28px, min(2.6vw, 3.8vh), 38px)",
         paddingLeft: "clamp(10px, min(1vw, 1.5vh), 14px)",
         paddingRight: "clamp(14px, min(1.4vw, 2vh), 20px)",
         borderRadius: "0 70px 70px 0",
-        /* Blue glass, same family as the navbar's hamburger panel
-           (bg-[#001640]/[0.75] + backdrop-blur-2xl/saturate-1.45/brightness-0.7)
-           but re-tuned for this size. The panel's gloss is a wide 90deg sheen
-           peaking at 0.13 — across 480px that reads as glass; across a 34px
-           pill it spans almost nothing and just looks like flat navy. What
-           sells gloss at this scale is a specular highlight, so the layers are,
-           topmost first:
-             1. the specular sweep — bright along the top edge and cut off hard
-                by 52%. The abrupt terminator is the whole trick: a soft fade
-                reads as matte shading, a sharp one reads as light glancing off
-                a curved surface;
-             2. the navbar's left-to-right sheen, kept so this still belongs to
-                the same family;
-             3. translucent #001640, deeper at the bottom.
-           brightness(0.7) knocks the backdrop down before the navy lands, so
-           white text holds up over a pale photo and a dark one alike. */
+        /* White glass, modelled on macOS's light vibrancy material (the menu
+           and popover background). Two things separate that material from a
+           plain translucent white:
+
+             - it SAMPLES the backdrop rather than covering it. blur carries
+               the colour behind through, saturate pushes it well past life,
+               and brightness lifts the whole thing toward white. That is what
+               makes a macOS menu take on a tint from the wallpaper underneath
+               instead of looking like flat grey;
+             - its gloss is a hard-terminated highlight, not a soft fade. A
+               soft fade reads as matte shading; the abrupt cut at ~50% reads
+               as light glancing off a curved surface.
+
+           Layers, topmost first:
+             1. the specular sweep, cut off hard at 51%;
+             2. a left-to-right sheen, same idea as the navbar's panel so this
+                still belongs to the same family;
+             3. the material itself — near-white, faintly cool, and a little
+                deeper at the bottom so the pill has a lit top and a settled
+                base rather than one even tone. */
         background: [
-          "linear-gradient(180deg, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0.10) 42%, rgba(255,255,255,0) 52%)",
-          "linear-gradient(90deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.045) 30%, rgba(255,255,255,0) 72%)",
-          "linear-gradient(180deg, rgba(0,22,64,0.70) 0%, rgba(0,22,64,0.84) 100%)",
+          "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.52) 40%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0) 51%)",
+          "linear-gradient(90deg, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0.13) 32%, rgba(255,255,255,0) 74%)",
+          "linear-gradient(180deg, rgba(251,251,253,0.82) 0%, rgba(231,233,240,0.76) 100%)",
         ].join(", "),
-        backdropFilter: "blur(40px) saturate(1.45) brightness(0.7)",
-        WebkitBackdropFilter: "blur(40px) saturate(1.45) brightness(0.7)",
-        /* A bright top hairline caps the specular sweep — glass has a lit rim,
-           not a gradient that merely starts pale. The inset blue glow along the
-           bottom is light that entered the surface bouncing back up, which is
-           what gives it thickness instead of looking like a printed chip. No
-           full ring: the pill sits flush at left:0, where a vertical inset line
-           would read as a seam against the card edge. */
+        backdropFilter: "blur(40px) saturate(1.9) brightness(1.18)",
+        WebkitBackdropFilter: "blur(40px) saturate(1.9) brightness(1.18)",
+        /* The rim is what stops a light material reading as a flat sticker: a
+           near-opaque white hairline along the lit top edge, and a faint dark
+           line along the bottom so the surface has a measurable thickness.
+           No full ring — the pill sits flush at left:0, where a vertical inset
+           line would read as a seam against the card edge. */
         boxShadow:
-          "inset 0 1px 0 0 rgba(255,255,255,0.55), inset -1px 0 0 0 rgba(255,255,255,0.12), inset 0 -7px 13px -7px rgba(125,175,255,0.40), 0 6px 22px 0 rgba(0,0,0,0.28)",
+          "inset 0 1px 0 0 rgba(255,255,255,0.92), inset -1px 0 0 0 rgba(255,255,255,0.45), inset 0 -1px 0 0 rgba(15,23,42,0.07), 0 5px 18px 0 rgba(0,0,0,0.22)",
         ...LABEL_STYLE,
+        /* Dark type — the pill is now light, so the previous white label would
+           be invisible on it. #0E0E0E is the same near-black the rest of the
+           site uses for copy on light backgrounds. */
+        color: "#0E0E0E",
         fontFamily: "'Poppins', sans-serif",
         fontWeight: 600,
         letterSpacing: "0.01em",

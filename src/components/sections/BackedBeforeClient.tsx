@@ -3,6 +3,8 @@
 import { useRef, useState, useEffect } from "react";
 import { motion, useAnimationFrame, useInView, useMotionValue, useTransform } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
+import { companySlug } from "./BackedEarlyClient";
 
 /* ─────────────────────────────────────────────────────────
    Types
@@ -74,14 +76,20 @@ function clampLogoScale(scaleClass?: string): number {
 }
 
 // ---------------------------------------------------------
-// HELPER LOGIC FOR DRAGGABLE MARQUEE
+// AUTO-SCROLLING LOGO MARQUEE
+// Not draggable — each tile is a link to its portfolio page, the
+// same as the cards in BackedEarly.
 // ---------------------------------------------------------
+/** Next's Link with framer-motion's props, so the tile keeps its hover/tap
+ *  spring while still client-side routing. */
+const MotionLink = motion.create(Link);
+
 const wrap = (min: number, max: number, v: number) => {
   const rangeSize = max - min;
   return ((((v - min) % rangeSize) + rangeSize) % rangeSize) + min;
 };
 
-function DraggableMarquee({
+function LogoMarquee({
   items,
   direction = -1,
   speed = 50,
@@ -93,7 +101,6 @@ function DraggableMarquee({
   const containerRef = useRef<HTMLDivElement>(null);
   const [contentWidth, setContentWidth] = useState(0);
   const rawX = useMotionValue(0);
-  const isDragging = useRef(false);
   const isHovered = useRef(false);
   const inView = useInView(containerRef);
 
@@ -121,7 +128,7 @@ function DraggableMarquee({
     };
   }, [items]);
   useAnimationFrame((t, delta) => {
-    if (!inView || contentWidth === 0 || isDragging.current || isHovered.current) return;
+    if (!inView || contentWidth === 0 || isHovered.current) return;
 
     const moveBy = direction * speed * (delta / 1000);
     rawX.set(rawX.get() + moveBy);
@@ -136,24 +143,22 @@ function DraggableMarquee({
     <motion.div
       ref={containerRef}
       // FIXED: Mobile gap strictly set to 1.5vw to ensure mathematical perfection for 5 boxes
-      className="flex w-max max-md:gap-[1.5vw] md:gap-[20px] items-center cursor-grab active:cursor-grabbing touch-pan-y"
+      className="flex w-max max-md:gap-[1.5vw] md:gap-[20px] items-center"
       style={{ x: smoothX , willChange: "transform" }}
       onMouseEnter={() => { isHovered.current = true; }}
       onMouseLeave={() => { isHovered.current = false; }}
-      onPanStart={() => { isDragging.current = true; }}
-      onPan={(e, info) => {
-        rawX.set(rawX.get() + info.delta.x);
-      }}
-      onPanEnd={() => { isDragging.current = false; }}
     >
       {items.map((company, i) => {
         const src = resolveLogoSrc(company);
         if (!src) return null;
         return (
-          <motion.div
+          <MotionLink
             key={`marquee-item-${company.name}-${i}`}
+            href={`/portfolio/${companySlug(company.name)}`}
+            aria-label={`${company.name} portfolio page`}
+            draggable={false}
             // FIXED: Mobile width strictly bound to 18vw to guarantee 5 boxes fit within 100vw
-            className="relative flex shrink-0 items-center justify-center overflow-hidden max-md:w-[18vw] max-md:h-[10vw] md:h-[80px] md:w-[160px] select-none"
+            className="relative flex shrink-0 cursor-pointer items-center justify-center overflow-hidden max-md:w-[18vw] max-md:h-[10vw] md:h-[80px] md:w-[160px] select-none"
             style={{ borderRadius: "2px", background: "#FCFCFC" }}
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 1.12 }}
@@ -174,7 +179,7 @@ function DraggableMarquee({
                 draggable={false}
               />
             </div>
-          </motion.div>
+          </MotionLink>
         );
       })}
     </motion.div>
@@ -221,7 +226,7 @@ export default function BackedBeforeClient({
           WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)"
         }}
       >
-        <DraggableMarquee items={loopPoolRow1} direction={1} speed={100} />
+        <LogoMarquee items={loopPoolRow1} direction={1} speed={100} />
       </div>
 
       <div
@@ -231,7 +236,7 @@ export default function BackedBeforeClient({
           WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)"
         }}
       >
-        <DraggableMarquee items={loopPoolRow2} direction={-1} speed={85} />
+        <LogoMarquee items={loopPoolRow2} direction={-1} speed={85} />
       </div>
     </section>
   );
