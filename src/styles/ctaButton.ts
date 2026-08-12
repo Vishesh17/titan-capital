@@ -13,7 +13,7 @@ export const CTA_BUTTON_STYLE: CSSProperties = {
   width: "min(12.15vw, 18.8vh)",
   height: "min(3.36vw, 5.19vh)",
   // Level 6. Width/height stay here; only the label size is shared.
-  fontSize: "clamp(13px, min(1.39vw, 2.15vh), 18px)",
+  fontSize: "clamp(12px, min(1.26vw, 2.00vh), 17px)",
   borderRadius: "53px",
 };
 
