@@ -776,11 +776,11 @@ function FileUpload({
 function SectionHeading({
   label,
   title,
-  subtitle,
+  // subtitle,
 }: {
   label: string;
   title: string;
-  subtitle: string;
+  // subtitle: string;
 }) {
   return (
     <div className="mb-[clamp(32px,min(3.5vw,5vh),56px)]">
@@ -796,12 +796,12 @@ function SectionHeading({
       >
         {title}
       </h3>
-      <p
+      {/* <p
         className="font-['Poppins',_sans-serif] font-normal text-[#667085]"
         style={{ fontSize: "clamp(13px, min(1.1vw, 1.6vh), 16px)" }}
       >
         {subtitle}
-      </p>
+      </p> */}
     </div>
   );
 }
@@ -878,7 +878,7 @@ function SectionHeading({
 export interface GetInvestmentFormData {
   section1Label?: string;
   section1Title?: string;
-  section1Subtitle?: string;
+  // section1Subtitle?: string;
   section2Label?: string;
   section2Title?: string;
   section2Subtitle?: string;
@@ -894,7 +894,7 @@ export default function GetInvestmentForm({
 }) {
   const section1Label = data?.section1Label || "About You";
   const section1Title = data?.section1Title || "The Founder";
-  const section1Subtitle = data?.section1Subtitle || "We invest in people first. Tell us who you are.";
+  // const section1Subtitle = data?.section1Subtitle || "We invest in people first. Tell us who you are.";
   const section2Label = data?.section2Label || "The Company";
   const section2Title = data?.section2Title || "What You Are Building?";
   const section2Subtitle = data?.section2Subtitle || "";
@@ -1050,7 +1050,7 @@ export default function GetInvestmentForm({
     >
       <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center">
 
-        {/* ── Main Section Heading ── */}
+        {/* ── Main Section Heading ──
         <motion.div
           className="max-md:!mb-[clamp(32px,6dvh,48px)] flex flex-col items-center text-center"
           style={{ marginBottom: "min(3.47vw, 5.37vh)" }}
@@ -1075,7 +1075,7 @@ export default function GetInvestmentForm({
           >
             500+ founder community with shared playbooks, templates, learnings
           </motion.p>
-        </motion.div>
+        </motion.div> */}
 
         {submitted ? (
           <motion.div
@@ -1127,7 +1127,7 @@ export default function GetInvestmentForm({
             <SectionHeading
               label={section1Label}
               title={section1Title}
-              subtitle={section1Subtitle}
+              //subtitle={section1Subtitle}
             />
           </motion.div>
 
@@ -1205,7 +1205,7 @@ export default function GetInvestmentForm({
             <SectionHeading
               label={section2Label}
               title={section2Title}
-              subtitle={section2Subtitle}
+              // subtitle={section2Subtitle}
             />
           </motion.div>
 
