@@ -13,6 +13,7 @@ import {
 } from "framer-motion";
 import { useLenis } from "lenis/react";
 import { CTA_BUTTON_STYLE, CTA_BUTTON_MOBILE_CLASS } from "@/styles/ctaButton";
+import { GLASS_NAVY_BAR, GLASS_NAVY_PANEL } from "@/styles/glass";
 
 /** Site-wide easing — slow settle, never snappy. */
 const EASE = cubicBezier(0.22, 1, 0.36, 1);
@@ -250,9 +251,22 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
 
   return (
     <>
-      <nav className={`site-navbar fixed left-0 top-0 z-[40] flex h-[clamp(65px,min(5.5vw,7vh),80px)] w-full items-center justify-between px-4 transition-[background-color,color,transform,opacity] duration-500 ease-out max-md:!h-[clamp(56px,8dvh,64px)] max-md:!px-[clamp(16px,4vw,24px)] lg:px-[clamp(32px,4.3vw,62px)] ${
-        scrolled ? "bg-[#001A4D]/95 shadow-lg backdrop-blur-md" : "bg-transparent"
-      }`}>
+      <nav className="site-navbar fixed left-0 top-0 z-[40] flex h-[clamp(65px,min(5.5vw,7vh),80px)] w-full items-center justify-between px-4 transition-[color,transform,opacity] duration-500 ease-out max-md:!h-[clamp(56px,8dvh,64px)] max-md:!px-[clamp(16px,4vw,24px)] lg:px-[clamp(32px,4.3vw,62px)]">
+        {/* The glass lives on its own layer and fades in on scroll, rather
+            than being swapped onto the <nav> itself.
+            This matters: a layered gradient is NOT an animatable value, so
+            switching the nav's own `background` between transparent and the
+            glass made it appear all at once. Opacity does interpolate, so the
+            slow fade over the light heroes is preserved. It also means the
+            blur only exists once the layer is visible — an opacity-0 element
+            renders no backdrop-filter — so nothing is blurred over the hero. */}
+        <div
+          aria-hidden
+          className={`pointer-events-none absolute inset-0 -z-10 transition-opacity duration-500 ease-out ${
+            scrolled ? "opacity-100" : "opacity-0"
+          }`}
+          style={GLASS_NAVY_BAR}
+        />
 
         <button
           onClick={() => setIsMenuOpen(true)}
@@ -294,22 +308,21 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
         />
 
         <div
-          className={`relative z-10 flex h-full w-full max-w-full flex-col overflow-hidden border-r border-white/[0.11] bg-[#001640]/[0.75] shadow-[0_0_70px_rgba(0,0,0,0.58)] backdrop-blur-2xl backdrop-saturate-[1.45] backdrop-brightness-[0.7] transition-transform duration-500 ease-in-out lg:w-[480px] ${
+          className={`relative z-10 flex h-full w-full max-w-full flex-col overflow-hidden transition-transform duration-500 ease-in-out lg:w-[480px] ${
             isMenuOpen ? "translate-x-0" : "-translate-x-full"
           }`}
+          style={GLASS_NAVY_PANEL}
         >
-          {/* Gloss. A sheen off the top plus a specular hairline down the
-              trailing edge — that pairing is what reads as *glass* rather than
-              as a merely see-through panel. backdrop-brightness keeps the panel
-              from picking up the colour of whatever page is behind it, so the
-              menu looks the same over the dark hero and the white detail pages. */}
+          {/* Specular hairline down the trailing edge. Tinted blue, not white
+              — a white stroke here sat on top of the glass and read as a
+              border; a blue one reads as the edge catching light. */}
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[46%] bg-gradient-to-b from-white/[0.12] via-white/[0.035] to-transparent"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-y-0 right-0 z-0 w-px bg-gradient-to-b from-white/[0.32] via-white/[0.08] to-transparent"
+            className="pointer-events-none absolute inset-y-0 right-0 z-0 w-px"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(185,215,255,0.26) 0%, rgba(120,165,235,0.09) 45%, rgba(120,165,235,0) 100%)",
+            }}
           />
 
           <div className="relative z-10 flex min-h-[70px] max-md:!min-h-[clamp(60px,10dvh,70px)] w-full shrink-0 items-center justify-between border-b border-white/[0.12] px-[24px] max-md:!px-[clamp(16px,4vw,24px)] lg:h-[var(--nav-height)] lg:px-[62px]">
