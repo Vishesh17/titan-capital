@@ -42,15 +42,30 @@ const FALLBACK_HEADING_SECOND = "Built To Last";
   Mobile: 2x2 grid with independent, sequential 3D card-flip rotations.
 */
 
+/**
+ * A few cards carry a short marketing label that doesn't slugify to the
+ * portfolio brandName they should open. Mapped explicitly rather than renamed
+ * in Sanity, so the link survives an editor relabelling the card — and so the
+ * exception is visible in review instead of buried in the CMS.
+ *
+ * Keys are the ALREADY-slugified name, so casing/spacing in Sanity is
+ * irrelevant ("OLA", "Ola", "ola " all arrive here as "ola").
+ */
+const SLUG_OVERRIDES: Record<string, string> = {
+  ola: "olacabs",
+};
+
 /** URL slug from brand name — same rule PortfolioGrid uses, so these cards
- *  resolve to the same /portfolio/[slug] pages. The name must match the
- *  brandName in Sanity's portfolioGrid, e.g. "Olacabs" not "OLA". */
+ *  resolve to the same /portfolio/[slug] pages. The name should match the
+ *  brandName in Sanity's portfolioGrid; where it can't, add a SLUG_OVERRIDES
+ *  entry above rather than letting the card 404. */
 function companySlug(name: string): string {
-  return name
+  const base = name
     .toLowerCase()
     .replace(/&/g, "and")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+  return SLUG_OVERRIDES[base] ?? base;
 }
 
 export const MARQUEE_CSS = `
