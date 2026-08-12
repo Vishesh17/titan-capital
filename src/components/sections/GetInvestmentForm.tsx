@@ -1141,11 +1141,11 @@ export default function GetInvestmentForm({
           >
             <div>
               <FieldLabel required htmlFor="firstName">First Name</FieldLabel>
-              <TextInput id="firstName" placeholder="XXXX" value={firstName} onChange={setFirstName} />
+              <TextInput id="firstName" placeholder="" value={firstName} onChange={setFirstName} />
             </div>
             <div>
               <FieldLabel required htmlFor="lastName">Last Name</FieldLabel>
-              <TextInput id="lastName" placeholder="XXXX" value={lastName} onChange={setLastName} />
+              <TextInput id="lastName" placeholder="" value={lastName} onChange={setLastName} />
             </div>
           </motion.div>
 
@@ -1159,10 +1159,10 @@ export default function GetInvestmentForm({
           >
             <div>
               <FieldLabel required htmlFor="email">Email</FieldLabel>
-              <EmailInput id="email" placeholder="xxxx@gmail.com" value={email} onChange={setEmail} />
+              <EmailInput id="email" placeholder="" value={email} onChange={setEmail} />
             </div>
             <div>
-              <FieldLabel required htmlFor="phone">Phone Number</FieldLabel>
+              <FieldLabel htmlFor="phone">Phone Number</FieldLabel>
               <PhoneInput
                 country={phoneCountry}
                 onCountryChange={(c) => {
@@ -1188,7 +1188,7 @@ export default function GetInvestmentForm({
             <FieldLabel required htmlFor="linkedin">LinkedIn or Personal Site</FieldLabel>
             <UrlInput
               id="linkedin"
-              placeholder="linkedin.com/in/xxxx"
+              placeholder=""
               value={linkedin}
               onChange={setLinkedin}
               error=""
@@ -1219,13 +1219,13 @@ export default function GetInvestmentForm({
           >
             <div>
               <FieldLabel required htmlFor="companyName">Company Name</FieldLabel>
-              <TextInput id="companyName" placeholder="XXXX Inc." value={companyName} onChange={setCompanyName} />
+              <TextInput id="companyName" placeholder="" value={companyName} onChange={setCompanyName} />
             </div>
             <div>
               <FieldLabel required htmlFor="websiteUrl">Website or Product URL</FieldLabel>
               <UrlInput
                 id="websiteUrl"
-                placeholder="https://xxxx.com"
+                placeholder=""
                 value={websiteUrl}
                 onChange={(v) => {
                   setWebsiteUrl(v);
@@ -1292,7 +1292,7 @@ export default function GetInvestmentForm({
           </motion.div>
 
           <motion.div style={{ marginBottom: "clamp(20px, min(2vw, 3vh), 32px)" }} variants={fieldSlideUp}>
-            <FieldLabel required htmlFor="raisingAmount">How much are you raising? (in Rs.)</FieldLabel>
+            <FieldLabel htmlFor="raisingAmount">How much are you raising? (in INR)</FieldLabel>
             <TextInput id="raisingAmount" placeholder="e.g. 2,00,00,000" value={raisingAmount} onChange={setRaisingAmount} />
           </motion.div>
 
@@ -1306,7 +1306,7 @@ export default function GetInvestmentForm({
           </motion.div>
 
           <motion.div style={{ marginBottom: "clamp(20px, min(2vw, 3vh), 32px)" }} variants={fieldSlideUp}>
-            <FieldLabel required>Pitch Deck <span className="font-normal text-[#98A2B3]">(PDF, PPT, DOC, or image)</span></FieldLabel>
+            <FieldLabel>Pitch Deck <span className="font-normal text-[#98A2B3]">(PDF, PPT, DOC, or image)</span></FieldLabel>
             <FileUpload file={pitchDeck} onFile={setPitchDeck} />
           </motion.div>
 
