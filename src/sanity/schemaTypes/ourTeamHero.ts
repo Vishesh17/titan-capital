@@ -52,10 +52,19 @@ export const ourTeamHero = defineType({
               name: "offsetY",
               title: "Nudge vertically (%)",
               description:
-                "Negative = show more of the top (usually what you want for faces), positive = more of the bottom. 0 is centred; try ±10-30.",
+                "Negative = show more of the top (usually what you want for faces), positive = more of the bottom. 0 is centred; try ±5-15. Use this to line every face's eyes up at the same height.",
               type: "number",
               initialValue: 0,
               validation: (Rule) => Rule.min(-50).max(50),
+            }),
+            defineField({
+              name: "scale",
+              title: "Zoom",
+              description:
+                "1.1 is the default. Raise it for a photo taken from far away so the face fills as much of the card as everyone else's; lower it for a tight close-up. This is the control for head SIZE — the two nudges above only slide the photo around, they cannot make a small face bigger. Zooming also gives the nudges more room to move.",
+              type: "number",
+              initialValue: 1.1,
+              validation: (Rule) => Rule.min(1).max(2.5),
             }),
           ],
         },

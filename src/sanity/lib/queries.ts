@@ -636,7 +636,8 @@ export const ourTeamHeroQuery = `*[_type == "ourTeamHero"][0] {
   "members": members[]{
     "url": asset->url,
     offsetX,
-    offsetY
+    offsetY,
+    scale
   }
 }`;
 

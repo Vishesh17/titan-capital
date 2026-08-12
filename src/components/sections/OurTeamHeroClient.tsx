@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
+import FramedPhoto from "@/components/ui/FramedPhoto";
 import { motion } from "framer-motion";
 import {
   HERO_BODY_CLASS,
@@ -33,6 +33,9 @@ export interface TeamHeroMember {
   /** Framing nudges, % of the frame. Negative = reveal more left / top. */
   offsetX?: number;
   offsetY?: number;
+  /** Zoom. The control for subjects shot at different distances — panning
+   *  can never make a small head bigger. See FramedPhoto. */
+  scale?: number;
 }
 
 export interface OurTeamHeroData {
@@ -114,31 +117,31 @@ const MOBILE_POSITIONS = [
    Sub-Components
    ───────────────────────────────────────────────────────── */
 /**
- * Framing uses `object-position`, not a transform. The photo is `object-cover`,
- * so it always fills the card — shifting the focal point reveals a different
- * part of the same image. Translating it instead would slide the picture off
- * one edge and leave a grey gap.
+ * Framing is delegated to FramedPhoto, which pans with a transform rather
+ * than `object-position`. See that file for why: with square sources,
+ * `object-position` only moves along whichever axis the cover-fit happens to
+ * overflow, and for these cards that axis flips between laptop sizes.
  */
 const Photo = ({
   src,
   offsetX = 0,
   offsetY = 0,
+  scale,
 }: {
   src: string;
   offsetX?: number;
   offsetY?: number;
+  scale?: number;
 }) => (
-  <div className="relative h-full w-full bg-[#f0f0f0]">
-    <Image
-      src={src}
-      alt="Team Member"
-      fill
-      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
-      className="object-cover grayscale"
-      style={{ objectPosition: `${50 + offsetX}% ${50 + offsetY}%` }}
-      onError={(e) => (e.currentTarget.style.display = "none")}
-    />
-  </div>
+  <FramedPhoto
+    src={src}
+    alt="Team Member"
+    offsetX={offsetX}
+    offsetY={offsetY}
+    scale={scale}
+    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
+    imgClassName="grayscale"
+  />
 );
 
 const BlueBox = () => <div className="h-[76%] w-[76.5%] bg-[#D3E2FF]" />;
@@ -150,6 +153,7 @@ function FlipCard({
   gridClass,
   offsetX,
   offsetY,
+  scale,
 }: {
   isFlipped: boolean;
   frontIsBox: boolean;
@@ -157,16 +161,22 @@ function FlipCard({
   gridClass: string;
   offsetX?: number;
   offsetY?: number;
+  scale?: number;
 }) {
-  const photo = <Photo src={imgSrc} offsetX={offsetX} offsetY={offsetY} />;
+  const photo = (
+    <Photo src={imgSrc} offsetX={offsetX} offsetY={offsetY} scale={scale} />
+  );
   return (
     <div
-      // Mobile keeps the near-square 100/103 ratio (untouched). Desktop
-      // (lg+) drops the fixed aspect and instead sizes card HEIGHT with
-      // min(vw, vh) so the whole 7,4,4 grid compresses to fit inside the
-      // 70svh hero on every viewport (short laptops included). Width still
-      // comes from the 7-col grid, so the cards' aspect adapts per screen.
-      className={`relative w-full aspect-[100/103] lg:aspect-auto lg:h-[var(--card-h)] [perspective:1200px] ${gridClass}`}
+      // 100/103 on BOTH breakpoints. Desktop used to drop the fixed aspect
+      // and size height with min(vw, vh) while width came from the grid —
+      // which made the card's shape depend on the viewport, swinging from
+      // 0.58 to 1.29 across common laptops. That is what changed how much
+      // of each face was cropped from machine to machine, and what made the
+      // Sanity nudges live on different axes per screen. Width now drives
+      // height, so the crop window is the same shape everywhere; the grid
+      // as a whole shrinks on short screens instead (see --card-w below).
+      className={`relative w-full aspect-[100/103] [perspective:1200px] ${gridClass}`}
     >
       <div
         className={`relative h-full w-full transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] [transform-style:preserve-3d] ${
@@ -229,6 +239,7 @@ export default function OurTeamHeroClient({
       imgSrc: member?.url || FALLBACK_IMAGES[index],
       offsetX: member?.offsetX ?? 0,
       offsetY: member?.offsetY ?? 0,
+      scale: member?.scale,
     };
   });
 
@@ -246,13 +257,30 @@ export default function OurTeamHeroClient({
       // matches the hero until it turns blue on scroll. Content clears the
       // nav via paddingTop instead of a margin.
       // Desktop (lg+): 78svh tall from the top; mobile sizes to content.
-      className="relative flex w-full flex-col bg-white lg:!h-[80svh] lg:!pt-[calc(var(--nav-height)_+_min(1.6vw,2.3vh))] lg:!pb-[min(0.5vw,0.8vh)]"
+      // min-h, not h. A fixed 80svh forced the cards to shrink away from the
+      // right gutter on short laptops to avoid overflowing it. As a minimum
+      // it still fills tall screens, while letting the grid keep its full
+      // width — which tops out at 94% of the viewport on the shortest laptop,
+      // so the hero is still one screen.
+      className="relative flex w-full flex-col bg-white lg:!min-h-[80svh] lg:!pt-[calc(var(--nav-height)_+_min(1.6vw,2.3vh))] lg:!pb-[var(--bottom-pad)]"
       style={{
+        /* --row-gap lives on the SECTION, not on the grid, so the bottom
+           padding below can be expressed in terms of it and the two stay
+           locked together. */
+        "--row-gap": "clamp(16px, min(2.0vw, 2.8vh), 36px)",
+
+        /* The space below the last row is matched to the space between row 1
+           and the heading — which is NOT --row-gap. The heading block is
+           centred inside its two-row slot, so its first line starts well
+           below the row boundary: measured, that gap is ~2.8x the row gap
+           (58px against 20px at 1280x720). Using --row-gap alone here looked
+           visibly tighter at the bottom than the gap it was meant to match. */
+        "--bottom-pad": "calc(var(--row-gap) * 2.8)",
         paddingTop: "calc(var(--nav-height) + var(--section-py))",
         paddingBottom: "var(--section-py)",
         paddingLeft: "var(--section-px-wide)",
         paddingRight: "var(--section-px-wide)",
-      }}
+      } as React.CSSProperties}
     >
       <div className="mx-auto flex w-full max-w-[1440px] flex-col">
         {/* ══════════ MOBILE (< lg) — 4-col diamond (4,2,2,2) ══════════
@@ -292,7 +320,9 @@ export default function OurTeamHeroClient({
                 // Inline, not the `max-md:` half of HERO_HEADING_LIGHT_CLASS:
                 // this block is `lg:hidden`, so it is still on screen from
                 // 768-1023px where that variant no longer applies.
-                style={HERO_HEADING_LIGHT_MOBILE_STYLE}
+                // Same tightening as the desktop block above, a little looser
+                // because these lines sit in a narrower column.
+                style={{ ...HERO_HEADING_LIGHT_MOBILE_STYLE, lineHeight: "110%" }}
                 variants={fadeUp(i * 0.15)}
               >
                 {line}
@@ -327,11 +357,26 @@ export default function OurTeamHeroClient({
             item — that keeps all three card rows a constant height even if
             the heading + description are taller than two rows. */}
         <div
-          className="relative hidden lg:grid w-full lg:grid-cols-7"
+          className="relative hidden lg:grid lg:justify-start"
           style={{
-            "--card-h": "min(12vw, 17vh)",
             "--col-gap": "clamp(14px, min(1.8vw, 2.2vh), 32px)",
-            "--row-gap": "clamp(22px, min(2.9vw, 4vh), 52px)",
+            /* --row-gap is inherited from the section — see the note there. */
+
+            /* Card width is simply the 7 columns filling the container, so
+               the grid is always flush to BOTH gutters — the same
+               --section-px-wide every other section uses.
+               Height follows from the fixed aspect, which is what keeps the
+               crop window identical on every screen. (The old code squashed
+               HEIGHT with min(12vw,17vh) while width came from the grid,
+               which is what made the aspect viewport-dependent.)
+               No height cap: at this width three rows come to at most 94% of
+               the shortest laptop viewport, so the hero still reads as one
+               screen without the cards having to shrink away from the right
+               gutter. The section's min-height keeps it filling tall screens. */
+            "--card-w":
+              "calc((min(1440px, 100vw - 2 * var(--section-px-wide)) - 6 * var(--col-gap)) / 7)",
+
+            gridTemplateColumns: "repeat(7, var(--card-w))",
             columnGap: "var(--col-gap)",
             rowGap: "var(--row-gap)",
           } as React.CSSProperties}
@@ -348,9 +393,11 @@ export default function OurTeamHeroClient({
           <motion.div
             className="pointer-events-none absolute left-0 z-10 flex flex-col items-start justify-center"
             style={{
-              top: "calc(var(--card-h) + var(--row-gap))",
-              height: "calc(2 * var(--card-h) + var(--row-gap))",
-              width: "calc((100% - 6 * var(--col-gap)) / 7 * 3 + 2 * var(--col-gap))",
+              // Card height is now derived from width by the fixed aspect,
+              // so these track --card-w rather than a separate --card-h.
+              top: "calc(var(--card-w) * 103 / 100 + var(--row-gap))",
+              height: "calc(2 * (var(--card-w) * 103 / 100) + var(--row-gap))",
+              width: "calc(3 * var(--card-w) + 2 * var(--col-gap))",
             }}
             initial="hidden"
             whileInView="visible"
@@ -360,7 +407,12 @@ export default function OurTeamHeroClient({
               <motion.h1
                 key={i}
                 className={`pointer-events-auto m-0 text-[#0E0E0E] ${HERO_HEADING_LIGHT_CLASS}`}
-                style={HERO_HEADING_LIGHT_STYLE}
+                /* Tighter leading than the shared level-2 token's 124%.
+                   Overridden here rather than in heroTypography because the
+                   token is three stacked one-word lines ONLY in this hero —
+                   everywhere else it sets running heads that wrap, where 124%
+                   is right. Size and weight still come from the token. */
+                style={{ ...HERO_HEADING_LIGHT_STYLE, lineHeight: "104%" }}
                 variants={fadeUp(i * 0.15)}
               >
                 {line}

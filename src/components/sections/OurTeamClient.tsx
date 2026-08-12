@@ -37,7 +37,6 @@ export interface TeamMember {
   imageOffsetY?: number;
 }
 
-
 export interface OurTeamData {
   headingFirst?: string;
   headingSecond?: string;
@@ -150,8 +149,6 @@ function TeamCard({
 }) {
   const slug = member.slug || teamSlug(member.name);
 
-  // Only build a link when the field is actually present — anything empty
-  // is omitted from Sanity, so we skip rendering that icon entirely.
   const linkedinHref = member.linkedinUrl || undefined;
   const emailHref = member.emailUrl
     ? member.emailUrl.startsWith("mailto:")
@@ -169,25 +166,19 @@ function TeamCard({
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.55, ease: "easeOut" }}
     >
+      {/* Cleaned up conflicting block/flex classes here */}
       <Link
         href={`/ourTeam/${slug}`}
         aria-label={`${member.name} — ${member.title}`}
-        className="block w-full focus:outline-none flex flex-col items-start"
+        className="flex w-full flex-col items-start focus:outline-none"
       >
         <div
           className="relative w-full transition-transform duration-300 ease-out group-hover:-translate-y-1 max-md:!max-w-[45vw]"
           style={{
-            maxWidth: "clamp(160px, min(18vw, 25vh), 240px)",
+            maxWidth: "80%",
             aspectRatio: BLOB_ASPECT,
           }}
         >
-          {/* ── ROTATED BLOB SPACE ──
-              The painted blob and the mask that clips the photo MUST be the
-              same shape. Rotating only the <img> (as this used to) left the
-              mask on the un-rotated silhouette, so the cutout drifted away
-              from the blob edge by up to 10° — the visible gap. Rotating a
-              shared parent keeps paint and mask in lockstep; the photo is
-              counter-rotated below so the person stays upright. */}
           <div
             className="absolute h-full w-full"
             style={{
@@ -206,7 +197,6 @@ function TeamCard({
               style={{ objectFit: "fill" }}
             />
 
-            {/* ── PHOTO CROP/MASK ── */}
             <div
               className="absolute inset-0 h-full w-full"
               style={{
@@ -218,8 +208,6 @@ function TeamCard({
                 maskRepeat: "no-repeat",
               }}
             >
-              {/* Cancels the parent rotation about the same centre, so the
-                  portrait renders upright inside a rotated mask. */}
               <div
                 className="absolute inset-0"
                 style={{
@@ -227,80 +215,83 @@ function TeamCard({
                   transformOrigin: "center",
                 }}
               >
-            {member.image ? (
-              <div
-                className="absolute"
-                style={{
-                  bottom: "0",
-                  left: "0",
-                  width: "75%",
-                  height: "85%",
-                  ...blobPhotoStyle(member),
-                }}
-              >
-                <Image
-                  src={cdnImageSrc(member.image, 600)}
-                  alt={member.name}
-                  fill
-                  sizes="(max-width: 640px) 40vw, (max-width: 1024px) 25vw, 240px"
-                  className="object-cover object-bottom transition-[filter] duration-500 ease-out [filter:grayscale(1)] group-hover:[filter:grayscale(0)]"
-                />
-              </div>
-            ) : (
-              <div
-                className="flex h-full w-full items-end justify-start bg-[#E5E5E5] font-['Poppins',_sans-serif] text-[#9A9A9A] pb-6 pl-8"
-                style={{ fontSize: "clamp(24px, 3.5vw, 48px)" }}
-              >
-                {member.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .slice(0, 2)
-                  .toUpperCase()}
-              </div>
-            )}
+                {member.image ? (
+                  <div
+                    className="absolute"
+                    style={{
+                      bottom: "0",
+                      left: "0",
+                      width: "75%",
+                      height: "85%",
+                      ...blobPhotoStyle(member),
+                    }}
+                  >
+                    <Image
+                      src={cdnImageSrc(member.image, 600)}
+                      alt={member.name}
+                      fill
+                      sizes="(max-width: 640px) 40vw, (max-width: 1024px) 25vw, 240px"
+                      className="object-cover object-bottom transition-[filter] duration-500 ease-out [filter:grayscale(1)] group-hover:[filter:grayscale(0)]"
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className="flex h-full w-full items-end justify-start bg-[#E5E5E5] pb-6 pl-8 font-['Poppins',_sans-serif] text-[#9A9A9A]"
+                    style={{ fontSize: "clamp(24px, 3.5vw, 48px)" }}
+                  >
+                    {member.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .slice(0, 2)
+                      .toUpperCase()}
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* ── NAME ── */}
-        <h3
-          className={`m-0 text-left text-[#0E0E0E] ${BODY_BOLD_CLASS}`}
-          style={{
-            ...HERO_BODY_STYLE,
-            marginTop: "clamp(12px, min(1.5vw, 2.2vh), 20px)",
-            maxWidth: "300px",
-            // Removed minHeight so there are no forced blank gaps
-          }}
-        >
-          {member.name}
-        </h3>
-
-        {/* ── TITLE ── (hidden when empty) */}
-        {member.title && (
-          <p
-            className="m-0 text-left font-['Poppins',_sans-serif] font-normal text-[#323232]"
+        {/* ── TEXT WRAPPER ── 
+            Added percentage padding to shift the text strictly in visual line 
+            with the blob above it across all responsive breakpoints. */}
+        <div className="flex w-full flex-col pl-[10%] xl:pl-[12%]">
+          {/* ── NAME ── */}
+          <h3
+            className={`m-0 text-left text-[#0E0E0E] ${BODY_BOLD_CLASS}`}
             style={{
-              ...LABEL_STYLE,
-              lineHeight: "158%",
-              marginTop: "clamp(4px, 0.5vw, 8px)",
-              maxWidth: "280px",
-              // Removed minHeight so short titles sit snugly above the social icons
+              ...HERO_BODY_STYLE,
+              marginTop: "clamp(12px, min(1.5vw, 2.2vh), 20px)",
+              maxWidth: "300px",
             }}
           >
-            {member.title}
-          </p>
-        )}
+            {member.name}
+          </h3>
+
+          {/* ── TITLE ── */}
+          {member.title && (
+            <p
+              className="m-0 text-left font-['Poppins',_sans-serif] font-normal text-[#323232]"
+              style={{
+                ...LABEL_STYLE,
+                lineHeight: "158%",
+                marginTop: "clamp(4px, 0.5vw, 8px)",
+                maxWidth: "280px",
+              }}
+            >
+              {member.title}
+            </p>
+          )}
+        </div>
       </Link>
 
-      {/* ── SOCIAL ICONS ── (each icon shows only if its link exists) */}
+      {/* ── SOCIAL ICONS ── */}
       {hasSocials && (
         <div
-          className="flex w-full items-center justify-start"
+          // Added matching percentage padding here for perfect left alignment
+          className="flex w-full items-center justify-start pl-[10%] xl:pl-[12%]"
           style={{
             gap: "clamp(8px, min(0.83vw, 1.22vh), 12px)",
-            // Snug top margin now that the fake title space is gone
             marginTop: "clamp(8px, min(1vw, 1.5vh), 12px)",
           }}
         >
@@ -356,7 +347,7 @@ function TeamGroup({
             visible: { scaleX: 1, transition: { duration: 2.6, ease: [0.22, 1, 0.36, 1] } },
           }}
         />
-        
+
         <motion.h3
           className={`m-0 whitespace-nowrap text-center text-black ${SUBHEADING_CLASS}`}
           style={SUBHEADING_STYLE}
@@ -381,7 +372,7 @@ function TeamGroup({
         />
       </div>
 
-      {/* ── GRID: 2 columns on mobile, 4 columns on desktop ── */}
+      {/* ── GRID ── */}
       <div
         className="grid w-full grid-cols-2 sm:grid-cols-2 lg:grid-cols-4"
         style={{
@@ -426,20 +417,8 @@ export default function OurTeamClient({
 
   return (
     <section
-      // max-md:!mt-0 — on mobile the negative overlap margin (~59px) all
-      // but cancels LedByFounders' bottom padding, leaving almost no gap
-      // after the last founder. Neutralise the overlap on mobile so normal
-      // section spacing returns; desktop keeps the slide-over via the
-      // inline negative marginTop.
       className="relative flex w-full flex-col items-center overflow-hidden bg-white max-md:!mt-0 max-md:!rounded-t-[min(6.66vw,10.30vh)]"
       style={{
-        // Curved top + high z-index + negative top margin so this white
-        // section slides UP and over the cream LedByFounders section above
-        // — the same "curved-top panel covers the previous section" look as
-        // FoundersTestimonial over IndicornSpotlight. (LedByFounders is
-        // taller than one viewport, so it isn't pinned like the ~100vh
-        // IndicornSpotlight — that would freeze its top and hide the second
-        // founder — but the overlap gives the same visual family.)
         borderTopLeftRadius: "min(4.44vw, 7.30vh)",
         borderTopRightRadius: "min(4.44vw, 7.30vh)",
         borderBottomLeftRadius: 0,
@@ -455,25 +434,28 @@ export default function OurTeamClient({
       <BlobDefs />
 
       <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center">
-        
         {/* ── MAIN HEADING ── */}
         <motion.div
-          className="max-md:!mb-[clamp(32px,6dvh,48px)] flex w-full flex-col items-center justify-center text-center"
+          className="flex w-full flex-col items-center justify-center text-center max-md:!mb-[clamp(32px,6dvh,48px)]"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: false, amount: 0.5 }}
           style={{ marginBottom: "min(3.47vw, 5.37vh)" }}
         >
           <motion.h2
-      className={`m-0 text-black ${SECTION_HEADING_CLASS}`}
-      style={{
-       ...SECTION_HEADING_STYLE, 
-      }}
-      variants={{
-       hidden: { opacity: 0, y: 30 },
-       visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
-      }}
-     >
+            className={`m-0 text-black ${SECTION_HEADING_CLASS}`}
+            style={{
+              ...SECTION_HEADING_STYLE,
+            }}
+            variants={{
+              hidden: { opacity: 0, y: 30 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: { duration: 0.6, ease: "easeOut" },
+              },
+            }}
+          >
             {headingFirst} {headingSecond}
           </motion.h2>
         </motion.div>
@@ -485,7 +467,7 @@ export default function OurTeamClient({
         >
           <TeamGroup title="Corporate Team" members={corporate} />
           <TeamGroup title="Seed Investment Team" members={seed} />
-          <TeamGroup title="Early-growth Investment Team" members={winner} />
+          <TeamGroup title="Early-Growth Investment Team" members={winner} />
         </div>
       </div>
     </section>
