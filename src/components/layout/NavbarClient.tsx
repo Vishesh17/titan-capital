@@ -177,7 +177,7 @@ const FALLBACK_SECTIONS: NavbarSection[] = [
     title: "ABOUT US ",
     subItems: [
       { label: "Our Story", url: "/ourstory" },
-      { label: "Our Team", url: "/ourTeam" },
+      { label: "Meet The Team", url: "/ourTeam" },
       { label: "Indicorns", url: "/indicorns" },
     ],
   },

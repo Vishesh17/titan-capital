@@ -25,7 +25,7 @@ import { motion } from "framer-motion"; // Keep for buttonContent spinner animat
 /* Map specific footer link labels to custom routes */
 const footerHrefs: Record<string, string> = {
   "Our Story": "/ourstory",
-  "Our Team": "/ourTeam",
+  "Meet The Team": "/ourTeam",
   "Our Portfolio": "/portfolio",
   "Founders' Stories": "/foundersstory",
   "Get Investment": "/getinvestment",
@@ -37,7 +37,7 @@ const footerHrefs: Record<string, string> = {
 /* Fund Details sits last under About for SEBI compliance. The old "Home"
    column is gone — the wordmark itself is the route home. */
 const navLinks = [
-  { title: "About", links: ["Our Story", "Our Team"] },
+  { title: "About", links: ["Our Story", "Meet The Team"] },
   { title: "Portfolio", links: ["Our Portfolio", "Founders' Stories", "Get Investment"] },
   { title: "Perspective", links: ["Titan Ecosystem", "Indicorns", "Blogs & News"] },
 ];

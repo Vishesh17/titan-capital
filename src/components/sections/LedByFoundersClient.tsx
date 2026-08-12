@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, Variants } from "framer-motion";
 
 import InstagramIcon from "@/components/icons/InstagramIcon";
+import StoryArrow from "@/components/icons/StoryArrow";
 import XIcon from "@/components/icons/XIcon";
 import { founderSlug } from "@/lib/founderSlug";
 import {
@@ -156,18 +157,23 @@ function FounderRow({ founder }: { founder: FounderProfile }) {
       }`}
       style={{
         gap: "clamp(24px, min(4vw, 5vh), 56px)",
-        // Shared so the vertical rule and the content column agree on height —
-        // that's what lets "Read More" land level with the end of the line.
+        // Shared so the photo, the vertical rule and the content column all
+        // agree on height.
         ["--photo-h" as string]: PHOTO_HEIGHT,
       }}
     >
-      {/* ── PORTRAIT ── */}
-      <div
-        className="relative shrink-0 overflow-hidden bg-gray-200"
+      {/* ── PORTRAIT ──
+          The photo is the link to /founders/<slug> — it replaces the old
+          "Read More" text link. The hover affordance is the same arrow the
+          Their Stories cards use, in the same top-right position. */}
+      <Link
+        href={`/founders/${founder.slug || founderSlug(founder.name)}`}
+        aria-label={`Read more about ${founder.name}`}
+        className="group relative block shrink-0 overflow-hidden bg-gray-200"
         style={{
           width: PHOTO_WIDTH,
           height: PHOTO_HEIGHT,
-          borderRadius: "2px", 
+          borderRadius: "2px",
         }}
       >
         {founder.image && (
@@ -176,11 +182,36 @@ function FounderRow({ founder }: { founder: FounderProfile }) {
             alt={founder.name}
             fill
             sizes="(max-width: 1024px) 90vw, 32vw"
-            // scale-105 zooms in slightly to push any baked-in borders outside the container frame
-            className="object-cover object-center scale-105"
+            /* scale-105 at rest pushes any baked-in border outside the frame.
+               Hover pushes it a little further — slow and long-eased, so it
+               reads as the image settling rather than a snap. */
+            className="object-cover object-center scale-105 transition-transform duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.13]"
           />
         )}
-      </div>
+
+        {/* Hover scrim. Weighted to the top, unlike the Their Stories cards
+            whose gradient is bottom-heavy to seat their caption — here the
+            only thing over the photo is the arrow in the top-right corner,
+            and this is what gives it something to be white against. The
+            faint bottom stop keeps the photo from looking lit from below. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-[700ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:opacity-100"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(14,14,14,0.58) 0%, rgba(14,14,14,0.16) 34%, rgba(14,14,14,0) 58%, rgba(14,14,14,0.20) 100%)",
+          }}
+        />
+
+        {/* The arrow travels a few px up-and-right into place as it fades,
+            so it arrives along its own diagonal instead of popping. */}
+        <div
+          className="pointer-events-none absolute z-10 translate-x-[-6px] translate-y-[6px] opacity-0 transition-all duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
+          style={{ top: "min(1.85vw, 2.86vh)", right: "min(1.85vw, 2.86vh)" }}
+        >
+          <StoryArrow color="white" />
+        </div>
+      </Link>
 
       {/* ── VERTICAL LINE ── */}
       <motion.div
@@ -283,21 +314,6 @@ function FounderRow({ founder }: { founder: FounderProfile }) {
         >
           {founder.bio}
         </p>
-
-        <Link
-          href={`/founders/${founder.slug || founderSlug(founder.name)}`}
-          aria-label={`Read more about ${founder.name}`}
-          // lg:mb-… lifts it clear of the rule's end rather than sitting flush
-          // on it; mt-auto still pins it to the bottom of the column.
-          className="group relative mt-[clamp(16px,min(2vw,3vh),32px)] inline-block w-fit whitespace-nowrap font-['Poppins',_sans-serif] font-normal text-[#0E0E0E]/55 transition-colors duration-300 hover:text-[#0E0E0E] lg:mb-[clamp(18px,min(2.2vw,3.2vh),36px)] lg:mt-auto lg:pt-[clamp(16px,min(2vw,3vh),32px)]"
-          style={{
-            fontSize: "clamp(13px, min(1.25vw, 1.83vh), 16px)",
-            lineHeight: "140%",
-          }}
-        >
-          Read More
-          <span className="absolute bottom-0 left-0 h-[1px] w-0 bg-[#0E0E0E] transition-all duration-300 ease-out group-hover:w-full" />
-        </Link>
       </div>
     </div>
   );
