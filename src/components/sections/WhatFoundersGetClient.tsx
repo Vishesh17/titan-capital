@@ -48,13 +48,24 @@ const SZ = {
   divider: "100%",
   openedDivider: "100%",
   descBox: "55vw",
-  rowTitleBox: "23vw",
+  /* Column 1 of a closed row. Tracks the TITLE's own font — which is
+     level 4, min(2.78vw, 4.30vh) — rather than being a flat vw. A flat
+     23vw meant the longest title ("Founder's Playbook", 301px) overflowed
+     its 294px column and ate into the gap, leaving only 19px before the
+     sub-heading; the overflow got worse as the viewport grew, because the
+     font follows vh while the column followed vw alone.
+     Poppins-medium runs ~9.7x the font-size for that string, so 9.7 x
+     min(2.78vw, 4.30vh) ~= min(27vw, 41.8vh); rounded up for headroom. */
+  rowTitleBox: "min(28vw, 43vh)",
   openedContentBox: "65.22vw",
 
   headingToDivider: "min(3.47vw, 5.37vh)",
   rowPaddingY: "min(1.04vw, 1.61vh)",
   rowInnerGap: "min(0.93vw, 1.43vh)",
-  openedGap: "min(2.31vw, 3.58vh)",
+  /* Gap between the closed row's columns. Widened from
+     min(2.31vw, 3.58vh) — the sub-heading sat ~19px from the longest
+     title. Applies twice: title|content and content|arrow. */
+  rowColGap: "min(3.5vw, 5.4vh)",
 
   // arrows — actual SVG dimensions
   closedArrowW: "min(2.31vw, 3.58vh)",
@@ -259,7 +270,7 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
       className="grid w-full items-center"
       style={{
         gridTemplateColumns: `${SZ.rowTitleBox} 1fr auto`,
-        columnGap: SZ.openedGap,
+        columnGap: SZ.rowColGap,
         paddingTop: SZ.rowPaddingY,
         paddingBottom: SZ.rowPaddingY,
         minHeight: "min(8vw, 12.4vh)",

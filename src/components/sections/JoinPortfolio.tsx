@@ -11,6 +11,7 @@ import {
 import {
   HERO_BODY_CLASS,
   HERO_BODY_STYLE,
+  LABEL_STYLE,
   SECTION_HEADING_CLASS,
   SECTION_HEADING_STYLE,
 } from "@/styles/heroTypography";
@@ -177,14 +178,14 @@ export function CursorFillButton({ href, label }: { href: string; label: string 
       href={href}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="relative flex items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] text-[min(1.16vw,1.79vh)] font-normal transition-colors duration-300 max-md:!w-[clamp(150px,45vw,200px)] max-md:!h-[clamp(44px,7dvh,52px)] max-md:!text-[clamp(14px,3.5vw,16px)]"
+      className="relative flex items-center justify-center whitespace-nowrap font-['Poppins',_sans-serif] font-normal transition-colors duration-300 max-md:!w-[clamp(150px,45vw,200px)] max-md:!h-[clamp(44px,7dvh,52px)]"
       style={{
         width: "clamp(160px, min(14vw, 20vh), 220px)",
         height: "clamp(48px, min(4.5vw, 6vh), 60px)",
         borderRadius: "53px",
         border: "1px solid #FFFFFF",
         color: hovered ? "#001A4D" : "white",
-        fontSize: "clamp(15px, min(1.2vw, 1.8vh), 18px)",
+        ...LABEL_STYLE,
       }}
     >
       <span

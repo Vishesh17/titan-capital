@@ -22,6 +22,7 @@ import {
   HERO_BODY_STYLE,
   HERO_HEADING_DARK_CLASS,
   HERO_HEADING_DARK_STYLE,
+  LABEL_STYLE,
 } from "@/styles/heroTypography";
 
 /* ─────────────────────────────────────────────────────────
@@ -696,8 +697,8 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
               >
                 <Link
                   href="/portfolio"
-                  className="group relative whitespace-nowrap font-['Poppins',_sans-serif] text-[min(1.16vw,1.79vh)] font-normal text-white max-md:!text-[clamp(12px,3.5vw,15px)]"
-                  style={{ lineHeight: "140%" }}
+                  className="group relative whitespace-nowrap font-['Poppins',_sans-serif] font-normal text-white"
+                  style={{ ...LABEL_STYLE, lineHeight: "140%" }}
                 >
                   View Portfolio
                   <span className="absolute bottom-0 left-0 h-[1px] w-0 bg-white transition-all duration-300 ease-out group-hover:w-full" />
@@ -748,8 +749,9 @@ function CursorFillButton({ href, label }: { href: string; label: string }) {
       href={href}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="relative flex items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] text-[min(1.16vw,1.79vh)] font-normal transition-colors duration-300 max-md:!w-[clamp(130px,35vw,150px)] max-md:!h-[clamp(38px,6dvh,44px)] max-md:!text-[clamp(12px,3.5vw,15px)]"
+      className="relative flex items-center justify-center whitespace-nowrap font-['Poppins',_sans-serif] font-normal transition-colors duration-300 max-md:!w-[clamp(130px,35vw,150px)] max-md:!h-[clamp(38px,6dvh,44px)]"
       style={{
+        ...LABEL_STYLE,
         width: "min(12.15vw, 18.8vh)",
         height: "min(3.36vw, 5.19vh)",
         borderRadius: "53px",

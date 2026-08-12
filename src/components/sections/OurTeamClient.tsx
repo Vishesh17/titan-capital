@@ -12,6 +12,7 @@ import XIcon from "@/components/icons/XIcon";
 import {
   BODY_BOLD_CLASS,
   HERO_BODY_STYLE,
+  LABEL_STYLE,
   SECTION_HEADING_CLASS,
   SECTION_HEADING_STYLE,
   SUBHEADING_CLASS,
@@ -281,7 +282,7 @@ function TeamCard({
           <p
             className="m-0 text-left font-['Poppins',_sans-serif] font-normal text-[#323232]"
             style={{
-              fontSize: "clamp(14px, min(1.32vw, 1.92vh), 17px)",
+              ...LABEL_STYLE,
               lineHeight: "158%",
               marginTop: "clamp(4px, 0.5vw, 8px)",
               maxWidth: "280px",

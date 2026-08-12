@@ -6,6 +6,7 @@ import Link from "next/link";
 import {
   BODY_BOLD_CLASS,
   HERO_BODY_STYLE,
+  LABEL_STYLE,
   SUBHEADING_CLASS,
   SUBHEADING_MOBILE_STYLE,
   SUBHEADING_STYLE,
@@ -92,7 +93,7 @@ function CursorFillButton({
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`relative flex items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] font-normal transition-colors duration-300 disabled:opacity-60 ${variant === "mobile" ? "shrink-0" : ""}`}
+      className={`relative flex items-center justify-center whitespace-nowrap font-['Poppins',_sans-serif] font-normal transition-colors duration-300 disabled:opacity-60 ${variant === "mobile" ? "shrink-0" : ""}`}
       style={
         variant === "mobile"
           ? {
@@ -102,7 +103,7 @@ function CursorFillButton({
               border: "1px solid transparent",
               background: hovered ? "white" : "#001A4D",
               color: hovered ? "#001A4D" : "white",
-              fontSize: "clamp(7px, 1.7vw, 10px)",
+              ...LABEL_STYLE,
             }
           : {
               width: "clamp(160px, min(17.01vw, 24.95vh), 245px)",
@@ -111,7 +112,7 @@ function CursorFillButton({
               border: "1px solid #CDCDCD",
               background: hovered ? "white" : "#001A4D",
               color: hovered ? "#001A4D" : "white",
-              fontSize: "clamp(11px, min(1.11vw, 1.63vh), 16px)",
+              ...LABEL_STYLE,
             }
       }
     >
@@ -250,7 +251,7 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
               height: "clamp(24px, 6.5vw, 32px)",
               borderRadius: "4px",
               fontFamily: "Poppins",
-              fontSize: "clamp(8px, 1.8vw, 11px)",
+              ...LABEL_STYLE,
               color: "#323232",
               lineHeight: "150%",
               transition: "box-shadow 0.2s",
@@ -361,7 +362,7 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
               "0 clamp(20px, min(2.64vw, 3.87vh), 38px)",
             borderRadius: "8px",
             fontFamily: "Poppins",
-            fontSize: "clamp(13px, min(1.39vw, 2.04vh), 20px)",
+            ...LABEL_STYLE,
             color: "#323232",
             lineHeight: "150%",
             transition: "box-shadow 0.2s",
@@ -447,10 +448,7 @@ export default function Footer() {
               />
             </Link>
 
-            <p
-              className="font-poppins font-normal text-[#0E0E0E]"
-              style={{ fontSize: "clamp(10px, min(0.97vw, 1.43vh), 14px)" }}
-            >
+            <p className="font-poppins font-normal text-[#0E0E0E]" style={LABEL_STYLE}>
               M3M Urbana, Sector 67, Gurugram, India
             </p>
 
@@ -514,7 +512,7 @@ export default function Footer() {
                           <Link
                             href={footerHrefs[link] ?? "#"}
                             className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] transition-all duration-300 hover:scale-105 hover:text-[#001A4D]"
-                            style={{ fontSize: "clamp(10px, min(1.18vw, 1.73vh), 17px)" }}
+                            style={LABEL_STYLE}
                           >
                             {link}
                           </Link>
@@ -584,7 +582,7 @@ export default function Footer() {
                         <Link
                           href={footerHrefs[link] ?? "#"}
                           className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] transition-all duration-300 hover:text-[#001A4D]"
-                          style={{ fontSize: "clamp(6px, 1.3vw, 11px)" }}
+                          style={LABEL_STYLE}
                         >
                           {link}
                         </Link>
@@ -612,7 +610,7 @@ export default function Footer() {
             >
               <p
                 className="m-0 font-poppins font-normal text-[#0E0E0E]"
-                style={{ fontSize: "clamp(7px, 1.5vw, 11px)", lineHeight: "140%" }}
+                style={{ ...LABEL_STYLE, lineHeight: "140%" }}
               >
                 M3M Urbana, Sector 67, Gurugram, India
               </p>
@@ -677,7 +675,7 @@ export default function Footer() {
         >
           <p
             className="font-poppins font-normal leading-[1.5] text-[#001A4D]"
-            style={{ fontSize: "clamp(9px, min(1.11vw, 1.63vh), 16px)" }}
+            style={LABEL_STYLE}
           >
             © 2026 Titan Capital. All rights reserved.
           </p>
@@ -689,14 +687,14 @@ export default function Footer() {
             <Link
               href="/privacy-policy"
               className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] underline decoration-solid transition-transform duration-300 hover:scale-105 hover:opacity-70"
-              style={{ fontSize: "clamp(8px, min(1.11vw, 1.63vh), 16px)" }}
+              style={LABEL_STYLE}
             >
               Privacy Policy
             </Link>
             <Link
               href="/grievance-redressal"
               className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] underline decoration-solid transition-transform duration-300 hover:scale-105 hover:opacity-70"
-              style={{ fontSize: "clamp(8px, min(1.11vw, 1.63vh), 16px)" }}
+              style={LABEL_STYLE}
             >
               Grievance Redressal
             </Link>

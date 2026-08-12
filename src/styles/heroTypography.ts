@@ -121,6 +121,27 @@ export const HERO_BODY_STYLE: CSSProperties = {
 export const BODY_BOLD_CLASS =
   "font-['Poppins',_sans-serif] font-semibold leading-[1.6]";
 
+/* ── LEVEL 6 — labels ──────────────────────────────────────────────────
+   The smallest tier: button labels, form fields and their labels, filter
+   values, bullet lists, captions, founder roles, footer legal links.
+
+   SIZE ONLY. Unlike levels 1-5 this ships no class — no family, weight,
+   line-height or colour — because these elements are visually varied by
+   design and only their size needed unifying. Apply it by replacing the
+   element's `fontSize` and nothing else.
+
+   Taken from the Indicorn Spotlight bullets, `min(1.39vw, 2.15vh)`, with
+   bounds added. The bounds are not optional: the reference has no ceiling,
+   so past ~1512px it overtakes level 5 (24.0px vs 22.0px at 1728x1117) and
+   the two levels invert. 18px holds it just under level 5's 22px ceiling
+   at every viewport; 13px keeps it legible on the 932x187 strip, where the
+   raw value collapses to 4px.
+   ──────────────────────────────────────────────────────────────────────── */
+
+export const LABEL_STYLE: CSSProperties = {
+  fontSize: "clamp(13px, min(1.39vw, 2.15vh), 18px)",
+};
+
 /* ── LEVEL 3 — section headings ────────────────────────────────────────
    The main heading of every non-hero section: "What We Believe", "How We
    Show Up", "Their Stories, Our Credentials", and so on.

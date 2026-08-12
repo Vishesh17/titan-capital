@@ -13,6 +13,7 @@ import {
 import {
   HERO_BODY_CLASS,
   HERO_BODY_STYLE,
+  LABEL_STYLE,
   SECTION_HEADING_CLASS,
   SECTION_HEADING_STYLE,
   SUBHEADING_CLASS,
@@ -178,14 +179,14 @@ function CursorFillButtonIndicorn({ href, label }: { href: string; label: string
       href={href}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="relative mt-[min(2.31vw,3.58vh)] flex items-center justify-center overflow-hidden font-['Poppins',_sans-serif] font-medium transition-colors duration-300 max-md:!w-[clamp(180px,50vw,240px)] max-md:!h-[clamp(44px,6dvh,50px)] max-md:!text-[clamp(13px,3vw,15px)] max-md:!mt-[32px] max-md:!rounded-[25px] max-md:!border max-md:!border-white/30"
+      className="relative mt-[min(2.31vw,3.58vh)] flex items-center justify-center overflow-hidden font-['Poppins',_sans-serif] font-medium transition-colors duration-300 max-md:!w-[clamp(180px,50vw,240px)] max-md:!h-[clamp(44px,6dvh,50px)] max-md:!mt-[32px] max-md:!rounded-[25px] max-md:!border max-md:!border-white/30"
       style={{
         width: "min(16.61vw, 25.69vh)",
         height: "min(3.41vw, 5.28vh)",
         borderRadius: "min(1.70vw, 2.64vh)",
         background: hovered ? "#001A4D" : "#FFF",
         color: hovered ? "#FFF" : "#001A4D",
-        fontSize: "min(1.16vw, 1.79vh)",
+        ...LABEL_STYLE,
       }}
     >
       <span
@@ -256,7 +257,12 @@ export default function IndicornSpotlightClient({
         }}
       >
         <div className="relative">
-          <div className="relative z-10 flex w-full flex-col items-start text-left max-md:!items-center max-md:!text-center">
+          {/* Container context for the subheading below, which is sized in
+              `cqw` (% of THIS column) rather than vw/vh. See the note there. */}
+          <div
+            className="relative z-10 flex w-full flex-col items-start text-left max-md:!items-center max-md:!text-center"
+            style={{ containerType: "inline-size" }}
+          >
             <h2
     className={`m-0 max-md:!whitespace-nowrap ${SECTION_HEADING_CLASS}`}
     style={{
@@ -268,10 +274,28 @@ export default function IndicornSpotlightClient({
             </h2>
 
             <p
-              className={`m-0 max-md:!mt-[12px] ${SUBHEADING_CLASS}`}
+              className={`m-0 whitespace-nowrap max-md:!whitespace-normal max-md:!mt-[12px] ${SUBHEADING_CLASS}`}
               style={{
                 color: "#FBF7F0",
                 ...SUBHEADING_STYLE,
+                /* The one place on the site sized off its CONTAINER instead
+                   of the viewport — `cqw` is 1% of the column set by the
+                   parent's `container-type: inline-size`.
+                   Why: this column is half of a grid capped at 1440px, so it
+                   only ranges 573-668px across every multiview viewport,
+                   while a vw/vh size ranges 8-69px. Any viewport-based value
+                   therefore either wraps on narrow screens or overflows on
+                   wide ones — at 2560x1600 a level-4 size wants 1450px of
+                   text inside a 634px column.
+                   4.5cqw is the largest ratio that still fits: the string
+                   measures 21.16px of width per 1px of font, i.e. it needs
+                   4.73cqw exactly, so this leaves ~5% slack for font-loading
+                   variance. It lands ~30px, between level 5 (22px) and
+                   level 4 (48px).
+                   Mobile is untouched — SUBHEADING_CLASS carries
+                   `max-md:!text-[32px]` with !important, which outranks this
+                   inline size, and wrapping is correct on a phone. */
+                fontSize: "clamp(19px, 4.5cqw, 34px)",
                 marginTop: "min(0.29vw, 0.45vh)",
               }}
             >
@@ -292,10 +316,10 @@ export default function IndicornSpotlightClient({
             />
 
             <div
-              className="flex flex-wrap items-center font-['Poppins',_sans-serif] font-medium max-md:!justify-center max-md:!text-[clamp(11px,3vw,14px)] max-md:!gap-[clamp(8px,2vw,12px)] max-md:!mt-[16px]"
+              className="flex flex-wrap items-center font-['Poppins',_sans-serif] font-medium max-md:!justify-center max-md:!gap-[clamp(8px,2vw,12px)] max-md:!mt-[16px]"
               style={{
                 color: "#FFF",
-                fontSize: "min(1.39vw, 2.15vh)",
+                ...LABEL_STYLE,
                 lineHeight: "155%",
                 gap: "min(1.16vw, 1.79vh)",
               }}
@@ -336,8 +360,8 @@ export default function IndicornSpotlightClient({
               }}
             >
               <span
-                className="font-['Poppins',_sans-serif] font-normal max-md:!text-[clamp(11px,3vw,13px)] whitespace-nowrap"
-                style={{ color: "rgba(255,255,255,0.7)", fontSize: "min(1.39vw, 2.15vh)" }}
+                className="font-['Poppins',_sans-serif] font-normal whitespace-nowrap"
+                style={{ color: "rgba(255,255,255,0.7)", ...LABEL_STYLE }}
               >
                 {rotatingLogosLabel}
               </span>
@@ -416,8 +440,8 @@ export default function IndicornSpotlightClient({
               {quote}
             </p>
             <p
-              className="m-0 mt-[min(1.62vw,2.51vh)] font-['Poppins',_sans-serif] max-md:!text-[clamp(12px,3.5vw,16px)] max-md:!mt-[24px]"
-              style={{ color: "rgba(255,255,255,0.85)", fontSize: "min(1.39vw, 2.15vh)", fontWeight: 400 }}
+              className="m-0 mt-[min(1.62vw,2.51vh)] font-['Poppins',_sans-serif] max-md:!mt-[24px]"
+              style={{ color: "rgba(255,255,255,0.85)", ...LABEL_STYLE, fontWeight: 400 }}
             >
               {attribution}
             </p>

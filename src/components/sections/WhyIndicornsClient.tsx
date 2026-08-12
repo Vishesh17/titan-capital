@@ -6,6 +6,7 @@ import {
   BODY_BOLD_CLASS,
   HERO_BODY_CLASS,
   HERO_BODY_STYLE,
+  LABEL_STYLE,
   SECTION_HEADING_CLASS,
   SECTION_HEADING_STYLE,
   SUBHEADING_CLASS,
@@ -158,11 +159,11 @@ export default function WhyIndicorns() {
                       <span className={`text-black ${SUBHEADING_CLASS}`}>
                         {item.stats.number}
                       </span>
-                      <span className="whitespace-pre-line text-[14px] leading-tight text-[#4a4a4a]">
+                      <span className="whitespace-pre-line leading-tight text-[#4a4a4a]" style={LABEL_STYLE}>
                         {item.stats.label}
                       </span>
                     </div>
-                    <p className="m-0 whitespace-pre-line text-[11px] leading-[1.4] text-[#6b6b6b]">
+                    <p className="m-0 whitespace-pre-line leading-[1.4] text-[#6b6b6b]" style={LABEL_STYLE}>
                       {item.stats.sub}
                     </p>
                   </div>
@@ -347,15 +348,15 @@ export default function WhyIndicorns() {
                           {item.stats.number}
                         </span>
                         <span
-                          className="leading-tight text-[#4a4a4a] whitespace-pre-line max-md:!text-[16px]"
-                          style={{ fontSize: "min(1.16vw, 1.8vh)" }}
+                          className="leading-tight text-[#4a4a4a] whitespace-pre-line"
+                          style={LABEL_STYLE}
                         >
                           {item.stats.label}
                         </span>
                       </div>
                       <p
-                        className="m-0 text-[#6b6b6b] leading-[1.4] whitespace-pre-line max-md:!text-[13px]"
-                        style={{ fontSize: "min(0.95vw, 1.47vh)" }}
+                        className="m-0 text-[#6b6b6b] leading-[1.4] whitespace-pre-line"
+                        style={LABEL_STYLE}
                       >
                         {item.stats.sub}
                       </p>

@@ -5,7 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLenis } from "lenis/react";
-import { BODY_BOLD_CLASS, HERO_BODY_STYLE } from "@/styles/heroTypography";
+import {
+  BODY_BOLD_CLASS,
+  HERO_BODY_STYLE,
+  LABEL_STYLE,
+} from "@/styles/heroTypography";
 
 /** URL slug from brand name: lowercase, alphanumerics joined by hyphens. */
 function companySlug(name: string): string {
@@ -146,9 +150,10 @@ function SidebarFilterSection({
                         )}
                       </span>
                       <span
-                        className={`font-['Poppins',_sans-serif] text-[15px] ${
+                        className={`font-['Poppins',_sans-serif] ${
                           checked ? "font-medium text-[#000]" : "font-normal text-[#444]"
                         }`}
+                        style={LABEL_STYLE}
                       >
                         {opt}
                       </span>

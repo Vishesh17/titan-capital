@@ -7,6 +7,7 @@ import GrainOverlay from "@/components/ui/GrainOverlay";
 import {
   HERO_BODY_CLASS,
   HERO_BODY_STYLE,
+  LABEL_STYLE,
   SECTION_HEADING_CLASS,
   SECTION_HEADING_STYLE,
 } from "@/styles/heroTypography";
@@ -320,7 +321,7 @@ function RotatingTag({ tags, sizerTags }: { tags: string[]; sizerTags: string[] 
            would read as a seam against the card edge. */
         boxShadow:
           "inset 0 1px 0 0 rgba(255,255,255,0.55), inset -1px 0 0 0 rgba(255,255,255,0.12), inset 0 -7px 13px -7px rgba(125,175,255,0.40), 0 6px 22px 0 rgba(0,0,0,0.28)",
-        fontSize: "clamp(10px, min(1vw, 1.5vh), 14px)",
+        ...LABEL_STYLE,
         fontFamily: "'Poppins', sans-serif",
         fontWeight: 600,
         letterSpacing: "0.01em",
@@ -481,8 +482,8 @@ export function StoryCard({ story, sizerTags = [] }: { story: FounderStory; size
             {story.text}
           </p>
           <p
-            className="m-0 font-['Poppins',_sans-serif] font-medium text-white max-md:!text-[11px]"
-            style={{ fontSize: "min(0.81vw, 1.25vh)", lineHeight: "150%", marginTop: "min(0.93vw, 1.43vh)" }}
+            className="m-0 font-['Poppins',_sans-serif] font-medium text-white"
+            style={{ ...LABEL_STYLE, lineHeight: "150%", marginTop: "min(0.93vw, 1.43vh)" }}
           >
             — {story.name}, {story.role}
           </p>
@@ -514,8 +515,8 @@ export function SeeMoreButton({ label, onClick }: { label: string; onClick?: () 
       aria-label={label}
     >
       <motion.span
-        className="pointer-events-none absolute -translate-y-1/2 whitespace-nowrap font-['Poppins',_sans-serif] font-normal text-black max-md:!text-[13px]"
-        style={{ left: "min(1.5vw, 2.5vh)", top: "50%", fontSize: "min(1.5vw, 2.3vh)" , lineHeight: "100%" }}
+        className="pointer-events-none absolute -translate-y-1/2 whitespace-nowrap font-['Poppins',_sans-serif] font-normal text-black"
+        style={{ left: "min(1.5vw, 2.5vh)", top: "50%", ...LABEL_STYLE, lineHeight: "100%" }}
         animate={{ opacity: hovered ? 1 : 0 }}
         transition={{ duration: hovered ? 0.28 : 0.15, delay: hovered ? 0.15 : 0, ease: [0.22, 1, 0.36, 1] }}
       >

@@ -12,7 +12,8 @@ import type { CSSProperties } from "react";
 export const CTA_BUTTON_STYLE: CSSProperties = {
   width: "min(12.15vw, 18.8vh)",
   height: "min(3.36vw, 5.19vh)",
-  fontSize: "min(1.16vw, 1.79vh)",
+  // Level 6. Width/height stay here; only the label size is shared.
+  fontSize: "clamp(13px, min(1.39vw, 2.15vh), 18px)",
   borderRadius: "53px",
 };
 
@@ -22,4 +23,4 @@ export const CTA_BUTTON_STYLE: CSSProperties = {
  * would win at every viewport.
  */
 export const CTA_BUTTON_MOBILE_CLASS =
-  "max-md:!w-[clamp(130px,35vw,160px)] max-md:!h-[clamp(38px,6dvh,44px)] max-md:!text-[clamp(12px,3.5vw,14px)]";
+  "max-md:!w-[clamp(130px,35vw,160px)] max-md:!h-[clamp(38px,6dvh,44px)]";

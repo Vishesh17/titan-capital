@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   HERO_BODY_CLASS,
   HERO_BODY_STYLE,
+  LABEL_STYLE,
   SECTION_HEADING_CLASS,
   SECTION_HEADING_STYLE,
   SUBHEADING_CLASS,
@@ -157,7 +158,7 @@ function FieldLabel({
     <label
       htmlFor={htmlFor}
       className="mb-[clamp(8px,0.8vw,12px)] block font-['Poppins',_sans-serif] font-normal text-[#1D2939]"
-      style={{ fontSize: "clamp(14px, min(1.25vw, 1.85vh), 18px)" }}
+      style={LABEL_STYLE}
     >
       {children}
       {required && <span className="ml-1 text-[#C53030]">*</span>}
@@ -189,7 +190,7 @@ function TextInput({
       className="w-full rounded-[10px] border-2 border-transparent bg-[#F2F7FF] font-['Poppins',_sans-serif] text-[#1D2939] outline-none placeholder:text-[#98A2B3] focus:border-[#001A4D]/30 focus:bg-[#EEF3FF]"
       style={{
         padding: "clamp(14px, min(1.25vw, 1.85vh), 18px) clamp(16px, min(1.4vw, 2vh), 22px)",
-        fontSize: "clamp(13px, min(1.1vw, 1.6vh), 16px)",
+        ...LABEL_STYLE,
         transition: "border-color 0.3s, background-color 0.3s, box-shadow 0.3s",
       }}
       whileHover={{ y: -3, boxShadow: "0 6px 20px rgba(0,26,77,0.10)", borderColor: "rgba(0,26,77,0.12)" }}
@@ -228,7 +229,7 @@ function TextArea({
         className="w-full resize-none rounded-[10px] border-2 border-transparent bg-[#F2F7FF] font-['Poppins',_sans-serif] text-[#1D2939] outline-none placeholder:text-[#98A2B3] focus:border-[#001A4D]/30 focus:bg-[#EEF3FF]"
         style={{
           padding: "clamp(14px, min(1.25vw, 1.85vh), 18px) clamp(16px, min(1.4vw, 2vh), 22px)",
-          fontSize: "clamp(13px, min(1.1vw, 1.6vh), 16px)",
+          ...LABEL_STYLE,
           transition: "border-color 0.3s, background-color 0.3s, box-shadow 0.3s",
         }}
         whileHover={{ y: -3, boxShadow: "0 6px 20px rgba(0,26,77,0.10)", borderColor: "rgba(0,26,77,0.12)" }}
@@ -320,7 +321,7 @@ function PhoneInput({
           className={`flex shrink-0 items-center gap-[6px] rounded-l-[10px] border-none bg-[#F2F7FF] font-['Poppins',_sans-serif] text-[#1D2939] outline-none transition-colors hover:bg-[#DCE4FA] ${ringClass}`}
           style={{
             padding: "clamp(14px, min(1.25vw, 1.85vh), 18px) clamp(10px, min(1vw, 1.4vh), 14px)",
-            fontSize: "clamp(13px, min(1.1vw, 1.6vh), 16px)",
+            ...LABEL_STYLE,
             borderRight: "1px solid #D0D5DD",
           }}
           whileTap={{ scale: 0.97 }}
@@ -475,7 +476,7 @@ function EmailInput({
         className={`w-full rounded-[10px] border-2 border-transparent bg-[#F2F7FF] font-['Poppins',_sans-serif] text-[#1D2939] outline-none placeholder:text-[#98A2B3] ${ringClass}`}
         style={{
           padding: "clamp(14px, min(1.25vw, 1.85vh), 18px) clamp(16px, min(1.4vw, 2vh), 22px)",
-          fontSize: "clamp(13px, min(1.1vw, 1.6vh), 16px)",
+          ...LABEL_STYLE,
           transition: "border-color 0.3s, background-color 0.3s, box-shadow 0.3s",
         }}
         whileHover={{ y: -3, boxShadow: "0 6px 20px rgba(0,26,77,0.10)", borderColor: "rgba(0,26,77,0.12)" }}
@@ -555,7 +556,7 @@ function UrlInput({
         className={`w-full rounded-[10px] border-2 border-transparent bg-[#F2F7FF] font-['Poppins',_sans-serif] text-[#1D2939] outline-none placeholder:text-[#98A2B3] focus:border-[#001A4D]/30 focus:bg-[#EEF3FF] ${ringClass}`}
         style={{
           padding: "clamp(14px, min(1.25vw, 1.85vh), 18px) clamp(16px, min(1.4vw, 2vh), 22px)",
-          fontSize: "clamp(13px, min(1.1vw, 1.6vh), 16px)",
+          ...LABEL_STYLE,
           transition: "border-color 0.3s, background-color 0.3s, box-shadow 0.3s",
         }}
         whileHover={{ y: -3, boxShadow: "0 6px 20px rgba(0,26,77,0.10)", borderColor: "rgba(0,26,77,0.12)" }}
@@ -600,7 +601,7 @@ function CheckboxGroup({
             type="button"
             onClick={() => onToggle(opt)}
             className="flex items-center gap-[clamp(6px,0.6vw,10px)] font-['Poppins',_sans-serif] text-[#1D2939]"
-            style={{ fontSize: "clamp(13px, min(1.1vw, 1.6vh), 16px)" }}
+            style={LABEL_STYLE}
             whileHover={{ scale: 1.04, x: 2 }}
             whileTap={{ scale: 0.97 }}
             transition={{ type: "spring", stiffness: 400, damping: 20 }}
@@ -834,8 +835,9 @@ function SectionHeading({
         disabled={submitting}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className="relative flex items-center justify-center overflow-hidden whitespace-nowrap font-['Poppins',_sans-serif] text-[min(1.16vw,1.79vh)] font-normal transition-colors duration-300 max-md:!w-[clamp(130px,35vw,160px)] max-md:!h-[clamp(38px,6dvh,44px)] max-md:!text-[clamp(12px,3.5vw,14px)] disabled:opacity-60 bg-[#001A4D]"
+        className="relative flex items-center justify-center whitespace-nowrap font-['Poppins',_sans-serif] font-normal transition-colors duration-300 max-md:!w-[clamp(130px,35vw,160px)] max-md:!h-[clamp(38px,6dvh,44px)] disabled:opacity-60 bg-[#001A4D]"
         style={{
+          ...LABEL_STYLE,
           width: "min(12.15vw, 18.8vh)",
           height: "min(3.36vw, 5.19vh)",
           borderRadius: "53px",

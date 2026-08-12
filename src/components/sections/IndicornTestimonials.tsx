@@ -14,6 +14,7 @@ import {
   BODY_BOLD_CLASS,
   HERO_BODY_CLASS,
   HERO_BODY_STYLE,
+  LABEL_STYLE,
   SECTION_HEADING_CLASS,
   SECTION_HEADING_STYLE,
 } from "@/styles/heroTypography";
@@ -155,7 +156,7 @@ function CylinderCard({
         <p
           className="m-0 font-['Poppins',_sans-serif] font-medium text-[#1a1a1a]"
           style={{
-            fontSize: "clamp(13px, min(1.15vw, 1.8vh), 18px)",
+            ...LABEL_STYLE,
             lineHeight: "158%",
             marginTop: "clamp(8px, 1vw, 14px)",
           }}
@@ -170,7 +171,7 @@ function CylinderCard({
             {item.role && (
               <p
                 className="m-0 mt-[2px] font-['Poppins',_sans-serif] font-normal italic text-[#7a7a7a]"
-                style={{ fontSize: "clamp(12px, min(1.05vw, 1.6vh), 15px)" }}
+                style={LABEL_STYLE}
               >
                 {item.role}
               </p>
