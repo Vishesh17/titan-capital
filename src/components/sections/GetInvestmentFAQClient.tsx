@@ -42,13 +42,13 @@ const FALLBACK_FAQ: GetInvestmentFAQItem[] = [
     id: "faq-1",
     question: "Do I need a deck to apply?",
     answer:
-      "No. A short email or 6-field form is enough to get started. If there's mutual interest, we'll ask for more at the right time.",
+      "No. Upload one if you have it, but the form alone is enough. If there's mutual interest, we'll ask for more at the right time.",
   },
   {
     id: "faq-2",
     question: "What stage do you invest at?",
     answer:
-      "Pre-seed and seed. We prefer to be your first institutional investor, and for breakout companies, we follow on in later rounds through the Winners Fund.",
+      "Pre-seed and seed. We prefer to be your first institutional investor, and we continue to back breakout companies in later rounds.",
   },
   {
     id: "faq-3",
@@ -60,7 +60,7 @@ const FALLBACK_FAQ: GetInvestmentFAQItem[] = [
     id: "faq-5",
     question: "What happens after you invest?",
     answer:
-      "You get full access to the Titan network, ecosystem, and team. The first year as a Titan portfolio company is the most important, we work closely with you on hiring, GTM strategy, and setting up your next fundraise.",
+      "You get full access to the Titan network and team. The first year as a portfolio company matters the most: we work closely with you on hiring, GTM strategy, and setting up your next fundraise.",
   },
 ];
 
