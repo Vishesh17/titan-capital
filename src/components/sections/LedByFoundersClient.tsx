@@ -143,181 +143,158 @@ function SocialLink({
 /* ═══════════════════════════════════════════════════════
    ONE FOUNDER PROFILE
    ═══════════════════════════════════════════════════════ */
-function FounderRow({ founder }: { founder: FounderProfile }) {
-  const isImageLeft = (founder.imagePosition ?? "left") === "left";
-
-  // Centralized dimensions to keep the photo and the vertical line perfectly synced
-  const PHOTO_WIDTH = "clamp(240px, min(26.6vw, 38vh), 380px)";
-  const PHOTO_HEIGHT = "clamp(320px, min(35.5vw, 50vh), 500px)";
-
-  return (
-    <div
-      className={`flex w-full flex-col items-center justify-between lg:items-center ${
-        isImageLeft ? "lg:flex-row" : "lg:flex-row-reverse"
-      }`}
-      style={{
-        gap: "clamp(24px, min(4vw, 5vh), 56px)",
-        // Shared so the photo, the vertical rule and the content column all
-        // agree on height.
-        ["--photo-h" as string]: PHOTO_HEIGHT,
-      }}
-    >
-      {/* ── PORTRAIT ──
-          The photo is the link to /founders/<slug> — it replaces the old
-          "Read More" text link. The hover affordance is the same arrow the
-          Their Stories cards use, in the same top-right position. */}
-      <Link
-        href={`/founders/${founder.slug || founderSlug(founder.name)}`}
-        aria-label={`Read more about ${founder.name}`}
-        className="group relative block shrink-0 overflow-hidden bg-gray-200"
+   function FounderRow({ founder }: { founder: FounderProfile }) {
+    const isImageLeft = (founder.imagePosition ?? "left") === "left";
+    const PHOTO_WIDTH = "clamp(240px, min(26.6vw, 38vh), 380px)";
+    const PHOTO_HEIGHT = "clamp(320px, min(35.5vw, 50vh), 500px)";
+    const profileUrl = `/founders/${founder.slug || founderSlug(founder.name)}`;
+  
+    return (
+      <div
+        className={`flex w-full flex-col items-center justify-between lg:items-center ${
+          isImageLeft ? "lg:flex-row" : "lg:flex-row-reverse"
+        }`}
         style={{
-          width: PHOTO_WIDTH,
-          height: PHOTO_HEIGHT,
-          borderRadius: "2px",
+          gap: "clamp(24px, min(4vw, 5vh), 56px)",
+          ["--photo-h" as string]: PHOTO_HEIGHT,
         }}
       >
-        {founder.image && (
-          <Image
-            src={cdnImageSrc(founder.image, 900)}
-            alt={founder.name}
-            fill
-            sizes="(max-width: 1024px) 90vw, 32vw"
-            /* scale-105 at rest pushes any baked-in border outside the frame.
-               Hover pushes it a little further — slow and long-eased, so it
-               reads as the image settling rather than a snap. */
-            className="object-cover object-center scale-105 transition-transform duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.13]"
-          />
-        )}
-
-        {/* Hover scrim. Weighted to the top, unlike the Their Stories cards
-            whose gradient is bottom-heavy to seat their caption — here the
-            only thing over the photo is the arrow in the top-right corner,
-            and this is what gives it something to be white against. The
-            faint bottom stop keeps the photo from looking lit from below. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-[700ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:opacity-100"
+        {/* ── PORTRAIT ── */}
+        <Link
+          href={profileUrl}
+          aria-label={`Read more about ${founder.name}`}
+          className="group relative block shrink-0 overflow-hidden bg-gray-200"
           style={{
-            background:
-              "linear-gradient(180deg, rgba(14,14,14,0.58) 0%, rgba(14,14,14,0.16) 34%, rgba(14,14,14,0) 58%, rgba(14,14,14,0.20) 100%)",
-          }}
-        />
-
-        {/* The arrow travels a few px up-and-right into place as it fades,
-            so it arrives along its own diagonal instead of popping. */}
-        <div
-          className="pointer-events-none absolute z-10 translate-x-[-6px] translate-y-[6px] opacity-0 transition-all duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
-          style={{ top: "min(1.85vw, 2.86vh)", right: "min(1.85vw, 2.86vh)" }}
-        >
-          <StoryArrow color="white" />
-        </div>
-      </Link>
-
-      {/* ── VERTICAL LINE ── */}
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: false, amount: 0.5 }} 
-        className="hidden lg:block w-[1px] bg-black shrink-0"
-        style={{
-          height: "var(--photo-h)",
-          transformOrigin: "top",
-        }}
-        variants={{
-          hidden: { scaleY: 0, transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } },
-          visible: {
-            scaleY: 1,
-            transition: { duration: 2.6, ease: [0.22, 1, 0.36, 1] },
-          },
-        }}
-      />
-
-      {/* ── CONTENT ── (mobile: centered; desktop: left-aligned, unchanged) */}
-      <div className="flex w-full flex-1 flex-col items-center text-center lg:min-h-[var(--photo-h)] lg:items-start lg:text-left lg:px-4">
-        {/* Highlighted name */}
-        <h3
-          className={`m-0 text-[#0E0E0E] ${SUBHEADING_CLASS}`}
-          style={{
-            ...SUBHEADING_STYLE,
-            marginBottom: "clamp(4px, min(0.55vw, 0.81vh), 8px)",
+            width: PHOTO_WIDTH,
+            height: PHOTO_HEIGHT,
+            borderRadius: "2px",
           }}
         >
-          {founder.name}
-        </h3>
-
-        {/* Role */}
-        <p
-          className={`m-0 text-[#323232] ${HERO_BODY_CLASS}`}
-          style={{
-            ...HERO_BODY_STYLE,
-          }}
-        >
-          {founder.role}
-        </p>
-
-        {/* Socials — each renders only when its URL is set */}
-        {(founder.linkedin || founder.instagram || founder.twitter) && (
+          {founder.image && (
+            <Image
+              src={cdnImageSrc(founder.image, 900)}
+              alt={founder.name}
+              fill
+              sizes="(max-width: 1024px) 90vw, 32vw"
+              className="object-cover object-center scale-105 transition-transform duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.13]"
+            />
+          )}
+  
           <div
-            className="flex items-center justify-center lg:justify-start"
+            aria-hidden
+            className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-[700ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:opacity-100"
             style={{
-              gap: "clamp(8px, min(1vw, 1.5vh), 14px)",
-              marginTop: "clamp(8px, min(1.2vw, 1.8vh), 16px)",
+              background:
+                "linear-gradient(180deg, rgba(14,14,14,0.58) 0%, rgba(14,14,14,0.16) 34%, rgba(14,14,14,0) 58%, rgba(14,14,14,0.20) 100%)",
             }}
+          />
+  
+          <div
+            className="pointer-events-none absolute z-10 translate-x-[-6px] translate-y-[6px] opacity-0 transition-all duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
+            style={{ top: "min(1.85vw, 2.86vh)", right: "min(1.85vw, 2.86vh)" }}
           >
-            {founder.linkedin && (
-              <Link
-                href={founder.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`${founder.name} on LinkedIn`}
-              >
-                <LinkedInIcon />
-              </Link>
-            )}
-            {founder.instagram && (
-              <SocialLink href={founder.instagram} label={`${founder.name} on Instagram`}>
-                <InstagramIcon className="h-full w-full" />
-              </SocialLink>
-            )}
-            {founder.twitter && (
-              <SocialLink href={founder.twitter} label={`${founder.name} on X`}>
-                <XIcon className="h-full w-full" />
-              </SocialLink>
-            )}
+            <StoryArrow color="white" />
           </div>
-        )}
-
-        {/* ── HORIZONTAL LINE ── */}
+        </Link>
+  
+        {/* ── VERTICAL LINE ── */}
         <motion.div
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: false, amount: 0.8 }}
-          className="w-full h-[1px] bg-black max-md:!origin-center"
-          style={{
-            transformOrigin: isImageLeft ? "left" : "right",
-            marginTop: "clamp(16px, min(2vw, 3vh), 32px)",
-            marginBottom: "clamp(16px, min(2vw, 3vh), 32px)",
-          }}
+          viewport={{ once: false, amount: 0.5 }}
+          className="hidden lg:block w-[1px] bg-black shrink-0"
+          style={{ height: "var(--photo-h)", transformOrigin: "top" }}
           variants={{
-            hidden: { scaleX: 0, transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } },
-            visible: {
-              scaleX: 1,
-              transition: { duration: 2.6, ease: [0.22, 1, 0.36, 1] },
-            },
+            hidden: { scaleY: 0, transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } },
+            visible: { scaleY: 1, transition: { duration: 2.6, ease: [0.22, 1, 0.36, 1] } },
           }}
         />
-
-        {/* Bio */}
-        <p
-          className={`m-0 whitespace-pre-line text-[#323232] ${HERO_BODY_CLASS}`}
-          style={{ ...HERO_BODY_STYLE, width: "100%", maxWidth: "100%" }}
-        >
-          {founder.bio}
-        </p>
+  
+        {/* ── CONTENT ── */}
+        <div className="flex w-full flex-1 flex-col items-center text-center lg:min-h-[var(--photo-h)] lg:items-start lg:text-left lg:px-4">
+          
+          <h3
+            className={`m-0 text-[#0E0E0E] ${SUBHEADING_CLASS}`}
+            style={{ ...SUBHEADING_STYLE, marginBottom: "clamp(4px, min(0.55vw, 0.81vh), 8px)" }}
+          >
+            {founder.name}
+          </h3>
+  
+          <p className={`m-0 text-[#323232] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
+            {founder.role}
+          </p>
+  
+          {/* Socials */}
+          {(founder.linkedin || founder.instagram || founder.twitter) && (
+            <div
+              className="flex items-center justify-center lg:justify-start"
+              style={{
+                gap: "clamp(8px, min(1vw, 1.5vh), 14px)",
+                marginTop: "clamp(8px, min(1.2vw, 1.8vh), 16px)",
+              }}
+            >
+              {founder.linkedin && (
+                <Link href={founder.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${founder.name} on LinkedIn`}>
+                  <LinkedInIcon />
+                </Link>
+              )}
+              {founder.instagram && (
+                <SocialLink href={founder.instagram} label={`${founder.name} on Instagram`}>
+                  <InstagramIcon className="h-full w-full" />
+                </SocialLink>
+              )}
+              {founder.twitter && (
+                <SocialLink href={founder.twitter} label={`${founder.name} on X`}>
+                  <XIcon className="h-full w-full" />
+                </SocialLink>
+              )}
+            </div>
+          )}
+  
+          {/* ── HORIZONTAL LINE ── */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.8 }}
+            className="w-full h-[1px] bg-black max-md:!origin-center"
+            style={{
+              transformOrigin: isImageLeft ? "left" : "right",
+              marginTop: "clamp(16px, min(2vw, 3vh), 32px)",
+              marginBottom: "clamp(16px, min(2vw, 3vh), 32px)",
+            }}
+            variants={{
+              hidden: { scaleX: 0, transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } },
+              visible: { scaleX: 1, transition: { duration: 2.6, ease: [0.22, 1, 0.36, 1] } },
+            }}
+          />
+  
+          {/* Bio */}
+          <p
+            className={`m-0 whitespace-pre-line text-[#323232] ${HERO_BODY_CLASS}`}
+            style={{ ...HERO_BODY_STYLE, width: "100%", maxWidth: "100%" }}
+          >
+            {founder.bio}
+          </p>
+  
+          {/* ── EDITORIAL LINK SIGNPOST ── */}
+          <Link
+            href={profileUrl}
+            className="group/link mt-6 inline-flex items-center gap-3 text-sm font-semibold tracking-wide text-black uppercase focus:outline-none lg:mt-8"
+          >
+            <span className="relative">
+              Read full story
+              <span className="absolute -bottom-1 left-0 h-[1px] w-full origin-left scale-x-0 bg-black transition-transform duration-300 ease-out group-hover/link:scale-x-100" />
+            </span>
+            <span className="transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/link:translate-x-1">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 7H13M13 7L7 1M13 7L7 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </span>
+          </Link>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
 /* ═══════════════════════════════════════════════════════
    MAIN CLIENT COMPONENT
