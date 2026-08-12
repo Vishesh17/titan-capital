@@ -166,7 +166,6 @@ function TeamCard({
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.55, ease: "easeOut" }}
     >
-      {/* Cleaned up conflicting block/flex classes here */}
       <Link
         href={`/ourTeam/${slug}`}
         aria-label={`${member.name} — ${member.title}`}
@@ -252,16 +251,14 @@ function TeamCard({
           </div>
         </div>
 
-        {/* ── TEXT WRAPPER ── 
-            Added percentage padding to shift the text strictly in visual line 
-            with the blob above it across all responsive breakpoints. */}
         <div className="flex w-full flex-col pl-[10%] xl:pl-[12%]">
           {/* ── NAME ── */}
           <h3
             className={`m-0 text-left text-[#0E0E0E] ${BODY_BOLD_CLASS}`}
             style={{
               ...HERO_BODY_STYLE,
-              marginTop: "clamp(12px, min(1.5vw, 2.2vh), 20px)",
+              // INCREASED PADDING HERE
+              marginTop: "clamp(28px, min(3vw, 4vh), 40px)",
               maxWidth: "300px",
             }}
           >
@@ -288,7 +285,6 @@ function TeamCard({
       {/* ── SOCIAL ICONS ── */}
       {hasSocials && (
         <div
-          // Added matching percentage padding here for perfect left alignment
           className="flex w-full items-center justify-start pl-[10%] xl:pl-[12%]"
           style={{
             gap: "clamp(8px, min(0.83vw, 1.22vh), 12px)",
@@ -467,7 +463,7 @@ export default function OurTeamClient({
         >
           <TeamGroup title="Corporate Team" members={corporate} />
           <TeamGroup title="Seed Investment Team" members={seed} />
-          <TeamGroup title="Early-Growth Investment Team" members={winner} />
+          <TeamGroup title="Early-growth Investment Team" members={winner} />
         </div>
       </div>
     </section>
