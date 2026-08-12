@@ -47,7 +47,7 @@ const BELIEFS: Belief[] = [
   {
     title: "Commitment Endurance",
     description:
-      "Our involvement doesn't end at the cheque. We stay close through all the pivots providing support in the decisive moments that define long-term success.",
+      "Our involvement doesn't end at the cheque. We stay close through the pivots providing support in the decisive moments that define success.",
   },
 ];
 

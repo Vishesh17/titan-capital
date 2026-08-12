@@ -177,7 +177,7 @@ const FALLBACK_ROWS: HowWeShowUpRow[] = [
       "Warm introductions to 20,000+ vetted professionals, skipping the traditional funnel",
     longHeading: "Talent Is the Lever",
     longDesc:
-      "Exceptional talent is one of the hardest things to find at speed. We treat hiring as seriously as everything else we do for a portfolio company.",
+      "Exceptional talent is one of the hardest things to find at speed. We treat hiring as seriously as everything else we do for our portfolio company.",
     valueTitle: "Strategic Value",
     valueBullets: [
       "Titan Job Network: Direct access to a 20,000+ member community of vetted professionals.",
@@ -595,8 +595,17 @@ function FullPageCard({
       }}
       className="fixed bottom-0 left-0 right-0 flex items-center justify-center max-md:!block max-md:w-screen max-md:overflow-y-auto max-md:overscroll-none max-md:!pt-[32px] max-md:!px-[24px] max-md:!pb-[40px] max-md:!bg-[#FBF7F0] max-md:!backdrop-filter-none"
       style={{
-        top: "var(--nav-height, 64px)", 
-        zIndex: 999999,
+        top: "var(--nav-height, 64px)",
+        /* Must sit ABOVE page sections but BELOW the navbar chrome, which is
+           what `top: var(--nav-height)` already assumes — the card is meant to
+           start under the nav strip, not cover it. The ladder:
+             page sections  <= 30
+             THIS CARD         35
+             navbar            40
+             hamburger panel   50
+           It was 999999, which put it over the hamburger panel too, so opening
+           the menu while a card was open left the menu invisible behind it. */
+        zIndex: 35,
         transformOrigin: "center",
         background: "#FBF7F0",
         backdropFilter: "blur(32px) saturate(1.4)",
