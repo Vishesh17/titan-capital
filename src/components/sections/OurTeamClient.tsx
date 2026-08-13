@@ -56,8 +56,8 @@ export function teamSlug(name: string): string {
 /* ─────────────────────────────────────────────────────────
    Fallback content
    ───────────────────────────────────────────────────────── */
-const FALLBACK_HEADING_FIRST = "Meet The";
-const FALLBACK_HEADING_SECOND = "Full Team.";
+const FALLBACK_HEADING_FIRST = "The Team";
+
 
 function fallback(name: string, title: string): TeamMember {
   return {
@@ -406,7 +406,6 @@ export default function OurTeamClient({
   data?: OurTeamData | null;
 }) {
   const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
-  const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
   const corporate =
     data?.corporateTeam && data.corporateTeam.length > 0
       ? data.corporateTeam
@@ -461,7 +460,7 @@ export default function OurTeamClient({
               },
             }}
           >
-            {headingFirst} {headingSecond}
+            {headingFirst} 
           </motion.h2>
         </motion.div>
 

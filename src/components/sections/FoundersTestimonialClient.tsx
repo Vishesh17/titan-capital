@@ -548,7 +548,7 @@ export default function FoundersTestimonialClient({
   const testimonials = data?.testimonials && data.testimonials.length > 0 ? data.testimonials : FALLBACK_TESTIMONIALS;
 
   const bottomRef = useRef<HTMLDivElement>(null);
-  const bottomInView = useInView(bottomRef, { once: false, amount: 0.15 });
+  const bottomInView = useInView(bottomRef, { once: true, amount: 1 });
 
   return (
     <section
@@ -626,7 +626,7 @@ export default function FoundersTestimonialClient({
                 style={{ background: "#D3E2FF", transformOrigin: "left" }}
                 variants={{ hidden: { scaleX: 0 }, visible: { scaleX: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.8 } } }}
               />
-              <TypingText delay={1.4} />
+              <TypingText delay={1.4} inView={bottomInView} />
             </span>
           </motion.h2>
           <motion.h2
@@ -644,15 +644,17 @@ export default function FoundersTestimonialClient({
   );
 }
 
-function TypingText({ delay = 0 }: { delay?: number }) {
+function TypingText({ delay = 0, inView = true }: { delay?: number; inView?: boolean }) {
   const [wordIndex, setWordIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
   const [started, setStarted] = useState(false);
 
+  // Start animation only when inView becomes true
   useEffect(() => {
+    if (!inView) return;
     const startTimer = setTimeout(() => setStarted(true), delay * 1000);
     return () => clearTimeout(startTimer);
-  }, [delay]);
+  }, [delay, inView]);
 
   useEffect(() => {
     if (!started) return;
@@ -680,6 +682,10 @@ function TypingText({ delay = 0 }: { delay?: number }) {
 
   const word = VISION_WORDS[wordIndex];
 
+  // Show "Vision." in English by default until animation starts
+  const textToShow = started ? displayedText : "Vision.";
+  const isActiveWordEnglish = wordIndex === 0 || !started;
+
   return (
     <span className="relative inline-block">
       {/* The animated text is mid-word most of the time, so keep it out of the
@@ -687,10 +693,10 @@ function TypingText({ delay = 0 }: { delay?: number }) {
       <span className="sr-only">Vision.</span>
       <span
         aria-hidden="true"
-        className={`relative whitespace-nowrap ${word.className}`}
-        lang={word.bcp47}
+        className={`relative whitespace-nowrap ${isActiveWordEnglish ? "" : word.className}`}
+        lang={isActiveWordEnglish ? "en" : word.bcp47}
       >
-        {displayedText}
+        {textToShow}
       </span>
     </span>
   );
