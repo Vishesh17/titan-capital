@@ -436,9 +436,9 @@ const fundI = {
 };
 
 const fundII = {
-  name: "Titan Capital Winners Fund II",
+  name: "Titan Capital Fund II",
   description:
-    "Titan Capital Winners Fund II (“Fund”) is registered with SEBI as a Category II Alternative Investment Fund.",
+    "Titan Capital Fund II (“Fund”) is registered with SEBI as a Category II Alternative Investment Fund.",
   effectiveDate: "[to be confirmed]",
   registrationNumber: "IN/AIF2/26-27/2125",
   registeredOffice: "M3M Urbana Business Park, Sector 67, Gurugram, Haryana, India",

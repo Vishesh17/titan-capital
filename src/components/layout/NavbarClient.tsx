@@ -163,8 +163,8 @@ const FALLBACK_SECTIONS: NavbarSection[] = [
     title: "FOR FOUNDERS",
     subItems: [
       { label: "Get Investment", url: "/getinvestment" },
-      { label: "Titan Seed Fund", url: "/titanSeedFund" },
-      { label: "Titan Winners Fund", url: "/winnersFund" },
+      { label: "Titan Seed Fund", url: "#disabled" },
+      { label: "Titan Winners Fund", url: "#disabled" },
     ],
   },
   {
@@ -177,23 +177,23 @@ const FALLBACK_SECTIONS: NavbarSection[] = [
     id: "about",
     title: "ABOUT US ",
     subItems: [
-      { label: "Our Story", url: "/ourstory" },
+      { label: "Our Story", url: "#disabled" },
       { label: "Meet The Team", url: "/ourTeam" },
-      { label: "Indicorns", url: "/indicorns" },
+      { label: "Indicorns", url: "#disabled" },
     ],
   },
   {
     id: "community",
     title: "COMMUNITY ",
     subItems: [
-      { label: "Founders Story", url: "/foundersstory" },
+      { label: "Founders Story", url: "#disabled" },
     ],
   },
   {
     id: "perspective",
     title: "PERSPECTIVE ",
     subItems: [
-      { label: "Blogs", url: "/blogs" },
+      { label: "Blogs", url: "#disabled" },
     ],
   },
 ];
@@ -221,7 +221,27 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
   const { scrollY } = useScroll();
 
   // Restored the missing variables here!
-  const sections = data?.sections?.length ? data.sections : FALLBACK_SECTIONS;
+  // DISABLED_ITEMS: Override URLs for items that should be disabled during demo
+  const DISABLED_URLS = [
+    "/titanSeedFund",
+    "/winnersFund",
+    "/ourstory",
+    "/indicorns",
+    "/foundersstory",
+    "/blogs",
+  ];
+  
+  const overrideDisabledUrls = (sections: NavbarSection[]): NavbarSection[] => {
+    return sections.map(section => ({
+      ...section,
+      subItems: section.subItems?.map(sub => ({
+        ...sub,
+        url: DISABLED_URLS.includes(sub.url) ? "#disabled" : sub.url,
+      })),
+    }));
+  };
+  
+  const sections = overrideDisabledUrls(data?.sections?.length ? data.sections : FALLBACK_SECTIONS);
   const ctaLabel = data?.ctaLabel || FALLBACK_CTA_LABEL;
   const ctaUrl = data?.ctaUrl || FALLBACK_CTA_URL;
 
@@ -433,23 +453,38 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
                                   padding) so each accent bar lands on the same
                                   x as the category bars above. */}
                               <div className="flex flex-col pb-[10px] pt-[2px]">
-                                {item.subItems?.map((subItem, subIdx) => (
-                                  <Link
-                                    key={subIdx}
-                                    href={
-                                      subItem.url ||
-                                      `/${subItem.label.toLowerCase().replace(/\s+/g, "-")}`
-                                    }
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="group relative flex w-full items-center overflow-hidden py-[10px] pl-[42px] pr-[21px] max-md:!py-[clamp(10px,2.5dvh,14px)] max-md:!pl-[clamp(34px,9vw,46px)] max-md:!pr-[clamp(16px,4vw,24px)] lg:pl-[54px] lg:pr-[33px]"
-                                  >
-                                    <RowSheen sub />
+                                {item.subItems?.map((subItem, subIdx) => {
+                                  const isDisabled = subItem.url === "#disabled";
+                                  const linkHref = isDisabled ? "#" : (subItem.url || `/${subItem.label.toLowerCase().replace(/\s+/g, "-")}`);
+                                  
+                                  if (isDisabled) {
+                                    return (
+                                      <span
+                                        key={subIdx}
+                                        className="group relative flex w-full items-center overflow-hidden py-[10px] pl-[42px] pr-[21px] max-md:!py-[clamp(10px,2.5dvh,14px)] max-md:!pl-[clamp(34px,9vw,46px)] max-md:!pr-[clamp(16px,4vw,24px)] lg:pl-[54px] lg:pr-[33px] opacity-50 cursor-not-allowed"
+                                      >
+                                        <span className="relative z-10 font-['Poppins',_sans-serif] text-[18px] max-md:!text-[clamp(16px,5vw,20px)] font-normal leading-[150%] text-white/40 lg:text-[20px]">
+                                          {subItem.label}
+                                        </span>
+                                      </span>
+                                    );
+                                  }
+                                  
+                                  return (
+                                    <Link
+                                      key={subIdx}
+                                      href={linkHref}
+                                      onClick={() => setIsMenuOpen(false)}
+                                      className="group relative flex w-full items-center overflow-hidden py-[10px] pl-[42px] pr-[21px] max-md:!py-[clamp(10px,2.5dvh,14px)] max-md:!pl-[clamp(34px,9vw,46px)] max-md:!pr-[clamp(16px,4vw,24px)] lg:pl-[54px] lg:pr-[33px]"
+                                    >
+                                      <RowSheen sub />
 
-                                    <span className="relative z-10 font-['Poppins',_sans-serif] text-[18px] max-md:!text-[clamp(16px,5vw,20px)] font-normal leading-[150%] text-white/60 transition-all duration-500 ease-out group-hover:translate-x-[3px] group-hover:text-white/90 lg:text-[20px]">
-                                      {subItem.label}
-                                    </span>
-                                  </Link>
-                                ))}
+                                      <span className="relative z-10 font-['Poppins',_sans-serif] text-[18px] max-md:!text-[clamp(16px,5vw,20px)] font-normal leading-[150%] text-white/60 transition-all duration-500 ease-out group-hover:translate-x-[3px] group-hover:text-white/90 lg:text-[20px]">
+                                        {subItem.label}
+                                      </span>
+                                    </Link>
+                                  );
+                                })}
                               </div>
                             </motion.div>
                           )}
