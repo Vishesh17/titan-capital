@@ -148,9 +148,14 @@ const TAIL_TRANSITION = {
 
 function computeDims(w: number, h: number) {
   const isMobile = w < 768;
-  const cardW = isMobile ? w * 0.20 : Math.min(0.072 * w, 0.115 * h);
-  const cardH = cardW; 
+  /* Rounded to whole pixels. A fractional card leaves the photo's edge on a
+     half-pixel, and the antialiased seam against the card's own CARD_BG reads
+     as a thin light line along one side. Sub-pixel change only — no visible
+     difference to the card's size on any breakpoint. */
+  const cardW = Math.round(isMobile ? w * 0.20 : Math.min(0.072 * w, 0.115 * h));
+  const cardH = cardW;
   return {
+    isMobile,
     cardW,
     cardH,
     deckPeek: cardH * (isMobile ? 0.25 : 0.17), 
@@ -428,7 +433,16 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   }, []);
 
   const headingOpacity = useTransform(progress, [0.50, 0.58], [0, 1]);
-  const sideLabelsOpacity = useTransform(progress, [0.44, 0.52], [1, 0]);
+  /* The side labels sit left/right of the deck on desktop, so they can linger
+     until 0.52. On mobile they sit ABOVE and BELOW it — the column collapsing
+     into its vertical line runs straight through FOUNDER-FIRST — so they have
+     to be gone well before that. Both transforms are created unconditionally
+     (hooks cannot be conditional) and the right one is picked. */
+  const sideLabelsOpacityDesktop = useTransform(progress, [0.44, 0.52], [1, 0]);
+  const sideLabelsOpacityMobile = useTransform(progress, [0.15, 0.28], [1, 0]);
+  const sideLabelsOpacity = dims.isMobile
+    ? sideLabelsOpacityMobile
+    : sideLabelsOpacityDesktop;
 
   // ── Cappen-style entrance ──
   // The first slideshow card + the FOUNDER-FIRST / OPERATOR-LED side labels
@@ -512,14 +526,14 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   }, [headingReady, heroInView, headingTick]);
 
   return (
-    <section ref={sectionRef} className="relative h-screen w-full overflow-hidden max-md:overflow-x-hidden max-md:w-[100vw] max-md:ml-[calc(50%-50vw)] max-md:bg-[#00112E]">
+    <section ref={sectionRef} className="relative h-screen w-full overflow-hidden max-md:!h-[100svh] max-md:overflow-x-hidden max-md:w-[100vw] max-md:ml-[calc(50%-50vw)] max-md:bg-[#00112E]">
       <div
-        className="relative flex h-screen w-full items-center justify-center overflow-hidden"
+        className="relative flex h-screen w-full items-center justify-center overflow-hidden max-md:!h-[100svh]"
         style={{ background: "transparent" }}
       >
         <HeroGlow />
 
-        <div className="pointer-events-none absolute left-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 max-md:!left-1/2 max-md:!top-[5vh] max-md:!-translate-x-1/2 max-md:!translate-y-0">
+        <div className="pointer-events-none absolute left-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 max-md:!left-1/2 max-md:!top-[6svh] max-md:!-translate-x-1/2 max-md:!translate-y-0">
           <motion.span
             style={{ opacity: labelOpacity, y: labelY }}
             className="block font-['Poppins',_sans-serif] text-[min(1.4vw,2.15vh)] font-medium tracking-[0.2em] text-white/70 max-md:!text-[18px]"
@@ -527,7 +541,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
             FOUNDER-FIRST
           </motion.span>
         </div>
-        <div className="pointer-events-none absolute right-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 max-md:!right-auto max-md:!left-1/2 max-md:!top-auto max-md:!bottom-[5vh] max-md:!-translate-x-1/2 max-md:!translate-y-0">
+        <div className="pointer-events-none absolute right-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 max-md:!right-auto max-md:!left-1/2 max-md:!top-auto max-md:!bottom-[7svh] max-md:!-translate-x-1/2 max-md:!translate-y-0">
           <motion.span
             style={{ opacity: labelOpacity, y: labelY }}
             className="block font-['Poppins',_sans-serif] text-[min(1.4vw,2.15vh)] font-medium tracking-[0.2em] text-white/70 max-md:!text-[18px]"
@@ -583,8 +597,16 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 {slideshowFounders.map((sf, i) => (
                   <div
                     key={sf.image}
-                    className="absolute inset-0"
+                    className="absolute"
                     style={{
+                      /* 1px of overscan, clipped by the card's overflow-hidden.
+                         At inset-0 the photo's edge lands exactly on the card's
+                         edge; on a 2-3x screen that boundary is antialiased and
+                         the card's own CARD_BG shows through as a hairline down
+                         one side. Bleeding past the edge removes the seam
+                         without moving the framing — the extra pixel is cut
+                         off, so nothing about the visible crop changes. */
+                      inset: "-1px",
                       opacity: i === slideIndex ? 1 : 0,
                       transform: `scale(${clampScale(sf.squareScaleFactor)}) translate(${sf.squarePositionX ?? 0}px, ${sf.squarePositionY ?? 0}px)`,
                       transformOrigin: "center center",

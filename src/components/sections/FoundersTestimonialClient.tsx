@@ -153,7 +153,7 @@ const FALLBACK_TESTIMONIALS: TestimonialItem[] = [
 
 const FALLBACK_TOP_FIRST = "What Our Founders Say";
 const FALLBACK_TOP_SECOND = "";
-const FALLBACK_BOTTOM_FIRST = "You Build the Vision.";
+const FALLBACK_BOTTOM_FIRST = "You Build The Vision.";
 const FALLBACK_BOTTOM_SECOND = "We Help You Scale It.";
 const FALLBACK_CTA = "Get Investment";
 
@@ -591,7 +591,7 @@ export default function FoundersTestimonialClient({
       {/* FIXED: Increased vertical padding and minimum height to expand the mobile layout drastically */}
       <div
         ref={bottomRef}
-        className="relative z-10 flex w-full flex-col items-center justify-center max-md:!gap-[56px] max-md:!py-[120px] max-md:!min-h-[70vh]"
+        className="relative z-10 flex w-full flex-col items-center justify-center max-md:!gap-[28px] max-md:!py-[56px] max-md:!min-h-0"
         style={{
           gap: "min(3.24vw, 5.01vh)", paddingLeft: "var(--section-px-wide)", paddingRight: "var(--section-px-wide)",
           paddingTop: "min(8.68vw, 13.43vh)", paddingBottom: "min(8.68vw, 13.43vh)",
@@ -600,12 +600,26 @@ export default function FoundersTestimonialClient({
         <motion.div className="flex flex-col items-center justify-center text-center max-md:!w-full" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }}>
           {/* FIXED: Removed whitespace-nowrap and max-width added on mobile so it breaks into 3-4 clean lines */}
           <motion.h2
-            className={`m-0 text-center text-black max-md:!max-w-[280px] ${SECTION_HEADING_CLASS}`}
+            /* Cap in `em`, not px. At a fixed 280px the container stopped
+               growing once the font hit its 28px mobile ceiling (~412px wide
+               phones), and "Vision." — the widest of the nine words at 83px
+               against 59-80px for the others — was the only one that no longer
+               fitted, so English alone dropped to a second line. In em the
+               container tracks the font, so every language breaks the same. */
+            className={`m-0 text-center text-black max-md:!max-w-[10.8em] ${SECTION_HEADING_CLASS}`}
             style={{ ...SECTION_HEADING_STYLE, }}
             variants={{ hidden: { opacity: 0, x: -50 }, visible: { opacity: 1, x: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } } }}
           >
             You Build the{" "}
-            <span className="relative inline-block px-[8px] max-md:!px-[4px]">
+            {/* Mobile puts the word on its own line rather than trying to fit
+                "You Build the <word>" on one. The nine words differ in width
+                by ~2x across their scripts, so any single-line cap fits some
+                and breaks others — Tamil was the last to overflow. Breaking
+                deliberately is the same for every language. */}
+            <br className="md:hidden" />
+            <span
+              className="relative inline-block px-[8px] max-md:!px-[4px] max-md:!h-[1.3em] max-md:!leading-[1.3em] max-md:!align-top"
+            >
               <motion.span
                 aria-hidden="true"
                 className="absolute inset-0"
@@ -671,7 +685,11 @@ function TypingText({ delay = 0 }: { delay?: number }) {
       {/* The animated text is mid-word most of the time, so keep it out of the
           accessibility tree and expose the settled word instead. */}
       <span className="sr-only">Vision.</span>
-      <span aria-hidden="true" className={`relative ${word.className}`} lang={word.bcp47}>
+      <span
+        aria-hidden="true"
+        className={`relative whitespace-nowrap ${word.className}`}
+        lang={word.bcp47}
+      >
         {displayedText}
       </span>
     </span>
