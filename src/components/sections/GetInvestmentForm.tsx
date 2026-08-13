@@ -790,8 +790,14 @@ function SectionHeading({
       >
         {label}
       </div>
+      {/* Weight steps 500 -> 400, and the cap is in `em` rather than px.
+          "What You Are Building?" measures 11.49em, i.e. 552px at the 48px
+          desktop level-4 size — the old max-w-[421px] forced it onto two
+          lines. A px cap is the wrong unit here anyway: the font is fluid
+          (min(2.78vw, 4.30vh)) so a fixed cap wraps at some viewports and not
+          others. 13em tracks the font, leaving headroom at every size. */}
       <h3
-        className={`font-medium mb-[clamp(8px,1vw,12px)] max-w-[421px] text-[#0E0E0E] ${SUBHEADING_CLASS}`}
+        className={`mb-[clamp(8px,1vw,12px)] max-w-[13em] font-normal text-[#0E0E0E] ${SUBHEADING_CLASS}`}
         style={SUBHEADING_STYLE}
       >
         {title}

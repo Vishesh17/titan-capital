@@ -6,6 +6,7 @@ import { motion, AnimatePresence, useScroll, useTransform, type MotionValue, use
 import GrainOverlay from "@/components/ui/GrainOverlay";
 import StoryArrow from "@/components/icons/StoryArrow";
 import {
+  CAPTION_STYLE,
   HERO_BODY_CLASS,
   HERO_BODY_STYLE,
   LABEL_STYLE,
@@ -475,15 +476,25 @@ export function StoryCard({ story, sizerTags = [] }: { story: FounderStory; size
         
         <div className="max-md:!mt-[4px]" style={{ paddingTop: 0, marginTop: "-28px" }}>
           <QuoteMarkIcon />
+          {/* Quote — level 6. Not HERO_BODY_CLASS: that token carries level
+              5's own `max-md:` size override, which is !important and would
+              beat the level-6 size on mobile. Levels 6 and 7 ship size only,
+              so family and leading are stated here. */}
           <p
-            className={`font-normal m-0 text-white ${HERO_BODY_CLASS}`}
-            style={{ ...HERO_BODY_STYLE, maxWidth: "min(33.22vw, 51.39vh)", marginTop: "min(0.70vw, 1.07vh)" }}
+            className="m-0 font-['Poppins',_sans-serif] font-normal text-white"
+            style={{
+              ...LABEL_STYLE,
+              lineHeight: 1.6,
+              maxWidth: "min(33.22vw, 51.39vh)",
+              marginTop: "min(0.70vw, 1.07vh)",
+            }}
           >
             {story.text}
           </p>
+          {/* Attribution — level 7, a step below the quote above it. */}
           <p
             className="m-0 font-['Poppins',_sans-serif] font-medium text-white"
-            style={{ ...LABEL_STYLE, lineHeight: "150%", marginTop: "min(0.93vw, 1.43vh)" }}
+            style={{ ...CAPTION_STYLE, lineHeight: "150%", marginTop: "min(0.93vw, 1.43vh)" }}
           >
             — {story.name}, {story.role}
           </p>

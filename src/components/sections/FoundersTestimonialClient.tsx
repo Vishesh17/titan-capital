@@ -458,7 +458,10 @@ function FlipCard({ item }: { item: TestimonialItem }) {
       </div>
 
       <div className="mt-[min(1.16vw,1.79vh)] flex flex-col items-center text-center max-md:!mt-[16px]">
-        <p className={`font-normal m-0 text-black ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
+        {/* Level 5 at weight 600 — the same "bold body" the rest of the site
+            uses for names (BODY_BOLD_CLASS). Stated here rather than taken
+            from a token, since levels 4-7 carry size only. */}
+        <p className={`m-0 font-semibold text-black ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
           {item.name}
         </p>
         <p
