@@ -87,6 +87,13 @@ function SidebarFilterSection({
 }) {
   const [open, setOpen] = useState(defaultOpen);
 
+  // Close filter on mobile by default
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setOpen(false);
+    }
+  }, []);
+
   return (
     <div className="w-full border-b border-[#000]/10 pb-5 pt-3 max-lg:!relative max-lg:!w-auto max-lg:!flex-1 max-lg:!border-b-0 max-lg:!pb-0 max-lg:!pt-0">
       <button
@@ -498,7 +505,7 @@ export default function PortfolioGrid() {
           style={{ paddingRight: "clamp(12px, 1.5vw, 20px)" }}
         >
           <div className="flex w-full items-center justify-between pb-4 border-b border-[#000]/10">
-            <span className={`text-[#000] ${BODY_BOLD_CLASS}`} style={HERO_BODY_STYLE}>
+            <span className={`text-black/70 ${BODY_BOLD_CLASS}`} style={HERO_BODY_STYLE}>
               Filters
             </span>
             <button
