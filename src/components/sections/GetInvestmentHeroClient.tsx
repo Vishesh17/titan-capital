@@ -240,7 +240,7 @@ export default function GetInvestmentHeroClient({
   }, [inView]);
 
   return (
-    <section ref={sectionRef} className="relative w-full overflow-hidden max-md:overflow-x-hidden max-md:w-[100vw] max-md:ml-[calc(50%-50vw)] bg-[#00112E]" style={{ height: "70svh" }}>
+    <section ref={sectionRef} className="relative w-full overflow-hidden max-md:overflow-x-hidden max-md:w-[100vw] max-md:ml-[calc(50%-50vw)] bg-[#00112E] max-md:!h-[50svh]" style={{ height: "70svh" }}>
       <div
         className="relative flex h-full w-full items-center justify-center overflow-hidden"
         style={{

@@ -607,16 +607,15 @@ export default function Footer() {
             ))}
           </div>
 
-          {/* Bottom row — Address/Socials/Email stacked on the left,
-              Newsletter form on the right. Matches the mobile Figma layout. */}
+          {/* Bottom row — Address/Socials on the left, Newsletter form on the right */}
           <div
             className="flex w-full flex-row items-start"
             style={{
               gap: "clamp(12px, 3vw, 24px)",
-              marginBottom: "clamp(24px, 5vw, 48px)",
+              marginBottom: "clamp(12px, 2.5vw, 24px)",
             }}
           >
-            {/* LEFT column — address → socials → email */}
+            {/* LEFT column — address → socials */}
             <div
               className="flex shrink-0 flex-col"
               style={{ gap: "clamp(8px, 1.8vw, 14px)", maxWidth: "40%" }}
@@ -648,17 +647,6 @@ export default function Footer() {
                   </svg>
                 </Link>
               </div>
-
-              <a
-                href="mailto:info@titancapital.vc"
-                className="inline-block break-words font-['Poppins',_sans-serif] font-medium text-[#111] transition-transform duration-300 hover:opacity-70"
-                // Inline, not the `max-md:` half of SUBHEADING_CLASS: this
-                // block is `lg:hidden`, so it is still on screen from
-                // 768-1023px where that variant no longer applies.
-                style={SUBHEADING_MOBILE_STYLE}
-              >
-                info@titancapital.vc
-              </a>
             </div>
 
             {/* RIGHT column — Newsletter form */}
@@ -666,6 +654,15 @@ export default function Footer() {
               <NewsletterForm variant="mobile" />
             </div>
           </div>
+
+          {/* Email — below the newsletter box, aligned left */}
+          <a
+            href="mailto:info@titancapital.vc"
+            className="inline-block whitespace-nowrap font-['Poppins',_sans-serif] font-semibold text-[#111] transition-transform duration-300 hover:opacity-70"
+            style={{ ...SUBHEADING_MOBILE_STYLE, marginBottom: "clamp(24px, 5vw, 48px)" }}
+          >
+            info@titancapital.vc
+          </a>
         </div>
 
         {/* ── Spacer (desktop only — mobile spacing handled above) ── */}
