@@ -472,7 +472,7 @@ export default function OurTeamClient({
         >
           <TeamGroup title="Corporate Team" members={corporate} />
           <TeamGroup title="Seed Investment Team" members={seed} />
-          <TeamGroup title="Early-growth Investment Team" members={winner} />
+          <TeamGroup title="Early-Growth Investment Team" members={winner} />
         </div>
       </div>
     </section>
