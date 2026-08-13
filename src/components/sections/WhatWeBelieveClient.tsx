@@ -87,12 +87,11 @@ function computeMobileDims() {
   const winW = window.innerWidth;
   const winH = window.innerHeight;
   
-  // Account for the 64px navbar offset so the top of the image aligns perfectly without gaps
   const availH = winH - 64;
 
   const cardW = Math.min(winW * 0.88, 380);
-  // FIXED: Increased height multiplier and maximum height just for mobile cards
-  const cardH = Math.min(availH * 0.28, 250);
+  // FIXED: Set a strict minimum of 250px so the text block ALWAYS has enough room
+  const cardH = Math.max(250, Math.min(availH * 0.3, 270));
   const gap = 16;
   const photoH = 3 * cardH;
 
@@ -740,11 +739,9 @@ function MobileCardSlice({
       >
         <CardBlobs mouseX={mouseX} mouseY={mouseY} isHovered={false} />
 
-        {/* FIXED: Overrode inner mobile padding via max-md:!p-[20px_16px] for consistent framing */}
-        <div
-          className="relative z-10 flex flex-col h-full max-md:!p-[20px_16px] max-md:!gap-[12px]"
-          style={{ paddingTop: "min(3.47vw, 5.37vh)", paddingBottom: "min(2.78vw, 4.31vh)", paddingLeft: "min(2.08vw, 3.22vh)", paddingRight: "min(2.08vw, 3.22vh)", gap: "min(1.85vw, 2.86vh)" }}
-        >
+        {/* FIXED: Removed vh inline styles entirely. Used strict pixel padding and gaps
+            so the text never gets squeezed when the mobile browser hides the URL bar. */}
+        <div className="relative z-10 flex flex-col h-full px-[16px] py-[24px] gap-[12px]">
           <div className="flex justify-center">
             <h3
               className={`font-medium text-center text-white ${SUBHEADING_CLASS}`}
