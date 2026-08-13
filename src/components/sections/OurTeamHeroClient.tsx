@@ -116,16 +116,16 @@ const FALLBACK_IMAGES = Array.from(
     theirs on the flip take 11, 13, 15, 2, 4 — so the first pass is the
     odd-numbered people and the flip brings in the rest.                    */
 const MOBILE_CARDS = [
-  { pos: "col-start-1 row-start-1", frontIsBox: true,  member: 11 }, // 11th, on flip
+  { pos: "col-start-1 row-start-1", frontIsBox: true,  member: 2 }, // 11th, on flip
   { pos: "col-start-2 row-start-1", frontIsBox: false, member: 1 },  //  1st, at rest
-  { pos: "col-start-3 row-start-1", frontIsBox: true,  member: 13 }, // 13th, on flip
-  { pos: "col-start-4 row-start-1", frontIsBox: false, member: 3 },  //  3rd, at rest
-  { pos: "col-start-3 row-start-2", frontIsBox: false, member: 5 },  //  5th, at rest
-  { pos: "col-start-4 row-start-2", frontIsBox: true,  member: 14 }, // 15th, on flip
-  { pos: "col-start-3 row-start-3", frontIsBox: true,  member: 4 },  //  2nd, on flip
+  { pos: "col-start-3 row-start-1", frontIsBox: true,  member: 0 }, // 13th, on flip
+  { pos: "col-start-4 row-start-1", frontIsBox: false, member: 5 },  //  3rd, at rest
+  { pos: "col-start-3 row-start-2", frontIsBox: false, member: 10 },  //  5th, at rest
+  { pos: "col-start-4 row-start-2", frontIsBox: true,  member: 4 }, // 15th, on flip
+  { pos: "col-start-3 row-start-3", frontIsBox: true,  member: 7 },  //  2nd, on flip
   { pos: "col-start-4 row-start-3", frontIsBox: false, member: 8 },  //  7th, at rest
-  { pos: "col-start-3 row-start-4", frontIsBox: false, member: 10 },  //  9th, at rest
-  { pos: "col-start-4 row-start-4", frontIsBox: true,  member: 6 },  //  4th, on flip
+  { pos: "col-start-3 row-start-4", frontIsBox: false, member: 6 },  //  9th, at rest
+  { pos: "col-start-4 row-start-4", frontIsBox: true,  member: 9 },  //  4th, on flip
 ];
 
 /* ─────────────────────────────────────────────────────────

@@ -256,7 +256,17 @@ export default function GetInvestmentHeroClient({
             className={`m-0 flex flex-col items-center justify-center text-white ${HERO_HEADING_DARK_CLASS}`}
             style={HERO_HEADING_DARK_STYLE}
           >
-            <RevealLine show={show} delay={0}>{headingFirst}</RevealLine>
+            <span className="flex flex-col max-md:hidden">
+              <RevealLine show={show} delay={0}>{headingFirst}</RevealLine>
+            </span>
+            <span className="hidden flex-col items-center max-md:flex">
+              <span className="flex justify-center">
+                <RevealLine show={show} delay={0}>{"We Invest"}</RevealLine>
+              </span>
+              <span className="flex justify-center">
+                <RevealLine show={show} delay={0.3}>{"Early"}</RevealLine>
+              </span>
+            </span>
           </h1>
 
           <motion.p
