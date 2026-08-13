@@ -34,8 +34,8 @@ export interface GetInvestmentFAQData {
   items?: GetInvestmentFAQItem[];
 }
 
-const FALLBACK_HEADING_FIRST = "You&apos;ve Got Questions";
-const FALLBACK_HEADING_SECOND = "We&apos;ve Got Answers";
+const FALLBACK_HEADING_FIRST = "Questions Founders Ask";
+const FALLBACK_HEADING_SECOND = "";
 
 const FALLBACK_FAQ: GetInvestmentFAQItem[] = [
   {
@@ -217,13 +217,13 @@ export default function GetInvestmentFAQClient({
    dangerouslySetInnerHTML={{ __html: headingFirst }}
    />
 
-          <motion.h2
+          {/* <motion.h2
             className={`m-0 max-w-[794px] text-black ${SECTION_HEADING_CLASS}`}
             style={{ ...SECTION_HEADING_STYLE, }}
             custom={0}
             variants={fadeUp}
             dangerouslySetInnerHTML={{ __html: headingSecond }}
-          />
+          /> */}
         </motion.div>
 
         {/* ── FAQ ACCORDIONS ── */}

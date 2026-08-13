@@ -118,7 +118,20 @@ export default function WhatWeBelieveClient({
   const [dims, setDims] = useState(FALLBACK_DIMS);
   const [mobileDims, setMobileDims] = useState(FALLBACK_MOBILE_DIMS);
 
+  const lastWidth = useRef(typeof window !== "undefined" ? window.innerWidth : 0);
+
   const handleResize = useCallback(() => {
+    if (typeof window === "undefined") return;
+
+    const currentWidth = window.innerWidth;
+
+    // MOBILE SAFARI FIX: Ignore resize events if only the height changed.
+    // This stops the cards from squashing when the URL bar hides during scroll!
+    if (currentWidth < 768 && currentWidth === lastWidth.current) {
+      return;
+    }
+
+    lastWidth.current = currentWidth;
     setDims(computeDims());
     setMobileDims(computeMobileDims());
   }, []);
@@ -159,7 +172,8 @@ export default function WhatWeBelieveClient({
   return (
     <section
       ref={sectionRef}
-      className="relative w-full bg-[#FBF7F0] max-md:-mt-[60px] max-md:pt-[60px] max-md:!h-[180vh]"
+      // REMOVED: max-md:-mt-[60px] and max-md:pt-[60px] to fix the mobile overlapping glitch
+      className="relative w-full bg-[#FBF7F0] max-md:!h-[180vh]"
       style={{ height: "250vh" }}
     >
       <GrainOverlay opacity={0.22} zIndex={1} />
