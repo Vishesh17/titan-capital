@@ -38,7 +38,7 @@ const proseParagraphStyle: React.CSSProperties = {
 };
 
 const subHeading =
-  "font-['Libre_Baskerville',_serif] font-semibold text-[#001A4D] leading-tight";
+  "font-['Poppins',_serif] font-semibold text-[#001A4D] leading-tight";
 const subHeadingStyle: React.CSSProperties = {
   fontSize: "clamp(18px, min(1.67vw, 2.44vh), 24px)",
 };
@@ -468,7 +468,7 @@ function FundDetailsBlock({ title, fund }: { title: string; fund: typeof fundI }
       }}
     >
       <h3
-        className="font-['Libre_Baskerville',_serif] font-semibold text-[#001A4D]"
+        className="font-['Poppins',_serif] font-semibold text-[#001A4D]"
         style={{
           fontSize: "clamp(18px, min(1.67vw, 2.44vh), 22px)",
           marginBottom: "clamp(14px, min(1.6vw, 2.3vh), 22px)",
@@ -648,7 +648,7 @@ export default function LegalContent({ initialTab }: { initialTab: TabKey }) {
         {/* ── HEADING — same Libre Baskerville size as other site headings ── */}
         <motion.h1
           key={active}
-          className="m-0 font-['Libre_Baskerville',_serif] text-[length:var(--heading-xl)] max-md:!text-[28px] font-semibold not-italic leading-none text-[#001A4D]"
+          className="m-0 font-['Poppins',_serif] text-[length:var(--heading-xl)] max-md:!text-[28px] font-semibold not-italic leading-none text-[#001A4D]"
           initial={{ opacity: 0, x: -40 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.9, ease: "easeOut" }}

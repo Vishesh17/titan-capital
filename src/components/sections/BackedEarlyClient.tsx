@@ -430,7 +430,9 @@ function CompanyCard({ company, mode = "marquee" }: { company: BackedEarlyCompan
   } : {
     width: "100%",
     aspectRatio: "1/1",
-    borderRadius: "8px",
+    // 2px, matching the marquee cards on desktop — this grid is mobile-only
+    // and was the one place still rounded to 8px.
+    borderRadius: "2px",
     boxShadow: "0 4px 10px 4px rgba(0, 0, 0, 0.3)",
   };
 
@@ -659,8 +661,19 @@ function CardMarquee({ companies }: { companies: BackedEarlyCompany[] }) {
    ═══════════════════════════════════════════════════════ */
 function MobileFadingGrid({ companies }: { companies: BackedEarlyCompany[] }) {
   const [page, setPage] = useState(0);
-  const itemsPerPage = 4;
-  const totalPages = Math.ceil(companies.length / itemsPerPage);
+
+  /* Cart.com is dropped on mobile only — the desktop marquee below still
+     carries it. The grid shows 6 per page (3 rows of 2), so 13 companies
+     left the last page holding a single card; at 12 it is exactly two full
+     pages. Matched on the slug rather than the raw string so a relabel in
+     Sanity ("Cart.com", "Cart com", "cart.com") still matches. */
+  const mobileCompanies = companies.filter(
+    (c) => companySlug(c.name) !== "cart-com"
+  );
+
+  // 6 on mobile = 3 rows of 2. Desktop uses the marquee, not this grid.
+  const itemsPerPage = 6;
+  const totalPages = Math.max(1, Math.ceil(mobileCompanies.length / itemsPerPage));
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -669,7 +682,10 @@ function MobileFadingGrid({ companies }: { companies: BackedEarlyCompany[] }) {
     return () => clearInterval(timer);
   }, [totalPages]);
 
-  const currentSet = companies.slice(page * itemsPerPage, (page + 1) * itemsPerPage);
+  const currentSet = mobileCompanies.slice(
+    page * itemsPerPage,
+    (page + 1) * itemsPerPage
+  );
 
   const flipVariants: Variants = {
     initial: { rotateY: -90, opacity: 0 },
@@ -693,7 +709,7 @@ function MobileFadingGrid({ companies }: { companies: BackedEarlyCompany[] }) {
       <AnimatePresence mode="wait">
         <motion.div
           key={page}
-          className="grid w-full grid-cols-2 grid-rows-2 gap-[12px]"
+          className="grid w-full grid-cols-2 grid-rows-3 gap-[12px]"
           style={{ transformStyle: "preserve-3d" }}
         >
           {currentSet.map((company, i) => (
@@ -812,7 +828,7 @@ export default function BackedEarlyClient({
 
       <div className="relative z-10 flex w-full flex-1 flex-col items-center justify-between">
 
-        <div className="flex w-full flex-1 flex-col items-center justify-center mb-[clamp(32px,min(4vw,6vh),60px)]">
+        <div className="flex w-full flex-1 flex-col items-center justify-center mb-[clamp(32px,min(4vw,6vh),60px)] max-md:!flex-none max-md:!justify-start max-md:!mt-[clamp(44px,16vw,80px)] max-md:!mb-[clamp(16px,4vw,28px)]">
           <div className="flex w-full flex-col items-center">
             <h2
               className={`m-0 flex w-full flex-col items-center justify-center text-center text-white ${HERO_HEADING_DARK_CLASS}`}

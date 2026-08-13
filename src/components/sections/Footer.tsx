@@ -54,80 +54,95 @@ function isValidEmail(email: string): boolean {
    CursorFillButton — same style as navbar's Get Investment
    Radial fill from cursor position on hover
    ──────────────────────────────────────────────── */
-function CursorFillButton({
-  type = "button",
-  disabled,
-  label,
-  variant = "desktop",
-  onClick,
-}: {
-  type?: "button" | "submit";
-  disabled?: boolean;
-  label: React.ReactNode;
-  variant?: "desktop" | "mobile";
-  onClick?: () => void;
-}) {
-  const [origin, setOrigin] = useState("50% 50%");
-  const [hovered, setHovered] = useState(false);
-
-  const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    setOrigin(`${x}% ${y}%`);
-    setHovered(true);
-  };
-
-  const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    setOrigin(`${x}% ${y}%`);
-    setHovered(false);
-  };
-
-  return (
-    <button
-      type={type}
-      disabled={disabled}
-      onClick={onClick}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className={`relative flex items-center justify-center whitespace-nowrap font-['Poppins',_sans-serif] font-normal transition-colors duration-300 disabled:opacity-60 ${variant === "mobile" ? "shrink-0" : ""}`}
-      style={
-        variant === "mobile"
-          ? {
-              width: "clamp(68px, 18vw, 85px)",
-              height: "clamp(24px, 6.5vw, 32px)",
-              borderRadius: "53px",
-              border: "1px solid transparent",
-              background: hovered ? "white" : "#001A4D",
-              color: hovered ? "#001A4D" : "white",
-              ...LABEL_STYLE,
-            }
-          : {
-              width: "clamp(160px, min(17.01vw, 24.95vh), 245px)",
-              height: "clamp(40px, min(3.68vw, 5.4vh), 53px)",
-              borderRadius: "53px",
-              border: "1px solid #CDCDCD",
-              background: hovered ? "white" : "#001A4D",
-              color: hovered ? "#001A4D" : "white",
-              ...LABEL_STYLE,
-            }
-      }
-    >
-      <span
-        className="absolute inset-0 bg-white transition-transform duration-400 ease-out"
-        style={{
-          transformOrigin: origin,
-          transform: hovered ? "scale(1)" : "scale(0)",
-          borderRadius: "inherit",
-        }}
-      />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
+/* ────────────────────────────────────────────────
+   CursorFillButton — same style as navbar's Get Investment
+   Radial fill from cursor position on hover
+   ──────────────────────────────────────────────── */
+/* ────────────────────────────────────────────────
+   CursorFillButton — same style as navbar's Get Investment
+   Radial fill from cursor position on hover
+   ──────────────────────────────────────────────── */
+/* ────────────────────────────────────────────────
+   CursorFillButton — same style as navbar's Get Investment
+   Radial fill from cursor position on hover
+   ──────────────────────────────────────────────── */
+   function CursorFillButton({
+    type = "button",
+    disabled,
+    label,
+    variant = "desktop",
+    onClick,
+  }: {
+    type?: "button" | "submit";
+    disabled?: boolean;
+    label: React.ReactNode;
+    variant?: "desktop" | "mobile";
+    onClick?: () => void;
+  }) {
+    const [origin, setOrigin] = useState("50% 50%");
+    const [hovered, setHovered] = useState(false);
+  
+    const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      setOrigin(`${x}% ${y}%`);
+      setHovered(true);
+    };
+  
+    const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      setOrigin(`${x}% ${y}%`);
+      setHovered(false);
+    };
+  
+    return (
+      <button
+        type={type}
+        disabled={disabled}
+        onClick={onClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className={`relative flex items-center justify-center whitespace-nowrap font-['Poppins',_sans-serif] font-normal transition-colors duration-300 disabled:opacity-60 ${variant === "mobile" ? "shrink-0" : ""}`}
+        style={
+          variant === "mobile"
+            ? {
+                // REVERTED: Back to exact original mobile values
+                width: "clamp(68px, 18vw, 85px)",
+                height: "clamp(24px, 6.5vw, 32px)",
+                borderRadius: "53px",
+                border: "1px solid transparent",
+                background: hovered ? "white" : "#001A4D",
+                color: hovered ? "#001A4D" : "white",
+                ...LABEL_STYLE,
+              }
+            : {
+                // DESKTOP: Increased width (was 160px -> 245px) and added explicit padding
+                width: "clamp(200px, min(22vw, 32vh), 310px)",
+                padding: "0 24px",
+                height: "clamp(40px, min(3.68vw, 5.4vh), 53px)",
+                borderRadius: "53px",
+                border: "1px solid #CDCDCD",
+                background: hovered ? "white" : "#001A4D",
+                color: hovered ? "#001A4D" : "white",
+                ...LABEL_STYLE,
+              }
+        }
+      >
+        <span
+          className="absolute inset-0 bg-white transition-transform duration-400 ease-out"
+          style={{
+            transformOrigin: origin,
+            transform: hovered ? "scale(1)" : "scale(0)",
+            borderRadius: "inherit",
+          }}
+        />
+        <span className="relative z-10">{label}</span>
+      </button>
+    );
+  }
 
 /* Newsletter subscribe form — handles validation, submit/loading/success
    and error states. POSTs to /api/newsletter, which forwards to the same
@@ -137,97 +152,204 @@ function CursorFillButton({
    `variant` switches between the desktop grid layout (Figma spec — 729×216
    pill on the right of the footer) and the mobile column layout (sits
    beside the M3M address paragraph). */
-function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile" }) {
-  const [email, setEmail] = useState("");
-  const [touched, setTouched] = useState(false);
-  const [focused, setFocused] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [submitError, setSubmitError] = useState("");
-
-  /* Live validation status — mirrors EmailInput in GetInvestmentForm. */
-  const liveStatus: "neutral" | "invalid" | "valid" =
-    email.length === 0
-      ? "neutral"
-      : isValidEmail(email)
-        ? "valid"
-        : touched
-          ? "invalid"
-          : "neutral";
-
-  const ringClass =
-    liveStatus === "invalid"
-      ? "ring-2 ring-[#C53030]/40"
-      : liveStatus === "valid" && focused
-        ? "ring-2 ring-[#16a34a]/40"
-        : "";
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!touched) setTouched(true);
-    if (!isValidEmail(email)) {
-      setSubmitError("Please enter a valid email address");
-      return;
-    }
-    setSubmitError("");
-    setSubmitting(true);
-    try {
-      const res = await fetch("/api/newsletter", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
-      });
-      const json = await res.json();
-      if (json.success) {
-        setSubmitted(true);
-        setEmail("");
-      } else {
-        setSubmitError(json.message || "Something went wrong. Please try again.");
+   function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile" }) {
+    const [email, setEmail] = useState("");
+    const [touched, setTouched] = useState(false);
+    const [focused, setFocused] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
+    const [submitError, setSubmitError] = useState("");
+  
+    /* Live validation status */
+    const liveStatus: "neutral" | "invalid" | "valid" =
+      email.length === 0
+        ? "neutral"
+        : isValidEmail(email)
+          ? "valid"
+          : touched
+            ? "invalid"
+            : "neutral";
+  
+    const ringClass =
+      liveStatus === "invalid"
+        ? "ring-2 ring-[#C53030]/40"
+        : liveStatus === "valid" && focused
+          ? "ring-2 ring-[#16a34a]/40"
+          : "";
+  
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!touched) setTouched(true);
+      if (!isValidEmail(email)) {
+        setSubmitError("Please enter a valid email address");
+        return;
       }
-    } catch {
-      setSubmitError("Network error. Please check your connection.");
-    } finally {
-      setSubmitting(false);
+      setSubmitError("");
+      setSubmitting(true);
+      try {
+        const res = await fetch("/api/newsletter", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email.trim() }),
+        });
+        const json = await res.json();
+        if (json.success) {
+          setSubmitted(true);
+          setEmail("");
+        } else {
+          setSubmitError(json.message || "Something went wrong. Please try again.");
+        }
+      } catch {
+        setSubmitError("Network error. Please check your connection.");
+      } finally {
+        setSubmitting(false);
+      }
+    };
+  
+    /* Button content states */
+    const buttonContent = submitting ? (
+      <span className="relative z-10 flex items-center justify-center gap-2">
+        <motion.span
+          className="inline-block h-[10px] w-[10px] rounded-full border-2 border-white/30 border-t-white max-md:!h-[8px] max-md:!w-[8px]"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+        />
+        Subscribing…
+      </span>
+    ) : submitted ? (
+      <span className="relative z-10">Subscribed ✓</span>
+    ) : (
+      <span className="relative z-10">Subscribe to Newsletter</span>
+    );
+  
+    /* ─────────── MOBILE LAYOUT ─────────── */
+    if (variant === "mobile") {
+      // REVERTED: Mobile form remains entirely untouched
+      return (
+        <form
+          onSubmit={handleSubmit}
+          className="flex w-full flex-col items-start"
+          style={{
+            maxWidth: "241px",
+            gap: "clamp(6px, 1.6vw, 10px)",
+            padding: "8px",
+            borderRadius: "2px",
+            background: "#FBF7F0",
+          }}
+        >
+          <p
+            className="m-0 font-poppins font-normal text-[#0E0E0E]"
+            style={{ fontSize: "clamp(8px, 1.8vw, 11px)", lineHeight: "140%" }}
+          >
+            Stay close to what founders are building, and where the market is going next.
+          </p>
+          <div className="flex w-full flex-row items-center" style={{ gap: "4px" }}>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (!touched) setTouched(true);
+                if (submitted) setSubmitted(false);
+                if (submitError) setSubmitError("");
+              }}
+              onFocus={() => setFocused(true)}
+              onBlur={() => {
+                setFocused(false);
+                if (!touched) setTouched(true);
+              }}
+              placeholder="Email Id"
+              aria-label="Email address"
+              disabled={submitting}
+              className={`min-w-0 flex-1 bg-white outline-none placeholder:text-[#323232] ${ringClass}`}
+              style={{
+                padding: "5px 8px",
+                height: "clamp(24px, 6.5vw, 32px)",
+                borderRadius: "4px",
+                fontFamily: "Poppins",
+                ...LABEL_STYLE,
+                color: "#323232",
+                lineHeight: "150%",
+                transition: "box-shadow 0.2s",
+              }}
+            />
+            <CursorFillButton
+              type="submit"
+              disabled={submitting}
+              onClick={() => {}}
+              label={submitting ? (
+                <motion.span
+                  className="inline-block h-[8px] w-[8px] rounded-full border-2 border-white/30 border-t-white"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+                />
+              ) : submitted ? "Done" : "Subscribe"}
+              variant="mobile"
+            />
+          </div>
+          {(submitError || liveStatus === "invalid") && (
+            <p
+              className="font-poppins text-[#C53030]"
+              style={{ fontSize: "clamp(7px, 1.6vw, 10px)" }}
+            >
+              {submitError || "Please enter a valid email address"}
+            </p>
+          )}
+          {submitted && !submitError && (
+            <p
+              className="font-poppins text-[#16a34a]"
+              style={{ fontSize: "clamp(7px, 1.6vw, 10px)" }}
+            >
+              Thanks for subscribing!
+            </p>
+          )}
+        </form>
+      );
     }
-  };
-
-  /* Button content states */
-  const buttonContent = submitting ? (
-    <span className="relative z-10 flex items-center justify-center gap-2">
-      <motion.span
-        className="inline-block h-[10px] w-[10px] rounded-full border-2 border-white/30 border-t-white max-md:!h-[8px] max-md:!w-[8px]"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-      />
-      Subscribing…
-    </span>
-  ) : submitted ? (
-    <span className="relative z-10">Subscribed ✓</span>
-  ) : (
-    <span className="relative z-10">Subscribe to Newsletter</span>
-  );
-
-  /* ─────────── MOBILE LAYOUT ─────────── */
-  if (variant === "mobile") {
+  
+    /* ─────────── DESKTOP LAYOUT ─────────── */
     return (
       <form
         onSubmit={handleSubmit}
-        className="flex w-full flex-col items-start"
+        className="relative grid"
         style={{
-          maxWidth: "241px",
-          gap: "clamp(6px, 1.6vw, 10px)",
-          padding: "8px",
+          width: "clamp(360px, min(50.63vw, 74.18vh), 729px)",
+          minHeight: "clamp(170px, min(15vw, 22vh), 216px)",
+          padding:
+            "clamp(14px, min(1.25vw, 1.83vh), 18px) clamp(16px, min(1.6vw, 2.34vh), 23px)",
+          rowGap: "clamp(20px, min(1.94vw, 2.85vh), 28px)",
+          columnGap: "clamp(10px, min(1.11vw, 1.63vh), 16px)",
+          gridTemplateRows: "repeat(2, minmax(0, 1fr))",
+          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
           borderRadius: "2px",
           background: "#FBF7F0",
         }}
       >
         <p
-          className="m-0 font-poppins font-normal text-[#0E0E0E]"
-          style={{ fontSize: "clamp(8px, 1.8vw, 11px)", lineHeight: "140%" }}
+          className="m-0 self-stretch font-poppins font-normal text-[#0E0E0E]"
+          style={{
+            gridRow: "1 / span 1",
+            gridColumn: "1 / span 2",
+            fontSize: "clamp(15px, min(1.67vw, 2.44vh), 24px)",
+            lineHeight: "150%",
+          }}
         >
-          Stay close to what founders are building and where markets are moving, with Titan Capital.
+          Stay close to what founders are building, and where the market is going next.
         </p>
-        <div className="flex w-full flex-row items-center" style={{ gap: "4px" }}>
+  
+        {/* DESKTOP EMAIL INPUT WRAPPER */}
+        <div
+          className="flex flex-col"
+          style={{
+            gridRow: "2 / span 1",
+            gridColumn: "1 / span 1",
+            justifySelf: "start",
+            alignSelf: "center",
+            gap: "4px",
+            // DESKTOP: Reduced the width clamp (was 220px -> 423px) so the email box is narrower
+            width: "clamp(180px, min(24vw, 35vh), 330px)",
+          }}
+        >
           <input
             type="email"
             value={email}
@@ -245,11 +367,11 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
             placeholder="Email Id"
             aria-label="Email address"
             disabled={submitting}
-            className={`min-w-0 flex-1 bg-white outline-none placeholder:text-[#323232] ${ringClass}`}
+            className={`w-full bg-white outline-none placeholder:text-[#323232] ${ringClass}`}
             style={{
-              padding: "5px 8px",
-              height: "clamp(24px, 6.5vw, 32px)",
-              borderRadius: "4px",
+              height: "clamp(40px, min(3.68vw, 5.4vh), 53px)",
+              padding: "0 clamp(16px, min(2vw, 3vh), 24px)",
+              borderRadius: "8px",
               fontFamily: "Poppins",
               ...LABEL_STYLE,
               color: "#323232",
@@ -257,154 +379,42 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
               transition: "box-shadow 0.2s",
             }}
           />
+          {(submitError || liveStatus === "invalid") && (
+            <p
+              className="font-poppins text-[#C53030]"
+              style={{ fontSize: "clamp(11px, min(0.9vw, 1.3vh), 13px)" }}
+            >
+              {submitError || "Please enter a valid email address"}
+            </p>
+          )}
+          {submitted && !submitError && (
+            <p
+              className="font-poppins text-[#16a34a]"
+              style={{ fontSize: "clamp(11px, min(0.9vw, 1.3vh), 13px)" }}
+            >
+              Thanks for subscribing!
+            </p>
+          )}
+        </div>
+  
+        <div
+          style={{
+            gridRow: "2 / span 1",
+            gridColumn: "2 / span 1",
+            justifySelf: "end",
+            alignSelf: "center",
+          }}
+        >
           <CursorFillButton
             type="submit"
             disabled={submitting}
-            onClick={() => {}}
-            label={submitting ? (
-              <motion.span
-                className="inline-block h-[8px] w-[8px] rounded-full border-2 border-white/30 border-t-white"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-              />
-            ) : submitted ? "Done" : "Subscribe"}
-            variant="mobile"
+            label={buttonContent}
+            variant="desktop"
           />
         </div>
-        {(submitError || liveStatus === "invalid") && (
-          <p
-            className="font-poppins text-[#C53030]"
-            style={{ fontSize: "clamp(7px, 1.6vw, 10px)" }}
-          >
-            {submitError || "Please enter a valid email address"}
-          </p>
-        )}
-        {submitted && !submitError && (
-          <p
-            className="font-poppins text-[#16a34a]"
-            style={{ fontSize: "clamp(7px, 1.6vw, 10px)" }}
-          >
-            Thanks for subscribing!
-          </p>
-        )}
       </form>
     );
   }
-
-  /* ─────────── DESKTOP LAYOUT ─────────── */
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className="relative grid"
-      style={{
-        // Designed at 729×216 on a 1440 viewport; scales with the rest of the site.
-        width: "clamp(360px, min(50.63vw, 74.18vh), 729px)",
-        minHeight: "clamp(170px, min(15vw, 22vh), 216px)",
-        padding:
-          "clamp(14px, min(1.25vw, 1.83vh), 18px) clamp(16px, min(1.6vw, 2.34vh), 23px)",
-        rowGap: "clamp(20px, min(1.94vw, 2.85vh), 28px)",
-        columnGap: "clamp(10px, min(1.11vw, 1.63vh), 16px)",
-        gridTemplateRows: "repeat(2, minmax(0, 1fr))",
-        gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-        borderRadius: "2px",
-        background: "#FBF7F0",
-      }}
-    >
-      {/* Heading — spans both columns on row 1 */}
-      <p
-        className="m-0 self-stretch font-poppins font-normal text-[#0E0E0E]"
-        style={{
-          gridRow: "1 / span 1",
-          gridColumn: "1 / span 2",
-          fontSize: "clamp(15px, min(1.67vw, 2.44vh), 24px)",
-          lineHeight: "150%",
-        }}
-      >
-        Stay close to what founders are building and where markets are moving, with Titan Capital.
-      </p>
-
-      {/* Email input — row 2, col 1. Wrapper holds the error/success message
-          right under the input without disturbing the grid. Centered vertically
-          to share a baseline with the button. */}
-      <div
-        className="flex flex-col"
-        style={{
-          gridRow: "2 / span 1",
-          gridColumn: "1 / span 1",
-          justifySelf: "start",
-          alignSelf: "center",
-          gap: "4px",
-          width: "clamp(220px, min(29.38vw, 43.07vh), 423px)",
-        }}
-      >
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            if (!touched) setTouched(true);
-            if (submitted) setSubmitted(false);
-            if (submitError) setSubmitError("");
-          }}
-          onFocus={() => setFocused(true)}
-          onBlur={() => {
-            setFocused(false);
-            if (!touched) setTouched(true);
-          }}
-          placeholder="Email Id"
-          aria-label="Email address"
-          disabled={submitting}
-          className={`w-full bg-white outline-none placeholder:text-[#323232] ${ringClass}`}
-          style={{
-            // Same height as the Subscribe button so the row reads as one.
-            height: "clamp(40px, min(3.68vw, 5.4vh), 53px)",
-            padding:
-              "0 clamp(20px, min(2.64vw, 3.87vh), 38px)",
-            borderRadius: "8px",
-            fontFamily: "Poppins",
-            ...LABEL_STYLE,
-            color: "#323232",
-            lineHeight: "150%",
-            transition: "box-shadow 0.2s",
-          }}
-        />
-        {(submitError || liveStatus === "invalid") && (
-          <p
-            className="font-poppins text-[#C53030]"
-            style={{ fontSize: "clamp(11px, min(0.9vw, 1.3vh), 13px)" }}
-          >
-            {submitError || "Please enter a valid email address"}
-          </p>
-        )}
-        {submitted && !submitError && (
-          <p
-            className="font-poppins text-[#16a34a]"
-            style={{ fontSize: "clamp(11px, min(0.9vw, 1.3vh), 13px)" }}
-          >
-            Thanks for subscribing!
-          </p>
-        )}
-      </div>
-
-      {/* Subscribe button — same style as navbar Get Investment button */}
-      <div
-        style={{
-          gridRow: "2 / span 1",
-          gridColumn: "2 / span 1",
-          justifySelf: "end",
-          alignSelf: "center",
-        }}
-      >
-        <CursorFillButton
-          type="submit"
-          disabled={submitting}
-          label={buttonContent}
-          variant="desktop"
-        />
-      </div>
-    </form>
-  );
-}
 
 export default function Footer() {
   return (
@@ -490,8 +500,11 @@ export default function Footer() {
           {/* Right column: Nav at the top, Newsletter form at the bottom */}
           <div className="flex flex-col items-end justify-between" style={{ gap: "clamp(24px, min(3vw, 4.4vh), 48px)" }}>
             <div
-              className="flex"
-              style={{ gap: "clamp(20px, min(4.17vw, 6.11vh), 60px)" }}
+              className="flex flex-row justify-between"
+              style={{ 
+                // MATCHES THE NEWSLETTER FORM EXACTLY
+                width: "clamp(360px, min(50.63vw, 74.18vh), 729px)", 
+              }}
             >
               {navLinks.map((section, idx) => (
                 <div
@@ -691,13 +704,13 @@ export default function Footer() {
             >
               Privacy Policy
             </Link>
-            <Link
+            {/* <Link
               href="/grievance-redressal"
               className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] underline decoration-solid transition-transform duration-300 hover:scale-105 hover:opacity-70"
               style={LABEL_STYLE}
             >
               Grievance Redressal
-            </Link>
+            </Link> */}
           </div>
         </div>
       </div>

@@ -88,11 +88,11 @@ function SidebarFilterSection({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="w-full border-b border-[#000]/10 pb-5 pt-3">
+    <div className="w-full border-b border-[#000]/10 pb-5 pt-3 max-lg:!relative max-lg:!w-auto max-lg:!flex-1 max-lg:!border-b-0 max-lg:!pb-0 max-lg:!pt-0">
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="flex w-full cursor-pointer items-center justify-between border-none bg-transparent py-1 text-left"
+        className="flex w-full cursor-pointer items-center justify-between border-none bg-transparent py-1 text-left max-lg:!gap-1.5 max-lg:!rounded-full max-lg:!border max-lg:!border-solid max-lg:!border-[#000]/15 max-lg:!bg-white max-lg:!px-3 max-lg:!py-2"
       >
         <span className={`text-[#000] ${BODY_BOLD_CLASS}`} style={HERO_BODY_STYLE}>
           {label}
@@ -121,7 +121,7 @@ function SidebarFilterSection({
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="overflow-hidden pt-3"
+            className="overflow-hidden pt-3 max-lg:!absolute max-lg:!left-0 max-lg:!top-[calc(100%+8px)] max-lg:!z-30 max-lg:!min-w-[160px] max-lg:!rounded-2xl max-lg:!border max-lg:!border-[#000]/10 max-lg:!bg-white max-lg:!p-3 max-lg:!shadow-lg"
           >
             <div className="flex flex-col gap-3 pl-1">
               {options.length === 0 ? (
@@ -494,7 +494,7 @@ export default function PortfolioGrid() {
             swallow wheel events here and scroll the page instead of this list. */}
         <div
           data-lenis-prevent
-          className="w-full lg:w-[280px] shrink-0 flex flex-col items-start lg:sticky lg:top-[calc(var(--nav-height,80px)+20px)] lg:max-h-[calc(100vh-100px)] lg:overflow-y-auto [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-transparent [&:hover::-webkit-scrollbar-thumb]:bg-black/25 [scrollbar-width:thin] [scrollbar-color:transparent_transparent] [&:hover]:[scrollbar-color:rgba(0,0,0,0.25)_transparent]"
+          className="w-full lg:w-[280px] shrink-0 flex flex-col items-start max-lg:!gap-4 lg:sticky lg:top-[calc(var(--nav-height,80px)+20px)] lg:max-h-[calc(100vh-100px)] lg:overflow-y-auto [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-transparent [&:hover::-webkit-scrollbar-thumb]:bg-black/25 [scrollbar-width:thin] [scrollbar-color:transparent_transparent] [&:hover]:[scrollbar-color:rgba(0,0,0,0.25)_transparent]"
           style={{ paddingRight: "clamp(12px, 1.5vw, 20px)" }}
         >
           <div className="flex w-full items-center justify-between pb-4 border-b border-[#000]/10">
@@ -510,7 +510,7 @@ export default function PortfolioGrid() {
             </button>
           </div>
 
-          <div className="w-full flex flex-col">
+          <div className="w-full flex flex-col max-lg:!flex-row max-lg:!gap-2">
             {FILTER_CONFIG.map(({ key, label }, idx) => (
               <SidebarFilterSection
                 key={key}
@@ -532,7 +532,7 @@ export default function PortfolioGrid() {
           
           {/* SEARCH BAR */}
           {/* CHANGED: Removed max-w and justify-end. Added pl-[6px] to nudge it slightly away from the line */}
-          <div className="w-full flex mb-[clamp(24px,3vw,40px)] sticky top-[calc(var(--nav-height,80px)+20px)] z-20 pl-[6px]">
+          <div className="w-full flex mb-[clamp(24px,3vw,40px)] max-lg:!mt-4 sticky top-[calc(var(--nav-height,80px)+20px)] z-20 pl-[6px]">
             
             <div className="relative flex items-center w-full bg-white rounded-full p-1.5 pl-6 shadow-md border border-[#000]/5">
               <svg

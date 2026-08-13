@@ -277,8 +277,10 @@ function ClosedRow({ row }: { row: HowWeShowUpRow }) {
       }}
     >
       {/* Same text as the opened card's vertical heading, so same level. */}
+      {/* font-normal, not medium. Desktop only — MobileClosedRow renders its
+          own title and keeps 500. */}
       <h3
-        className={`font-medium m-0 whitespace-nowrap text-black ${SUBHEADING_CLASS}`}
+        className={`m-0 font-normal whitespace-nowrap text-black ${SUBHEADING_CLASS}`}
         style={SUBHEADING_STYLE}
       >
         {row.title}
@@ -349,7 +351,7 @@ function OpenedRow({
             {/* The level-4 reference. Every other subheading on the site is
                 sized from this one, so it must stay on the token. */}
             <span
-              className={`font-medium whitespace-nowrap text-center text-black ${SUBHEADING_CLASS}`}
+              className={`font-normal whitespace-nowrap text-center text-black ${SUBHEADING_CLASS}`}
               style={{
                 ...SUBHEADING_STYLE,
                 writingMode: "vertical-rl",

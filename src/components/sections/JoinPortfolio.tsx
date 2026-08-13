@@ -253,7 +253,8 @@ export default function JoinPortfolioCTA() {
             marginBottom: "clamp(32px, 4vw, 48px)",
           }}
         >
-          Want To Join Our Portfolio?
+          Want To Join <br className="md:hidden" />
+          Our Portfolio?
         </h2>
 
         {/* ── BUTTON ── */}

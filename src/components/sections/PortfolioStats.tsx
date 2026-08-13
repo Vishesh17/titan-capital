@@ -114,7 +114,7 @@ export default function PortfolioStats() {
       }}
     >
       <motion.div
-        className="flex w-full flex-row items-start justify-center"
+        className="flex w-full flex-row items-start justify-center max-md:!grid max-md:!grid-cols-2 max-md:!gap-y-[clamp(28px,7vw,44px)]"
         style={{ gap: "clamp(10px, min(5.26vw, 7.12vh), 50px)" }}
         initial="hidden"
         whileInView="visible"
