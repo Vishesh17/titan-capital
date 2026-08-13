@@ -187,7 +187,7 @@ export default async function FounderPage({
                   >
                     <div
                       className="absolute"
-                      style={{ bottom: "0", left: "0", width: "75%", height: "85%" }}
+                      style={{ bottom: "0", left: "0", width: "75%", height: "85%", transform:founder.name.toLowerCase().includes('rohit') ? 'scale(1.2)' : 'none', transformOrigin: 'bottom left' }}
                     >
                       <Image
                         src={cdnImageSrc(photo, 1000)}

@@ -718,8 +718,8 @@ export default async function PortfolioCompanyPage({
         style={{
           // Mobile navbar is ~65px, desktop ~80px. Top padding must clear
           // the navbar on every viewport without leaving dead space on phones.
-          paddingTop: "clamp(78px, min(8.33vw, 12.22vh), 140px)",
-          paddingBottom: "clamp(20px, min(3.5vw, 5.1vh), 56px)",
+          paddingTop: "clamp(78px, min(8.33vw, 12.22dvh), 140px)",
+          paddingBottom: "clamp(20px, min(3.5vw, 5.1dvh), 56px)",
           paddingLeft: "var(--section-px-wide, 5%)",
           paddingRight: "var(--section-px-wide, 5%)",
         }}
