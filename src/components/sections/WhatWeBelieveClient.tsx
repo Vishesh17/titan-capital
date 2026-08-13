@@ -395,7 +395,7 @@ function MobileCardsContainer({
             scale: mHeadingScale,
             transformOrigin: "center top",
             // FIXED: Increased marginTop to shift the heading down safely on mobile
-            marginTop: "clamp(70px, 10dvh, 90px)",
+            marginTop: "clamp(90px, 13dvh, 115px)",
             textShadow: "0px 4px 16px rgba(0,0,0,0.05)",
             willChange: "transform",
           }}
