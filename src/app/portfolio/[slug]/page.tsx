@@ -776,7 +776,7 @@ export default async function PortfolioCompanyPage({
                  Mobile minimum drops to 140px so the banner doesn't
                  dominate small screens. ── */}
           <div
-            className="mx-auto"
+            className="mx-auto max-md:!w-[280px] max-md:!mt-[28px]"
             style={{
               width: "clamp(140px, min(25.69vw, 37.68vh), 370px)",
               aspectRatio: "153 / 31",
