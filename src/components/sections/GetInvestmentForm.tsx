@@ -346,7 +346,7 @@ function PhoneInput({
           }}
           onFocus={() => setPhoneFocused(true)}
           onBlur={() => setPhoneFocused(false)}
-          placeholder={`${"X".repeat(country.min)}`}
+          placeholder=""
           className={`min-w-0 flex-1 rounded-r-[10px] border-2 border-transparent bg-[#F2F7FF] font-['Poppins',_sans-serif] text-[#1D2939] outline-none placeholder:text-[#98A2B3] focus:border-[#001A4D]/30 focus:bg-[#EEF3FF] ${ringClass}`}
           style={{
             padding: "clamp(14px, min(1.25vw, 1.85vh), 18px) clamp(16px, min(1.4vw, 2vh), 22px)",
