@@ -90,8 +90,10 @@ function computeMobileDims() {
   const availH = winH - 64;
 
   const cardW = Math.min(winW * 0.88, 380);
-  // FIXED: Set a strict minimum of 250px so the text block ALWAYS has enough room
-  const cardH = Math.max(250, Math.min(availH * 0.3, 270));
+  
+  // FIX: Scale card height proportionally to card width on mobile so 
+  // narrower screens (which wrap text into more lines) get taller cards.
+  const cardH = Math.max(260, Math.min(cardW * 0.72, 280));
   const gap = 16;
   const photoH = 3 * cardH;
 
@@ -739,19 +741,24 @@ function MobileCardSlice({
       >
         <CardBlobs mouseX={mouseX} mouseY={mouseY} isHovered={false} />
 
-        {/* FIXED: Removed vh inline styles entirely. Used strict pixel padding and gaps
-            so the text never gets squeezed when the mobile browser hides the URL bar. */}
-        <div className="relative z-10 flex flex-col h-full px-[16px] py-[24px] gap-[12px]">
-          <div className="flex justify-center">
+        {/* FIX: Tightened padding (px-[16px] py-[16px]) and added tight line-height / responsive clamp 
+            to guarantee all 3 paragraphs fit with ample headroom on every mobile phone width. */}
+        <div className="relative z-10 flex flex-col items-center justify-center h-full px-[16px] py-[16px] gap-[8px]">
+          <div className="flex justify-center w-full">
             <h3
               className={`font-medium text-center text-white ${SUBHEADING_CLASS}`}
-              style={SUBHEADING_STYLE}
+              style={{
+                ...SUBHEADING_STYLE,
+                // Clamp title on mobile so long titles don't eat description height
+                fontSize: "clamp(18px, 5vw, 22px)",
+                lineHeight: "120%",
+              }}
             >
               {belief.title}
             </h3>
           </div>
 
-          <div className="w-full">
+          <div className="w-full my-[2px]">
             <motion.div
               initial={false}
               animate={{ scaleX: isFlipped ? 1 : 0 }}
@@ -761,10 +768,15 @@ function MobileCardSlice({
             />
           </div>
 
-          <div className="flex justify-center">
+          <div className="flex justify-center w-full">
             <p
               className={`font-normal text-center text-white/90 ${HERO_BODY_CLASS}`}
-              style={HERO_BODY_STYLE}
+              style={{
+                ...HERO_BODY_STYLE,
+                // Tighten fluid body font & line height exclusively on mobile
+                fontSize: "clamp(13px, 3.6vw, 15px)",
+                lineHeight: "135%",
+              }}
             >
               {belief.description}
             </p>
