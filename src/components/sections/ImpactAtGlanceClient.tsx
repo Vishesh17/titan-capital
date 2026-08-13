@@ -491,7 +491,7 @@ export function StoryCard({ story, sizerTags = [] }: { story: FounderStory; size
               beat the level-6 size on mobile. Levels 6 and 7 ship size only,
               so family and leading are stated here. */}
           <p
-            className="m-0 font-['Poppins',_sans-serif] font-normal text-white"
+            className="m-0 font-['Poppins',_sans-serif] font-normal text-white max-md:!max-w-none"
             style={{
               ...LABEL_STYLE,
               lineHeight: 1.6,

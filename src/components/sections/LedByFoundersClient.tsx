@@ -69,7 +69,7 @@ const FALLBACK_FOUNDERS: FounderProfile[] = [
     role: "Co-Founder, Titan Capital",
     linkedin: "https://www.linkedin.com/in/kunalbahl/",
     image: "/images/kunal-bahl.jpg",
-    bio: "Co-founder of Snapdeal, one of India's most iconic e-commerce companies. Kunal brings rare operator insight to every investment, having navigated hyper-growth, deep turbulence, and an enduring rebuild. That experience shapes every conversation he has with founders today. He doesn't advise from theory. He advises from scars.",
+    bio: "Kunal has been backing founders since 2011, across over 300 companies usually at the point where there is more conviction than evidence. He is drawn to founders building in categories the market hasn't noticed yet, and to businesses whose economics work before the story does. Fifteen years of that has made him unusually quick to spot which is which.",
     imagePosition: "left",
   },
   {
@@ -78,7 +78,7 @@ const FALLBACK_FOUNDERS: FounderProfile[] = [
     role: "Co-Founder, Titan Capital",
     linkedin: "https://www.linkedin.com/in/rohitbansal/",
     image: "/images/rohit-bansal.jpg",
-    bio: "Co-founder of Snapdeal and a deeply technical operator. Rohit brings product depth and business architecture thinking to every portfolio company he touches. His pattern recognition across consumer internet, fintech, and SaaS comes from building, not just investing.",
+    bio: "Rohit has been backing investing since 2011, across more than 300 companies. He is an operator as much as an investor, and has already made most of the decisions founders bring him; the first ten hires, the pricing that isn't working, the quarter that doesn't go to plan. He stays closest when the building is hardest.",
     imagePosition: "right",
   },
 ];
