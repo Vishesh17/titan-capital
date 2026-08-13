@@ -646,7 +646,6 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
         <motion.div
           style={{ opacity: headingOpacity }}
-          {/* Changed 16dvh to 12dvh to start the content slightly higher */}
           className="absolute inset-0 z-20 flex items-center justify-center px-[var(--section-px-wide)] max-md:!px-[24px] max-md:!items-start max-md:!pt-[clamp(85px,12dvh,120px)]"
         >
           <div className="relative flex flex-col items-center md:-translate-y-[8vh]">
@@ -730,7 +729,6 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 <CursorFillButton href="/getinvestment" label="Get Investment" />
               </div>
               <motion.p
-                {/* Reduced margin and increased width to 85vw to limit vertical wrapping */}
                 className={`font-normal hidden max-md:!block mt-[clamp(24px,4dvh,40px)] w-[85vw] text-center text-white/90 ${HERO_BODY_CLASS}`}
                 style={HERO_BODY_STYLE}
                 initial={false}
