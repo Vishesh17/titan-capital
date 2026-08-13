@@ -33,7 +33,7 @@ export interface BackedEarlyData {
   companies?: BackedEarlyCompany[];
 }
 
-const FALLBACK_HEADING_FIRST = "Backed Early";
+const FALLBACK_HEADING_FIRST = "Backed Early,";
 const FALLBACK_HEADING_SECOND = "Built To Last";
 
 /*

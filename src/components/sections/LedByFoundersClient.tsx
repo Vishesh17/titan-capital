@@ -161,10 +161,8 @@ function SocialLink({
         }}
       >
         {/* ── PORTRAIT ── */}
-        <Link
-          href={profileUrl}
-          aria-label={`Read more about ${founder.name}`}
-          className="group relative block shrink-0 overflow-hidden bg-gray-200"
+        <div
+          className="relative shrink-0 overflow-hidden bg-gray-200"
           style={{
             width: PHOTO_WIDTH,
             height: PHOTO_HEIGHT,
@@ -177,26 +175,10 @@ function SocialLink({
               alt={founder.name}
               fill
               sizes="(max-width: 1024px) 90vw, 32vw"
-              className="object-cover object-center scale-105 transition-transform duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.13]"
+              className="object-cover object-center"
             />
           )}
-  
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-[700ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:opacity-100"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(14,14,14,0.58) 0%, rgba(14,14,14,0.16) 34%, rgba(14,14,14,0) 58%, rgba(14,14,14,0.20) 100%)",
-            }}
-          />
-  
-          <div
-            className="pointer-events-none absolute z-10 translate-x-[-6px] translate-y-[6px] opacity-0 transition-all duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
-            style={{ top: "min(1.85vw, 2.86vh)", right: "min(1.85vw, 2.86vh)" }}
-          >
-            <StoryArrow color="white" />
-          </div>
-        </Link>
+        </div>
   
         {/* ── VERTICAL LINE ── */}
         <motion.div
