@@ -376,7 +376,7 @@ function FlipCard({ item }: { item: TestimonialItem }) {
 
   const logoContent = item.companyLogo ? (
     <div
-      className="relative"
+      className="relative max-md:!w-[140px] max-md:!h-[60px]"
       style={{
         width: "min(19.5vw, 26.64vh)", height: "min(8.41vw, 13.48vh)", filter: "grayscale(1)",
       }}
