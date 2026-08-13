@@ -210,7 +210,7 @@ export default function BackedBeforeClient({
 
   return (
     <section
-      className="flex flex-col items-center gap-[15px] md:gap-[22px] self-stretch overflow-hidden w-full"
+      className="flex flex-col items-center gap-[15px] md:gap-[22px] self-stretch overflow-hidden w-full max-md:!-mt-[60px]"
       style={{
         paddingTop: "clamp(10px, min(2.0vw, 3.09vh), 25px)",
         paddingBottom: "clamp(10px, min(2.00vw, 3.09vh), 25px)",

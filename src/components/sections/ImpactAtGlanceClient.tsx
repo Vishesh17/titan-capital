@@ -438,7 +438,17 @@ export function StoryCard({ story, sizerTags = [] }: { story: FounderStory; size
            edge. The zoom now only happens on hover. */
         className="object-cover object-top transition-transform duration-700 scale-100 group-hover:scale-[1.05]"
       />
-      <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(21, 21, 21, 0.00) 0%, rgba(21, 21, 21, 0.82) 82%)" }} aria-hidden />
+      <motion.div
+        className="absolute inset-0"
+        aria-hidden
+        initial={false}
+        animate={{
+          background: hovered
+            ? "linear-gradient(180deg, rgba(21, 21, 21, 0.00) 0%, rgba(21, 21, 21, 0.82) 82%)"
+            : "linear-gradient(180deg, rgba(21, 21, 21, 0.00) 0%, rgba(21, 21, 21, 0.45) 82%)",
+        }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      />
 
       <RotatingTag
         tags={story.tags?.length ? story.tags : ["Portfolio"]}
