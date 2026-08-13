@@ -526,14 +526,14 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   }, [headingReady, heroInView, headingTick]);
 
   return (
-    <section ref={sectionRef} className="relative h-screen w-full overflow-hidden max-md:!h-[100svh] max-md:overflow-x-hidden max-md:w-[100vw] max-md:ml-[calc(50%-50vw)] max-md:bg-[#00112E]">
+    <section ref={sectionRef} className="relative h-screen w-full overflow-hidden max-md:!h-[100dvh] max-md:overflow-x-hidden max-md:w-[100vw] max-md:ml-[calc(50%-50vw)] max-md:bg-[#00112E]">
       <div
-        className="relative flex h-screen w-full items-center justify-center overflow-hidden max-md:!h-[100svh]"
+        className="relative flex h-screen w-full items-center justify-center overflow-hidden max-md:!h-[100dvh]"
         style={{ background: "transparent" }}
       >
         <HeroGlow />
 
-        <div className="pointer-events-none absolute left-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 max-md:!left-1/2 max-md:!top-[6svh] max-md:!-translate-x-1/2 max-md:!translate-y-0">
+        <div className="pointer-events-none absolute left-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 max-md:!left-1/2 max-md:!top-[6dvh] max-md:!-translate-x-1/2 max-md:!translate-y-0">
           <motion.span
             style={{ opacity: labelOpacity, y: labelY }}
             className="block font-['Poppins',_sans-serif] text-[min(1.4vw,2.15vh)] font-medium tracking-[0.2em] text-white/70 max-md:!text-[18px]"
@@ -541,7 +541,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
             FOUNDER-FIRST
           </motion.span>
         </div>
-        <div className="pointer-events-none absolute right-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 max-md:!right-auto max-md:!left-1/2 max-md:!top-auto max-md:!bottom-[7svh] max-md:!-translate-x-1/2 max-md:!translate-y-0">
+        <div className="pointer-events-none absolute right-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 max-md:!right-auto max-md:!left-1/2 max-md:!top-auto max-md:!bottom-[7dvh] max-md:!-translate-x-1/2 max-md:!translate-y-0">
           <motion.span
             style={{ opacity: labelOpacity, y: labelY }}
             className="block font-['Poppins',_sans-serif] text-[min(1.4vw,2.15vh)] font-medium tracking-[0.2em] text-white/70 max-md:!text-[18px]"
@@ -646,7 +646,8 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
         <motion.div
           style={{ opacity: headingOpacity }}
-          className="absolute inset-0 z-20 flex items-center justify-center px-[var(--section-px-wide)] max-md:!px-[24px] max-md:!items-start max-md:!pt-[clamp(100px,16dvh,150px)]"
+          {/* Changed 16dvh to 12dvh to start the content slightly higher */}
+          className="absolute inset-0 z-20 flex items-center justify-center px-[var(--section-px-wide)] max-md:!px-[24px] max-md:!items-start max-md:!pt-[clamp(85px,12dvh,120px)]"
         >
           <div className="relative flex flex-col items-center md:-translate-y-[8vh]">
             
@@ -704,7 +705,8 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
             {/* Same split as the description above: this wrapper owns the
                 positioning (including `-translate-x-1/2`), the motion child
                 owns the transform. */}
-            <div className="absolute left-1/2 top-full -translate-x-1/2 mt-[min(4.63vw,7.16vh)] max-md:!static max-md:!translate-x-0 max-md:!mt-[clamp(32px,6dvh,52px)] max-md:!w-full">
+           {/* Reduced the top margin gap for mobile slightly */}
+           <div className="absolute left-1/2 top-full -translate-x-1/2 mt-[min(4.63vw,7.16vh)] max-md:!static max-md:!translate-x-0 max-md:!mt-[clamp(24px,4dvh,40px)] max-md:!w-full">
             <motion.div
               className="flex flex-col items-center"
               initial={false}
@@ -728,7 +730,8 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 <CursorFillButton href="/getinvestment" label="Get Investment" />
               </div>
               <motion.p
-                className={`font-normal hidden max-md:!block mt-[clamp(32px,6dvh,52px)] w-[75vw] text-center text-white/90 ${HERO_BODY_CLASS}`}
+                {/* Reduced margin and increased width to 85vw to limit vertical wrapping */}
+                className={`font-normal hidden max-md:!block mt-[clamp(24px,4dvh,40px)] w-[85vw] text-center text-white/90 ${HERO_BODY_CLASS}`}
                 style={HERO_BODY_STYLE}
                 initial={false}
                 animate={{ opacity: subtitleReady ? 1 : 0 }}
