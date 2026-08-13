@@ -172,9 +172,9 @@ export default function WhatWeBelieveClient({
   return (
     <section
       ref={sectionRef}
-      // REMOVED: max-md:-mt-[60px] and max-md:pt-[60px] to fix the mobile overlapping glitch
       className="relative w-full bg-[#FBF7F0] max-md:!h-[180vh]"
-      style={{ height: "250vh" }}
+      // ADDED: zIndex: 10 guarantees it slides smoothly over the previous section
+      style={{ height: "250vh", zIndex: 10 }}
     >
       <GrainOverlay opacity={0.22} zIndex={1} />
       <div className="sticky z-10 h-screen w-full overflow-hidden flex items-center justify-center" style={{ top: "64px", height: "calc(100vh - 64px)" }}>
@@ -375,7 +375,7 @@ function MobileCardsContainer({
         );
       })}
 
-      <motion.div
+<motion.div
         style={{
           opacity: mHeadingOpacity,
           position: "absolute",
@@ -393,7 +393,8 @@ function MobileCardsContainer({
           style={{
             scale: mHeadingScale,
             transformOrigin: "center top",
-            marginTop: "clamp(24px, 5dvh, 40px)",
+            // FIXED: Increased marginTop to shift the heading down safely on mobile
+            marginTop: "clamp(70px, 10dvh, 90px)",
             textShadow: "0px 4px 16px rgba(0,0,0,0.05)",
             willChange: "transform",
           }}

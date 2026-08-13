@@ -716,7 +716,7 @@ function CursorFillButtonTestimonial({ href, label }: { href: string; label: str
       href={href}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`relative flex shrink-0 items-center justify-center whitespace-nowrap font-['Poppins',_sans-serif] font-medium leading-[107%] transition-colors duration-300 ${CTA_BUTTON_MOBILE_CLASS}`}
+      className={`relative flex shrink-0 items-center justify-center whitespace-nowrap font-['Poppins',_sans-serif] font-normal transition-colors duration-300 ${CTA_BUTTON_MOBILE_CLASS}`}
       style={{
         ...CTA_BUTTON_STYLE,
         background: hovered ? "#FFF" : "#001A4D",

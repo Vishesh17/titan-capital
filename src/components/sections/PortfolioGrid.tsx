@@ -592,7 +592,7 @@ export default function PortfolioGrid() {
               {/* DESKTOP 3-COLUMN GRID */}
               <div className="hidden md:grid grid-cols-3 relative">
                 
-                {/* ── MAIN SEPARATOR LINE (Starts at grid level, perfectly aligned between padding) ── */}
+                {/* ── MAIN SEPARATOR LINE (Starts at grid level, always shows for col 1) ── */}
                 <motion.div
                   className="hidden lg:block absolute left-0 top-0 bottom-0 w-[1px] bg-[#000]/15"
                   style={{ transformOrigin: "top" }}
@@ -602,25 +602,29 @@ export default function PortfolioGrid() {
                   transition={{ duration: 1.5, ease: "easeInOut" }}
                 />
 
-                {/* Vertical Grid Divider 1 */}
-                <motion.div
-                  className="absolute left-[33.333%] top-0 bottom-0 w-[1px] bg-[#000]/15"
-                  style={{ transformOrigin: "top" }}
-                  initial={{ scaleY: 0 }}
-                  whileInView={{ scaleY: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1.5, ease: "easeInOut" }}
-                />
+                {/* Vertical Grid Divider 1: Only show if there is an item in column 2 */}
+                {filteredCompanies.length > 1 && (
+                  <motion.div
+                    className="absolute left-[33.333%] top-0 bottom-0 w-[1px] bg-[#000]/15"
+                    style={{ transformOrigin: "top" }}
+                    initial={{ scaleY: 0 }}
+                    whileInView={{ scaleY: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.5, ease: "easeInOut" }}
+                  />
+                )}
 
-                {/* Vertical Grid Divider 2 */}
-                <motion.div
-                  className="absolute left-[66.666%] top-0 bottom-0 w-[1px] bg-[#000]/15"
-                  style={{ transformOrigin: "top" }}
-                  initial={{ scaleY: 0 }}
-                  whileInView={{ scaleY: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1.5, ease: "easeInOut" }}
-                />
+                {/* Vertical Grid Divider 2: Only show if there is an item in column 3 */}
+                {filteredCompanies.length > 2 && (
+                  <motion.div
+                    className="absolute left-[66.666%] top-0 bottom-0 w-[1px] bg-[#000]/15"
+                    style={{ transformOrigin: "top" }}
+                    initial={{ scaleY: 0 }}
+                    whileInView={{ scaleY: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.5, ease: "easeInOut" }}
+                  />
+                )}
 
                 {/* Grid Cells with Independent Animating Horizontal Dividers */}
                 {filteredCompanies.map((company, i) => {
@@ -653,7 +657,6 @@ export default function PortfolioGrid() {
                   );
                 })}
               </div>
-
               {/* MOBILE 2-COLUMN GRID */}
               <div className="grid grid-cols-2 gap-3 md:hidden">
                 {filteredCompanies.map((company, i) => (
