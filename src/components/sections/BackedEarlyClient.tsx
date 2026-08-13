@@ -255,7 +255,7 @@ export function AnimatedGrid() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
-    const GRID_SIZE = Math.round(canvas.getBoundingClientRect().width / 8);
+    const GRID_SIZE = Math.round(canvas.getBoundingClientRect().width / (window.innerWidth < 768 ? 4 : 8));
     const BASE_ALPHA = 0.06;
     const CURSOR_RADIUS = 180;
     const WAVE_AMP = 6;

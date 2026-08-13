@@ -60,9 +60,12 @@ export default function AnimatedGrid() {
     // rather than the column count staying at 8. The floor of 1 matters: a
     // canvas measured at 0 width would make this 0, and `x += 0` never
     // terminates the draw loop.
+    // Mobile shows 4 lines, desktop shows 8.
+    const isMobile = window.innerWidth < 768;
+    const GRID_DIVISOR = isMobile ? 4 : 8;
     const GRID_SIZE = Math.max(
       1,
-      Math.round(canvas.getBoundingClientRect().width / 8)
+      Math.round(canvas.getBoundingClientRect().width / GRID_DIVISOR)
     );
     const BASE_ALPHA = 0.06;
     const CURSOR_RADIUS = 180;
