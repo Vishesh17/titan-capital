@@ -193,6 +193,7 @@ const FALLBACK_SECTIONS: NavbarSection[] = [
     id: "perspective",
     title: "PERSPECTIVE ",
     subItems: [
+      { label: "Titan Ecosystem", url: "#disabled" },
       { label: "Blogs", url: "#disabled" },
     ],
   },
@@ -229,14 +230,25 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
     "/indicorns",
     "/foundersstory",
     "/blogs",
+    "/beyondTheCheque",
   ];
-  
+
+  const DISABLED_LABELS = [
+    "Titan Seed Fund",
+    "Titan Winners Fund",
+    "Our Story",
+    "Indicorns",
+    "Founders Story",
+    "Blogs",
+    "Titan Ecosystem",
+  ];
+
   const overrideDisabledUrls = (sections: NavbarSection[]): NavbarSection[] => {
     return sections.map(section => ({
       ...section,
       subItems: section.subItems?.map(sub => ({
         ...sub,
-        url: DISABLED_URLS.includes(sub.url) ? "#disabled" : sub.url,
+        url: DISABLED_URLS.includes(sub.url) || DISABLED_LABELS.includes(sub.label) ? "#disabled" : sub.url,
       })),
     }));
   };

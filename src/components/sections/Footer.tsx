@@ -22,6 +22,15 @@ import { motion } from "framer-motion"; // Keep for buttonContent spinner animat
   Desktop (lg+): untouched — logo+address+socials left, nav right.
 */
 
+/* Links that are disabled (not yet live) — mirrors the navbar's DISABLED_URLS */
+const DISABLED_FOOTER_LINKS = new Set([
+  "Our Story",
+  "Founders' Stories",
+  "Titan Ecosystem",
+  "Indicorns",
+  "Blogs & News",
+]);
+
 /* Map specific footer link labels to custom routes */
 const footerHrefs: Record<string, string> = {
   "Our Story": "/ourstory",
@@ -522,13 +531,22 @@ export default function Footer() {
                     >
                       {section.links.map((link, linkIdx) => (
                         <li key={linkIdx}>
-                          <Link
-                            href={footerHrefs[link] ?? "#"}
-                            className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] transition-all duration-300 hover:scale-105 hover:text-[#001A4D]"
-                            style={LABEL_STYLE}
-                          >
-                            {link}
-                          </Link>
+                          {DISABLED_FOOTER_LINKS.has(link) ? (
+                            <span
+                              className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] opacity-40 cursor-not-allowed select-none"
+                              style={LABEL_STYLE}
+                            >
+                              {link}
+                            </span>
+                          ) : (
+                            <Link
+                              href={footerHrefs[link] ?? "#"}
+                              className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] transition-all duration-300 hover:scale-105 hover:text-[#001A4D]"
+                              style={LABEL_STYLE}
+                            >
+                              {link}
+                            </Link>
+                          )}
                         </li>
                       ))}
                     </ul>
@@ -592,13 +610,22 @@ export default function Footer() {
                   >
                     {section.links.map((link, linkIdx) => (
                       <li key={linkIdx}>
-                        <Link
-                          href={footerHrefs[link] ?? "#"}
-                          className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] transition-all duration-300 hover:text-[#001A4D]"
-                          style={LABEL_STYLE}
-                        >
-                          {link}
-                        </Link>
+                        {DISABLED_FOOTER_LINKS.has(link) ? (
+                          <span
+                            className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] opacity-40 cursor-not-allowed select-none"
+                            style={LABEL_STYLE}
+                          >
+                            {link}
+                          </span>
+                        ) : (
+                          <Link
+                            href={footerHrefs[link] ?? "#"}
+                            className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] transition-all duration-300 hover:text-[#001A4D]"
+                            style={LABEL_STYLE}
+                          >
+                            {link}
+                          </Link>
+                        )}
                       </li>
                     ))}
                   </ul>

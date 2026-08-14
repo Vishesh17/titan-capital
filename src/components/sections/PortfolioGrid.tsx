@@ -428,9 +428,10 @@ export default function PortfolioGrid() {
     });
   }, []);
 
-  const STAGE_ORDER = ["Pre-Seed", "Seed", "Pre-Series A", "Series A"];
+  const STAGE_ORDER = ["Pre-Seed", "Seed", "Pre-Series A", "Series A", "Series B"];
   const filterOptions = useMemo((): Record<FilterKey, string[]> => {
-    const stages = data?.filters.investmentStage ?? [];
+    const normalize = (s: string) => s.replace(/^Pre\s+Seed$/i, "Pre-Seed");
+    const stages = [...new Set([...(data?.filters.investmentStage ?? []).map(normalize), "Series B"])];
     const sorted = [...stages].sort((a, b) => {
       const ai = STAGE_ORDER.indexOf(a);
       const bi = STAGE_ORDER.indexOf(b);
@@ -454,7 +455,7 @@ export default function PortfolioGrid() {
       }
       if (
         activeFilters.investmentStage.size > 0 &&
-        !activeFilters.investmentStage.has(c.investmentStage)
+        !activeFilters.investmentStage.has(c.investmentStage.replace(/^Pre\s+Seed$/i, "Pre-Seed"))
       )
         return false;
       if (

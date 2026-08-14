@@ -142,7 +142,7 @@ const FALLBACK_ROWS: HowWeShowUpRow[] = [
   },
   {
     title: "Founder's Playbook",
-    shortHeading: "Operational Rigor at Scale",
+    shortHeading: "Operational Rigour at Scale",
     shortDesc:
       "Frameworks drawn from operators who have scaled companies to IPO",
     longHeading: "Institutional-Grade Frameworks, Founder-Speed Execution",
