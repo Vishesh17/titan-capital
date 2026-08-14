@@ -49,7 +49,6 @@ export interface HeroData {
   primaryCtaLabel?: string;
   secondaryCtaLabel?: string;
   founders?: HeroFounder[];
-  /** Full list for the intro slideshow + rotating heading photo. */
   allFounders?: HeroFounder[];
 }
 
@@ -70,13 +69,6 @@ const FALLBACK_FOUNDERS: HeroFounder[] = [
 const FALLBACK_SUBTITLE =
   "We partner with entrepreneurs from day one. We invest conviction, not just capital, and stay by their side through every stage of their journey.";
 
-/* Founder photos for the flicker SLIDESHOW + the rotating HEADING photo, so
-   ALL founders get screen time. This is the ONE place that controls which
-   faces appear there (independent of the curated film-strip `founders`).
-   To add/remove a face: edit HERO_FOUNDER_IMAGE_NUMBERS to match the numbered
-   files that actually exist in /public/images/hero_founders_images. (Only
-   list numbers whose .png file exists — a missing number would 404 / show a
-   stale cached image.) Sanity `allFounders`, once imported, overrides this. */
 const HERO_FOUNDER_IMAGE_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16];
 const FALLBACK_BY_IMAGE = new Map(FALLBACK_FOUNDERS.map((f) => [f.image, f]));
 const ALL_FOUNDERS: HeroFounder[] = HERO_FOUNDER_IMAGE_NUMBERS.map((n) => {
@@ -113,33 +105,11 @@ const IMG_STYLE: React.CSSProperties = {
 };
 
 const SLOT_W = "min(23.1vw, 35.8vh)";
-
-/* Per-slot `sizes` hints. One shared string used to serve three very different
-   boxes, so the browser picked an oversized candidate for the tiny deck cards
-   and wasted bandwidth that the flicker needed. */
 const SLIDESHOW_SIZES = "(max-width: 768px) 20vw, 8vw";
 const HEADING_SIZES = "(max-width: 768px) 50vw, 24vw";
-
-/** Matches the `max-md:` breakpoint the hero's two layouts switch on. */
 const MOBILE_QUERY = "(max-width: 767px)";
-
-/** The last word of the hero headline, on both breakpoints. */
 const FINAL_WORD = "Future";
-
-/**
- * Start delay (seconds) of the final heading word, per breakpoint. The two
- * layouts run different sequences:
- *   desktop — Backing 0 · Founders Building 0.5 · The 1.25 · Future 2.7
- *   mobile  — Backing 0 · Founders 0.3 · Building 0.6 · The 0.9 · Future 1.2
- * These feed the RevealLine `delay` props directly, so the sequence and the
- * timings below can't drift apart.
- */
-const FINAL_WORD_DELAY = { desktop: 2.7, mobile: 1.2 } as const;
-
-/**
- * Entrance for the hero's tail — description and CTAs rise together from below
- * once the headline has landed. Shared so the two stay locked in step.
- */
+const FINAL_WORD_DELAY = { desktop: 2.2, mobile: 1.2 } as const;
 const TAIL_RISE_PX = 48;
 const TAIL_TRANSITION = {
   duration: 1.1,
@@ -148,10 +118,6 @@ const TAIL_TRANSITION = {
 
 function computeDims(w: number, h: number) {
   const isMobile = w < 768;
-  /* Rounded to whole pixels. A fractional card leaves the photo's edge on a
-     half-pixel, and the antialiased seam against the card's own CARD_BG reads
-     as a thin light line along one side. Sub-pixel change only — no visible
-     difference to the card's size on any breakpoint. */
   const cardW = Math.round(isMobile ? w * 0.20 : Math.min(0.072 * w, 0.115 * h));
   const cardH = cardW;
   return {
@@ -235,7 +201,8 @@ function HeroGlow() {
       >
         <motion.div
           className="w-full h-full rounded-full blur-[120px]"
-          style={{ background: "radial-gradient(circle, #5054B5 0%, #054EB6 40%, #022250 80%, transparent 100%)", opacity: 0.6 }}
+          // PERFORMANCE FIX: Added translateZ(0) to force GPU hardware acceleration on heavy blurred nodes
+          style={{ background: "radial-gradient(circle, #5054B5 0%, #054EB6 40%, #022250 80%, transparent 100%)", opacity: 0.6, transform: "translateZ(0)", WebkitTransform: "translateZ(0)" }}
           animate={{ 
             x: ["0%", "35%", "-15%", "25%", "0%"], 
             y: ["0%", "25%", "-10%", "35%", "0%"], 
@@ -261,7 +228,8 @@ function HeroGlow() {
       >
         <motion.div
           className="w-full h-full rounded-full blur-[120px]"
-          style={{ background: "radial-gradient(circle, #AC71C6 0%, #033699 50%, #001A4D 80%, transparent 100%)", opacity: 0.5 }}
+          // PERFORMANCE FIX: Added translateZ(0)
+          style={{ background: "radial-gradient(circle, #AC71C6 0%, #033699 50%, #001A4D 80%, transparent 100%)", opacity: 0.5, transform: "translateZ(0)", WebkitTransform: "translateZ(0)" }}
           animate={{ 
             x: ["0%", "-35%", "15%", "-25%", "0%"], 
             y: ["0%", "-25%", "10%", "-35%", "0%"], 
@@ -304,8 +272,6 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     return FALLBACK_FOUNDERS;
   })();
 
-  // Full founder set for the intro slideshow + rotating heading photo.
-  // Comes from Sanity (`allFounders`); falls back to the local folder list.
   const allFounders: HeroFounder[] =
     data?.allFounders && data.allFounders.length > 0
       ? data.allFounders
@@ -316,40 +282,27 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     return idx !== -1 ? idx : Math.ceil((founders.length - 1) / 2);
   })();
 
-  // Skip the long intro (photo slideshow + card deal/open choreography) when
-  // the homepage is reached via CLIENT-SIDE navigation (back button, footer,
-  // navbar). On a hard/fresh load hasAppMounted() is false → full intro; on a
-  // soft nav it's already true → jump straight to the heading reveal.
-  // Read once at first render (useState initializer runs during render).
   const [skipIntro] = useState(() => hasAppMounted());
-
   const [ready, setReady] = useState(false);
-  // On a soft-nav skip, start progress already at the end so the heading
-  // wrapper is visible immediately (headingOpacity maps progress→1) and the
-  // card choreography is bypassed.
+  
   const progress = useMotionValue(skipIntro ? 1 : 0);
   const [stage, setStage] = useState<"slideshow" | "animate">(
     skipIntro ? "animate" : "slideshow"
   );
 
-  // Slideshow flickers through EVERY founder photo (not just the film-strip set).
   const slideshowFounders = allFounders;
   const [slideIndex, setSlideIndex] = useState(0);
 
   useEffect(() => {
     if (stage !== "slideshow" || !ready) return;
     let count = 0;
-    // One pass through all founders before handing off to the deck animation.
     const totalTicks = slideshowFounders.length;
     let id: ReturnType<typeof setInterval> | undefined;
-    // Hold ~0.85s first so the entrance (card + side labels rising from the
-    // bottom) plays BEFORE the photo flicker begins.
+    
     const startTimer = setTimeout(() => {
       id = setInterval(() => {
         count += 1;
         if (count >= totalTicks) {
-          // Stop after ONE pass — hold on the last founder (no reset to 0,
-          // which looked like a second cycle starting) and hand off.
           if (id) clearInterval(id);
           setTimeout(() => setStage("animate"), 300);
         } else {
@@ -357,6 +310,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
         }
       }, 200);
     }, 1050);
+    
     return () => {
       clearTimeout(startTimer);
       if (id) clearInterval(id);
@@ -365,9 +319,6 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
   useEffect(() => {
     if (stage !== "animate") return;
-    // Soft nav: snap straight to the end so the card choreography is skipped;
-    // setting progress past 0.56 fires the change handler → headingReady →
-    // the heading RevealLine plays on its own (the "final part" only).
     if (skipIntro) {
       progress.set(1);
       return;
@@ -433,23 +384,12 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   }, []);
 
   const headingOpacity = useTransform(progress, [0.50, 0.58], [0, 1]);
-  /* The side labels sit left/right of the deck on desktop, so they can linger
-     until 0.52. On mobile they sit ABOVE and BELOW it — the column collapsing
-     into its vertical line runs straight through FOUNDER-FIRST — so they have
-     to be gone well before that. Both transforms are created unconditionally
-     (hooks cannot be conditional) and the right one is picked. */
   const sideLabelsOpacityDesktop = useTransform(progress, [0.44, 0.52], [1, 0]);
   const sideLabelsOpacityMobile = useTransform(progress, [0.15, 0.28], [1, 0]);
   const sideLabelsOpacity = dims.isMobile
     ? sideLabelsOpacityMobile
     : sideLabelsOpacityDesktop;
 
-  // ── Cappen-style entrance ──
-  // The first slideshow card + the FOUNDER-FIRST / OPERATOR-LED side labels
-  // RISE UP from the bottom (fade + translateY) the first time the hero
-  // appears, just before the photo slideshow begins. `labelEntrance` drives
-  // that reveal (0 → 1); the visible label opacity multiplies it by the
-  // existing scroll-driven fade-out so both behaviours compose cleanly.
   const labelEntrance = useMotionValue(skipIntro ? 1 : 0);
   const labelY = useTransform(labelEntrance, [0, 1], ["75vh", "0vh"]);
   const labelOpacity = useTransform(
@@ -467,34 +407,21 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
     return () => controls.stop();
   }, [ready, skipIntro, labelEntrance]);
 
-  // On a soft-nav skip, reveal the heading immediately (don't wait on the
-  // progress change-listener, which registers in a later effect than the one
-  // that snaps progress to 1 — so the set(1) event would be missed).
   const [headingReady, setHeadingReady] = useState(skipIntro);
   const [uiReady, setUiReady] = useState(skipIntro);
   const [subtitleReady, setSubtitleReady] = useState(skipIntro);
   const [headingTick, setHeadingTick] = useState(0);
 
-
   useEffect(() => {
-    // Only hide the navbar while the full intro plays — on a soft-nav skip
-    // there's no intro to hide behind, so keep the nav visible.
     if (ready && !skipIntro) document.body.classList.add("hero-hide-nav");
   }, [ready, skipIntro]);
 
   useEffect(() => {
     if (!headingReady) return;
-
-    // The navbar comes back as soon as the heading starts — it's chrome, and
-    // holding it until the end of the sequence just looks broken.
     document.body.classList.remove("hero-hide-nav");
-
-    // Soft-nav skip: the intro never played, so there's nothing to wait behind.
     if (skipIntro) return;
 
     const isMobile = window.matchMedia(MOBILE_QUERY).matches;
-
-    // Description and CTAs enter together, only once "Future" has fully landed.
     const t = setTimeout(() => {
       setUiReady(true);
       setSubtitleReady(true);
@@ -516,8 +443,6 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
   useEffect(() => {
     if (!headingReady || !heroInView) return;
-    // Tick 0 holds until the entrance choreography ("Future" lands ~3.6 s) is
-    // done, so the first face isn't swapped out mid-reveal.
     const delay = headingTick === 0 ? 3700 : 1500;
     const timer = setTimeout(() => {
       setHeadingTick((t) => t + 1);
@@ -550,9 +475,6 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
           </motion.span>
         </div>
 
-        {/* Positioning stays on this plain wrapper. Framer writes an inline
-            `transform` for `y`, which would otherwise clobber the Tailwind
-            `-translate-x-1/2` that centres this and knock it off-axis. */}
         <div className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 max-md:!hidden">
           <motion.p
             style={{ maxWidth: "min(60vw, 1000px)", ...HERO_BODY_STYLE }}
@@ -587,29 +509,18 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
               exit={{ opacity: 0, transition: { duration: 0.1 } }}
               transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
             >
-              {/* Every founder is mounted ONCE and stays mounted; the flicker is
-                  a pure opacity swap. Mounting/unmounting per tick used to start
-                  the image download only at the moment it had to be on screen —
-                  at 200 ms/tick a cold image never arrived in time and the card
-                  flashed empty. Keeping them mounted also lets the browser fetch
-                  the whole set during the 1.05 s pre-roll. */}
               <div className="absolute inset-0" style={{ background: CARD_BG }}>
                 {slideshowFounders.map((sf, i) => (
                   <div
                     key={sf.image}
                     className="absolute"
                     style={{
-                      /* 1px of overscan, clipped by the card's overflow-hidden.
-                         At inset-0 the photo's edge lands exactly on the card's
-                         edge; on a 2-3x screen that boundary is antialiased and
-                         the card's own CARD_BG shows through as a hairline down
-                         one side. Bleeding past the edge removes the seam
-                         without moving the framing — the extra pixel is cut
-                         off, so nothing about the visible crop changes. */
                       inset: "-1px",
                       opacity: i === slideIndex ? 1 : 0,
                       transform: `scale(${clampScale(sf.squareScaleFactor)}) translate(${sf.squarePositionX ?? 0}px, ${sf.squarePositionY ?? 0}px)`,
                       transformOrigin: "center center",
+                      // FLICKER FIX: Reduced transition length from 1s to 0.2s so the browser doesn't try to crossfade 5 images simultaneously
+                      transition: "opacity 0.2s ease-in-out",
                       willChange: "opacity",
                     }}
                   >
@@ -628,22 +539,27 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
           )}
         </AnimatePresence>
 
-        {stage === "animate" && (
-          <div className="absolute inset-0 z-10 pointer-events-none max-md:!z-30">
-            {founders.map((founder, i) => (
-              <FounderCard
-                key={founder.name}
-                founder={founder}
-                index={i}
-                total={founders.length}
-                heroIndex={heroIndex}
-                progress={progress}
-                dims={dims}
-              />
-            ))}
-          </div>
-        )}
-
+        {/* FLICKER FIX: Keep mounted in DOM to prevent flash, but keep completely invisible 
+            until the slideshow is finished so it doesn't ruin the entrance animation. */}
+        <div 
+          className="absolute inset-0 z-10 pointer-events-none max-md:!z-30"
+          style={{ 
+            opacity: stage === "animate" ? 1 : 0,
+            visibility: stage === "animate" ? "visible" : "hidden"
+          }}
+        >
+          {founders.map((founder, i) => (
+            <FounderCard
+              key={founder.name}
+              founder={founder}
+              index={i}
+              total={founders.length}
+              heroIndex={heroIndex}
+              progress={progress}
+              dims={dims}
+            />
+          ))}
+        </div>
         <motion.div
           style={{ opacity: headingOpacity }}
           className="absolute inset-0 z-20 flex items-center justify-center px-[var(--section-px-wide)] max-md:!px-[24px] max-md:!items-start max-md:!pt-[clamp(85px,12dvh,120px)]"
@@ -676,11 +592,6 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
               </span>
             </h1>
 
-            {/* Mobile-only twin of the heading above — the words break
-                differently here and the photo slot moves below the text, so it
-                has to be its own element. Size comes from the same level-1
-                token; only the `max-md:` half of it ever applies, since this is
-                `md:hidden`. */}
             <h1
               className={`pointer-events-none m-0 flex md:hidden flex-col items-center text-center text-white ${HERO_HEADING_DARK_CLASS}`}
             >
@@ -701,10 +612,6 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
               </span>
             </h1>
 
-            {/* Same split as the description above: this wrapper owns the
-                positioning (including `-translate-x-1/2`), the motion child
-                owns the transform. */}
-           {/* Reduced the top margin gap for mobile slightly */}
            <div className="absolute left-1/2 top-full -translate-x-1/2 mt-[min(4.63vw,7.16vh)] max-md:!static max-md:!translate-x-0 max-md:!mt-[clamp(24px,4dvh,40px)] max-md:!w-full">
             <motion.div
               className="flex flex-col items-center"
@@ -739,7 +646,6 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
               </motion.p>
             </motion.div>
             </div>
-
           </div>
         </motion.div>
       </div>
@@ -795,18 +701,6 @@ function CursorFillButton({ href, label }: { href: string; label: string }) {
   );
 }
 
-/**
- * Rotating photo inside the heading slot.
- *
- * Every founder is mounted once and never unmounted; only `opacity` changes.
- * The previous version keyed a `motion.div` on `tick` inside `AnimatePresence`
- * with `exit={{ opacity: 1 }}` — a no-op exit target that framer never resolves
- * as "finished", so exiting nodes piled up (13 stacked `<img>`s measured) and
- * each new tick started its image download only at the instant it had to be
- * visible. Both effects showed up as flashes of empty card.
- *
- * The container does the one-time slide-up; the crossfade is composited.
- */
 function HeadingPhoto({
   founders,
   activeIndex,
@@ -817,7 +711,6 @@ function HeadingPhoto({
   founders: HeroFounder[];
   activeIndex: number;
   show: boolean;
-  /** Delay (s) before the slot slides up into place. */
   enterDelay?: number;
   mobile?: boolean;
 }) {
@@ -862,35 +755,21 @@ function HeadingPhoto({
           </div>
         </div>
       ))}
-      {/* Rendered once for the whole stack — re-mounting the SVG turbulence
-          filter on every tick forced a filter re-rasterise mid-crossfade. */}
       <GrainOverlay opacity={0.18} />
     </motion.div>
   );
 }
 
 const CHAR_STAGGER = 0.025;
-/** Per-character flip duration inside RevealLine. */
 const REVEAL_DURATION = 0.7;
 
-/**
- * When the hero's final word has *finished* revealing, in ms after
- * `headingReady` — the moment the description and CTAs are allowed in.
- *
- * RevealLine animates each character on its own timeline, so the word is only
- * done once its LAST character lands:
- *
- *     start + (chars - 1) * CHAR_STAGGER + REVEAL_DURATION
- *
- * Deriving it here rather than hard-coding a number is the whole point: tweak
- * the stagger, the duration, or the word itself and this stays correct.
- */
 function heroTailDelayMs(isMobile: boolean): number {
   const start = isMobile ? FINAL_WORD_DELAY.mobile : FINAL_WORD_DELAY.desktop;
   const finish =
     start + (FINAL_WORD.length - 1) * CHAR_STAGGER + REVEAL_DURATION;
   return Math.round(finish * 1000);
 }
+
 function RevealLine({
   children,
   show,
@@ -1017,7 +896,6 @@ function FounderCard({
         opacity,
         zIndex,
         borderRadius: "2px",
-        filter: founder.isLogo ? "none" : "grayscale(0.9)",
         willChange: "transform, opacity",
       }}
     >
@@ -1033,9 +911,11 @@ function FounderCard({
           alt={founder.name}
           fill
           sizes="(max-width: 768px) 50vw, 25vw"
+          // PERFORMANCE FIX: Moved filter down to the static Image component to stop GPU layer composite thrashing 
           style={{
             objectFit: founder.isLogo ? "contain" : "cover",
             objectPosition: "center center",
+            filter: founder.isLogo ? "none" : "grayscale(0.9)",
           }}
         />
       </div>
