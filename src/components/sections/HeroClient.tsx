@@ -67,7 +67,7 @@ const FALLBACK_FOUNDERS: HeroFounder[] = [
 ];
 
 const FALLBACK_SUBTITLE =
-  "We partner with entrepreneurs from day one. We invest conviction, not just capital, and stay by their side through every stage of their journey.";
+  "We partner with entrepreneurs from day one. We bring conviction, not just capital, and stay by their side through every stage of their journey.";
 
 const HERO_FOUNDER_IMAGE_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16];
 const FALLBACK_BY_IMAGE = new Map(FALLBACK_FOUNDERS.map((f) => [f.image, f]));

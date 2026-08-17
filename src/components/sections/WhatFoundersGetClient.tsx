@@ -129,23 +129,23 @@ const FALLBACK_ROWS: HowWeShowUpRow[] = [
     title: "The Ecosystem",
     shortHeading: "Global Founder Network",
     shortDesc:
-      "Access to a 15-year network; 650+ founders, corporate partners, domain experts",
-    longHeading: "The Network is the Moat",
+      "Access to a 15-year network: 650+ founders, corporate partners and domain experts",
+    longHeading: "Who You Can Reach",
     longDesc:
       "The Titan network represents 15 years of cultivated relationships, trust, and institutional knowledge across different sectors. Being part of the Titan portfolio gives you access to that collective intelligence.",
     valueTitle: "Strategic Value",
     valueBullets: [
       "Targeted Access: Warm introductions to enterprise customers, global corporate partners, and institutional investors.",
-      "Titan Expert Network (TEN): A curated cohort of seasoned operators offering 1:1 sessions on GTM strategy and technical architecture.",
+      "Titan Expert Network (TEN):  Seasoned operators available for 1:1 sessions on GTM strategy and technical architecture.",
       "Founder Community: A peer group of 650+ founders, often the fastest path to solving a hard operational problem.",
     ],
   },
   {
-    title: "Founder's Playbook",
+    title: "Founders' Playbook",
     shortHeading: "Operational Rigour at Scale",
     shortDesc:
       "Frameworks drawn from operators who have scaled companies to IPO",
-    longHeading: "Institutional-Grade Frameworks, Founder-Speed Execution",
+    longHeading: "What We've Already Learned",
     longDesc:
       "We draw on the collective experience of our team and 650+ portfolio founders to shorten the learning curve, sharing the frameworks that have already taken companies from inception to public markets.",
     valueTitle: "Strategic Value",
@@ -156,33 +156,33 @@ const FALLBACK_ROWS: HowWeShowUpRow[] = [
     ],
   },
   {
-    title: "Capital Strategy",
+    title: "Fundraising",
     shortHeading: "Fundraising Navigation",
     shortDesc:
       "End-to-end fundraising support from targeting to close",
-    longHeading: "Support Across Every Round",
+    longHeading: "Raising Your Next Round",
     longDesc:
-      "Raising capital requires more than access; it takes the right positioning. Our team helps you walk into every institutional conversation prepared.",
+      "Raising capital takes more than access. It takes the right positioning. Our team helps you walk into every institutional conversation prepared.",
     valueTitle: "Strategic Value",
     valueBullets: [
-      "Precision Introductions: Targeted introductions to growth-stage funds calibrated to your sector, stage, and performance metrics.",
-      "Pitch Rigor: Deep-dive sessions to stress-test assumptions and sharpen the narrative before it's in front of an investor.",
-      "Momentum: Inputs on keeping your data room and metrics investor-ready, so nothing slows the round down.",
+      "Introductions: Targeted introductions to growth-stage funds calibrated to your sector, stage, and performance metrics.",
+      "Pitch Preparation: Deep-dive sessions to stress-test assumptions and sharpen the narrative before it's in front of an investor.",
+      "Staying Ready: Inputs on keeping your data room and metrics investor-ready, so nothing slows the round down.",
     ],
   },
   {
     title: "Talent & Hiring",
     shortHeading: "High-Signal Talent Acquisition",
     shortDesc:
-      "Warm introductions to 20,000+ vetted professionals, skipping the traditional funnel",
-    longHeading: "Talent Is the Lever",
+      "Warm introductions to 20,000+ professionals, without the traditional funnel",
+    longHeading: "Finding Your First Ten",
     longDesc:
-      "Exceptional talent is one of the hardest things to find at speed. We treat hiring as seriously as everything else we do for our portfolio company.",
+      "Exceptional talent is one of the hardest things to find at speed. We treat hiring as seriously as everything else we do for our portfolio companies.",
     valueTitle: "Strategic Value",
     valueBullets: [
       "Titan Job Network: Direct access to a 20,000+ member community of vetted professionals.",
       "Senior Leadership Intros: Warm introductions to pre-vetted CXO and VP-level talent.",
-      "Advisory Bench: Connections to board-level advisors with specific, relevant operating experience.",
+      "Advisors: Connections to board-level advisors with specific, relevant operating experience.",
     ],
   },
   {
@@ -190,7 +190,7 @@ const FALLBACK_ROWS: HowWeShowUpRow[] = [
     shortHeading: "Crisis Counsel",
     shortDesc:
       "Objective counsel for the hardest moments",
-    longHeading: "Present in the Hard Moments",
+    longHeading: "When Things Break",
     longDesc:
       "Real partnership shows up most in the tough moments. We have been through enough of them to offer steady, objective counsel when the stakes are the highest.",
     valueTitle: "Strategic Value",
@@ -201,17 +201,17 @@ const FALLBACK_ROWS: HowWeShowUpRow[] = [
     ],
   },
   {
-    title: "Follow-On-Capital",
+    title: "Follow-On Capital",
     shortHeading: "Capital That Stays",
     shortDesc:
-      "High-conviction capital, doubled down on our best companies",
-    longHeading: "Conviction Is Compounded",
+      "High-conviction capital, concentrated in our best companies",
+    longHeading: "Backing You Again",
     longDesc:
       "When a Titan-backed company breaks out, we back it further, from seed through early-growth, with the same conviction that got us in.",
     valueTitle: "Strategic Value",
     valueBullets: [
       "Growth Commitment: Meaningful capital deployed at the moment the company is scaling fastest.",
-      "Efficiency: Streamlined processes that leverage existing diligence and relationship, so rounds move faster.",
+      "Efficiency: Streamlined processes that leverage existing diligence and relationships, so rounds move faster.",
       "Market Signal: A high-confidence endorsement to the market that initial investors continue to believe in the trajectory.",
     ],
   },
