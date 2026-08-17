@@ -74,7 +74,7 @@ export const navbar = defineType({
                     defineField({
                       name: "url",
                       title: "URL",
-                      description: 'Relative path (e.g. "/getinvestment") or full https URL.',
+                      description: 'Relative path (e.g. "/getInvestment") or full https URL.',
                       type: "string",
                       validation: (r) => r.required(),
                     }),
@@ -99,7 +99,7 @@ export const navbar = defineType({
     defineField({
       name: "ctaUrl",
       title: "CTA button URL",
-      description: 'e.g. "/getinvestment"',
+      description: 'e.g. "/getInvestment"',
       type: "string",
     }),
   ],

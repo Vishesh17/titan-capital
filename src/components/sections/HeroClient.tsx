@@ -633,7 +633,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                   View Portfolio
                   <span className="absolute bottom-0 left-0 h-[1px] w-0 bg-white transition-all duration-300 ease-out group-hover:w-full" />
                 </Link>
-                <CursorFillButton href="/getinvestment" label="Get Investment" />
+                <CursorFillButton href="/getInvestment" label="Get Investment" />
               </div>
               <motion.p
                 className={`font-normal hidden max-md:!block mt-[clamp(24px,4dvh,40px)] w-[85vw] text-center text-white/90 ${HERO_BODY_CLASS}`}

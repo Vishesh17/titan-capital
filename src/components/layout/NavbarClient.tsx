@@ -162,7 +162,7 @@ const FALLBACK_SECTIONS: NavbarSection[] = [
     id: "for-founders",
     title: "FOR FOUNDERS",
     subItems: [
-      { label: "Get Investment", url: "/getinvestment" },
+      { label: "Get Investment", url: "/getInvestment" },
       { label: "Titan Seed Fund", url: "#disabled" },
       { label: "Titan Winners Fund", url: "#disabled" },
     ],
@@ -191,7 +191,7 @@ const FALLBACK_SECTIONS: NavbarSection[] = [
   },
   {
     id: "perspective",
-    title: "PERSPECTIVE ",
+    title: "PERSPECTIVES ",
     subItems: [
       { label: "Titan Ecosystem", url: "#disabled" },
       { label: "Blogs", url: "#disabled" },
@@ -200,7 +200,7 @@ const FALLBACK_SECTIONS: NavbarSection[] = [
 ];
 
 const FALLBACK_CTA_LABEL = "Get Investment";
-const FALLBACK_CTA_URL = "/getinvestment";
+const FALLBACK_CTA_URL = "/getInvestment";
 
 export default function NavbarClient({ data }: { data?: NavbarData }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

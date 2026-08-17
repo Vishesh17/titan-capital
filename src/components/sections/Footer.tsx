@@ -37,7 +37,7 @@ const footerHrefs: Record<string, string> = {
   "Meet The Team": "/ourTeam",
   "Our Portfolio": "/portfolio",
   "Founders' Stories": "/foundersstory",
-  "Get Investment": "/getinvestment",
+  "Get Investment": "/getInvestment",
   "Titan Ecosystem": "/beyondTheCheque",
   "Indicorns": "/indicorns",
   "Blogs & News": "/blogs",
@@ -48,7 +48,7 @@ const footerHrefs: Record<string, string> = {
 const navLinks = [
   { title: "About", links: ["Our Story", "Meet The Team"] },
   { title: "Portfolio", links: ["Our Portfolio", "Founders' Stories", "Get Investment"] },
-  { title: "Perspective", links: ["Titan Ecosystem", "Indicorns", "Blogs & News"] },
+  { title: "Perspectives", links: ["Titan Ecosystem", "Indicorns", "Blogs & News"] },
 ];
 
 /* ────────────────────────────────────────────────

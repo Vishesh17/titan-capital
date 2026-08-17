@@ -258,7 +258,7 @@ export default function JoinPortfolioCTA() {
         </h2>
 
         {/* ── BUTTON ── */}
-        <CursorFillButton href="/getinvestment" label="Write To Us" />
+        <CursorFillButton href="/getInvestment" label="Write To Us" />
       </motion.div>
     </section>
   );

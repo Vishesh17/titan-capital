@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useInView, useMotionValue, useAnimationFrame, cubicBezier } from "framer-motion";
+import { animate, motion, useInView, useMotionValue, useAnimationFrame, cubicBezier } from "framer-motion";
 import { CTA_BUTTON_STYLE, CTA_BUTTON_MOBILE_CLASS } from "@/styles/ctaButton";
 import {
   Noto_Sans_Devanagari,
@@ -390,7 +390,7 @@ function FlipCard({ item }: { item: TestimonialItem }) {
       <div
         className="group relative shrink-0 max-md:!w-[clamp(240px,70vw,280px)] max-md:!aspect-[4/5] cursor-pointer"
         style={{
-          width: "calc((100vw - 2 * var(--section-px-wide) - 3 * min(1.85vw, 2.86vh)) / 3.5)",
+          width: "var(--tm-card)",
           aspectRatio: "4 / 5",
           perspective: "1000px",
         }}
@@ -475,6 +475,32 @@ function FlipCard({ item }: { item: TestimonialItem }) {
   );
 }
 
+/* Circular nav arrow. Deliberately the same geometry as the navy circle
+   inside ImpactAtGlance's SeeMoreButton — min(3.36vw, 5.19vh) square, white
+   glyph at 45% — so the two controls read as one family. Desktop only: the
+   mobile marquee stays drag/swipe. */
+function MarqueeArrow({ dir, onClick }: { dir: "left" | "right"; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={dir === "left" ? "Previous testimonials" : "Next testimonials"}
+      className="hidden md:flex shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-[#001A4D] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-110"
+      style={{ width: "var(--tm-arrow)", height: "var(--tm-arrow)" }}
+    >
+      <svg className="h-[45%] w-[45%]" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d={dir === "left" ? "M15 5L8 12L15 19" : "M9 5L16 12L9 19"}
+          stroke="white"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </button>
+  );
+}
+
 function Marquee({ testimonials }: { testimonials: TestimonialItem[] }) {
   const x = useMotionValue(0);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -488,6 +514,29 @@ function Marquee({ testimonials }: { testimonials: TestimonialItem[] }) {
       setContentWidth(containerRef.current.scrollWidth / 3);
     }
   }, [testimonials.length]);
+
+  /* One card + one gap, measured from the DOM rather than recomputed from the
+     width formula — that way it stays correct whatever the card ends up being. */
+  const nudge = (dir: 1 | -1) => {
+    const track = containerRef.current;
+    if (!track || !contentWidth) return;
+    const first = track.children[0] as HTMLElement | undefined;
+    if (!first) return;
+    const step =
+      first.getBoundingClientRect().width +
+      parseFloat(getComputedStyle(track).columnGap || "0");
+
+    animate(x, x.get() - dir * step, {
+      duration: 0.6,
+      ease: [0.22, 1, 0.36, 1],
+      onComplete: () => {
+        // Fold back into one content-width window so the loop stays seamless.
+        let v = x.get() % contentWidth;
+        if (v > 0) v -= contentWidth;
+        x.set(v);
+      },
+    });
+  };
 
   useAnimationFrame(() => {
     if (isDragging || isHovered) return;
@@ -506,15 +555,28 @@ function Marquee({ testimonials }: { testimonials: TestimonialItem[] }) {
 
   return (
     <div
-      className="overflow-hidden"
-      style={{ marginLeft: "var(--section-px-wide)", marginRight: "var(--section-px-wide)" }}
+      className="flex items-center"
+      style={{
+        marginLeft: "var(--section-px-wide)",
+        marginRight: "var(--section-px-wide)",
+        gap: "var(--tm-gap)",
+        /* The arrows take the space the 0.25-card slivers used to occupy, so
+           the gutters are untouched and exactly 3 whole cards sit between
+           them:  arrow | gap | [card gap card gap card] | gap | arrow  */
+        "--tm-gap": "min(1.85vw, 2.86vh)",
+        "--tm-arrow": "min(3.36vw, 5.19vh)",
+        "--tm-card":
+          "calc((100vw - 2 * var(--section-px-wide) - 2 * var(--tm-arrow) - 4 * var(--tm-gap)) / 3)",
+      } as React.CSSProperties}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      <MarqueeArrow dir="left" onClick={() => nudge(-1)} />
+      <div className="min-w-0 flex-1 overflow-hidden">
       <motion.div
         ref={containerRef}
         className="flex cursor-grab active:cursor-grabbing max-md:!gap-[24px]"
-        style={{ x, gap: "min(1.85vw, 2.86vh)" }}
+        style={{ x, gap: "var(--tm-gap)" }}
         drag="x"
         dragConstraints={{ left: -Infinity, right: Infinity }}
         dragElastic={0}
@@ -533,6 +595,8 @@ function Marquee({ testimonials }: { testimonials: TestimonialItem[] }) {
           <FlipCard key={`${item.name}-${i}`} item={item} />
         ))}
       </motion.div>
+      </div>
+      <MarqueeArrow dir="right" onClick={() => nudge(1)} />
     </div>
   );
 }
@@ -638,7 +702,7 @@ export default function FoundersTestimonialClient({
           </motion.h2>
         </motion.div>
 
-        <CursorFillButtonTestimonial href="/getinvestment" label={ctaLabel} />
+        <CursorFillButtonTestimonial href="/getInvestment" label={ctaLabel} />
       </div>
     </section>
   );

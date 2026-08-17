@@ -90,7 +90,7 @@ const PAGE_OVERRIDES = [
   {
     _id: "pageSeo-getinvestment",
     _type: "pageSeo",
-    pageKey: "getinvestment",
+    pageKey: "getInvestment",
     metaTitle: "Get Investment",
     metaDescription:
       "Apply for early stage funding from Titan Capital. Submit your pitch and connect with Kunal Bahl & Rohit Bansal.",

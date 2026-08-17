@@ -5,7 +5,7 @@ import GetInvestmentFAQ from "@/components/sections/GetInvestmentFAQ";
 import { buildMetadata } from "@/sanity/lib/seo";
 
 export async function generateMetadata() {
-  return buildMetadata("getinvestment");
+  return buildMetadata("getInvestment");
 }
 
 export default function GetInvestmentPage() {
