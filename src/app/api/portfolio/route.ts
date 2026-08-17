@@ -5,6 +5,7 @@
 
 import { sanityFetch } from "@/sanity/lib/client";
 import { portfolioGridQuery } from "@/sanity/lib/queries";
+import { SECTORS, STAGES, STATUSES } from "@/lib/portfolioFilters";
 
 interface SanityGridCompany {
   brandName: string;
@@ -67,7 +68,7 @@ export async function GET() {
     if (companies.length === 0) {
       return Response.json({
         companies: [],
-        filters: { sector: [], year: [], status: [], tags: [], investmentStage: [], fundType: [] },
+        filters: { sector: [...SECTORS], year: [], status: [...STATUSES], tags: [], investmentStage: [...STAGES], fundType: [] },
       });
     }
 
@@ -86,12 +87,18 @@ export async function GET() {
       isRecent: recentYears.has(c.year || ""),
     }));
 
+    /* The three real filters come from the canonical lists, NOT from the
+       data. Deriving them from the data is what surfaced "Active" as a
+       Status option — a value some rows still carry. Sourcing them here
+       means only the three sanctioned sets can ever appear in the sidebar.
+       year / tags / fundType stay derived: nothing filters on them, they are
+       returned only for other consumers. */
     const filters = {
-      sector: distinctValues(companies, "sector"),
+      sector: [...SECTORS],
+      status: [...STATUSES],
+      investmentStage: [...STAGES],
       year: distinctValues(companies, "year"),
-      status: distinctValues(companies, "status"),
       tags: distinctValues(companies, "tags"),
-      investmentStage: distinctValues(companies, "investmentStage"),
       fundType: distinctValues(companies, "fundType"),
     };
 

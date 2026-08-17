@@ -428,22 +428,16 @@ export default function PortfolioGrid() {
     });
   }, []);
 
-  const STAGE_ORDER = ["Pre-Seed", "Seed", "Pre-Series A", "Series A", "Series B"];
-  const filterOptions = useMemo((): Record<FilterKey, string[]> => {
-    const normalize = (s: string) => s.replace(/^Pre\s+Seed$/i, "Pre-Seed");
-    const stages = [...new Set([...(data?.filters.investmentStage ?? []).map(normalize), "Series B"])];
-    const sorted = [...stages].sort((a, b) => {
-      const ai = STAGE_ORDER.indexOf(a);
-      const bi = STAGE_ORDER.indexOf(b);
-      return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
-    });
-    return {
-      investmentStage: sorted,
-      sector: data?.filters.sector ?? [],
-      year: data?.filters.year ?? [],
-      status: data?.filters.status ?? [],
-    };
-  }, [data]);
+  /* Straight passthrough now. The API serves the canonical lists already in
+     the right order, so the old normalise / inject-"Series B" / STAGE_ORDER
+     sort here is gone — those existed only to patch up values derived from
+     the data. */
+  const filterOptions = useMemo((): Record<FilterKey, string[]> => ({
+    investmentStage: data?.filters.investmentStage ?? [],
+    sector: data?.filters.sector ?? [],
+    year: data?.filters.year ?? [],
+    status: data?.filters.status ?? [],
+  }), [data]);
 
   const filteredCompanies = useMemo(() => {
     if (!data) return [];

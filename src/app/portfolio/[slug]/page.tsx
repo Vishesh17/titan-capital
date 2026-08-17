@@ -3,6 +3,7 @@ import BackLink from "@/components/ui/BackLink";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import Footer from "@/components/sections/Footer";
+import { resolveMilestones } from "@/lib/milestones.mjs";
 
 /* ─────────────────────────────────────────────────────────
    Data shape for the detail page.
@@ -127,39 +128,13 @@ async function getCompany(slug: string): Promise<CompanyDetail | null> {
     links,
     areaOfFocus: match.sector || "",
     investedIn: match.year || "",
-    milestones: buildMilestones(match),
+    milestones: resolveMilestones(match),
     gallery: match.gallery || [],
     founders: (match.founders || []).map((f) => ({ name: f.name, linkedin: f.linkedin })),
     newsBlogs: match.newsBlogs ? [{ title: "Read more", url: match.newsBlogs }] : [],
   };
 }
 
-/**
- * Derive the milestone list from existing structured fields instead of a
- * free-text column. Three rules, in order:
- *   1. "Founded in <foundingYear>" — when foundingYear is set
- *   2. "Invested in <YYYY>"        — first 4 chars of `year` (e.g. "2023-24" → "2023")
- *   3. "IPO"                       — when `tags` contains the word IPO (case-insensitive)
- * Each entry is only added when its source data is present.
- */
-function buildMilestones(c: SanityCompany): string[] {
-  const out: string[] = [];
-
-  if (c.foundingYear && c.foundingYear.trim()) {
-    out.push(`Founded ${c.foundingYear.trim()}`);
-  }
-
-  if (c.year && c.year.trim()) {
-    const investedYear = c.year.trim().slice(0, 4);
-    if (investedYear) out.push(`Partnered ${investedYear}`);
-  }
-
-  if (c.tags && /\bipo\b/i.test(c.tags)) {
-    out.push("IPO");
-  }
-
-  return out;
-}
 
 /* ─────────────────────────────────────────────────────────
    Icon mapping for link pills — keep the SVGs inline so we

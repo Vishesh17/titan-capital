@@ -15,6 +15,7 @@
  */
 
 import { createClient } from "@sanity/client";
+import { deriveMilestones } from "../src/lib/milestones.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -200,7 +201,14 @@ async function main() {
       website: get(12) || undefined,
       newsBlogs: get(23) || undefined,
       youtube: get(24) || undefined,
-      milestones: get(25) || undefined,
+      /* Sheet value wins; otherwise fall back to the derived list so the
+         field arrives pre-filled instead of blank. Same rule the site uses to
+         render, so this changes nothing visually — it just means the Studio
+         shows the milestones rather than an empty box. */
+      milestones:
+        get(25) ||
+        deriveMilestones({ foundingYear: get(9), year: get(1), tags: get(4) }).join(", ") ||
+        undefined,
       companyLinkedin: get(27) || undefined,
       ...(logoAssetId && { logo: { _type: "image", asset: { _type: "reference", _ref: logoAssetId } } }),
       ...(founderImageAssetId && { founderImage: { _type: "image", asset: { _type: "reference", _ref: founderImageAssetId } } }),

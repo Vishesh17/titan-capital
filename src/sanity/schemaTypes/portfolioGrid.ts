@@ -1,4 +1,5 @@
 import { defineField, defineType } from "sanity";
+import { SECTORS, STAGES, STATUSES, asSanityList } from "@/lib/portfolioFilters";
 
 /**
  * Portfolio — Grid & Detail section.
@@ -24,10 +25,27 @@ export const portfolioGrid = defineType({
             /* ── Grid fields ── */
             defineField({ name: "brandName", title: "Brand Name", type: "string", validation: (r) => r.required() }),
             defineField({ name: "year", title: "Year (e.g. 2021-22)", type: "string" }),
-            defineField({ name: "sector", title: "Sector", type: "string" }),
-            defineField({ name: "status", title: "Status (e.g. Active, Exited)", type: "string" }),
+            defineField({
+              name: "sector",
+              title: "Sector",
+              type: "string",
+              options: { list: asSanityList(SECTORS) },
+            }),
+            defineField({
+              name: "status",
+              title: "Status",
+              description:
+                "Drives the Status filter on /portfolio. Only these two values exist — \"Active\" is no longer one of them.",
+              type: "string",
+              options: { list: asSanityList(STATUSES) },
+            }),
             defineField({ name: "tags", title: "Tags (e.g. Recent Investment, Unicorn)", type: "string" }),
-            defineField({ name: "investmentStage", title: "Investment Stage", type: "string" }),
+            defineField({
+              name: "investmentStage",
+              title: "Investment Stage",
+              type: "string",
+              options: { list: asSanityList(STAGES) },
+            }),
             defineField({ name: "fundType", title: "Fund Type", type: "string" }),
             defineField({ name: "logo", title: "Logo", type: "image", options: { hotspot: true } }),
             defineField({ name: "founderImage", title: "Founders Image (card flip)", type: "image", options: { hotspot: true } }),
@@ -39,7 +57,13 @@ export const portfolioGrid = defineType({
             defineField({ name: "website", title: "Website", type: "string" }),
             defineField({ name: "newsBlogs", title: "News/Blogs URL", type: "string" }),
             defineField({ name: "youtube", title: "YouTube URL", type: "string" }),
-            defineField({ name: "milestones", title: "Milestones (comma-separated)", type: "string" }),
+            defineField({
+              name: "milestones",
+              title: "Milestones (comma-separated)",
+              description:
+                "Auto-filled from Founding Year, Year and Tags (e.g. \"Founded 2011, Partnered 2021, IPO\"). Edit only to override — clearing it makes the site fall back to those same derived values.",
+              type: "string",
+            }),
             defineField({ name: "companyLinkedin", title: "Company LinkedIn", type: "string" }),
             defineField({
               name: "gallery",
