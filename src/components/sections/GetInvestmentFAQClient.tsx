@@ -60,7 +60,7 @@ const FALLBACK_FAQ: GetInvestmentFAQItem[] = [
     id: "faq-5",
     question: "What happens after you invest?",
     answer:
-      "You get full access to the Titan network and team. The first year as a portfolio company matters the most: we work closely with you on hiring, GTM strategy, and setting up your next fundraise.",
+      "You get access to the Titan network and team. The first year as a portfolio company matters the most: we work closely with you on hiring, GTM strategy, and setting up your next fundraise.",
   },
 ];
 

@@ -761,7 +761,7 @@ function FileUpload({
             style={{ fontSize: "clamp(11px, min(0.9vw, 1.3vh), 13px)" }}
           >
             Supported formats: PDF, PPTX, DOC, PNG, JPG
-            <br />& Max Size: 20MB
+            <br />| Max Size: 20MB
           </p>
         </>
       )}
