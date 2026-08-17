@@ -35,19 +35,19 @@ export interface WhatWeBelieveData {
 const HEADING = "What We Believe";
 const BELIEFS: Belief[] = [
   {
-    title: "Founder-Centricity",
+    title: "Founder Over Market",
     description:
-      "Our conviction is anchored in the individual, not the market cycle. Great founders have the resilience to iterate and define new categories.",
+      "We back the individual, not the market cycle. Categories change, timing changes, the model changes; the person building usually doesn't.",
   },
   {
     title: "Conviction Consensus",
     description:
-      "We don’t wait for consensus. The best opportunities often look wrong before they're proven right. We back our own read, even when it's early.",
+      "We don't wait for consensus. The best opportunities often look wrong before they're proven right. We back our own read, even when it's early.",
   },
   {
-    title: "Commitment Endurance",
+    title: "Endurance Over Exits",
     description:
-      "Our involvement doesn't end at the cheque. We stay close through the pivots providing support in the decisive moments that define success.",
+      "Our involvement doesn't end at the cheque. We stay through the pivots, the down rounds and the years when nothing is compounding yet.",
   },
 ];
 

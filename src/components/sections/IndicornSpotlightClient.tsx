@@ -141,11 +141,11 @@ const FALLBACK_LOGOS: IndicornLogo[] = [
 
 const FALLBACK_HEADING = "Indicorns";
 const FALLBACK_SUBHEADING = "Celebrating India's Most Resilient Startups";
-const FALLBACK_BULLETS = ["Profitable", "10 Cr+ Revenue", "Founded<15years"];
+const FALLBACK_BULLETS = ["Profitable", "10 Cr+ Revenue", "Founded in the last 15 years"];
 const FALLBACK_CTA_LABEL = "Meet the Indicorns";
 const FALLBACK_ROTATING_LABEL = "Portfolio Indicorns";
 const FALLBACK_QUOTE =
-  '"For too long, success in the startup ecosystem has been measured solely by valuation. With Indicorns, we recognize a different standard of excellence, one built on profitability, disciplined growth, and tangible market impact."';
+  'For too long, success in the startup ecosystem has been measured solely by valuation. With Indicorns, we recognise a different standard of excellence, one built on profitability, disciplined growth, and tangible market impact.';
 const FALLBACK_ATTRIBUTION = "-Titan Capital";
 
 function cdnImageSrc(url: string, width: number): string {
