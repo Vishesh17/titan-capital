@@ -5,7 +5,7 @@
 
 import { sanityFetch } from "@/sanity/lib/client";
 import { portfolioGridQuery } from "@/sanity/lib/queries";
-import { SECTORS, STAGES, STATUSES } from "@/lib/portfolioFilters";
+import { SECTORS, STAGES, STATUSES } from "@/lib/portfolioFilters.mjs";
 
 interface SanityGridCompany {
   brandName: string;

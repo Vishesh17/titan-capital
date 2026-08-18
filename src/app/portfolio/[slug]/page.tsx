@@ -127,7 +127,10 @@ async function getCompany(slug: string): Promise<CompanyDetail | null> {
     about: match.about || "",
     links,
     areaOfFocus: match.sector || "",
-    investedIn: match.year || "",
+    // Funding stage, not the calendar year — the year still shows in
+    // Milestones as "Partnered <YYYY>". Falls back to year only if a company
+    // has no stage set, so the row never renders blank under its label.
+    investedIn: match.investmentStage || match.year || "",
     milestones: resolveMilestones(match),
     gallery: match.gallery || [],
     founders: (match.founders || []).map((f) => ({ name: f.name, linkedin: f.linkedin })),

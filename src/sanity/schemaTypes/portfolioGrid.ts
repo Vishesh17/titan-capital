@@ -1,5 +1,5 @@
 import { defineField, defineType } from "sanity";
-import { SECTORS, STAGES, STATUSES, asSanityList } from "@/lib/portfolioFilters";
+import { SECTORS, STAGES, STATUSES, asSanityList } from "@/lib/portfolioFilters.mjs";
 
 /**
  * Portfolio — Grid & Detail section.

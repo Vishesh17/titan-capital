@@ -6,6 +6,10 @@
  *     so an editor can only pick a valid value instead of free-typing.
  *   - src/app/api/portfolio/route.ts           → builds the sidebar's filter
  *     options from these lists.
+ *   - scripts/backfill-investment-stage.mjs    → validates stored values.
+ *
+ * Written as .mjs (like src/lib/milestones.mjs) because the scripts import it
+ * too and Node can't load .ts.
  *
  * The API used to derive the options from whatever strings happened to be in
  * the data (`distinctValues`). That is why "Active" showed up as a Status
@@ -24,12 +28,14 @@ export const SECTORS = [
   "FinTech",
   "HealthTech",
   "AI & SaaS",
-] as const;
+];
 
-export const STAGES = ["Seed", "Series A", "Series B"] as const;
+export const STAGES = ["Seed", "Series A", "Series B"];
 
-export const STATUSES = ["Recent Investment", "Exited"] as const;
+export const STATUSES = ["Recent Investment", "Exited"];
 
-/** Shape Sanity's `options.list` expects. */
-export const asSanityList = (values: readonly string[]) =>
-  values.map((v) => ({ title: v, value: v }));
+/**
+ * Shape Sanity's `options.list` expects.
+ * @param {string[]} values
+ */
+export const asSanityList = (values) => values.map((v) => ({ title: v, value: v }));
