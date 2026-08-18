@@ -760,8 +760,7 @@ function FileUpload({
             className="mt-[4px] text-center font-['Poppins',_sans-serif] text-[#98A2B3]"
             style={{ fontSize: "clamp(11px, min(0.9vw, 1.3vh), 13px)" }}
           >
-            Supported formats: PDF, PPTX, DOC, PNG, JPG
-            <br />| Max Size: 20MB
+            Supported formats: PDF, PPTX, DOC, PNG, JPG | Max Size: 20MB
           </p>
         </>
       )}
