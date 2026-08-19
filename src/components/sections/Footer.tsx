@@ -28,6 +28,7 @@ const DISABLED_FOOTER_LINKS = new Set([
   "Founders' Stories",
   "Titan Ecosystem",
   "Blogs & News",
+  "Indicorns"
 ]);
 
 /* Map specific footer link labels to custom routes */

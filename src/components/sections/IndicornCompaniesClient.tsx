@@ -278,14 +278,14 @@ export default function IndicornCompaniesClient({
               <div
                 className="w-full flex items-center justify-start"
                 style={{
-                  height: "clamp(54px,min(6vw,8.4vh),116px)",
+                  height: "clamp(72px,min(8vw,11.2vh),150px)",
                   marginBottom: "clamp(6px,min(0.8vw,1.15vh),12px)",
                 }}
               >
                 <img
                   src={company.logoUrl}
                   alt={`${company.name} logo`}
-                  className="max-h-full max-w-[clamp(120px,14vw,220px)] object-contain mix-blend-multiply"
+                  className="max-h-full max-w-[clamp(150px,17vw,270px)] object-contain mix-blend-multiply"
                   style={{
                     transform: `scale(${company.scale ?? 1})`,
                     transformOrigin: "left center",

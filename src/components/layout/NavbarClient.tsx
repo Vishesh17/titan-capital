@@ -239,6 +239,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
     "Founders Story",
     "Blogs",
     "Titan Ecosystem",
+    "Indicorns"
   ];
 
   const overrideDisabledUrls = (sections: NavbarSection[]): NavbarSection[] => {

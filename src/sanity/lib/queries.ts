@@ -744,14 +744,24 @@ export const whyIndicornsQuery = groq`
   }
 `;
 
-/** Indicorns — "Indicorns We Backed" company cards. Singleton. */
+/**
+ * Indicorns — "Indicorns We Backed" company cards. Singleton.
+ *
+ * `logoScale` is aliased to `scale` because that is what the client prop is
+ * called. Without the alias the client read `company.scale` — undefined — and
+ * every logo silently fell back to scale(1), losing the per-logo optical
+ * correction that keeps heavily-padded logos from rendering tiny.
+ *
+ * Keep comments OUT of the groq template: GROQ has no block-comment syntax,
+ * so a stray one is a parse error at query time, not build time.
+ */
 export const indicornCompaniesQuery = groq`
   *[_type == "indicornCompanies"][0]{
     heading,
     companies[]{
       name,
       description,
-      logoScale,
+      "scale": logoScale,
       "logoUrl": logo.asset->url
     }
   }
