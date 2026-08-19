@@ -701,3 +701,73 @@ export const allFoundersQuery = groq`
 `;
 
 
+
+
+/* ─────────────────────────────────────────────────────────
+   /indicorns page
+   Asset URLs are resolved here so the clients receive plain strings.
+   ───────────────────────────────────────────────────────── */
+
+/** Indicorns hero — the folded card that unfolds on scroll. Singleton. */
+export const indicornsHeroQuery = groq`
+  *[_type == "indicornsHero"][0]{
+    headingPrefix,
+    "wordmark": wordmark.asset->url,
+    panelOne,
+    panelTwo,
+    panelThreeIntro,
+    criteria[]{
+      before,
+      highlight,
+      after
+    }
+  }
+`;
+
+/** Indicorns — "Why We Created" story + timeline carousel. Singleton. */
+export const whyIndicornsQuery = groq`
+  *[_type == "whyIndicorns"][0]{
+    headingTop,
+    headingBottom,
+    storyLabel,
+    "storyImage": storyImage.asset->url,
+    storyParagraphs,
+    storyParagraphsMobile,
+    timeline[]{
+      date,
+      title,
+      desc,
+      statNumber,
+      statLabel,
+      statSub
+    }
+  }
+`;
+
+/** Indicorns — "Indicorns We Backed" company cards. Singleton. */
+export const indicornCompaniesQuery = groq`
+  *[_type == "indicornCompanies"][0]{
+    heading,
+    companies[]{
+      name,
+      description,
+      logoScale,
+      "logoUrl": logo.asset->url
+    }
+  }
+`;
+
+/** Indicorns — founder testimonials on the 3D cylinder. Singleton. */
+export const indicornTestimonialsQuery = groq`
+  *[_type == "indicornTestimonials"][0]{
+    headingTop,
+    headingBottom,
+    description,
+    testimonials[]{
+      quote,
+      name,
+      role,
+      "image": image.asset->url
+    }
+  }
+`;

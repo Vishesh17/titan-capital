@@ -1,8 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { motion, useMotionValue, useTransform, animate } from "framer-motion";
+import {
+  motion,
+  useScroll,
+  useSpring,
+  useTransform,
+  cubicBezier,
+  type MotionValue,
+} from "framer-motion";
 import {
   HERO_HEADING_LIGHT_CLASS,
   HERO_HEADING_LIGHT_STYLE,
@@ -10,18 +17,60 @@ import {
 } from "@/styles/heroTypography";
 
 /**
- * /indicorns page hero — a folded "WHAT IS AN indicorns" card that
- * unfolds on click, imitating a letter that was folded three times.
- * Each of the three body panels lives above the visible face when the
- * card is shut; on open they pivot down about their top edge (rotateX
- * −90° → 0°) one after the other with a shared perspective on the
- * container, so the eye reads it as paper.
+ * /indicorns page hero — a folded "WHAT ARE indicorns" card that unfolds AS
+ * YOU SCROLL, imitating a letter that was folded three times. Each of the
+ * three body panels lives above the visible face when the card is shut; as
+ * the page scrolls they pivot down about their top edge (rotateX −90° → 0°)
+ * one after the other with a shared perspective on the container, so the eye
+ * reads it as paper.
+ *
+ * The card sits in normal flow at its natural size — nothing is scaled and no
+ * space is reserved — so while it is folded the next section shows directly
+ * beneath it. See SCROLL CHOREOGRAPHY below.
  *
  * COLOURS (sampled from the design):
  *   - Card body (folded + panel 1 + panel 3) → #FBF7F0  (site cream)
  *   - Panel 2 (middle fold)                  → #F3E6CF  (darker beige)
  *   - Bullet highlight chip                  → #D3E2FF  (light blue)
  */
+
+/* ─────────────────────────────────────────────────────────
+   Sanity contract. Every field is optional — whatever the CMS
+   doesn't supply falls back to the constants below, so the
+   section never renders empty.
+   ───────────────────────────────────────────────────────── */
+export interface IndicornCriterion {
+  before?: string;
+  highlight?: string;
+  after?: string;
+}
+
+export interface IndicornsHeroData {
+  headingPrefix?: string;
+  wordmark?: string;
+  panelOne?: string;
+  panelTwo?: string;
+  panelThreeIntro?: string;
+  criteria?: IndicornCriterion[];
+}
+
+const FALLBACK_HEADING_PREFIX = "What Are";
+const FALLBACK_WORDMARK = "/images/indicorns/Indi.png";
+const FALLBACK_PANEL_ONE =
+  "For too long, India's startup ecosystem has measured success by a single metric borrowed from Silicon Valley: the unicorn — a company worth $1 billion or more. But a billion-dollar valuation is a number defined by someone else, in a currency that's not ours, against a benchmark that has no grounding in the reality of Indian business";
+const FALLBACK_PANEL_TWO =
+  "We asked a different question: what does real, enduring success look like in India?";
+const FALLBACK_PANEL_THREE_INTRO =
+  "The answer became Indicorn — a company that is";
+const FALLBACK_CRITERIA: IndicornCriterion[] = [
+  { before: "Founded in", highlight: "India within the last 15 years", after: "" },
+  { before: "Has crossed", highlight: "₹100 crore in annual revenue", after: "" },
+  {
+    before: "Has",
+    highlight: "achieved profitability",
+    after: "— building a business that sustains itself",
+  },
+];
 
 const CARD_BG_LIGHT = "#FBF7F0";
 const CARD_BG_MID = "#F3E6CF";
@@ -92,39 +141,67 @@ const PANEL_SHAPES: PanelSpec[] = [
   },
 ];
 
-// One fold beat. Whole letter (3 panels) opens/closes in ~3× this.
-const FOLD_STAGGER = 0.3;
-// Spring governs the rotation — organic "flop down and settle" like
-// real paper released under its own weight. Near-critical damping so
-// there's a whisper of settle but no clipping overshoot past flat.
-const FOLD_SPRING = { type: "spring" as const, stiffness: 90, damping: 19, mass: 1 };
-// Height reveal tween — matched to the spring's visual duration so
-// the page flow opens at the same rate the leaf drops in.
-const FOLD_HEIGHT_TWEEN = { duration: 0.7, ease: [0.33, 0, 0.2, 1] as const };
+/**
+ * SCROLL CHOREOGRAPHY
+ *
+ * The section sits in NORMAL FLOW — no sticky pin, no tall runway — so while
+ * the card is folded it occupies only its own compact height and the next
+ * section is visible right beneath it.
+ *
+ * `openness` is therefore a function of raw window scroll, with the
+ * thresholds expressed as fractions of the viewport height so the pacing
+ * feels the same on a 617px laptop and a 1117px one:
+ *
+ *   0.00 ─▶ 0.04 vh   folded — only while you are at the very top
+ *   0.04 ─▶ 0.58 vh   unfolds, leaf by leaf
+ *   0.58 vh and past   STAYS OPEN
+ *
+ * There is no closing phase: once opened the letter stays open for the rest
+ * of the page. It only re-folds by scrolling back to the top, which is the
+ * same range played in reverse.
+ *
+ * Driving off scrollY (rather than the section's own geometry) matters: the
+ * card grows as it opens, and any progress derived from its height would feed
+ * back into itself and jitter. The card's TOP never moves, so scrollY is a
+ * stable input.
+ *
+ * Each leaf consumes a WINDOW of the 0→1 range rather than firing on a timer,
+ * so the stagger is a property of scroll position, not elapsed time. Because
+ * the windows are just ranges, scrolling back up plays the fold in reverse
+ * for free — bottom leaf closes first, exactly mirroring the open.
+ */
+const FOLD_SPAN = 0.62;
+const FOLD_STEP = (1 - FOLD_SPAN) / 2;
+const FOLD_EASE = cubicBezier(0.22, 1, 0.36, 1);
+
+/** Scroll thresholds, as multiples of the viewport height. */
+const OPEN_START = 0.04;
+/* Spread over more than half a viewport of scrolling — the wider this range,
+   the slower the paper opens for the same wheel movement. */
+const OPEN_END = 0.58;
 
 /**
  * FoldPanel — one leaf of the tri-folded letter.
  *
- * The unfold is driven by a SPRING on `rotateX` (folded −90° → flat 0°)
- * hinged at the panel's top edge, with a per-panel `perspective` on the
- * wrapper so every fold reads with the same 3D depth no matter where it
- * sits vertically. A `height` tween on the same wrapper opens the page
- * flow in lock-step, and a gradient "crease shadow" whose opacity is
- * derived from the LIVE rotation angle darkens the fold while it's still
- * bent and melts to nothing as it lies flat — the detail that makes it
- * read as paper rather than a dropping card.
+ * `rotateX` (folded −90° → flat 0°) is hinged at the panel's top edge, with a
+ * per-panel `perspective` on the wrapper so every fold reads with the same 3D
+ * depth no matter where it sits vertically. The wrapper's `height` is driven
+ * from the same progress so the layout opens in lock-step, and a gradient
+ * "crease shadow" whose opacity derives from the LIVE rotation angle darkens
+ * the fold while it's still bent and melts to nothing as it lies flat — the
+ * detail that makes it read as paper rather than a dropping card.
  *
- * Open and close are perfect mirrors: opening runs top→bottom
- * (delays 0, s, 2s); closing runs bottom→top (delays 2s, s, 0) with the
- * SAME spring, so folding looks like unfolding played in reverse.
+ * Every value is a pure function of scroll position, so open and close are
+ * perfect mirrors with no extra code.
  */
 function FoldPanel({
-  isOpen,
+  openness,
   order,
   bg,
   children,
 }: {
-  isOpen: boolean;
+  /** 0 = fully folded, 1 = fully open. Driven by scroll position. */
+  openness: MotionValue<number>;
   /** 0-indexed fold order from the top. */
   order: number;
   bg: string;
@@ -132,23 +209,32 @@ function FoldPanel({
 }) {
   const shape = PANEL_SHAPES[order];
 
-  // Symmetric, mirrored stagger.
-  const openDelay = order * FOLD_STAGGER;
-  const closeDelay = (2 - order) * FOLD_STAGGER;
-
-  // Live fold angle → crease-shadow opacity. Deep shadow while bent,
-  // gone once flat.
-  const rotateX = useMotionValue(isOpen ? 0 : -90);
-  const creaseOpacity = useTransform(rotateX, [-90, -30, 0], [0.55, 0.22, 0]);
+  /* The wrapper's height is animated, so it cannot be `auto` — measure the
+     leaf's natural height and scale the wrapper from it. A ResizeObserver
+     keeps that honest when the viewport (and so the text wrapping) changes. */
+  const leafRef = useRef<HTMLDivElement>(null);
+  const [leafH, setLeafH] = useState(0);
 
   useEffect(() => {
-    const controls = animate(rotateX, isOpen ? 0 : -90, {
-      ...FOLD_SPRING,
-      delay: isOpen ? openDelay : closeDelay,
-    });
-    return () => controls.stop();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+    const el = leafRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setLeafH(el.offsetHeight));
+    ro.observe(el);
+    setLeafH(el.offsetHeight);
+    return () => ro.disconnect();
+  }, []);
+
+  // This leaf's slice of the shared 0→1 range.
+  const start = order * FOLD_STEP;
+  const local = useTransform(openness, (v) =>
+    FOLD_EASE(Math.min(1, Math.max(0, (v - start) / FOLD_SPAN)))
+  );
+
+  const rotateX = useTransform(local, [0, 1], [-90, 0]);
+  const height = useTransform(local, (t) => leafH * t);
+  // Live fold angle → crease-shadow opacity. Deep shadow while bent, gone
+  // once flat.
+  const creaseOpacity = useTransform(rotateX, [-90, -30, 0], [0.55, 0.22, 0]);
 
   // Trapezoidal panels get a little extra horizontal padding so text
   // stays clear of the sloped side edges.
@@ -159,6 +245,7 @@ function FoldPanel({
       style={{
         overflow: "hidden",
         willChange: "height",
+        height,
         width: shape.width,
         marginLeft: shape.marginLeft,
         clipPath: shape.clipPath,
@@ -167,15 +254,10 @@ function FoldPanel({
         perspective: "1400px",
         perspectiveOrigin: "top center",
       }}
-      initial={false}
-      animate={isOpen ? { height: "auto" } : { height: 0 }}
-      transition={{
-        ...FOLD_HEIGHT_TWEEN,
-        delay: isOpen ? openDelay : closeDelay,
-      }}
     >
       {/* The rotating leaf — hinged at its TOP edge (the crease). */}
       <motion.div
+        ref={leafRef}
         style={{
           position: "relative",
           background: bg,
@@ -210,17 +292,64 @@ function FoldPanel({
   );
 }
 
-export default function IndicornsHeroClient() {
-  const [isOpen, setIsOpen] = useState(false);
+export default function IndicornsHeroClient({
+  data,
+}: {
+  data?: IndicornsHeroData | null;
+}) {
+  const headingPrefix = data?.headingPrefix || FALLBACK_HEADING_PREFIX;
+  const wordmark = data?.wordmark || FALLBACK_WORDMARK;
+  const panelOne = data?.panelOne || FALLBACK_PANEL_ONE;
+  const panelTwo = data?.panelTwo || FALLBACK_PANEL_TWO;
+  const panelThreeIntro = data?.panelThreeIntro || FALLBACK_PANEL_THREE_INTRO;
+  const criteria =
+    data?.criteria && data.criteria.length > 0 ? data.criteria : FALLBACK_CRITERIA;
+
+  /* Viewport height drives the scroll thresholds, so the fold is paced the
+     same on a short laptop as on a tall one. Read into state (not `vh` units)
+     because the thresholds are compared against scrollY in pixels. */
+  const [vh, setVh] = useState(0);
+  useEffect(() => {
+    const read = () => setVh(window.innerHeight);
+    read();
+    window.addEventListener("resize", read);
+    return () => window.removeEventListener("resize", read);
+  }, []);
+
+  const { scrollY } = useScroll();
+
+  const rawOpenness = useTransform(scrollY, (y) => {
+    if (!vh) return 0;
+    const openStart = vh * OPEN_START;
+    const openEnd = vh * OPEN_END;
+
+    if (y <= openStart) return 0;
+    if (y < openEnd) return FOLD_EASE((y - openStart) / (openEnd - openStart));
+    // Past the opening range it stays open — no close phase.
+    return 1;
+  });
+
+  /* Spring-smoothed before it drives anything. Raw scroll is stepped —
+     especially on a mouse wheel — and binding the fold straight to it looks
+     mechanical. The spring keeps the paper moving for a beat after the wheel
+     stops, which is what separates "tied to a scrollbar" from "premium". */
+  const openness = useSpring(rawOpenness, {
+    // Softer and heavier than before, so each leaf settles more slowly.
+    stiffness: 80,
+    damping: 22,
+    mass: 0.5,
+  });
+
+  // The peek strips hint "there's more folded behind this" — no job once the
+  // letter is open, so they fade early.
+  const peekOpacity = useTransform(openness, [0, 0.22], [1, 0]);
 
   return (
     <section
       className="relative w-full bg-white"
       style={{
-        // The section sizes to its content: compact when the card is
-        // folded (just the header face), then grows as the fold panels
-        // animate their height open. No forced min-height so the closed
-        // state stays tight to the card.
+        // Sizes to its content: compact while the card is folded — so the next
+        // section shows right beneath it — then grows as the leaves unfold.
         marginTop: "var(--nav-height)",
         paddingTop: "var(--section-py)",
         paddingBottom: "var(--section-py)",
@@ -228,180 +357,174 @@ export default function IndicornsHeroClient() {
         paddingRight: "var(--section-px-wide)",
       }}
     >
-      <div
-        className="mx-auto flex w-full max-w-[1200px] flex-col items-stretch"
-        style={{
-          // Perspective governs the 3D "depth" of the fold. Higher
-          // values = subtler fold; lower = more dramatic.
-          perspective: "2200px",
-          perspectiveOrigin: "top center",
-        }}
-      >
-        {/* ── "PEEK" STRIPS ──
-            Two thin bars, slightly indented and progressively deeper
-            in tone, sit above the folded card face to hint that the
-            paper has more folded panels stacked behind it. Fades out
-            once the card is fully open. */}
-        <motion.div
-          aria-hidden
-          className="mx-auto"
-          animate={{ opacity: isOpen ? 0 : 1 }}
-          transition={{ duration: 0.35, ease: "easeOut" }}
-          style={{ width: "calc(100% - clamp(16px, 3vw, 40px))" }}
-        >
           <div
+            className="mx-auto flex w-full max-w-[1200px] flex-col items-stretch"
             style={{
-              height: "clamp(4px, 0.7vw, 8px)",
-              background: "#E8DFC6",
-              borderRadius: "2px 2px 0 0",
-              width: "calc(100% - clamp(16px, 3vw, 40px))",
-              marginLeft: "auto",
-              marginRight: "auto",
+              // Perspective governs the 3D "depth" of the fold. Higher
+              // values = subtler fold; lower = more dramatic.
+              perspective: "2200px",
+              perspectiveOrigin: "top center",
             }}
-          />
-          <div
-            style={{
-              height: "clamp(4px, 0.7vw, 8px)",
-              background: "#F0E7CE",
-              borderRadius: "2px 2px 0 0",
-              width: "calc(100% - clamp(6px, 1.2vw, 16px))",
-              marginLeft: "auto",
-              marginRight: "auto",
-              marginTop: "2px",
-            }}
-          />
-        </motion.div>
-
-        {/* ── FOLDED CARD (visible face + click target) ── */}
-        <button
-          type="button"
-          onClick={() => setIsOpen((v) => !v)}
-          aria-expanded={isOpen}
-          aria-controls="indicorns-unfold"
-          className="group relative flex w-full cursor-pointer items-center justify-center overflow-hidden text-center"
-          style={{
-            background: CARD_BG_LIGHT,
-            border: "none",
-            padding:
-              "clamp(32px, min(4vw, 6vh), 64px) clamp(24px, min(4vw, 6vh), 64px)",
-            borderRadius: "2px",
-            boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
-          }}
-        >
-          <div className="flex flex-wrap items-center justify-center gap-[clamp(12px,min(1.5vw,2vh),24px)]">
-            <h1
-              className={`m-0 text-[#0E0E0E] ${HERO_HEADING_LIGHT_CLASS}`}
-              style={HEADING_STYLE}
-            >
-              What is an
-            </h1>
-
-            {/* "indicorns" wordmark — coloured Hindi-styled graphic.
-                Slightly larger, and nudged up a touch relative to the
-                "What is an" text via a small negative translateY. */}
-            <div
-              className="relative shrink-0"
+          >
+            {/* ── "PEEK" STRIPS ──
+                Two thin bars, slightly indented and progressively deeper
+                in tone, sit above the folded card face to hint that the
+                paper has more folded panels stacked behind it. Fades out
+                once the card is fully open. */}
+            <motion.div
+              aria-hidden
+              className="mx-auto"
               style={{
-                height: "clamp(48px, min(9vw, 11.5vh), 128px)",
-                aspectRatio: "3.5 / 1",
-                transform: "translateY(clamp(-16px, -1.2vw, -8px))",
+                opacity: peekOpacity,
+                width: "calc(100% - clamp(16px, 3vw, 40px))",
               }}
             >
-              <Image
-                src="/images/indicorns/Indi.png"
-                alt="indicorns"
-                fill
-                sizes="(max-width: 768px) 60vw, 380px"
-                priority
-                className="object-contain"
+              <div
+                style={{
+                  height: "clamp(4px, 0.7vw, 8px)",
+                  background: "#E8DFC6",
+                  borderRadius: "2px 2px 0 0",
+                  width: "calc(100% - clamp(16px, 3vw, 40px))",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                }}
               />
+              <div
+                style={{
+                  height: "clamp(4px, 0.7vw, 8px)",
+                  background: "#F0E7CE",
+                  borderRadius: "2px 2px 0 0",
+                  width: "calc(100% - clamp(6px, 1.2vw, 16px))",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                  marginTop: "2px",
+                }}
+              />
+            </motion.div>
+
+            {/* ── CARD FACE ──
+                No longer a button: the fold is driven by scroll position, so
+                there is nothing to click. The copy stays in the DOM at every
+                fold state, so it remains available to assistive tech. */}
+            <div
+              className="group relative flex w-full flex-col items-center justify-center overflow-hidden text-center"
+              style={{
+                background: CARD_BG_LIGHT,
+                padding:
+                  "clamp(32px, min(4vw, 6vh), 64px) clamp(24px, min(4vw, 6vh), 64px)",
+                borderRadius: "2px",
+                boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+              }}
+            >
+              <div className="flex flex-wrap items-center justify-center gap-[clamp(12px,min(1.5vw,2vh),24px)]">
+                <h1
+                  className={`m-0 text-[#0E0E0E] ${HERO_HEADING_LIGHT_CLASS}`}
+                  style={HEADING_STYLE}
+                >
+                  {headingPrefix}
+                </h1>
+
+                {/* "indicorns" wordmark — coloured Hindi-styled graphic.
+                    Slightly larger, and nudged up a touch relative to the
+                    "What is an" text via a small negative translateY. */}
+                <div
+                  className="relative shrink-0"
+                  style={{
+                    height: "clamp(80px, min(15vw, 18vh), 150px)",
+                    aspectRatio: "3.5 / 1",
+                    transform: "translateY(clamp(-36px, -1.5vw, -14px))",
+                  }}
+                >
+                  <Image
+                    src={wordmark}
+                    alt="indicorns"
+                    fill
+                    sizes="(max-width: 768px) 80vw, 480px"
+                    priority
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+
+              {/* Chevron — commented out while the scroll-driven fold is being
+                  tested. To restore, un-comment and drive `rotate` off
+                  `openness` (0 → 180deg) instead of a click. */}
+              {/*
+              <motion.span
+                aria-hidden
+                className="text-[#0E0E0E]/40"
+                style={{
+                  marginTop: "clamp(12px, min(1.6vw, 2.2vh), 24px)",
+                  rotate: useTransform(openness, [0, 1], [0, 180]),
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path
+                    d="M5 8l5 5 5-5"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </motion.span>
+              */}
+            </div>
+
+            {/* ── UNFOLDING PANELS ──
+                Three FoldPanel leaves pivot down from a common top-edge
+                hinge below the visible card face. Staggered scroll windows
+                make each fold open in sequence, like a letter being
+                unfolded down the middle three times. */}
+            <div id="indicorns-unfold" style={{ position: "relative" }}>
+              <FoldPanel openness={openness} order={0} bg={CARD_BG_LIGHT}>
+                <p
+                  className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-[#0E0E0E]"
+                  style={BODY_TEXT_STYLE}
+                >
+                  {panelOne}
+                </p>
+              </FoldPanel>
+
+              <FoldPanel openness={openness} order={1} bg={CARD_BG_MID}>
+                <p
+                  className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-[#0E0E0E]"
+                  style={BODY_TEXT_STYLE}
+                >
+                  {panelTwo}
+                </p>
+              </FoldPanel>
+
+              <FoldPanel openness={openness} order={2} bg={CARD_BG_LIGHT}>
+                <p
+                  className="m-0 font-['Poppins',_sans-serif] font-normal text-[#0E0E0E]"
+                  style={BODY_TEXT_STYLE}
+                >
+                  {panelThreeIntro}
+                </p>
+
+                <ul
+                  className="m-0 list-disc font-['Poppins',_sans-serif] font-normal text-[#0E0E0E]"
+                  style={{
+                    marginTop: "clamp(16px, min(2vw, 2.6vh), 32px)",
+                    paddingLeft: "clamp(20px, min(2vw, 2.6vh), 32px)",
+                    ...BODY_TEXT_STYLE,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "clamp(10px, min(1.4vw, 1.8vh), 20px)",
+                  }}
+                >
+                  {criteria.map((c, i) => (
+                    <li key={`criterion-${i}`}>
+                      {c.before ? `${c.before} ` : ""}
+                      {c.highlight && <Highlight>{c.highlight}</Highlight>}
+                      {c.after ? ` ${c.after}` : ""}
+                    </li>
+                  ))}
+                </ul>
+              </FoldPanel>
             </div>
           </div>
-
-          {/* Chevron in the corner — rotates when open */}
-          <motion.span
-            aria-hidden
-            className="absolute right-[clamp(16px,min(2vw,3vh),32px)] top-1/2 -translate-y-1/2 text-[#0E0E0E]/40 transition-colors group-hover:text-[#0E0E0E]"
-            animate={{ rotate: isOpen ? 180 : 0 }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path
-                d="M5 8l5 5 5-5"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </motion.span>
-        </button>
-
-        {/* ── UNFOLDING PANELS ──
-            Three FoldPanel leaves pivot down from a common top-edge
-            hinge below the visible card face. Staggered delays make
-            each fold appear to open in sequence, like a letter being
-            unfolded down the middle three times. */}
-        <div id="indicorns-unfold" style={{ position: "relative" }}>
-          <FoldPanel isOpen={isOpen} order={0} bg={CARD_BG_LIGHT}>
-            <p
-              className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-[#0E0E0E]"
-              style={BODY_TEXT_STYLE}
-            >
-              For too long, India&apos;s startup ecosystem has measured
-              success by a single metric borrowed from Silicon Valley: the
-              unicorn — a company worth $1 billion or more. But a
-              billion-dollar valuation is a number defined by someone else,
-              in a currency that&apos;s not ours, against a benchmark that
-              has no grounding in the reality of Indian business
-            </p>
-          </FoldPanel>
-
-          <FoldPanel isOpen={isOpen} order={1} bg={CARD_BG_MID}>
-            <p
-              className="m-0 text-center font-['Poppins',_sans-serif] font-normal text-[#0E0E0E]"
-              style={BODY_TEXT_STYLE}
-            >
-              We asked a different question: what does real, enduring
-              success look like in India?
-            </p>
-          </FoldPanel>
-
-          <FoldPanel isOpen={isOpen} order={2} bg={CARD_BG_LIGHT}>
-            <p
-              className="m-0 font-['Poppins',_sans-serif] font-normal text-[#0E0E0E]"
-              style={BODY_TEXT_STYLE}
-            >
-              The answer became Indicorn — a company that is
-            </p>
-
-            <ul
-              className="m-0 list-disc font-['Poppins',_sans-serif] font-normal text-[#0E0E0E]"
-              style={{
-                marginTop: "clamp(16px, min(2vw, 2.6vh), 32px)",
-                paddingLeft: "clamp(20px, min(2vw, 2.6vh), 32px)",
-                ...BODY_TEXT_STYLE,
-                display: "flex",
-                flexDirection: "column",
-                gap: "clamp(10px, min(1.4vw, 1.8vh), 20px)",
-              }}
-            >
-              <li>
-                Founded in{" "}
-                <Highlight>India within the last 15 years</Highlight>
-              </li>
-              <li>
-                Has crossed{" "}
-                <Highlight>₹100 crore in annual revenue</Highlight>
-              </li>
-              <li>
-                Has <Highlight>achieved profitability</Highlight> — building
-                a business that sustains itself
-              </li>
-            </ul>
-          </FoldPanel>
-        </div>
-      </div>
     </section>
   );
 }

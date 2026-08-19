@@ -1,7 +1,7 @@
 import Footer from "@/components/sections/Footer";
 import IndicornCompanies from "@/components/sections/IndicornCompanies";
 import IndicornsHero from "@/components/sections/IndicornsHero";
-import WhyIndicorns from "@/components/sections/WhyIndicornsClient";
+import WhyIndicorns from "@/components/sections/WhyIndicorns";
 import IndicornTestimonial from "@/components/sections/IndicornTestimonials";
 import { buildMetadata } from "@/sanity/lib/seo";
 

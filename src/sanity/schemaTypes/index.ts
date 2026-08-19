@@ -19,6 +19,10 @@ import { teamMember } from "./teamMember";
 import { siteSeo } from "./siteSeo";
 import { impactAtGlance } from "./impactAtGlance";
 import { indicornSpotlight } from "./indicornSpotlight";
+import { indicornsHero } from "./indicornsHero";
+import { whyIndicorns } from "./whyIndicorns";
+import { indicornCompanies } from "./indicornCompanies";
+import { indicornTestimonials } from "./indicornTestimonials";
 import { portfolioWinnerFund } from "./portfolioWinnerFund";
 import { titanSeedHero } from "./titanSeedHero";
 import { whatFoundersGet } from "./whatFoundersGet";
@@ -45,6 +49,11 @@ export const schemaTypes: SchemaTypeDefinition[] = [
   backedEarly,
   whatWeBelieve,
   whatFoundersGet,
+  /* Indicorns page */
+  indicornsHero,
+  whyIndicorns,
+  indicornCompanies,
+  indicornTestimonials,
   /* Titan Seed page */
   titanSeedHero,
   whyTitanSeed,

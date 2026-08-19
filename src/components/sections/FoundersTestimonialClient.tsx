@@ -446,9 +446,19 @@ function FlipCard({ item }: { item: TestimonialItem }) {
                 paddingLeft: "min(1.85vw, 2.86vh)", paddingRight: "min(1.85vw, 2.86vh)",
               }}
             >
+              {/* Level 6 + 1px. Derived from LABEL_STYLE rather than hardcoded,
+                  so it still tracks the token if that ever changes — and the
+                  +1 lands on both breakpoints because the whole clamp shifts
+                  (12→13 floor, 17→18 ceiling, fluid middle in between).
+                  LABEL_STYLE itself is shared by 11 files, so it is not
+                  touched. */}
               <p
                 className="m-0 font-['Poppins',_sans-serif] font-normal text-black max-md:!leading-[1.5]"
-                style={{ ...LABEL_STYLE, lineHeight: "150%" }}
+                style={{
+                  ...LABEL_STYLE,
+                  fontSize: `calc(${LABEL_STYLE.fontSize} + 1px)`,
+                  lineHeight: "150%",
+                }}
               >
                 {item.text}
               </p>

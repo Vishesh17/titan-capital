@@ -27,7 +27,6 @@ const DISABLED_FOOTER_LINKS = new Set([
   "Our Story",
   "Founders' Stories",
   "Titan Ecosystem",
-  "Indicorns",
   "Blogs & News",
 ]);
 
