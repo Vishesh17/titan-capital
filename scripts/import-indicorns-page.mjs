@@ -121,27 +121,31 @@ const WHY = {
     "On the main stage at TechSparks, India's largest startup summit, Kunal Bahl introduced a word the ecosystem didn't have: Indicorn.",
     "The businesses it described had been building quietly for years: profitable, growing, and largely unfunded. They had every marker of success except one: recognition. A month later, Titan Capital published the first list.",
   ],
+  /* One description per card — `statSub` is intentionally omitted. A caption
+     beneath the number plus a description repeated the same sentence on
+     screen; scripts/patch-indicorn-timeline.mjs collapsed the live content to
+     one, and this import must not reintroduce the duplicate. */
   timeline: [
     {
       date: "September 2024",
-      title: "The term is coined\n'Indicorn'.",
+      title: "The term is coined",
       desc: '"Indicorn" is unveiled on the TechSparks main stage naming a kind of company that always existed but was never celebrated.',
+      statNumber: "1",
+      statLabel: "New Term",
     },
     {
       date: "October 2024",
       title: "The First List",
-      desc: "Titan Capital publishes the inaugural index, built to make the criteria clear and the data irrefutable.",
+      desc: "Titan Capital publishes the inaugural index, screened with Tracxn across 3M+ companies and 2,700 sectors.",
       statNumber: "186",
       statLabel: "Companies\nRecognized",
-      statSub: "Powered by Tracxn - 3M+ Companies, 2,700\nsector",
     },
     {
       date: "2025",
       title: "The Moment Grows.",
-      desc: "A year on, the index expands-proof that profitable, enduring businesses are scaling right across India.",
+      desc: "₹151K Cr in combined revenue and ₹7K Cr in profit in FY24, proof that profitable businesses are scaling right across India.",
       statNumber: "202",
       statLabel: "Indicorns\nIdentified",
-      statSub: "₹1,51,137 Cr in revenue, ₹7,393 Cr in profits",
     },
     {
       date: "2026",
