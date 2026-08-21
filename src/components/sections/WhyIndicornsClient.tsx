@@ -271,7 +271,8 @@ export default function WhyIndicorns({
      className={`m-0 text-center font-semibold text-black max-md:!mb-[clamp(32px,6dvh,48px)] ${SECTION_HEADING_CLASS}`}
      style={{
       ...SECTION_HEADING_STYLE,
-      marginBottom: "min(5.79vw, 8.95vh)",
+      // Heading → story block. Was min(5.79vw, 8.95vh) — 64px at 1280x720.
+      marginBottom: "min(3.5vw, 5.4vh)",
      }}
     >
           {headingTop}
@@ -387,8 +388,10 @@ export default function WhyIndicorns({
                       rail is plain flex, not subgrid, so no placeholder row is
                       needed for the cards that carry no stat. */}
                   {item.statNumber && (
-                    <div className="mb-[20px]">
-                      <div className="mb-[8px] flex items-center gap-[12px]">
+                    <div className="mb-[10px]">
+                      {/* Bottom margin only when a caption follows — see the
+                          desktop card for why. */}
+                      <div className={`flex items-center gap-[12px] ${item.statSub ? "mb-[8px]" : ""}`}>
                         <span className={`font-medium text-black ${SUBHEADING_CLASS}`}>
                           {item.statNumber}
                         </span>
@@ -396,9 +399,11 @@ export default function WhyIndicorns({
                           {item.statLabel}
                         </span>
                       </div>
-                      <p className="m-0 whitespace-pre-line leading-[1.4] text-[#6b6b6b]" style={LABEL_STYLE}>
-                        {item.statSub}
-                      </p>
+                      {item.statSub && (
+                        <p className="m-0 whitespace-pre-line leading-[1.4] text-[#6b6b6b]" style={LABEL_STYLE}>
+                          {item.statSub}
+                        </p>
+                      )}
                     </div>
                   )}
                   {/* HERO_BODY_CLASS is deliberately not used: it carries a
@@ -462,7 +467,9 @@ export default function WhyIndicorns({
              text column, not the image, is what sets this row's height, so
              giving the copy more width costs the image nothing and removes
              a wrapped line or two — the cheapest height saving available. */
-          className="max-md:hidden grid grid-cols-1 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] items-center gap-[clamp(48px,min(6vw,8vh),96px)] mb-[clamp(48px,min(7vw,10vh),120px)]"
+          /* The trailing `mb-` is the story → timeline gap. Was
+             clamp(48px,min(7vw,10vh),120px), i.e. 72px at 1280x720. */
+          className="max-md:hidden grid grid-cols-1 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] items-center gap-[clamp(48px,min(6vw,8vh),96px)] mb-[clamp(32px,min(4.2vw,6vh),72px)]"
         >
           {/* Image — LANDSCAPE (16:10) to suit the stage photo; a square crop
               would cut the speakers off at both edges. Both a width cap and a
@@ -608,9 +615,13 @@ export default function WhyIndicorns({
                     paddingTop: "var(--tl-pad)",
                     paddingLeft: "var(--tl-pad)",
                     paddingRight: "var(--tl-pad)",
-                    // Extra room at the bottom so the progress bar doesn't
-                    // crowd the stats line.
-                    paddingBottom: "calc(var(--tl-pad) + clamp(12px, 1.8vh, 28px))",
+                    /* A little more than the other sides, to clear the 4px
+                       progress bar pinned to the card's bottom edge. The old
+                       allowance was clamp(12px, 1.8vh, 28px) — sized back when
+                       the stats block was the last thing in the card and
+                       needed breathing room beneath it. The description ends
+                       the card now, so it only has to clear the bar. */
+                    paddingBottom: "calc(var(--tl-pad) + clamp(2px, 0.4vh, 8px))",
                     /* Inherit the track's row sizes rather than sizing its own
                        rows — this is what makes every card's parts line up. */
                     gridTemplateRows: "subgrid",
@@ -682,11 +693,16 @@ export default function WhyIndicorns({
                   {item.statNumber && (
                     <div
                       className="relative z-20"
-                      style={{ marginBottom: "clamp(16px, 2.6vh, 24px)" }}
+                      style={{ marginBottom: "clamp(8px, 1.3vh, 12px)" }}
                     >
                       <div
                         className="flex items-center gap-3"
-                        style={{ marginBottom: "clamp(6px, 1vh, 8px)" }}
+                        /* Only when a caption follows. This margin separates
+                           the number from `statSub`; with no caption it was
+                           dead space padding the bottom of the stat block. */
+                        style={{
+                          marginBottom: item.statSub ? "clamp(6px, 1vh, 8px)" : 0,
+                        }}
                       >
                         <span
                           className={`font-medium text-black ${SUBHEADING_CLASS}`}
@@ -701,12 +717,14 @@ export default function WhyIndicorns({
                           {item.statLabel}
                         </span>
                       </div>
-                      <p
-                        className="m-0 text-[#6b6b6b] leading-[1.4] whitespace-pre-line"
-                        style={LABEL_STYLE}
-                      >
-                        {item.statSub}
-                      </p>
+                      {item.statSub && (
+                        <p
+                          className="m-0 text-[#6b6b6b] leading-[1.4] whitespace-pre-line"
+                          style={LABEL_STYLE}
+                        >
+                          {item.statSub}
+                        </p>
+                      )}
                     </div>
                   )}
 
