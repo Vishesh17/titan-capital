@@ -102,6 +102,22 @@ const FALLBACK_TIMELINE: WhyIndicornsTimelineEntry[] = [
 /** How many timeline cards are visible at once on desktop. */
 const VISIBLE = 3;
 
+/**
+ * Card content order is: date · title · stat · description, with the
+ * description last.
+ *
+ * The date line and the description share ONE size, held here so they cannot
+ * drift apart. The description used to be a full body-copy size (up to 20px)
+ * against a date line of `min(1.16vw, 1.8vh)` — the two happen to coincide at
+ * 1728x1117, which is why the gap only shows up elsewhere: at 1280x720 the
+ * description rendered 17.6px against the date's 13.0px.
+ *
+ * Size only. The description keeps its own, lighter colour.
+ */
+const CARD_META_FONT_SIZE = "min(1.16vw, 1.8vh)";
+/** Mobile counterpart — the mobile date line is a flat 13px. */
+const CARD_META_FONT_SIZE_MOBILE = "13px";
+
 
 export default function WhyIndicorns({
   data,
@@ -363,11 +379,11 @@ export default function WhyIndicorns({
                   <h4 className={`m-0 mb-[12px] whitespace-pre-line text-black ${BODY_BOLD_CLASS}`} style={HERO_BODY_STYLE}>
                     {item.title}
                   </h4>
-                  <p className={`font-normal m-0 text-[#4a4a4a] ${HERO_BODY_CLASS}`} style={HERO_BODY_STYLE}>
-                    {item.desc}
-                  </p>
+                  {/* Same order as desktop: stat, then description last. This
+                      rail is plain flex, not subgrid, so no placeholder row is
+                      needed for the cards that carry no stat. */}
                   {item.statNumber && (
-                    <div className="mt-[20px]">
+                    <div className="mb-[20px]">
                       <div className="mb-[8px] flex items-center gap-[12px]">
                         <span className={`font-medium text-black ${SUBHEADING_CLASS}`}>
                           {item.statNumber}
@@ -381,6 +397,15 @@ export default function WhyIndicorns({
                       </p>
                     </div>
                   )}
+                  {/* HERO_BODY_CLASS is deliberately not used: it carries a
+                      `max-md:!text-[16.33px]`, and !important beats an inline
+                      style, so the size below would be ignored on mobile. */}
+                  <p
+                    className="m-0 font-normal leading-[1.6] text-[#4a4a4a]"
+                    style={{ fontSize: CARD_META_FONT_SIZE_MOBILE }}
+                  >
+                    {item.desc}
+                  </p>
                 </div>
               );
             })}
@@ -515,14 +540,18 @@ export default function WhyIndicorns({
             style={{
               /* One shared row grid for every card: bullet · date · title ·
                  desc · stats. The cards opt into it with `subgrid`, so the
-                 date line, the title, the description and the big number all
+                 date line, the title, the big number and the description all
                  sit on the SAME baseline across cards — even when one title
                  wraps to two lines or one caption wraps and another doesn't.
-                 `1fr` on the description row absorbs the slack, which is what
-                 pins the stats row to a common top edge. */
+
+                 Row order follows the content: bullet · date · title · stat ·
+                 description. The `1fr` therefore moved to the LAST row: it
+                 used to sit on the description so that the stats below it were
+                 pushed to a common bottom edge, but the description is now the
+                 final row, so the slack belongs after it. */
               gridAutoFlow: "column",
               gridAutoColumns: "var(--tl-card)",
-              gridTemplateRows: "auto auto auto 1fr auto",
+              gridTemplateRows: "auto auto auto auto 1fr",
               columnGap: "var(--tl-gap)",
               /* Slide by whole card pitches. CSS interpolates between two
                  calc() values, so this needs no measurement and stays exact
@@ -633,23 +662,24 @@ export default function WhyIndicorns({
                     className={`m-0 whitespace-pre-line relative z-20 text-black ${BODY_BOLD_CLASS}`}
                     style={{
                       ...HERO_BODY_STYLE,
-                      marginBottom: "clamp(10px, 1.7vh, 16px)",
+                      /* Small, because the shared title row is already as tall
+                         as the TALLEST title across the cards — two lines,
+                         thanks to "The term is coined / 'Indicorn'." So a
+                         one-line title like "The First List" already carries a
+                         blank line beneath it before this margin is added, and
+                         the stat drifted a long way from its heading. */
+                      marginBottom: "clamp(4px, 0.8vh, 8px)",
                     }}
                   >
                     {item.title}
                   </h4>
-                  <p
-                    className={`font-normal m-0 relative z-20 text-[#4a4a4a] ${HERO_BODY_CLASS}`}
-                    style={{
-                      ...HERO_BODY_STYLE,
-                      marginBottom: item.statNumber ? "clamp(16px, 2.6vh, 24px)" : 0,
-                    }}
-                  >
-                    {item.desc}
-                  </p>
 
+                  {/* Stat sits ABOVE the description, which is the last line. */}
                   {item.statNumber && (
-                    <div className="relative z-20">
+                    <div
+                      className="relative z-20"
+                      style={{ marginBottom: "clamp(16px, 2.6vh, 24px)" }}
+                    >
                       <div
                         className="flex items-center gap-3"
                         style={{ marginBottom: "clamp(6px, 1vh, 8px)" }}
@@ -675,6 +705,24 @@ export default function WhyIndicorns({
                       </p>
                     </div>
                   )}
+
+                  <p
+                    className="font-normal m-0 relative z-20 leading-[1.6] text-[#4a4a4a]"
+                    style={{
+                      fontSize: CARD_META_FONT_SIZE,
+                      /* A card with no stat starts its text on the STAT row
+                         rather than the description row, so it lines up with
+                         the big numbers beside it instead of hanging a whole
+                         empty stat block below its title. Spanning `4 / -1`
+                         rather than just sitting in row 4 matters: row 5 is
+                         the `1fr`, so a long description overflows into the
+                         slack instead of inflating the stat row and shoving
+                         every other card's description down. */
+                      ...(item.statNumber ? null : { gridRow: "4 / -1" }),
+                    }}
+                  >
+                    {item.desc}
+                  </p>
                 </motion.div>
               );
             })}

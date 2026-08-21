@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
+import { useLenis } from "lenis/react";
 import {
   motion,
-  useScroll,
-  useSpring,
+  animate,
+  useMotionValue,
   useTransform,
   cubicBezier,
   type MotionValue,
@@ -17,16 +18,11 @@ import {
 } from "@/styles/heroTypography";
 
 /**
- * /indicorns page hero — a folded "WHAT ARE indicorns" card that unfolds AS
- * YOU SCROLL, imitating a letter that was folded three times. Each of the
- * three body panels lives above the visible face when the card is shut; as
- * the page scrolls they pivot down about their top edge (rotateX −90° → 0°)
- * one after the other with a shared perspective on the container, so the eye
- * reads it as paper.
- *
- * The card sits in normal flow at its natural size — nothing is scaled and no
- * space is reserved — so while it is folded the next section shows directly
- * beneath it. See SCROLL CHOREOGRAPHY below.
+ * /indicorns page hero — a "WHAT ARE indicorns" card that unfolds like a letter
+ * folded three times. Each of the three body panels lives above the visible
+ * face when the card is shut; as it opens they pivot down about their top edge
+ * (rotateX −90° → 0°) one after the other with a shared perspective on the
+ * container, so the eye reads it as paper.
  *
  * COLOURS (sampled from the design):
  *   - Card body (folded + panel 1 + panel 3) → #FBF7F0  (site cream)
@@ -78,8 +74,45 @@ const HIGHLIGHT_BG = "#D3E2FF";
 
 const HEADING_STYLE: React.CSSProperties = HERO_HEADING_LIGHT_STYLE;
 
-const PANEL_PADDING =
-  "clamp(28px, min(4vw, 5.5vh), 64px) clamp(24px, min(6vw, 8vh), 96px)";
+/**
+ * Intrinsic aspect of the wordmark artwork (Indi.png is 1712 x 404).
+ *
+ * The box used to be a round `3.5 / 1`, which does NOT match the file. Inside
+ * an `object-contain` box a mismatch letterboxes: at a 144px box the artwork
+ * painted only 118px, leaving 13px of empty space above and below it, and
+ * making the row 9.7px taller than the heading it sits beside. That is 36px of
+ * height that looks exactly like padding but cannot be tuned as padding.
+ *
+ * Matching the real ratio removes it with no change to the rendered logo — the
+ * artwork is centred in the box either way, so heading and wordmark keep the
+ * same optical relationship; only the empty margin around the artwork goes.
+ *
+ * If an editor uploads a wordmark with a different ratio it simply letterboxes
+ * again, exactly as before — never cropped or distorted.
+ */
+const WORDMARK_ASPECT = "1712 / 404";
+
+/**
+ * Padding inside each unfolded leaf, split into two axes.
+ *
+ * VERTICAL sets the gap between a fold's text and the crease above it — and
+ * the first leaf's top padding is half of the space under the closed card's
+ * heading, so it is tuned together with the card face's padding.
+ *
+ * HORIZONTAL is the reading measure and is deliberately much larger; it is
+ * left alone when the vertical rhythm is tightened, because shortening the
+ * line length is what makes this copy readable at 1200px.
+ *
+ * Two constants rather than one shorthand string. The shorthand was being
+ * torn apart with `PANEL_PADDING.split(" ")[1]` to recover the horizontal
+ * half, which yields the fragment `"min(4vw,"` — so the `calc()` built from
+ * it was invalid, silently dropped, and the per-panel trapezoid clearance it
+ * was meant to add never applied to anything. Longhands also matter for
+ * framer-motion, which expands a `padding` shorthand itself and can drop
+ * values it cannot parse.
+ */
+const PANEL_PAD_Y = "clamp(11px, min(1.25vw, 1.9vh), 22px)";
+const PANEL_PAD_X = "clamp(24px, min(6vw, 8vh), 96px)";
 
 /** Hero body copy — the description and the bullets beneath it. */
 const BODY_TEXT_STYLE: React.CSSProperties = {
@@ -142,43 +175,71 @@ const PANEL_SHAPES: PanelSpec[] = [
 ];
 
 /**
- * SCROLL CHOREOGRAPHY
+ * CHOREOGRAPHY
  *
- * The section sits in NORMAL FLOW — no sticky pin, no tall runway — so while
- * the card is folded it occupies only its own compact height and the next
- * section is visible right beneath it.
+ * `openness` (0 folded → 1 open) is NOT a function of scroll position. It is a
+ * plain animated value, and the scroll wheel is treated as a discrete GESTURE
+ * that triggers it. The sequence, on desktop:
  *
- * `openness` is therefore a function of raw window scroll, with the
- * thresholds expressed as fractions of the viewport height so the pacing
- * feels the same on a 617px laptop and a 1117px one:
+ *   land on the page      card folded
+ *   scroll down once      that gesture is swallowed; the card unfolds and the
+ *                         page is held for LOCK_SECONDS so you cannot scroll
+ *                         straight past a card that is still opening
+ *   scroll down again     nothing is intercepted — you simply carry on to the
+ *                         next section. The card does NOT fold itself
+ *   back at the top       if the card is shut (the arrow closed it), the next
+ *                         downward scroll opens it again — the gesture re-arms
+ *                         purely from "shut AND at the top", so it never gets
+ *                         permanently used up
  *
- *   0.00 ─▶ 0.04 vh   folded — only while you are at the very top
- *   0.04 ─▶ 0.58 vh   unfolds, leaf by leaf
- *   0.58 vh and past   STAYS OPEN
+ * WHY A GESTURE AND NOT SCROLL POSITION. A scrubbed version needs a tall
+ * runway plus a sticky pin, and then coming back up the runway replays the
+ * fold in reverse; suppressing that replay leaves a screenful of empty pinned
+ * scrolling.
  *
- * There is no closing phase: once opened the letter stays open for the rest
- * of the page. It only re-folds by scrolling back to the top, which is the
- * same range played in reverse.
+ * WHY THE PAGE DOESN'T JUMP. The section stays in normal flow and really does
+ * grow when it opens — but that is gated to scrollY 0, so the size change
+ * happens strictly BELOW the top edge of the viewport. Nothing on screen
+ * moves; the sections underneath are simply pushed further down. And because
+ * the card never folds on its own, the section can no longer collapse out from
+ * under a reader who is already partway down the page.
  *
- * Driving off scrollY (rather than the section's own geometry) matters: the
- * card grows as it opens, and any progress derived from its height would feed
- * back into itself and jitter. The card's TOP never moves, so scrollY is a
- * stable input.
+ * LOCK_SECONDS is deliberately shorter than OPEN_SECONDS. Every scroll input
+ * that arrives while the page is held is swallowed outright, so a lock lasting
+ * the whole unfold makes the page feel like it is ignoring you. Releasing
+ * early lets the last leaves settle while you are already moving on.
  *
- * Each leaf consumes a WINDOW of the 0→1 range rather than firing on a timer,
- * so the stagger is a property of scroll position, not elapsed time. Because
- * the windows are just ranges, scrolling back up plays the fold in reverse
- * for free — bottom leaf closes first, exactly mirroring the open.
+ * The open card needs no help filling the screen: it measures 965px of a
+ * 1117px viewport, and 615px of 617px on a short laptop.
+ *
+ * MOBILE opts out entirely: no gesture capture and no fixed height. The open
+ * card is 797px against an 812px viewport on a tall phone and overflows a
+ * short one outright, so a "you cannot scroll past" rule there would trap the
+ * reader. On mobile the arrow button is the only control and the page scrolls
+ * normally at all times.
  */
 const FOLD_SPAN = 0.62;
 const FOLD_STEP = (1 - FOLD_SPAN) / 2;
 const FOLD_EASE = cubicBezier(0.22, 1, 0.36, 1);
 
-/** Scroll thresholds, as multiples of the viewport height. */
-const OPEN_START = 0.04;
-/* Spread over more than half a viewport of scrolling — the wider this range,
-   the slower the paper opens for the same wheel movement. */
-const OPEN_END = 0.58;
+/* Seconds, and now honest ones: the driver is linear (see the `animate` call),
+   so these are the times you actually see rather than a nominal length mostly
+   spent in an invisible tail. The three leaves stagger across the window, so
+   the last one lands at ~78% of OPEN_SECONDS — 1.4s of visible unfolding.
+
+   LOCK is how long the page is held, and is deliberately shorter than the
+   unfold: scroll input that arrives while the page is stopped is swallowed
+   outright, so locking for the whole animation makes the page feel like it is
+   ignoring you. It releases just before the last leaf settles. */
+const OPEN_SECONDS = 1.8;
+const CLOSE_SECONDS = 1.2;
+const LOCK_SECONDS = 1.1;
+
+/** Below this the gesture capture is off entirely — see MOBILE above. */
+const CAPTURE_MIN_WIDTH = "(min-width: 768px)";
+
+/** Treat the hero as "at the top" within this many px of scroll. */
+const TOP_EPSILON = 4;
 
 /**
  * FoldPanel — one leaf of the tri-folded letter.
@@ -236,9 +297,12 @@ function FoldPanel({
   // once flat.
   const creaseOpacity = useTransform(rotateX, [-90, -30, 0], [0.55, 0.22, 0]);
 
-  // Trapezoidal panels get a little extra horizontal padding so text
-  // stays clear of the sloped side edges.
-  const sidePad = order === 0 ? "0" : order === 1 ? "1.5%" : "3%";
+  /* The trapezoidal panels used to ask for extra horizontal padding here, to
+     keep text clear of the sloped side edges. It never took effect (see the
+     note on PANEL_PAD_X) and it is not needed: the widest taper insets a
+     panel's TOP edge by 1.4-1.5% of its own width — about 18px at the 1200px
+     cap, 5px on a phone — against a horizontal padding that is never below
+     24px. Text has always cleared the slope on its own. */
 
   return (
     <motion.div
@@ -267,9 +331,10 @@ function FoldPanel({
           WebkitBackfaceVisibility: "hidden",
           backfaceVisibility: "hidden",
           willChange: "transform",
-          padding: PANEL_PADDING,
-          paddingLeft: `calc(${PANEL_PADDING.split(" ")[1]} + ${sidePad})`,
-          paddingRight: `calc(${PANEL_PADDING.split(" ")[1]} + ${sidePad})`,
+          paddingTop: PANEL_PAD_Y,
+          paddingBottom: PANEL_PAD_Y,
+          paddingLeft: PANEL_PAD_X,
+          paddingRight: PANEL_PAD_X,
         }}
       >
         {children}
@@ -305,40 +370,118 @@ export default function IndicornsHeroClient({
   const criteria =
     data?.criteria && data.criteria.length > 0 ? data.criteria : FALLBACK_CRITERIA;
 
-  /* Viewport height drives the scroll thresholds, so the fold is paced the
-     same on a short laptop as on a tall one. Read into state (not `vh` units)
-     because the thresholds are compared against scrollY in pixels. */
-  const [vh, setVh] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+
+  /* `openness` is animated, never scrubbed — see CHOREOGRAPHY. */
+  const openness = useMotionValue(0);
   useEffect(() => {
-    const read = () => setVh(window.innerHeight);
-    read();
-    window.addEventListener("resize", read);
-    return () => window.removeEventListener("resize", read);
-  }, []);
+    /* LINEAR ON PURPOSE — do not "restore" the house easing here.
+       FOLD_EASE is already applied per leaf inside FoldPanel. Easing this
+       driver too composes the curve with itself, and cubic-bezier(.22,1,.36,1)
+       is ~55% done in its first 10% of time, so squaring it collapses the
+       whole animation into a blink: at a nominal 2.2s the card was fully open
+       after 0.58s, with 1.6s of invisible tail left over. Linear here means
+       the duration below is the duration you actually see, and the three
+       leaves stagger evenly across it. */
+    const controls = animate(openness, isOpen ? 1 : 0, {
+      duration: isOpen ? OPEN_SECONDS : CLOSE_SECONDS,
+      ease: "linear",
+    });
+    return () => controls.stop();
+  }, [isOpen, openness]);
 
-  const { scrollY } = useScroll();
+  /* The wheel handler needs today's value synchronously on every event, and
+     re-rendering for each one would be wasteful and a frame behind — so the
+     open flag is mirrored into a ref. */
+  const openRef = useRef(false);
+  useEffect(() => {
+    openRef.current = isOpen;
+  }, [isOpen]);
 
-  const rawOpenness = useTransform(scrollY, (y) => {
-    if (!vh) return 0;
-    const openStart = vh * OPEN_START;
-    const openEnd = vh * OPEN_END;
+  /** True while the page is being held for an unfold. */
+  const busy = useRef(false);
+  const timer = useRef<number | null>(null);
 
-    if (y <= openStart) return 0;
-    if (y < openEnd) return FOLD_EASE((y - openStart) / (openEnd - openStart));
-    // Past the opening range it stays open — no close phase.
-    return 1;
-  });
+  /**
+   * The page is scrolled by Lenis, not by the browser, so `preventDefault` on
+   * wheel achieves nothing here — Lenis has already called it and is moving
+   * the page from its own loop. `lenis.stop()` is the real brake. Keyboard is
+   * the exception: Lenis leaves arrow/page keys to the browser, so those still
+   * have to be cancelled by hand.
+   */
+  const lenis = useLenis();
 
-  /* Spring-smoothed before it drives anything. Raw scroll is stepped —
-     especially on a mouse wheel — and binding the fold straight to it looks
-     mechanical. The spring keeps the paper moving for a beat after the wheel
-     stops, which is what separates "tied to a scrollbar" from "premium". */
-  const openness = useSpring(rawOpenness, {
-    // Softer and heavier than before, so each leaf settles more slowly.
-    stiffness: 80,
-    damping: 22,
-    mass: 0.5,
-  });
+  /** The arrow button. Taking manual control retires the scroll gesture for
+   *  good, so a later scroll can't fight whatever the reader just chose. */
+  const toggle = useCallback(() => {
+    if (timer.current) window.clearTimeout(timer.current);
+    busy.current = false;
+    lenis?.start();
+    /* Unfolding grows the section. That is invisible at the top of the page,
+       but if the reader has come back UP to the hero and is sitting a little
+       way down it, the growth would shove what they are looking at downwards.
+       Returning to the top first keeps the card the fixed point. */
+    if (!isOpen && window.scrollY > TOP_EPSILON) lenis?.scrollTo(0);
+    setIsOpen((o) => !o);
+  }, [isOpen, lenis]);
+
+  useEffect(() => {
+    if (!lenis) return;
+    if (!window.matchMedia(CAPTURE_MIN_WIDTH).matches) return;
+
+    /* The only condition. No latch and no spent flag: the gesture is armed
+       exactly when the card is shut and you are at the top, so it works the
+       first time and every time you come back up to a shut card. */
+    const armed = () =>
+      !busy.current && !openRef.current && window.scrollY <= TOP_EPSILON;
+
+    const openAndHold = () => {
+      setIsOpen(true);
+      busy.current = true;
+      lenis.stop();
+      if (timer.current) window.clearTimeout(timer.current);
+      timer.current = window.setTimeout(() => {
+        busy.current = false;
+        timer.current = null;
+        lenis.start();
+      }, LOCK_SECONDS * 1000);
+    };
+
+    const onWheel = (e: WheelEvent) => {
+      if (e.deltaY > 0 && armed()) openAndHold();
+    };
+
+    const DOWN_KEYS = ["ArrowDown", "PageDown", "End", " ", "Spacebar"];
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!DOWN_KEYS.includes(e.key) || e.shiftKey) return;
+      const t = e.target as HTMLElement | null;
+      // Never swallow a key aimed at a control or a text field.
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT|BUTTON|A)$/.test(t.tagName)))
+        return;
+      // Lenis leaves these keys to the browser, so blocking them is on us.
+      if (busy.current) {
+        e.preventDefault();
+        return;
+      }
+      if (armed()) {
+        e.preventDefault();
+        openAndHold();
+      }
+    };
+
+    window.addEventListener("wheel", onWheel, { passive: true });
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("keydown", onKeyDown);
+      if (timer.current) window.clearTimeout(timer.current);
+      // Never leave the page frozen behind an unmounted component.
+      busy.current = false;
+      lenis.start();
+    };
+  }, [lenis]);
+
+  const chevronRotate = useTransform(openness, [0, 1], [0, 180]);
 
   // The peek strips hint "there's more folded behind this" — no job once the
   // letter is open, so they fade early.
@@ -346,10 +489,23 @@ export default function IndicornsHeroClient({
 
   return (
     <section
+      /* CONSTANT HEIGHT ON DESKTOP — the whole reason the page never jumps.
+         `100vh − nav` whether the card is shut or open, with the card centred,
+         so unfolding grows it about its own middle and the document height
+         does not move. Mobile stays auto-height: the open card can exceed the
+         viewport there, and a fixed height would clip it. */
       className="relative w-full bg-white"
+      /* NORMAL FLOW, sized to its content — no pin, no reserved screen. While
+         the card is shut the section is only as tall as the shut card, so the
+         next section shows right beneath it, and unfolding grows it in place.
+         The open card needs no forcing to fill the screen: it already comes to
+         965px of a 1117px viewport, and 615px of 617px on a short laptop.
+
+         Growing and shrinking here is safe because the whole open/fold cycle
+         is gated to scrollY 0 (see CHOREOGRAPHY). Everything that changes size
+         is BELOW the viewport's top edge, so the page never appears to move —
+         which is what keeps the fold from throwing you into the next section. */
       style={{
-        // Sizes to its content: compact while the card is folded — so the next
-        // section shows right beneath it — then grows as the leaves unfold.
         marginTop: "var(--nav-height)",
         paddingTop: "var(--section-py)",
         paddingBottom: "var(--section-py)",
@@ -410,13 +566,30 @@ export default function IndicornsHeroClient({
               className="group relative flex w-full flex-col items-center justify-center overflow-hidden text-center"
               style={{
                 background: CARD_BG_LIGHT,
+                /* Deliberately tighter than a normal section: the folded card
+                   is the whole first screen, and at the old 64px ceiling it
+                   stood 425px tall to hold one line of type.
+
+                   This is also the lever on the gap BELOW the heading once the
+                   card opens: that gap is this bottom padding plus the first
+                   fold panel's own top padding, so trimming here narrows the
+                   opened state too.
+
+                   The HORIZONTAL value is the smaller of the two on purpose.
+                   Nothing but the heading row lives in this box — the three
+                   fold panels carry their own, much wider, PANEL_PADDING — so
+                   side padding here buys no readability, it only narrows the
+                   line and forces the wrap described below. */
                 padding:
-                  "clamp(32px, min(4vw, 6vh), 64px) clamp(24px, min(4vw, 6vh), 64px)",
+                  "clamp(14px, min(1.5vw, 2.2vh), 24px) clamp(16px, min(2vw, 3vh), 32px)",
                 borderRadius: "2px",
                 boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
               }}
             >
-              <div className="flex flex-wrap items-center justify-center gap-[clamp(12px,min(1.5vw,2vh),24px)]">
+              {/* Heading + wordmark. `flex-wrap` is for MOBILE, where the
+                  wordmark has to drop below the text. On desktop the two must
+                  stay on one line — see the width budget on the wordmark. */}
+              <div className="flex flex-wrap items-center justify-center gap-[clamp(8px,min(0.9vw,1.2vh),14px)]">
                 <h1
                   className={`m-0 text-[#0E0E0E] ${HERO_HEADING_LIGHT_CLASS}`}
                   style={HEADING_STYLE}
@@ -426,12 +599,33 @@ export default function IndicornsHeroClient({
 
                 {/* "indicorns" wordmark — coloured Hindi-styled graphic.
                     Slightly larger, and nudged up a touch relative to the
-                    "What is an" text via a small negative translateY. */}
+                    "What is an" text via a small negative translateY.
+
+                    HEIGHT is the height of the BOX, and with WORDMARK_ASPECT
+                    the box is now the artwork — so every term is the old one
+                    scaled by 118/144, the fraction the artwork actually filled
+                    before. The rendered logo is therefore unchanged at every
+                    viewport; only the empty margin around it is gone.
+
+                    WIDTH BUDGET — why the ceiling is 118px and not higher.
+                    This box is `shrink-0` with a fixed aspect, so it cannot
+                    give way: if heading + gap + wordmark exceeds the card's
+                    inner width, the row wraps and the card grows by a whole
+                    extra line. The worst case is the widest heading, which is
+                    its 112px clamp ceiling — "WHAT ARE" measures 588px there.
+                    Against the 1136px inner width (1200px cap − 2 × 32px):
+
+                        588 heading + 14 gap + 500 wordmark = 1102px   ✓ 34px spare
+
+                    Originally this was 150px / 3.5:1 — a 525px wordmark and a
+                    1137px row against the 1072px available then, so every
+                    viewport tall enough to reach the heading ceiling wrapped
+                    and cost the card an extra 172px of height. */}
                 <div
                   className="relative shrink-0"
                   style={{
-                    height: "clamp(80px, min(15vw, 18vh), 150px)",
-                    aspectRatio: "3.5 / 1",
+                    height: "clamp(66px, min(12.29vw, 14.75vh), 118px)",
+                    aspectRatio: WORDMARK_ASPECT,
                     transform: "translateY(clamp(-36px, -1.5vw, -14px))",
                   }}
                 >
@@ -446,29 +640,50 @@ export default function IndicornsHeroClient({
                 </div>
               </div>
 
-              {/* Chevron — commented out while the scroll-driven fold is being
-                  tested. To restore, un-comment and drive `rotate` off
-                  `openness` (0 → 180deg) instead of a click. */}
-              {/*
-              <motion.span
-                aria-hidden
-                className="text-[#0E0E0E]/40"
+              {/* ── ARROW ──
+                  Centred under the heading, and the ONLY control once the
+                  scroll gesture has retired itself. The chevron rotates off
+                  the live `openness`, so it tracks the paper rather than the
+                  click — press it mid-fold and it turns around from wherever
+                  the animation had got to. */}
+              <motion.button
+                type="button"
+                onClick={toggle}
+                aria-expanded={isOpen}
+                aria-controls="indicorns-unfold"
+                aria-label={isOpen ? "Fold the card" : "Unfold the card"}
+                className="group/arrow flex cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 text-[#0E0E0E]/40 transition-colors duration-300 hover:text-[#0E0E0E]/75 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0E0E0E]/40"
+                /* Both numbers feed the closed card's height, so both are kept
+                   tight: the gap above, and the box itself, which was a 40px
+                   square around a 20px chevron — 20px of it pure air. */
                 style={{
-                  marginTop: "clamp(12px, min(1.6vw, 2.2vh), 24px)",
-                  rotate: useTransform(openness, [0, 1], [0, 180]),
+                  marginTop: "clamp(0px, min(0.3vw, 0.4vh), 5px)",
+                  width: "clamp(22px, min(1.7vw, 2.4vh), 28px)",
+                  height: "clamp(22px, min(1.7vw, 2.4vh), 28px)",
                 }}
               >
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path
-                    d="M5 8l5 5 5-5"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </motion.span>
-              */}
+                <motion.span
+                  aria-hidden
+                  className="block"
+                  style={{ rotate: chevronRotate }}
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    className="block h-full w-full"
+                  >
+                    <path
+                      d="M5 8l5 5 5-5"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </motion.span>
+              </motion.button>
             </div>
 
             {/* ── UNFOLDING PANELS ──
