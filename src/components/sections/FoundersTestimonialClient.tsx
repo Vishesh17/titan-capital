@@ -370,6 +370,38 @@ function lineColour(s: number): string {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
+/* ── WHY THE FRAMING SLIPS ON A PHONE ──
+ *
+ * `imagePositionX/Y` are ABSOLUTE PIXELS, and the box they nudge the photo
+ * inside is not a fixed size — it is 74% of a card that is `--tm-card` wide.
+ * Measured at the 1728x1117 reference that box is 441x408; on a 375px phone the
+ * card drops to `clamp(240px,70vw,280px)` and the box becomes about 262x243,
+ * which is 0.6x. The editor's nudge does not shrink with it, so relative to the
+ * frame every offset lands roughly 1.7x further than it was tuned to — which is
+ * what pushes a face off-centre or crops a portrait at the chest.
+ *
+ * A PERCENTAGE FIXES IT, because `translate()` percentages resolve against the
+ * element's OWN box — and this element is `absolute inset-0` of the frame, so a
+ * percentage IS a fraction of the frame and shrinks with it. The conversion is
+ * the authored pixel value over the reference frame, so the phone lands on the
+ * same composition the editor set up rather than a different crop.
+ *
+ * DESKTOP KEEPS THE PIXELS, untouched, and that is deliberate rather than
+ * lazy: above `md` the inline transform below is what renders. The percentage
+ * form is applied only inside the media query, so nothing above the breakpoint
+ * can move by even a subpixel. `!important` is required there — an inline
+ * `transform` outranks a class rule otherwise. */
+const FRAME_REF_W = 441;
+const FRAME_REF_H = 408;
+
+const FLIP_IMG_CSS = `
+@media (max-width: 767px) {
+  .fc-frame {
+    transform: translate(var(--fc-x), var(--fc-y)) scale(var(--fc-s)) !important;
+  }
+}
+`;
+
 function FlipCard({ item }: { item: TestimonialItem }) {
   const companyName = deriveCompanyName(item);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -417,10 +449,15 @@ function FlipCard({ item }: { item: TestimonialItem }) {
             </div>
             <div className="relative" style={{ height: "74%", overflow: "hidden" }}>
               <div
-                className="absolute inset-0"
+                className="absolute inset-0 fc-frame"
                 style={{
                   transform: `translate(${item.imagePositionX ?? 0}px, ${item.imagePositionY ?? 0}px) scale(${item.imageScaleFactor ?? 1})`,
                   transformOrigin: "center center",
+                  /* The same nudge as a fraction of the frame — read only by
+                     the mobile rule in FLIP_IMG_CSS. */
+                  ["--fc-x" as string]: `${(((item.imagePositionX ?? 0) / FRAME_REF_W) * 100).toFixed(3)}%`,
+                  ["--fc-y" as string]: `${(((item.imagePositionY ?? 0) / FRAME_REF_H) * 100).toFixed(3)}%`,
+                  ["--fc-s" as string]: `${item.imageScaleFactor ?? 1}`,
                 }}
               >
                 {/* @ts-ignore */}
@@ -585,6 +622,9 @@ function Marquee({ testimonials }: { testimonials: TestimonialItem[] }) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Rendered once for the whole strip rather than per card — see the note
+          above FlipCard for what this rule is for. */}
+      <style>{FLIP_IMG_CSS}</style>
       <MarqueeArrow dir="left" onClick={() => nudge(-1)} />
       <div className="min-w-0 flex-1 overflow-hidden">
       <motion.div
