@@ -567,10 +567,22 @@ function FullPageCard({
   onBack: () => void;
 }) {
   const [mounted, setMounted] = useState(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  /* OPEN AT THE TOP, always. Left to itself a fresh scroller can inherit a
+     position — from scroll anchoring as the open animation shifts the content,
+     or from the browser restoring one — and the card appears already scrolled
+     into its own middle, which is what "it shows the content from where I had
+     scrolled" describes. Setting it explicitly costs nothing. */
+  useEffect(() => {
+    if (!mounted) return;
+    const el = overlayRef.current;
+    if (el) el.scrollTop = 0;
+  }, [mounted, row]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -596,7 +608,8 @@ function FullPageCard({
         y: 12,
         transition: { duration: 0.3, ease: EASE },
       }}
-      className="fixed bottom-0 left-0 right-0 flex items-center justify-center max-md:!block max-md:w-screen max-md:overflow-y-auto max-md:overscroll-none max-md:!pt-[32px] max-md:!px-[24px] max-md:!pb-[40px] max-md:!bg-[#FBF7F0] max-md:!backdrop-filter-none"
+      ref={overlayRef}
+      className="fixed bottom-0 left-0 right-0 flex items-center justify-center [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden max-md:!block max-md:w-screen max-md:overflow-y-auto max-md:overscroll-none max-md:!pt-[32px] max-md:!px-[24px] max-md:!pb-[40px] max-md:!bg-[#FBF7F0] max-md:!backdrop-filter-none"
       style={{
         top: "var(--nav-height, 64px)",
         /* Must sit ABOVE page sections but BELOW the navbar chrome, which is
@@ -620,7 +633,25 @@ function FullPageCard({
       aria-modal="true"
     >
       <GrainOverlay opacity={0.22} zIndex={1} />
-      <div className="relative z-10 w-full max-w-7xl mx-auto max-h-full overflow-y-auto scrollbar-hide">
+      {/* TWO NESTED SCROLLERS WAS THE BUG. This div scrolls (`max-h-full
+          overflow-y-auto`) AND on mobile its parent scrolls too
+          (`max-md:overflow-y-auto`) — measured at a phone height, the inner one
+          overflowed 631px of content into a 488px box while the outer did not
+          overflow at all. Nested scrollers on touch are where momentum,
+          rubber-banding and scroll-chaining go wrong, and the card ends up
+          showing the middle of itself.
+
+          Below md this one stops scrolling and simply flows; the overlay is the
+          single scroller, and it already owns the padding and the background.
+          Desktop is untouched — there the overlay centres the card and THIS is
+          the scroller.
+
+          The old hide-the-bar class was doing nothing at all: it was used only
+          here, and is defined nowhere — not in globals.css, not in any config,
+          and no plugin provides it. The arbitrary variants below are what the
+          rest of the codebase uses, which is why every other scroller has no
+          bar and this one drew a white line down the text. */}
+      <div className="relative z-10 mx-auto max-h-full w-full max-w-7xl overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden max-md:!max-h-none max-md:!overflow-visible">
         <OpenedRow row={row} onBack={onBack} />
       </div>
     </motion.div>
