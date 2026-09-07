@@ -30,16 +30,17 @@ export const impactAtGlance = defineType({
       type: "string",
     }),
     defineField({
-      name: "storiesHeadingFirst",
-      title: "Stories heading — line 1",
-      description: 'e.g. "Their Stories,"',
-      type: "string",
-    }),
-    defineField({
-      name: "storiesHeadingSecond",
-      title: "Stories heading — line 2",
-      description: 'e.g. "Our Credentials"',
-      type: "string",
+      name: "storiesHeading",
+      title: "Stories heading",
+      /* ONE FIELD, and the line breaks are the editor's. It used to be two
+         fields stacked as two <h2>s, so the heading was ALWAYS two lines
+         however short it was — and there was no way to write a one-line
+         heading at all. `whitespace-pre-line` on the rendered heading means
+         what is typed is what shows. */
+      description:
+        'e.g. "Their Stories," then Enter, then "Our Credentials". Press Enter for another line — line breaks are kept exactly as you type them, and one line stays one line.',
+      type: "text",
+      rows: 2,
     }),
     defineField({
       name: "ctaLabel",

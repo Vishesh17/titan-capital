@@ -1,14 +1,16 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useScroll, useSpring, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
+import { SeeMoreButton } from "./ImpactAtGlanceClient";
 
 /* ─────────────────────────────────────────────────────────
    Blogs listing — featured note + category/search filter bar +
-   a bordered card grid (same scroll-drawn dividers as the
-   FoundersStory grid). Buttons reuse the site's navy pill style.
+   a bordered card grid whose rules each draw themselves as they come into
+   view. Every card is a link marked with a corner arrow;
+   the navy pill is now only the search control.
    ───────────────────────────────────────────────────────── */
 
 /* .jpeg, not .png — the file on disk is skyscrappers.jpeg, so the old path
@@ -92,8 +94,8 @@ const CARD_IMAGE_ASPECT = "16 / 11";
 
 /* ── Side-card geometry ──
    The share of the card's width the picture takes. Antler's equivalent card
-   gives it 48%; ours needs more, because our copy carries a byline and a
-   button theirs does not, and a taller picture is what pays for them. */
+   gives it 48%; ours needs more, because our copy carries more than theirs
+   does, and a taller picture is what pays for it. */
 const SIDE_IMAGE_SHARE = 0.57;
 /* The CARD's own shape, derived from the two numbers above rather than typed
    out — this is what removes the gap. Fix the card's ratio and its height no
@@ -102,23 +104,67 @@ const SIDE_IMAGE_SHARE = 0.57;
    either constant above keeps this correct. */
 const SIDE_CARD_ASPECT = 16 / 11 / SIDE_IMAGE_SHARE;
 
+/* ── HOW MUCH OF THE GRID IS SHOWN AT ONCE ──
+   Three rows of the three-column grid, and one more helping of the same size
+   per click of Load More. Counted in CARDS rather than rows because the grid
+   drops to a single column below md, where "three rows" would be three posts
+   — the archive is the same archive whatever width it is read at. */
+const PAGE_ROWS = 3;
+const PAGE_SIZE = PAGE_ROWS * 3;
+
 const STORY_GAP = "calc(var(--section-px-wide) * 0.4)";
 // No outer inset — the grid aligns to the same left/right gutter as the
 // featured card and the filter bar; only the internal dividers show.
 const BORDER_PADDING = "0px";
 const NAVY = "#001A4D";
+/* The team page's blob blue, sampled from /images/team/blob-blue.png rather
+   than eyeballed — 99.8% of that image's opaque pixels are exactly this. It is
+   already a house colour: the testimonial's highlight bar uses the same. */
+const TAG_BLUE = "#D3E2FF";
+/* One step deeper, same hue, so the pill has an edge without the old beige
+   border reading as a different family against the blue. */
+const TAG_BLUE_EDGE = "#C2D4FF";
 
-/* ── Cursor-fill pill (Read Note / Search) ──
-   Same interaction as JoinPortfolio's CursorFillButton: a white fill
-   grows from the cursor's entry point and the label flips to navy. */
+/* ── THE CARD'S AFFORDANCE, in place of a "Read Note" button ──
+   A bare ↗ at the card's edge, the way the Antler insights cards mark
+   theirs. The WHOLE CARD is the link now, so this is a mark rather than a
+   target — which is the point of the change: a labelled pill is a small
+   click area sitting inside a large one that did nothing.
+
+   It leans out on hover, on the house curve, so the card still says it is
+   clickable without a word on it. `group-hover` and not its own hover state,
+   for that reason — it answers to the card, not to itself. */
+function CardArrow({ size = 22 }: { size?: number }) {
+  return (
+    <span
+      aria-hidden
+      className="inline-flex shrink-0 items-center justify-center text-[#0E0E0E] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-[3px] group-hover:-translate-y-[3px]"
+      style={{ width: size, height: size }}
+    >
+      <svg viewBox="0 0 24 24" width={size} height={size} fill="none">
+        <path
+          d="M7 17L17 7M17 7H8.6M17 7V15.4"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
+  );
+}
+
+/* ── Cursor-fill pill ──
+   Same interaction as JoinPortfolio's CursorFillButton: a white fill grows
+   from the cursor's entry point and the label flips to navy. The cards used
+   to carry one of these as "Read Note"; the search control is the only one
+   left, so this no longer has a link form. */
 function NavyPill({
   label,
-  href,
   onClick,
   small,
 }: {
   label: string;
-  href?: string;
   onClick?: () => void;
   small?: boolean;
 }) {
@@ -154,17 +200,7 @@ function NavyPill({
     </>
   );
 
-  return href ? (
-    <Link
-      href={href}
-      onMouseEnter={(e) => track(e, true)}
-      onMouseLeave={(e) => track(e, false)}
-      className={cls}
-      style={style}
-    >
-      {inner}
-    </Link>
-  ) : (
+  return (
     <button
       type="button"
       onClick={onClick}
@@ -187,9 +223,10 @@ function MetaLine({ blog, reserve }: { blog: Blog; reserve?: boolean }) {
      `reserve` is for the grid, where cards sit side by side: there the empty
      line still has to occupy its row, or the card without a byline pulls every
      line below it up out of step with its neighbours. */
-  const meta = [blog.author, blog.readTime, blog.category && `Category: ${blog.category}`]
-    .filter(Boolean)
-    .join(" · ");
+  /* NO CATEGORY HERE ANY MORE — it reads as a pill alongside the tags, which
+     is where a label belongs; as prose it produced the dangling
+     "Category: Investment News" line that was the card's only meta. */
+  const meta = [blog.author, blog.readTime].filter(Boolean).join(" · ");
   if (!meta) return reserve ? <p className="m-0" style={{ fontSize: "clamp(11px, 0.9vw, 13px)", lineHeight: "150%" }}>&nbsp;</p> : null;
   return (
     <p
@@ -204,36 +241,62 @@ function MetaLine({ blog, reserve }: { blog: Blog; reserve?: boolean }) {
 /* ── Tag pills ── */
 function Tags({
   tags,
+  category,
   small,
   oneLine,
+  reserve,
 }: {
   tags?: string[];
+  /** THE POST'S CATEGORY BECOMES A PILL, automatically and in front of the
+      rest, so setting one in Sanity is all it takes for it to show — nothing
+      to also type into the tag list. Deduped case-insensitively, so a post
+      that already carries its category as a tag does not get it twice. */
+  category?: string;
   small?: boolean;
   /** One row, at most two pills — for the narrow side-card column. A third
       pill does not fit there and was being sliced through the middle of its
       own word, which reads as a bug rather than as a deliberate cut. */
   oneLine?: boolean;
+  /** Hold the row's height even with nothing in it — for the grid, where a
+      post with no pills would otherwise start its headline a line above the
+      card beside it. Same job `reserve` does on MetaLine. */
+  reserve?: boolean;
 }) {
-  if (!tags?.length) return null;
-  const shown = oneLine ? tags.slice(0, 2) : tags;
+  const cat = category?.trim();
+  const all = [
+    ...(cat ? [cat] : []),
+    ...(tags ?? []).filter((t) => t.trim().toLowerCase() !== cat?.toLowerCase()),
+  ];
+  const shown = oneLine ? all.slice(0, 2) : all;
+
+  const pillClass =
+    "inline-flex shrink-0 items-center whitespace-nowrap rounded-full font-['Poppins',_sans-serif] font-normal text-[#3d3d3d]";
+  const pillStyle: React.CSSProperties = {
+    padding: small ? "5px 12px" : "7px 18px",
+    fontSize: small ? "clamp(10px, 0.78vw, 12px)" : "clamp(11px, 0.9vw, 13px)",
+    background: TAG_BLUE,
+    border: `1px solid ${TAG_BLUE_EDGE}`,
+  };
+
+  if (!shown.length) {
+    /* An invisible REAL pill, not a guessed height — the row then measures
+       exactly what a filled one would. */
+    return reserve ? (
+      <div className="flex" style={{ gap: small ? "6px" : "8px" }}>
+        <span className={`${pillClass} invisible`} style={pillStyle} aria-hidden>
+          &nbsp;
+        </span>
+      </div>
+    ) : null;
+  }
+
   return (
     <div
       className={oneLine ? "flex flex-nowrap overflow-hidden" : "flex flex-wrap"}
       style={{ gap: small ? "6px" : "8px" }}
     >
       {shown.map((t) => (
-        <span
-          key={t}
-          className="inline-flex shrink-0 items-center whitespace-nowrap rounded-full font-['Poppins',_sans-serif] font-normal text-[#3d3d3d]"
-          style={{
-            padding: small ? "5px 12px" : "7px 18px",
-            fontSize: small
-              ? "clamp(10px, 0.78vw, 12px)"
-              : "clamp(11px, 0.9vw, 13px)",
-            background: "#F5F1EA",
-            border: "1px solid #EBE4D8",
-          }}
-        >
+        <span key={t} className={pillClass} style={pillStyle}>
           {t}
         </span>
       ))}
@@ -248,7 +311,8 @@ function Tags({
       copy in a gutter too narrow to read. ── */
 function SideCard({ blog }: { blog: Blog }) {
   return (
-    <div
+    <Link
+      href={blog.href}
       className="group flex w-full flex-col bg-white sm:min-h-0 sm:flex-row sm:[aspect-ratio:var(--side-card-ar)]"
       style={{ "--side-card-ar": `${SIDE_CARD_ASPECT}` } as React.CSSProperties}
     >
@@ -287,7 +351,7 @@ function SideCard({ blog }: { blog: Blog }) {
             narrow they wrapped to two lines and crowded out the copy.
             One row of pills, and any that do not fit are cut rather than
             stacking three-high. */}
-        <Tags tags={blog.tags} small oneLine />
+        <Tags tags={blog.tags} category={blog.category} small oneLine />
         {/* Clamped, because in a column this narrow a long headline would
             otherwise run to five lines and burst the card. */}
         <h3
@@ -314,11 +378,11 @@ function SideCard({ blog }: { blog: Blog }) {
         >
           {blog.excerpt}
         </p>
-        <div>
-          <NavyPill label="Read Note" href={blog.href} small />
+        <div className="flex items-center justify-end">
+          <CardArrow size={20} />
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -335,7 +399,11 @@ export function BlogCard({
   surface?: string;
 }) {
   return (
-    <div className="group flex h-full w-full flex-col" style={{ background: surface }}>
+    <Link
+      href={blog.href}
+      className="group flex h-full w-full flex-col"
+      style={{ background: surface }}
+    >
       <div className="relative w-full overflow-hidden" style={{ aspectRatio: CARD_IMAGE_ASPECT }}>
         <Image
           src={blog.image}
@@ -356,6 +424,7 @@ export function BlogCard({
             `reserve` keeps the meta line's height on a post that has no author
             or category, so its title does not ride up while the card beside it
             starts a line lower. */}
+        <Tags tags={blog.tags} category={blog.category} small reserve />
         <MetaLine blog={blog} reserve />
         <h3
           className="m-0 font-['Poppins',_sans-serif] font-semibold text-[#0E0E0E]"
@@ -393,14 +462,17 @@ export function BlogCard({
         >
           {blog.excerpt}
         </p>
-        {/* `mt-auto` takes up whatever slack the card has, so the button sits
+        {/* `mt-auto` takes up whatever slack the card has, so the arrow sits
             on the card's floor rather than wherever the copy happened to end.
             This is what the equal-height rows above are for. */}
-        <div style={{ marginTop: "auto", paddingTop: "clamp(10px, 1.1vw, 18px)" }}>
-          <NavyPill label="Read Note" href={blog.href} small />
+        <div
+          className="flex items-center justify-end"
+          style={{ marginTop: "auto", paddingTop: "clamp(10px, 1.1vw, 18px)" }}
+        >
+          <CardArrow size={22} />
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -475,40 +547,105 @@ export default function BlogsClient({ posts }: { posts?: BlogPostCard[] | null }
     );
   }, [query, category, BLOGS]);
 
-  const rows = Math.max(1, Math.ceil(filtered.length / 3));
+  /* Reset to the first page whenever the result set changes. Without this,
+     narrowing to a category while six rows are open would show six rows of a
+     shorter list — or every match at once, which is not what "load more"
+     means. */
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [query, category]);
+
+  const visible = useMemo(
+    () => filtered.slice(0, visibleCount),
+    [filtered, visibleCount]
+  );
+  const hasMore = filtered.length > visible.length;
+
+  /* From what is ON SCREEN, not from the whole result set. The dividers below
+     are placed by dividing the grid's height into `rows` equal parts, so a
+     count that included the hidden cards would scatter them across the cards
+     that are actually drawn. */
+  const rows = Math.max(1, Math.ceil(visible.length / 3));
 
   /* ── THE GRID'S DIVIDERS ──
-     SCROLL-LINKED, the same driver FoundersStoryGrid uses, so the two grids
-     behave identically: the rules grow as the grid comes into view, hold, and
-     shrink again as it leaves — and reverse when you scroll back up.
+     EVERY RULE DRAWS ITSELF, when it personally reaches the viewport.
 
-     This replaced a one-shot `whileInView` draw. That did animate, but only
-     once and only forwards: it went 0 -> 1 the first time the grid appeared
-     and stayed at 1 forever, where the founders-story grid keeps tracking the
-     scroll. Measured across a sweep, founders-story ranged 0.05-0.81 and
-     reversed; blogs ended pinned at 1.
+     IT USED TO BE ONE GLOBAL SCALE, driven by `useScroll` across the whole
+     section and shared by every rule. That cannot work for a grid that grows,
+     and measurement showed it failing in three separate ways:
 
-     The target is the SECTION, not the inner grid div. That matters: with the
-     inner div as the target the progress barely moved across the visible
-     range, which is what made the earlier scroll-driven version look frozen. */
-  const gridSectionRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: gridSectionRef,
-    offset: ["start end", "end start"],
-  });
-  const lineProgress = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
-  const ruleScale = useSpring(lineProgress, { stiffness: 40, damping: 25 });
+       - the first row sat on screen with the rules at 0.004 — the section is
+         so tall that 30% of its travel is most of a screen past the first row,
+         so the borders were invisible exactly when the cards were not;
+       - they only reached full 759px BELOW the grid's top, then shrank back to
+         0.73 on the way out;
+       - Load More was worst: the six new rules appeared already at whatever
+         the global value happened to be (0.182), never animating at all, while
+         the vertical rule doubled from 310px to 626px of drawn length in a
+         single frame. Framer did not re-measure the taller section either, so
+         the shared value was stale on top of everything else.
 
+     Per-rule reveal fixes all three at once, and Load More comes for free: the
+     rules for the new rows are new elements, so they mount at zero and draw in
+     as they are scrolled to, exactly like the first three rows did.
+
+     The cost, stated plainly: these no longer un-draw when you scroll back up,
+     the way the founders-story grid's do. A rule that reverses has to be a
+     function of scroll position, and a scroll-linked value cannot also be
+     "already correct" for rows that did not exist when the reader passed them. */
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const hLineTops = Array.from({ length: rows - 1 }, (_, i) => i + 1).map(
-    (k) =>
-      `calc(var(--bp) + ${k} * ((100% - 2 * var(--bp) - ${rows - 1} * var(--gap)) / ${rows}) + ${k - 0.5} * var(--gap))`
-  );
+  /* One row's height, in the grid's own terms. It resolves to the same pixel
+     value whatever `rows` is — rows are equal-height — which is what keeps the
+     existing rules perfectly still when Load More adds more. */
+  const rowTrack = `((100% - 2 * var(--bp) - ${rows - 1} * var(--gap)) / ${rows})`;
+
   const vLineLefts = [1, 2].map(
     (j) =>
       `calc(var(--bp) + ${j} * ((100% - 2 * var(--bp) - 2 * var(--gap)) / 3) + ${j - 0.5} * var(--gap))`
   );
+
+  /* THE TRIGGER HAS TO HAVE AREA. Each row's rules live inside a band that
+     covers the row, and the BAND is what is watched — the rules themselves
+     cannot be.
+
+     A rule is `width: 0` with a left border, or `height: 0` with a top border,
+     and it starts at scale 0. That is a box of zero area, and an
+     IntersectionObserver cannot reason about one: with `amount: 0.2` the row
+     rules never fired at all, and even at threshold 0 the column rules were
+     measured still undrawn with a third of the first row on screen, only
+     snapping in once the grid was most of the way up the viewport. Watching a
+     band with real width and height removes the guesswork entirely.
+
+     Each band owns its row's two column segments and the divider ABOVE it.
+
+     ABOVE, and that is the whole point — it used to own the one BELOW, which
+     broke Load More in a way that only showed on the second page. With
+     `once: true` a band stops watching after it fires. The band that was last
+     had no divider; adding rows gave it one, and that new rule mounted into a
+     band whose trigger had already run, so nothing ever animated it: measured
+     at 100% visible with its columns drawn, its divider sat at 0 permanently.
+     That was the horizontal line missing above each newly loaded first row.
+
+     Owning the boundary above means no rule is ever added to an existing band.
+     Rows 1..n-1 each bring their own top divider and animate it in; row 0 has
+     nothing above it, and the last row needs no special case at all. */
+  const bands = Array.from({ length: rows }, (_, r) => ({
+    top: `calc(var(--bp) + ${r} * (${rowTrack} + var(--gap)))`,
+    height: `calc(${rowTrack} + var(--gap))`,
+    dividerAbove: r > 0,
+  }));
+
+  const RULE_TWEEN = { duration: 1.1, ease: [0.22, 1, 0.36, 1] as const };
+  const V_RULE = {
+    hidden: { scaleY: 0 },
+    visible: { scaleY: 1, transition: RULE_TWEEN },
+  };
+  const H_RULE = {
+    hidden: { scaleX: 0 },
+    visible: { scaleX: 1, transition: { ...RULE_TWEEN, delay: 0.12 } },
+  };
 
   return (
     <>
@@ -544,9 +681,12 @@ export default function BlogsClient({ posts }: { posts?: BlogPostCard[] | null }
                 still spans the full row height, so the pin has the side
                 column's whole run to hold against. Below lg the two columns are
                 stacked, where pinning one over the other would trap the page. ── */}
-          <div className="flex w-full flex-col overflow-hidden bg-white lg:sticky lg:top-[calc(var(--nav-height,80px)+clamp(16px,2vw,32px))]">
+          <Link
+            href={FEATURED.href}
+            className="group flex w-full flex-col overflow-hidden bg-white lg:sticky lg:top-[calc(var(--nav-height,80px)+clamp(16px,2vw,32px))]"
+          >
             <div
-              className="group relative w-full overflow-hidden"
+              className="relative w-full overflow-hidden"
               style={{ aspectRatio: CARD_IMAGE_ASPECT }}
             >
               <Image
@@ -564,7 +704,7 @@ export default function BlogsClient({ posts }: { posts?: BlogPostCard[] | null }
                 gap: "clamp(12px, 1.2vw, 20px)",
               }}
             >
-              <Tags tags={FEATURED.tags} />
+              <Tags tags={FEATURED.tags} category={FEATURED.category} />
               <MetaLine blog={FEATURED} />
               <h2
                 className="m-0 font-['Poppins',_sans-serif] font-semibold text-[#0E0E0E]"
@@ -584,11 +724,14 @@ export default function BlogsClient({ posts }: { posts?: BlogPostCard[] | null }
               >
                 {FEATURED.excerpt}
               </p>
-              <div style={{ marginTop: "clamp(6px, 0.8vw, 12px)" }}>
-                <NavyPill label="Read Note" href={FEATURED.href} />
+              <div
+                className="flex items-center justify-end"
+                style={{ marginTop: "clamp(6px, 0.8vw, 12px)" }}
+              >
+                <CardArrow size={26} />
               </div>
             </div>
-          </div>
+          </Link>
 
           {/* ── The four beside it, which do the scrolling ── */}
           <div className="flex w-full flex-col" style={{ gap: "clamp(20px, 2vw, 34px)" }}>
@@ -625,7 +768,6 @@ export default function BlogsClient({ posts }: { posts?: BlogPostCard[] | null }
         separate bands rather than one long field. The cards invert with it:
         beige on white here, white on beige there. */}
     <section
-      ref={gridSectionRef}
       className="relative w-full bg-white"
       style={{
         paddingTop: "var(--section-py)",
@@ -717,7 +859,7 @@ export default function BlogsClient({ posts }: { posts?: BlogPostCard[] | null }
         </div>
         <div
           ref={gridRef}
-          className="relative w-full"
+          className="relative w-full overflow-hidden"
           style={{
             marginTop: "clamp(24px, min(2.6vw, 3.8vh), 44px)",
             padding: BORDER_PADDING,
@@ -742,47 +884,90 @@ export default function BlogsClient({ posts }: { posts?: BlogPostCard[] | null }
                   row's images. `1fr` auto-rows makes every row the height of
                   the tallest card in the grid, which is the assumption that
                   calc was making all along. It is also what lets a card
-                  stretch, so `mt-auto` can pin every Read Note to a common
+                  stretch, so `mt-auto` can pin every card's arrow to a common
                   baseline. */}
               <div
                 className="grid w-full grid-cols-3 max-md:!grid-cols-1 max-md:!gap-[28px]"
                 style={{ gap: STORY_GAP, gridAutoRows: "1fr" }}
               >
-                {filtered.map((blog) => (
+                {visible.map((blog) => (
                   <BlogCard key={blog.id} blog={blog} />
                 ))}
               </div>
 
-              {/* Horizontal dividers between rows */}
-              {hLineTops.map((top, idx) => (
-                <div key={`h-${idx}`}>
-                  {/* Each half draws OUTWARD from the centre line, so a row
-                      rule opens from the middle rather than sweeping across. */}
-                  <motion.div
-                    aria-hidden
-                    className="pointer-events-none absolute max-md:!hidden z-20"
-                    style={{ top, left: "var(--bp)", width: "calc(50% - var(--bp))", height: 0, borderTop: "1px solid #000", transformOrigin: "right", scaleX: ruleScale }}
-                  />
-                  <motion.div
-                    aria-hidden
-                    className="pointer-events-none absolute max-md:!hidden z-20"
-                    style={{ top, right: "var(--bp)", width: "calc(50% - var(--bp))", height: 0, borderTop: "1px solid #000", transformOrigin: "left", scaleX: ruleScale }}
-                  />
-                </div>
-              ))}
-
-              {/* Vertical dividers between columns */}
-              {vLineLefts.map((left, idx) => (
+              {/* One band per row — see `bands`. Absolutely positioned and
+                  `pointer-events-none`, so it lies over the cards without
+                  touching them. Percentages inside a band resolve against the
+                  BAND, which is why the divider below sits at
+                  `100% - gap/2` rather than repeating the row arithmetic. */}
+              {bands.map((band, r) => (
                 <motion.div
-                  key={`v-${idx}`}
+                  key={`band-${r}`}
                   aria-hidden
-                  className="pointer-events-none absolute max-md:!hidden z-20"
-                  style={{ top: "var(--bp)", left, width: 0, borderLeft: "1px solid #000", height: "calc(100% - 2 * var(--bp))", transformOrigin: "top", scaleY: ruleScale }}
-                />
+                  className="pointer-events-none absolute left-0 right-0 max-md:!hidden z-20"
+                  style={{ top: band.top, height: band.height }}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, amount: 0.12 }}
+                >
+                  {vLineLefts.map((left, idx) => (
+                    <motion.div
+                      key={`v-${idx}`}
+                      className="absolute"
+                      style={{ top: 0, left, width: 0, height: "100%", borderLeft: "1px solid #000", transformOrigin: "top" }}
+                      variants={V_RULE}
+                    />
+                  ))}
+                  {/* The row boundary above this band, drawn from both outer
+                      edges toward the centre — the founders-story direction.
+                      It sits half a gap ABOVE the band's own top edge, which
+                      is the centre of the gap between the two rows. */}
+                  {band.dividerAbove && (
+                    <>
+                      <motion.div
+                        className="absolute"
+                        style={{ top: "calc(-1 * var(--gap) / 2)", left: "var(--bp)", width: "calc(50% - var(--bp))", height: 0, borderTop: "1px solid #000", transformOrigin: "left" }}
+                        variants={H_RULE}
+                      />
+                      <motion.div
+                        className="absolute"
+                        style={{ top: "calc(-1 * var(--gap) / 2)", right: "var(--bp)", width: "calc(50% - var(--bp))", height: 0, borderTop: "1px solid #000", transformOrigin: "right" }}
+                        variants={H_RULE}
+                      />
+                    </>
+                  )}
+                </motion.div>
               ))}
             </>
           )}
         </div>
+
+        {/* ── LOAD MORE ──
+            OUTSIDE the divider container above, deliberately. Those rules are
+            positioned against that box's height ("100% - 2 * var(--bp)"), so a
+            button inside it would be counted as grid and stretch the vertical
+            rules down past the last row of cards.
+
+            The same component the founders-story grid uses, so the pill, the
+            label fade and the timing are identical rather than merely alike —
+            only the mark in the circle differs. It disappears once the last
+            post is on screen. */}
+        {hasMore && (
+          <motion.div
+            className="flex w-full justify-center"
+            style={{ marginTop: "min(3.47vw, 5.37vh)" }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.6 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <SeeMoreButton
+              label="Load More"
+              icon="plus"
+              onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+            />
+          </motion.div>
+        )}
       </div>
     </section>
     </>

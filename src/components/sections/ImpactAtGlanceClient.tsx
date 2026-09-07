@@ -49,8 +49,8 @@ const TAG_ROTATE_MS = 2200;
 export interface ImpactAtGlanceData {
   impactHeadingFirst?: string;
   impactHeadingSecond?: string;
-  storiesHeadingFirst?: string;
-  storiesHeadingSecond?: string;
+  /** ONE field. Line breaks the editor typed are preserved on render. */
+  storiesHeading?: string;
   ctaLabel?: string;
   impactStats?: ImpactStat[];
   founderStories?: FounderStory[];
@@ -134,8 +134,9 @@ export const FALLBACK_SLIDES: FounderStory[] = [
 
 const FALLBACK_IMPACT_HEADING_FIRST = "Impact";
 const FALLBACK_IMPACT_HEADING_SECOND = "At A Glance";
-const FALLBACK_STORIES_HEADING_FIRST = "Their Stories,";
-const FALLBACK_STORIES_HEADING_SECOND = "Our Credentials";
+/* The \n is the point: it is what the editor would type as a second line, and
+   it renders as one only because the heading is `whitespace-pre-line`. */
+const FALLBACK_STORIES_HEADING = "Their Stories,\nOur Credentials";
 const FALLBACK_CTA_LABEL = "See More";
 
 const STORY_GAP = "calc(var(--section-px-wide) * 0.4)";
@@ -516,7 +517,21 @@ export function StoryCard({ story, sizerTags = [] }: { story: FounderStory; size
   );
 }
 
-export function SeeMoreButton({ label, onClick }: { label: string; onClick?: () => void }) {
+export function SeeMoreButton({
+  label,
+  onClick,
+  icon = "arrow",
+}: {
+  label: string;
+  onClick?: () => void;
+  /** Which mark sits in the navy circle. "arrow" is this button everywhere it
+   *  already appears and stays the default, so no existing call site changes;
+   *  "plus" is the blogs grid's Load More, which adds rows rather than going
+   *  somewhere. The two share this component ON PURPOSE — the pill geometry,
+   *  the label fade and the timing are the thing being matched, and a copy
+   *  would drift the first time any of them was touched. */
+  icon?: "arrow" | "plus";
+}) {
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -549,8 +564,21 @@ export function SeeMoreButton({ label, onClick }: { label: string; onClick?: () 
         className="absolute -translate-y-1/2 flex items-center justify-center rounded-full bg-[#001A4D]"
         style={{ right: 4, top: "50%", height: "calc(100% - 8px)", aspectRatio: "1 / 1" }}
       >
-        <motion.svg className="w-[45%] h-[45%]" viewBox="0 0 24 24" fill="none" animate={{ rotate: hovered ? 0 : 45 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-          <path d="M7 17L17 7M17 7H7M17 7V17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        {/* The arrow rests at 45deg and straightens on hover. The plus rests
+            square and turns a quarter — four-fold symmetric, so it lands
+            looking exactly as it started and the turn itself is the effect. */}
+        <motion.svg
+          className="w-[45%] h-[45%]"
+          viewBox="0 0 24 24"
+          fill="none"
+          animate={{ rotate: icon === "plus" ? (hovered ? 90 : 0) : hovered ? 0 : 45 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {icon === "plus" ? (
+            <path d="M12 5V19M5 12H19" stroke="white" strokeWidth="2" strokeLinecap="round" />
+          ) : (
+            <path d="M7 17L17 7M17 7H7M17 7V17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          )}
         </motion.svg>
       </div>
     </motion.button>
@@ -567,13 +595,11 @@ export function padStories(stories: FounderStory[], count: number): FounderStory
 }
 
 function StoriesSection({
-  storiesHeadingFirst,
-  storiesHeadingSecond,
+  storiesHeading,
   ctaLabel,
   slides,
 }: {
-  storiesHeadingFirst: string;
-  storiesHeadingSecond: string;
+  storiesHeading: string;
   ctaLabel: string;
   slides: FounderStory[];
 }) {
@@ -627,17 +653,16 @@ function StoriesSection({
           className="flex flex-col items-center max-md:!mb-[clamp(32px,6dvh,48px)]"
           style={{ marginBottom: "min(3.47vw, 5.37vh)" }}
         >
+          {/* ONE heading. It was two <h2>s, one per Sanity field, which forced
+              two lines whatever was typed — and made this a two-heading section
+              as far as a screen reader or a search engine was concerned.
+              `whitespace-pre-line` collapses runs of spaces as normal but keeps
+              newlines, so the editor's own line breaks are what shape it. */}
           <h2
-   className={`m-0 text-center text-black ${SECTION_HEADING_CLASS}`}
-   style={{ ...SECTION_HEADING_STYLE, }}
-   >
-            {storiesHeadingFirst}
-          </h2>
-          <h2
-            className={`m-0 text-center text-black ${SECTION_HEADING_CLASS}`}
-            style={{ ...SECTION_HEADING_STYLE, }}
+            className={`m-0 whitespace-pre-line text-center text-black ${SECTION_HEADING_CLASS}`}
+            style={{ ...SECTION_HEADING_STYLE }}
           >
-            {storiesHeadingSecond}
+            {storiesHeading}
           </h2>
         </motion.div>
 
@@ -719,8 +744,7 @@ function StoriesSection({
 export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceData | null }) {
   const impactHeadingFirst = data?.impactHeadingFirst || FALLBACK_IMPACT_HEADING_FIRST;
   const impactHeadingSecond = data?.impactHeadingSecond || FALLBACK_IMPACT_HEADING_SECOND;
-  const storiesHeadingFirst = data?.storiesHeadingFirst || FALLBACK_STORIES_HEADING_FIRST;
-  const storiesHeadingSecond = data?.storiesHeadingSecond || FALLBACK_STORIES_HEADING_SECOND;
+  const storiesHeading = data?.storiesHeading || FALLBACK_STORIES_HEADING;
   const ctaLabel = data?.ctaLabel || FALLBACK_CTA_LABEL;
   const impactData = data?.impactStats && data.impactStats.length > 0 ? data.impactStats : FALLBACK_IMPACT_DATA;
   const slides = data?.founderStories && data.founderStories.length > 0 ? data.founderStories : FALLBACK_SLIDES;
@@ -803,8 +827,7 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
       </section>
 
       <StoriesSection
-        storiesHeadingFirst={storiesHeadingFirst}
-        storiesHeadingSecond={storiesHeadingSecond}
+        storiesHeading={storiesHeading}
         ctaLabel={ctaLabel}
         slides={slides}
       />

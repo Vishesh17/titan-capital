@@ -101,6 +101,7 @@ export const ourTeamQuery = groq`
       "slug": slug.current,
       title,
       bio,
+      tags,
       linkedinUrl,
       emailUrl,
       twitterUrl,
@@ -114,6 +115,7 @@ export const ourTeamQuery = groq`
       "slug": slug.current,
       title,
       bio,
+      tags,
       linkedinUrl,
       emailUrl,
       twitterUrl,
@@ -127,6 +129,7 @@ export const ourTeamQuery = groq`
       "slug": slug.current,
       title,
       bio,
+      tags,
       linkedinUrl,
       emailUrl,
       twitterUrl,
@@ -151,6 +154,7 @@ export const teamMemberBySlugQuery = groq`
       "slug": slug.current,
       title,
       bio,
+      tags,
       linkedinUrl,
       emailUrl,
       twitterUrl,
@@ -427,8 +431,10 @@ export const impactAtGlanceQuery = groq`
   *[_type == "impactAtGlance"][0]{
     impactHeadingFirst,
     impactHeadingSecond,
-    storiesHeadingFirst,
-    storiesHeadingSecond,
+    "storiesHeading": coalesce(
+      storiesHeading,
+      array::join([storiesHeadingFirst, storiesHeadingSecond][@ != null], "\n")
+    ),
     ctaLabel,
     impactStats[]{
       num,

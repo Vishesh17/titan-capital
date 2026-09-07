@@ -1044,11 +1044,12 @@ function SpiderWeb() {
  * text or the font and the target cloud follows.
  */
 /**
- * The letters the particles carry — as a SEQUENCE, not a bag to draw from.
+ * THE POOL OF LETTERS the particles carry — a BAG, not a sequence.
  *
- * A cell's letter comes from its position on the grid, advancing by one for
- * every step right AND every step down, so the field reads T-I-T-A-N-C-A-P-I-
- * T-A-L across every row and down every column. See `letterAt` in `build`.
+ * Only the distinct characters matter: the wordmark's own strokes spell
+ * themselves from TC_LETTERS below, and the faint bands above and below draw
+ * from this at random. The word is written out rather than listed as unique
+ * letters so it stays obvious where the set comes from.
  */
 const MONO_ALPHABET = "TITANCAPITAL";
 /**
@@ -1159,7 +1160,6 @@ function Monogram() {
        characters and this maps each position in the string to its sprite —
        the sequence is preserved without rendering "T" three times. */
     const MONO_CHARS = [...new Set(MONO_ALPHABET.split(""))];
-    const MONO_SEQ = MONO_ALPHABET.split("").map((ch) => MONO_CHARS.indexOf(ch));
 
     /** One small canvas per distinct character, rendered once. */
     const buildSprites = (size: number) => {
@@ -1244,17 +1244,19 @@ function Monogram() {
          same pitch and columns — what stops the wordmark reading as an object
          floating in empty space.
 
-         EVERY BAND ROW OPENS ON THE "T", so each one reads TITANCAPITAL over
-         and over from the left. The old rule offset each row by its own index,
-         which kept the columns readable too but meant no row actually started
-         at the beginning of the word — a band read "...APITALTITANC...". */
+         THE BAND LETTERS ARE RANDOM, drawn one at a time from the same pool
+         the wordmark uses. They used to walk the word in order, so every band
+         row spelled TITANCAPITAL over and over from the left — a readable
+         ticker of text running above and below the mark, competing with it.
+         The mark is the thing that spells something here; the bands are
+         texture, and texture should not read as words. */
       for (let b = 0; b < MONO_BANDS; b++) {
         for (const r of [b, MONO_BANDS + TC_LETTERS.length + b]) {
           for (let c = 0; c < cols; c++) {
             homes.push({
               x: originX + c * pitch,
               y: originY + r * pitch,
-              ch: MONO_SEQ[c % MONO_SEQ.length],
+              ch: Math.floor(Math.random() * MONO_CHARS.length),
               dim: true,
             });
           }

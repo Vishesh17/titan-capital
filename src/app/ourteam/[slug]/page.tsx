@@ -59,6 +59,15 @@ async function getMember(slug: string): Promise<TeamMember | null> {
   }
 }
 
+/* ── The focus-area pills ──
+   Same pill as the blogs listing — shape, padding, type and a one-step-deeper
+   border — in this page's own colour rather than the blogs' blue. #F5EAD6 is
+   sampled from /images/team/blob-cream.png, the shape the portrait sits in:
+   99.9% of that image's opaque pixels are exactly this, so the pills and the
+   blob are the same yellow rather than two guesses at one. */
+const TAG_YELLOW = "#F5EAD6";
+const TAG_YELLOW_EDGE = "#E9DABC";
+
 function cdnImageSrc(url: string, width: number): string {
   if (!url) return url;
   if (!url.startsWith("https://cdn.sanity.io/")) return url;
@@ -230,6 +239,33 @@ export default async function TeamMemberPage({
                   >
                     {member.title}
                   </p>
+                )}
+
+                {/* Under the title, above the socials — the pills read as part
+                    of who this person is, which is what the title line says. */}
+                {member.tags && member.tags.length > 0 && (
+                  <div
+                    className="flex flex-wrap max-lg:justify-center"
+                    style={{
+                      gap: "clamp(6px, min(0.6vw, 0.9vh), 10px)",
+                      marginTop: "clamp(14px, min(1.5vw, 2.2vh), 24px)",
+                    }}
+                  >
+                    {member.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="inline-flex shrink-0 items-center whitespace-nowrap rounded-full font-['Poppins',_sans-serif] font-normal text-[#3d3d3d]"
+                        style={{
+                          padding: "7px 18px",
+                          fontSize: "clamp(11px, 0.9vw, 13px)",
+                          background: TAG_YELLOW,
+                          border: `1px solid ${TAG_YELLOW_EDGE}`,
+                        }}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                 )}
 
                 {hasSocials && (

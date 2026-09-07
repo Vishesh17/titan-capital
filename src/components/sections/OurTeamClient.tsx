@@ -27,6 +27,8 @@ export interface TeamMember {
   slug?: string;
   title: string;
   bio?: string;
+  /** Focus-area pills. Rendered ONLY on /ourteam/<slug>, never on the grid. */
+  tags?: string[];
   image?: string;
   linkedinUrl?: string;
   emailUrl?: string;

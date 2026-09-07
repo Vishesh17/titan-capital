@@ -85,6 +85,15 @@ export const teamMember = defineType({
       rows: 6,
     }),
     defineField({
+      name: "tags",
+      title: "Focus areas (detail page only)",
+      description:
+        'Pills under the job title on this person\'s own page — e.g. "AI", "FinTech", "Consumer Tech". DELIBERATELY NOT on the team grid: the grid is a wall of faces and a row of pills under each one would swamp it. Type a value and press Enter for each.',
+      type: "array",
+      of: [{ type: "string" }],
+      options: { layout: "tags" },
+    }),
+    defineField({
       name: "linkedinUrl",
       title: "LinkedIn URL",
       type: "url",

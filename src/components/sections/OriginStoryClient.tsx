@@ -3,13 +3,7 @@
 import { useEffect, useRef } from "react";
 import RichText, { type RichTextValue } from "@/components/ui/RichText";
 import Image from "next/image";
-import {
-  motion,
-  useMotionValue,
-  useMotionValueEvent,
-  useScroll,
-  useTransform,
-} from "framer-motion";
+import { motion, useScroll, useSpring } from "framer-motion";
 import {
   BODY_BOLD_CLASS,
   SECTION_HEADING_CLASS,
@@ -378,27 +372,40 @@ function Connector({ index }: { index: number }) {
   const p = paths[index % paths.length];
 
   /*
-    Scroll-driven mask reveal — top-to-bottom, one-way only.
-      - useScroll tracks the connector's position in the viewport.
-      - `maxProgress` mirrors scrollYProgress but only ever GROWS —
-        scrolling back up doesn't un-draw the line.
-      - The mask rect grows DOWNWARD (height increases from 0 → full).
-        Top-to-bottom is universal: it matches the scroll direction
-        no matter which way the curve sweeps horizontally, so every
-        path reveals naturally from its top to its bottom.
-      - stroke-dasharray is untouched, so dashes stay dashes.
+    Scroll-driven draw — ALONG THE CURVE, and reversible.
+
+    IT USED TO BE A RECT. The mask was a rectangle whose height grew downward,
+    so the line was revealed by Y COORDINATE rather than by distance travelled
+    along it. These curves are close to horizontal through their middles, and
+    that is where it showed: measured over the real path geometry, a single
+    percent of scroll uncovered 13.5% of path 1 and 13% of path 3 in one frame
+    — a ~3px change in the rect's height flicking ~110px of line into being at
+    once, while the steep top and bottom crawled. It read as the line arriving
+    in slabs instead of drawing itself.
+
+    Animating `pathLength` on a stroked path in the mask instead means the
+    reveal advances at a constant rate along the curve: 1% of scroll draws 1%
+    of line, wherever on the curve that happens to be.
+
+    THE DASHES SURVIVE because the thing being animated is not the thing being
+    seen. `pathLength` works by driving stroke-dasharray, so it cannot share an
+    element with a dash pattern of its own — here the mask holds a solid stroke
+    that grows, and the visible dashed path shows through it untouched.
   */
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start 0.85", "end 0.35"],
   });
-  // Monotonic mirror of scrollYProgress: only advances, never rewinds.
-  const maxProgress = useMotionValue(0);
-  useMotionValueEvent(scrollYProgress, "change", (latest) => {
-    if (latest > maxProgress.get()) maxProgress.set(latest);
+  /* Bound straight to scroll — no monotonic clamp — so scrolling back up
+     un-draws the line exactly the way it drew, retreating to its start.
+     The spring is what keeps that from feeling like a scrubbed timeline:
+     the tip trails the scroll slightly and settles, in the house manner. */
+  const drawn = useSpring(scrollYProgress, {
+    stiffness: 55,
+    damping: 26,
+    restDelta: 0.0005,
   });
-  const revealHeight = useTransform(maxProgress, [0, 1], [0, p.h]);
   const maskId = `origin-connector-mask-${index}`;
 
   return (
@@ -419,13 +426,19 @@ function Connector({ index }: { index: number }) {
       >
         <defs>
           <mask id={maskId}>
-            {/* black = hidden, white = visible. Rect grows downward with scroll. */}
-            <motion.rect
-              x={0}
-              y={0}
-              width={p.w}
-              height={revealHeight}
-              fill="white"
+            {/* black = hidden, white = visible. The stroke grows from the
+                path's start to its end, so it uncovers the dashed line at a
+                steady rate along the curve. Width 6 against the 1px line it
+                reveals: enough to clear the dashes' round caps without being
+                so wide that a neighbouring stretch of the same curve gets
+                uncovered early. */}
+            <motion.path
+              d={p.d}
+              fill="none"
+              stroke="white"
+              strokeWidth={6}
+              strokeLinecap="round"
+              style={{ pathLength: drawn }}
             />
           </mask>
         </defs>

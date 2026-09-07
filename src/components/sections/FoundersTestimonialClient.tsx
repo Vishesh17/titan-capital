@@ -624,6 +624,30 @@ export default function FoundersTestimonialClient({
   const bottomRef = useRef<HTMLDivElement>(null);
   const bottomInView = useInView(bottomRef, { once: true, amount: 1 });
 
+  /* ── When the typing starts ──
+     Two gates, and it needs BOTH.
+
+     `visionLineInView` is the "You Build the Vision." line itself, fully on
+     screen (amount: 1). It used to watch the whole cream block — heading, CTA
+     and all — so the word waited on the button below it rather than on itself.
+
+     `highlightLanded` keeps the old choreography: the blue bar wipes in first
+     and the word is typed into it, rather than over it. It is measured from
+     the reveal's own trigger (the same element and threshold the heading's
+     whileInView uses) so the two stay in step however fast the page is
+     scrolled — 0.8s of the bar's delay plus its 0.6s wipe. */
+  const revealRef = useRef<HTMLDivElement>(null);
+  const revealStarted = useInView(revealRef, { once: true, amount: 0.3 });
+  const visionLineRef = useRef<HTMLHeadingElement>(null);
+  const visionLineInView = useInView(visionLineRef, { once: true, amount: 1 });
+  const [highlightLanded, setHighlightLanded] = useState(false);
+
+  useEffect(() => {
+    if (!revealStarted) return;
+    const t = setTimeout(() => setHighlightLanded(true), 1400);
+    return () => clearTimeout(t);
+  }, [revealStarted]);
+
   return (
     <section
       className="relative w-full overflow-hidden"
@@ -671,7 +695,7 @@ export default function FoundersTestimonialClient({
           paddingTop: "min(8.68vw, 13.43vh)", paddingBottom: "min(8.68vw, 13.43vh)",
         }}
       >
-        <motion.div className="flex flex-col items-center justify-center text-center max-md:!w-full" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }}>
+        <motion.div ref={revealRef} className="flex flex-col items-center justify-center text-center max-md:!w-full" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }}>
           {/* FIXED: Removed whitespace-nowrap and max-width added on mobile so it breaks into 3-4 clean lines */}
           <motion.h2
             /* Cap in `em`, not px. At a fixed 280px the container stopped
@@ -680,6 +704,7 @@ export default function FoundersTestimonialClient({
                against 59-80px for the others — was the only one that no longer
                fitted, so English alone dropped to a second line. In em the
                container tracks the font, so every language breaks the same. */
+            ref={visionLineRef}
             className={`m-0 text-center text-black max-md:!max-w-[10.8em] ${SECTION_HEADING_CLASS}`}
             style={{ ...SECTION_HEADING_STYLE, }}
             variants={{ hidden: { opacity: 0, x: -50 }, visible: { opacity: 1, x: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } } }}
@@ -700,7 +725,7 @@ export default function FoundersTestimonialClient({
                 style={{ background: "#D3E2FF", transformOrigin: "left" }}
                 variants={{ hidden: { scaleX: 0 }, visible: { scaleX: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.8 } } }}
               />
-              <TypingText delay={1.4} inView={bottomInView} />
+              <TypingText start={visionLineInView && highlightLanded} />
             </span>
           </motion.h2>
           <motion.h2
@@ -718,20 +743,22 @@ export default function FoundersTestimonialClient({
   );
 }
 
-function TypingText({ delay = 0, inView = true }: { delay?: number; inView?: boolean }) {
+/**
+ * The word in the blue highlight, typed out script by script.
+ *
+ * `start` is the caller's decision — see the two gates in the section above.
+ * Until it flips, the slot is EMPTY. It used to render a finished "Vision."
+ * while it waited, so English was seen twice over: once sitting there
+ * statically, then wiped and typed out again from nothing. English is the
+ * first word in VISION_WORDS, so the typed pass shows it first regardless —
+ * the static copy was pure duplication.
+ */
+function TypingText({ start }: { start: boolean }) {
   const [wordIndex, setWordIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
-  const [started, setStarted] = useState(false);
-
-  // Start animation only when inView becomes true
-  useEffect(() => {
-    if (!inView) return;
-    const startTimer = setTimeout(() => setStarted(true), delay * 1000);
-    return () => clearTimeout(startTimer);
-  }, [delay, inView]);
 
   useEffect(() => {
-    if (!started) return;
+    if (!start) return;
     const graphemes = toGraphemes(VISION_WORDS[wordIndex].text);
     let index = 0;
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -752,13 +779,10 @@ function TypingText({ delay = 0, inView = true }: { delay?: number; inView?: boo
 
     timeoutId = setTimeout(typeNext, 150);
     return () => clearTimeout(timeoutId);
-  }, [started, wordIndex]);
+  }, [start, wordIndex]);
 
   const word = VISION_WORDS[wordIndex];
-
-  // Show "Vision." in English by default until animation starts
-  const textToShow = started ? displayedText : "Vision.";
-  const isActiveWordEnglish = wordIndex === 0 || !started;
+  const isActiveWordEnglish = wordIndex === 0;
 
   return (
     <span className="relative inline-block">
@@ -770,7 +794,7 @@ function TypingText({ delay = 0, inView = true }: { delay?: number; inView?: boo
         className={`relative whitespace-nowrap ${isActiveWordEnglish ? "" : word.className}`}
         lang={isActiveWordEnglish ? "en" : word.bcp47}
       >
-        {textToShow}
+        {displayedText}
       </span>
     </span>
   );

@@ -35,10 +35,11 @@ export default async function FoundersStory() {
   const slides =
     data?.stories && data.stories.length > 0 ? data.stories : FALLBACK_SLIDES;
 
+  // No ctaLabel: the grid's control is now the shared "Load More" button, so
+  // the Sanity field is no longer read here.
   return (
     <FoundersStoryGrid
       heading={data?.gridHeading || "Founder Stories"}
-      ctaLabel={data?.ctaLabel || "See More"}
       slides={slides}
     />
   );

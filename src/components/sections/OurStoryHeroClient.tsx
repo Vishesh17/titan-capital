@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { useLenis } from "lenis/react";
 import { RevealLine } from "./BackedEarlyClient";
 import RichText, { type RichTextValue } from "@/components/ui/RichText";
@@ -43,7 +45,7 @@ export interface OurStoryHeroData {
  *      opacity of `1 - tileOpacity`, and tileOpacity falls off with negative
  *      z. That is what makes depth read on a white ground.
  *   4. SCALE IS DRIVEN BY HEIGHT IN THE FRAME. A tile at the bottom is at
- *      SCALE_MAX and shrinks to SCALE_MIN as it climbs, so it recedes as it
+ *      SCALE_BOTTOM and shrinks to SCALE_TOP as it climbs, so it recedes as it
  *      rises — on top of whatever its z is already doing.
  *   5. IT WRAPS FOREVER. A tile that leaves the top has its `extra` shifted
  *      by a container height, which drops it back in at the bottom.
@@ -51,7 +53,7 @@ export interface OurStoryHeroData {
  *      the sign of the scroll sets the drift direction, so the field speeds
  *      up, slows and reverses under the reader.
  *
- * Two deliberate departures from the reference:
+ * Three deliberate departures from the reference:
  *
  *   - IT PICKS ITS POSITIONS DETERMINISTICALLY. The original calls
  *     Math.random() at module scope. Here that would run once on the server
@@ -61,6 +63,9 @@ export interface OurStoryHeroData {
  *   - SCROLL COMES FROM LENIS, which is what actually drives scrolling on
  *     this site; a native scroll listener would read a position Lenis is in
  *     the middle of animating.
+ *   - IT IS SPARSER. The reference runs 44 tiles at 0.5-1.4 scale; this runs
+ *     20 on a jittered grid at 1-1.65, because this hero has a heading to read
+ *     through the field and the reference's does not.
  */
 
 /** Straight from the reference bundle, except `speed` — see below. */
@@ -75,21 +80,49 @@ const CFG = {
 };
 
 /**
- * HOW A TILE'S SIZE CHANGES ACROSS ITS TRAVEL — start of the climb to the end.
+ * HOW A TILE'S SIZE CHANGES WITH ITS HEIGHT IN THE FRAME.
  *
- * A DELIBERATE DEPARTURE FROM THE REFERENCE, flagged because the rest of this
- * file is a port of it. The reference runs 1.4 down to 0.5, so its tiles
- * RECEDE as they rise. These GROW, 1x to 1.65x, which is the opposite
- * direction — worth knowing when the real bundle is ported, so this is not
- * mistaken for a mis-read of it.
+ * BIG AT THE BOTTOM, SMALL AT THE TOP — the reference's direction, restored.
+ * This file used to run it the other way (1x at the bottom growing to 1.65x at
+ * the top), which is what made the field read as cluttered: tiles were at
+ * their largest exactly where the heading is.
+ *
+ * Measured off the live reference, its tiles scale by position in the
+ * container and nothing else — 0.50 near the top, 0.84 at 39% down, 1.14 at
+ * 69%, 1.27 at 79% — a straight line, not a curve. So this is linear too.
+ *
+ * The consequence is the whole point: a tile RISING shrinks, and a tile
+ * DESCENDING grows. Because scroll direction flips the drift (see the ticker),
+ * scrolling down shrinks the field and scrolling back up grows it, with every
+ * tile starting from the size its position dictates rather than being reset.
+ *
+ * The endpoints are ours, not the reference's 0.5-1.4: its smallest tiles are
+ * half size, which is very sparse at our tile count.
  */
-const SCALE_START = 1;
-const SCALE_END = 1.65;
+const SCALE_BOTTOM = 1.65;
+const SCALE_TOP = 1;
 /** The depth ladder, in px of z. Cycled, so the field is layered evenly. */
 const Z_STEPS = [-200, -150, -100, -50, 0, 50, 100, 150, 200];
 /** Parallax multipliers, cycled — tiles at the same depth still drift apart. */
 const SPEEDS = [0.8, 0.9, 1, 1.1, 1.2];
-const COUNT = 32;
+
+/**
+ * HOW MANY TILES, AND WHERE THEY START.
+ *
+ * A JITTERED GRID, not free random placement. Picking both coordinates at
+ * random is what produced the crowded patches: random points clump, so some
+ * regions carried several overlapping tiles while others sat empty, and the
+ * eye reads the clumps as clutter however few tiles there are in total.
+ *
+ * One tile per cell, jittered inside the middle 60% of its cell, gives a field
+ * with no two tiles closer than roughly a cell apart while still looking
+ * scattered rather than ruled. The grid dissolves within seconds anyway — each
+ * tile carries its own speed from SPEEDS, so the rows shear apart as they
+ * drift.
+ */
+const GRID_COLS = 4;
+const GRID_ROWS = 5;
+const COUNT = GRID_COLS * GRID_ROWS; // 20
 const PERSPECTIVE = 800;
 
 /** Deterministic stand-in for the reference's Math.random. */
@@ -129,9 +162,16 @@ const PARTICLES = (() => {
     /* The reference's own falloff: past -100 it clamps, so the furthest tiles
        never fade below half. */
     const opacity = z < 0 ? Math.max(0.5, 1 + z / 250) : 1;
+    /* The cell this tile owns, and a jittered spot inside it. Cells are walked
+       column-first so consecutive tiles — which take consecutive z depths and
+       speeds — land in different columns rather than stacking down one. */
+    const col = i % GRID_COLS;
+    const row = Math.floor(i / GRID_COLS);
+    const cellW = 95 / GRID_COLS;
+    const cellH = 100 / GRID_ROWS;
     return {
-      x: Math.floor(rand() * 95),
-      y: Math.floor(rand() * 100),
+      x: Math.round((col + 0.2 + rand() * 0.6) * cellW),
+      y: Math.round((row + 0.2 + rand() * 0.6) * cellH),
       speed: SPEEDS[i % SPEEDS.length],
       z,
       opacity,
@@ -167,6 +207,34 @@ const ASPECT_MIN = 0.34;
 const ASPECT_MAX = 3;
 
 const lerp = (a: number, b: number, t: number) => (1 - t) * a + t * b;
+
+/**
+ * WHY THE TILES USED TO SIT GREY FOR SO LONG.
+ *
+ * They were a bare `<img src={photo.url}>`, which meant two things at once:
+ * the Sanity URL was the UNTRANSFORMED original — `asset->url` with no `?w=`
+ * — and a plain `<img>` is invisible to Next's image optimiser, so the local
+ * fallbacks were not resized either. Thirty-two tiles were each pulling a
+ * full-resolution photograph to fill a box 104px wide. The fallback set alone
+ * is 4.1MB across fifteen PNGs, one of them a megabyte on its own.
+ *
+ * So every tile showed its `#D9D9D9` placeholder until a photo hundreds of
+ * times larger than the space it occupies had arrived.
+ *
+ * `next/image` handles the local files, and this handles the Sanity ones —
+ * the same pairing every other section here uses (see ImageDeck, FlipCard).
+ * Handing the optimiser an already-small source also spares it fetching and
+ * re-encoding a full-size original on a cold cache.
+ */
+function cdnImageSrc(url: string, width: number): string {
+  if (!url) return url;
+  if (!url.startsWith("https://cdn.sanity.io/")) return url;
+  return `${url}?w=${width}&auto=format&q=85`;
+}
+
+/** The widest a tile is ever drawn: TILE's 104px ceiling times BOOST. Doubled
+ *  for retina, then rounded up to the next size Next actually generates. */
+const TILE_SOURCE_W = 320;
 
 /**
  * WHICH PHOTO GOES ON WHICH TILE.
@@ -366,32 +434,32 @@ function PhotoGalaxy({ photos }: { photos: OurStoryHeroPhoto[] }) {
           t.extra = t.extra + containerHeight;
         }
 
-        /* SCALE ACROSS THE TILE'S TRAVEL — it GROWS as it climbs.
-           `l` is how far down the frame the tile sits: 1 at the bottom where it
-           enters, 0 at the top where it leaves. `travel` flips that into 0 at
-           the start of the journey and 1 at the end, so the two constants read
-           in the order they happen.
+        /* SIZE FROM HEIGHT IN THE FRAME, and nothing else — no notion of a
+           journey, a start or an end. That is what makes the direction change
+           work: `rise` is 0 at the bottom of the container and 1 at the top,
+           so a tile drifting up shrinks and a tile drifting down grows, and
+           reversing the scroll simply reverses which way each tile is already
+           heading. Nothing is reset, so a tile that was large low in the frame
+           stays large and begins shrinking from there.
 
-           Eased, not linear: `1 - (1 - travel)^2` puts most of the growth in
-           the first part of the climb and settles as the tile approaches the
-           top, which is the "grows quickly from the start point" the design
-           asks for. Linear made the change hard to notice until half way up. */
+           Linear, matching the reference — measured off it, its scale is a
+           straight line against position. */
         const top = t.position + t.top;
         const l = Math.max(0, Math.min(1, top / containerHeight));
-        const travel = 1 - l;
-        const eased = 1 - (1 - travel) * (1 - travel);
-        const want = SCALE_START + eased * (SCALE_END - SCALE_START);
+        const rise = 1 - l;
+        const want = SCALE_BOTTOM + rise * (SCALE_TOP - SCALE_BOTTOM);
         t.currentScale = lerp(t.currentScale, want, CFG.scaleEase);
 
         el.style.transform = `translate3d(0, ${t.position}px, ${p.z}px) scale(${t.currentScale})`;
 
-        /* The veil clears on the same eased curve the tile grows on: a tile
-           that enters pale brightens quickly at first, and is fully opaque by
-           the time it reaches the top. A tile with no paleness to start with
-           (z >= 0) has a base of 0 and is unaffected. */
+        /* The veil clears as the tile climbs: one that enters pale at the
+           bottom is fully opaque by the time it reaches the top. Driven by the
+           same `rise`, so it tracks position rather than a journey and reverses
+           with the scroll like everything else. A tile with no paleness to
+           start with (z >= 0) has a base of 0 and is unaffected. */
         const veil = veilRefs.current[n];
         if (veil) {
-          veil.style.opacity = ((1 - p.opacity) * (1 - eased)).toFixed(3);
+          veil.style.opacity = ((1 - p.opacity) * (1 - rise)).toFixed(3);
         }
       });
 
@@ -445,13 +513,25 @@ function PhotoGalaxy({ photos }: { photos: OurStoryHeroPhoto[] }) {
           }}
         >
           <div className="absolute inset-0 overflow-hidden rounded-[2px] bg-[#D9D9D9]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={photo?.url}
-              alt=""
-              draggable={false}
-              className="h-full w-full select-none object-contain object-center"
-            />
+            {photo?.url && (
+              <Image
+                src={cdnImageSrc(photo.url, TILE_SOURCE_W)}
+                alt=""
+                fill
+                /* The tile's real drawn width, so the optimiser picks the
+                   smallest size that still covers it on a retina screen
+                   instead of the widest one it has. */
+                sizes="130px"
+                draggable={false}
+                /* EAGER, but not `priority`. The field is the top of the page,
+                   so lazy-loading only buys an IntersectionObserver round trip
+                   before fetching something that is already on screen — but
+                   32 preload hints would fight the heading and the fonts for
+                   the connection. Eager without the hint is the middle. */
+                loading="eager"
+                className="select-none object-contain object-center"
+              />
+            )}
           </div>
           {/* THE PALING SHEET — a white veil over the photograph, and it now
               CLEARS AS THE TILE TRAVELS.
@@ -459,7 +539,7 @@ function PhotoGalaxy({ photos }: { photos: OurStoryHeroPhoto[] }) {
               It used to be static: a function of the tile's `z`, which never
               changes, so a deep tile stayed washed out for its whole life and
               simply looked like a faded photo. It is driven per frame by the
-              ticker instead, from the same eased travel that grows the tile —
+              ticker instead, from the same rise that scales the tile —
               so the ones that enter faintest are the ones that gain the most,
               and every tile is fully opaque by the time it leaves the top.
 
@@ -506,13 +586,64 @@ export default function OurStoryHeroClient({
     return () => cancelAnimationFrame(id);
   }, []);
 
+  /* ── THE HERO FALLS AWAY AS IT IS COVERED ──
+     Without this the hero simply sits there and the section below slides over
+     it, which reads as a card being laid on top. Receding slightly while it is
+     covered reads instead as the hero dropping back into depth and the next
+     section arriving in front of it.
+
+     THE REFERENCE DOES NOT DO THIS — measured, its hero carries no transform
+     at all. It earns the same impression from its layer stack, where every
+     panel pins in turn. This is the equivalent for a page whose next section
+     is one long scrolling block.
+
+     `["start start", "end start"]` makes progress 0 where the wrapper's top
+     meets the viewport top and 1 where its bottom does — the wrapper is 150vh,
+     so that is exactly the pinned run. The curtain itself only starts a third
+     of the way through (at 50vh, when the section below first appears at the
+     bottom of the screen), so nothing moves before then. */
+  const pinRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: pinProgress } = useScroll({
+    target: pinRef,
+    offset: ["start start", "end start"],
+  });
+  const CURTAIN_START = 1 / 3;
+  const heroScale = useTransform(pinProgress, [CURTAIN_START, 1], [1, 0.92]);
+  const heroFade = useTransform(pinProgress, [CURTAIN_START, 1], [1, 0.72]);
+
 
   return (
-    <section
+    /* ══════════ THE PIN ══════════
+       Three boxes, and each one is doing a separate job. This is the reference
+       page's own structure, read off it rather than guessed:
+
+         outer   relative, 150vh   the SCROLL DISTANCE the hero occupies in the
+                                   document. The next section begins right after
+                                   it, so this is what decides when the curtain
+                                   starts to rise.
+         inner   absolute, 300vh   the sticky element's CONTAINING BLOCK, and it
+                                   deliberately runs past the outer box. Being
+                                   absolute it adds nothing to the flow, so it
+                                   lengthens the pin without lengthening the
+                                   page.
+         hero    sticky,   100vh   what you actually see.
+
+       THE INNER BOX IS THE WHOLE TRICK. A sticky element is released once its
+       containing block runs out — so pinned directly inside the 150vh outer
+       box, the heading would come unstuck at 50vh, which is the exact moment
+       the next section starts covering it, and it would slide up as the
+       curtain rose. Given 300vh to stick within, it stays perfectly still
+       while the section below climbs over it, which is the detail in question.
+
+       Nothing paints it over: the next section simply comes later in the DOM
+       and is positioned, so at equal stacking it wins. No z-index needed. */
+    <div ref={pinRef} className="relative w-full shrink-0 h-[150vh] max-md:!h-[150dvh]">
+      <div className="absolute inset-x-0 top-0 h-[300vh] max-md:!h-[300dvh]">
+    <motion.section
       /* FULL SCREEN, the same way HeroClient is: `h-screen` with a `100dvh`
          override under `md`, because mobile browser chrome makes `vh` taller
          than the visible area and the hero would be cut off by the URL bar. */
-      className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-white max-md:!h-[100dvh]"
+      className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden bg-white max-md:!h-[100dvh]"
       style={{
         // White section starts at the very top so its background fills
         // behind the transparent navbar (nav strip matches the hero until
@@ -520,6 +651,11 @@ export default function OurStoryHeroClient({
         paddingTop: "var(--nav-height)",
         paddingLeft: "var(--section-px-wide)",
         paddingRight: "var(--section-px-wide)",
+        /* Scaling the SECTION, background and all. It is white on a white
+           page, so the ground it uncovers at the edges is invisible — only
+           the photographs and the heading are seen to fall back. */
+        scale: heroScale,
+        opacity: heroFade,
       }}
     >
       <style>{HERO_CSS}</style>
@@ -603,6 +739,8 @@ export default function OurStoryHeroClient({
           />
         </div>
       </div>
-    </section>
+    </motion.section>
+      </div>
+    </div>
   );
 }
