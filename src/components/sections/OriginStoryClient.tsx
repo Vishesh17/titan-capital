@@ -622,8 +622,15 @@ export default function OriginStoryClient({
         </motion.div> */}
       </motion.div>
 
-      {/* ── BULLETS + CONNECTORS ── */}
-      <div className="flex w-full flex-col">
+      {/* ── BULLETS + CONNECTORS ──
+          THE GAP IS MOBILE-ONLY, and it is here because the connector is what
+          separates the rows on desktop — a ~300px dashed SVG between each pair.
+          It is `hidden md:flex`, so below md the rows had nothing between them
+          at all: measured at 390px wide, the gap between every pair of rows was
+          exactly 0px and a photograph sat flush against the next headline.
+          `max-md:` so the desktop spacing, which the connector already handles,
+          is untouched. */}
+      <div className="flex w-full flex-col max-md:gap-[clamp(52px,13vw,76px)]">
         {bullets.map((bullet, i) => (
           <div key={i} className="w-full">
             <BulletRow bullet={bullet} reversed={i % 2 === 1} index={i} />
