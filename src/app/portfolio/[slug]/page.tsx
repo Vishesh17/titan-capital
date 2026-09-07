@@ -249,8 +249,14 @@ function InfoBox({ company }: { company: CompanyDetail }) {
   };
 
   return (
+    /* `min-h-0` below lg, and that is the whole fix for the empty strip at the
+       foot of the box. The min-height is a SIDEBAR device: on desktop this sits
+       beside the company copy and the floor keeps the two columns level. Below
+       lg it stacks underneath instead, with nothing to line up against — and it
+       came out 360px against 305px of content, so every card carried ~55px of
+       dead cream below its last milestone. */
     <aside
-      className="flex w-full flex-col bg-[#FBF7F0]"
+      className="flex w-full flex-col bg-[#FBF7F0] max-lg:!min-h-0"
       style={{
         width: "clamp(280px, min(43.06vw, 63.13vh), 620px)",
         minHeight: "clamp(360px, min(37.22vw, 54.58vh), 536px)",

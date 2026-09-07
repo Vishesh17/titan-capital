@@ -95,14 +95,21 @@ function SidebarFilterSection({
     }
   }, []);
 
+  // `flex-none` below lg, not `flex-1`: equal thirds is what forced
+  // "Investment Stage" onto two lines inside a 126px chip while "Sector" and
+  // "Status" sat in 94px chips half empty. Sized to its own label, each chip is
+  // as wide as it needs and no wider.
   return (
-    <div className="w-full border-b border-[#000]/10 pb-5 pt-3 max-lg:!relative max-lg:!w-auto max-lg:!flex-1 max-lg:!border-b-0 max-lg:!pb-0 max-lg:!pt-0">
+    <div className="w-full border-b border-[#000]/10 pb-5 pt-3 max-lg:!relative max-lg:!w-auto max-lg:!flex-none max-lg:!border-b-0 max-lg:!pb-0 max-lg:!pt-0">
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         className="flex w-full cursor-pointer items-center justify-between border-none bg-transparent py-1 text-left max-lg:!gap-1.5 max-lg:!rounded-full max-lg:!border max-lg:!border-solid max-lg:!border-[#000]/15 max-lg:!bg-white max-lg:!px-3 max-lg:!py-2"
       >
-        <span className={`text-[#000] ${BODY_BOLD_CLASS}`} style={HERO_BODY_STYLE}>
+        <span
+          className={`text-[#000] max-lg:whitespace-nowrap ${BODY_BOLD_CLASS}`}
+          style={HERO_BODY_STYLE}
+        >
           {label}
         </span>
         <motion.span
@@ -555,7 +562,10 @@ export default function PortfolioGrid() {
             </button>
           </div>
 
-          <div className="w-full flex flex-col max-lg:!flex-row max-lg:!gap-2">
+          {/* `flex-wrap` below lg so a chip that will not fit drops to the next
+              row, rather than the row squeezing every chip to a third of the
+              width and making the longest label wrap inside itself. */}
+          <div className="w-full flex flex-col max-lg:!flex-row max-lg:!flex-wrap max-lg:!gap-2">
             {FILTER_CONFIG.map(({ key, label }, idx) => (
               <SidebarFilterSection
                 key={key}
