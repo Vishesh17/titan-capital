@@ -26,6 +26,8 @@ import { navbar } from "./navbar";
 import { fifteenYears } from "./fifteenYears";
 import { originStory } from "./originStory";
 import { ourStoryHero } from "./ourStoryHero";
+import { legalText } from "./legalText";
+import { privacyPolicy, grievanceRedressal } from "./legalPages";
 import { richText } from "./richText";
 import { sixFiftyFounders } from "./sixFiftyFounders";
 import { ourTeam } from "./ourTeam";
@@ -89,6 +91,7 @@ export const schemaTypes: SchemaTypeDefinition[] = [
   /* Our Story page */
   ourStoryHero,
   richText,
+  legalText,
   sixFiftyFounders,
   originStory,
   fifteenYears,
@@ -125,4 +128,7 @@ export const schemaTypes: SchemaTypeDefinition[] = [
   /* Portfolio */
   company,
   portfolioGrid,
+  /* Legal pages — both render through the same tabbed component */
+  privacyPolicy,
+  grievanceRedressal,
 ];

@@ -22,13 +22,12 @@ import { motion } from "framer-motion"; // Keep for buttonContent spinner animat
   Desktop (lg+): untouched — logo+address+socials left, nav right.
 */
 
-/* Links that are disabled (not yet live) — mirrors the navbar's DISABLED_URLS */
+/* Links that are disabled (not yet live) — mirrors the navbar's DISABLED_URLS.
+   The whole Perspectives column is live now, so only the two About/Portfolio
+   entries that have no finished page remain. */
 const DISABLED_FOOTER_LINKS = new Set([
   "Our Story",
   "Founders' Stories",
-  "Titan Ecosystem",
-  "Blogs & News",
-  "Indicorns"
 ]);
 
 /* Map specific footer link labels to custom routes */
@@ -38,7 +37,11 @@ const footerHrefs: Record<string, string> = {
   "Our Portfolio": "/portfolio",
   "Founders' Stories": "/foundersstory",
   "Get Investment": "/getinvestment",
-  "Titan Ecosystem": "/beyondthecheque",
+  /* /titanecosystem, NOT /beyondthecheque. That was pointing at a different
+     page entirely — Beyond The Cheque has its own hero and content — and it
+     never showed because the link was disabled. Sanity's navbar has always
+     had this one right. */
+  "Titan Ecosystem": "/titanecosystem",
   "Indicorns": "/indicorns",
   "Blogs & News": "/blogs",
 };

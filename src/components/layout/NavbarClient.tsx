@@ -197,9 +197,8 @@ const FALLBACK_SECTIONS: NavbarSection[] = [
     id: "about",
     title: "ABOUT US ",
     subItems: [
-      { label: "Our Story", url: "#disabled" },
+      { label: "Our Story", url: "/ourstory" },
       { label: "Meet The Team", url: "/ourteam" },
-      { label: "Indicorns", url: "#disabled" },
     ],
   },
   {
@@ -213,8 +212,9 @@ const FALLBACK_SECTIONS: NavbarSection[] = [
     id: "perspective",
     title: "PERSPECTIVES ",
     subItems: [
-      { label: "Titan Ecosystem", url: "#disabled" },
-      { label: "Blogs", url: "#disabled" },
+      { label: "Titan Ecosystem", url: "/titanecosystem" },
+      { label: "Indicorns", url: "/indicorns" },
+      { label: "Blogs & News", url: "/blogs" },
     ],
   },
 ];
@@ -243,12 +243,24 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
 
   // Restored the missing variables here!
   // DISABLED_ITEMS: Override URLs for items that should be disabled during demo
+  /* PERSPECTIVES IS LIVE. Titan Ecosystem, Indicorns and Blogs & News have all
+     been taken off both lists — Sanity already pointed them at real routes
+     (/titanecosystem, /indicorns, /blogs); it was only this override rewriting
+     them to "#disabled" on the way through.
+
+     Note the two lists catch different things, which is why enabling one item
+     sometimes meant editing both: Blogs & News was blocked by its URL (/blogs)
+     rather than its label, because Sanity labels it "Blogs & News" while the
+     list said "Blogs". Titan Ecosystem and Indicorns were blocked by label.
+
+     What is left is genuinely not ready: the two fund pages, Our Story and
+     Founders' Stories. /beyondthecheque stays too — it is its own page, not
+     the Titan Ecosystem one. */
   const DISABLED_URLS = [
     "/titanseedfund",
     "/winnersfund",
     "/ourstory",
     "/foundersstory",
-    "/blogs",
     "/beyondthecheque",
   ];
 
@@ -257,9 +269,6 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
     "Titan Winners Fund",
     "Our Story",
     "Founders Story",
-    "Blogs",
-    "Titan Ecosystem",
-    "Indicorns"
   ];
 
   const overrideDisabledUrls = (sections: NavbarSection[]): NavbarSection[] => {

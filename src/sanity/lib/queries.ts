@@ -1013,3 +1013,27 @@ export const sixFiftyFoundersQuery = groq`
     "faces": faces[].asset->url
   }
 `;
+
+/**
+ * The two legal pages. BOTH are fetched on BOTH routes: /privacy-policy and
+ * /grievance-redressal render the same tabbed component, and switching tabs
+ * does not reload the page — so the other tab's copy has to be in hand already.
+ */
+export const legalPagesQuery = groq`{
+  "privacy": *[_type == "privacyPolicy"][0]{ heading, tabLabel, body },
+  "grievance": *[_type == "grievanceRedressal"][0]{
+    heading,
+    tabLabel,
+    body,
+    funds[]{
+      title,
+      fundName,
+      effectiveDate,
+      registrationNumber,
+      registeredOffice,
+      investmentManager,
+      trustee,
+      sponsor
+    }
+  }
+}`;
