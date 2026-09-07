@@ -24,6 +24,29 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 const INTERVAL_MS = 5000; // auto-advance cadence
 const SPIN_MS = 1.05; // seconds for one card→next rotation
 
+/* ── SWIPE ──
+   The only way to change card was to CLICK A SIDE CARD, which works on a
+   desktop where the neighbours are on screen — but on a phone they sit at
+   ±31vw, scaled down and at 18% opacity, so there is nothing to aim at. The
+   carousel was effectively fixed unless you waited out the 5s timer.
+
+   Distance is read from the stage rather than fixed in px: one card of travel
+   is a little under half the stage's width, so the same flick means the same
+   thing on a 320px phone and a 1440px desktop.
+
+   Direction: dragging LEFT should bring the card on the right forward, which is
+   an INCREASE in `pos` — hence the minus below. */
+const DRAG_FRACTION = 0.45;
+/* Past this the gesture is a swipe and not a tap, so the pointer is captured
+   and the click that would otherwise follow is swallowed. */
+const AXIS_LOCK_PX = 8;
+/* A short flick that never travelled a whole card still advances one. */
+const FLICK_PX = 40;
+
+/** Hold a dragged position within one card of where the gesture began. */
+const clampStep = (p: number, from: number) =>
+  Math.max(from - 1, Math.min(from + 1, p));
+
 export interface IndicornTestimonialItem {
   image: string;
   quote: string;
@@ -262,6 +285,10 @@ export default function IndicornTestimonialsClient({
      (a click on the left card spins left, not three-quarters of the way
      right). */
   const goTo = (index: number) => {
+    /* A swipe that ends over a card also fires that card's click. Without this
+       the release would spin to wherever the finger happened to lift, undoing
+       the snap the gesture just chose. */
+    if (swiped.current) return;
     const p = target.current;
     let d = (((index - p) % N) + N) % N;
     if (d > N / 2) d -= N;
@@ -269,6 +296,97 @@ export default function IndicornTestimonialsClient({
     target.current = p + d;
     animate(pos, target.current, { duration: SPIN_MS, ease: EASE });
     setSpinNonce((n) => n + 1);
+  };
+
+  /* ── THE SWIPE GESTURE ──
+     Pointer events, so finger and stylus take one path; MOUSE IS DELIBERATELY
+     EXCLUDED, because on desktop a press-and-move over a side card is how you
+     click it and dragging would swallow that.
+
+     The cylinder follows the finger rather than waiting for the release — `pos`
+     is set directly during the move — and the release animates to the nearest
+     whole index with the same spin the click and the timer use, so all three
+     ways of changing card feel like one mechanism. */
+  const drag = useRef<{
+    id: number;
+    x: number;
+    y: number;
+    from: number;
+    axis: "x" | "y" | null;
+  } | null>(null);
+  const swiped = useRef(false);
+
+  const perCard = () => {
+    const w = carouselRef.current?.clientWidth ?? 0;
+    /* Never zero: a divide by zero here would set `pos` to Infinity and blank
+       every card off the stage. */
+    return Math.max(80, w * DRAG_FRACTION);
+  };
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "mouse") return;
+    drag.current = {
+      id: e.pointerId,
+      x: e.clientX,
+      y: e.clientY,
+      from: target.current,
+      axis: null,
+    };
+    swiped.current = false;
+  };
+
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    if (!d || d.id !== e.pointerId) return;
+    const dx = e.clientX - d.x;
+    const dy = e.clientY - d.y;
+
+    /* AXIS LOCK. Until the gesture has committed to an axis it is left alone,
+       so a vertical drag scrolls the page as it always did — the stage carries
+       `touch-action: pan-y` for the same reason. Once it is horizontal the
+       pointer is captured, so lifting off the stage still ends the swipe here
+       rather than leaving the cylinder mid-turn. */
+    if (!d.axis) {
+      if (Math.abs(dx) < AXIS_LOCK_PX && Math.abs(dy) < AXIS_LOCK_PX) return;
+      d.axis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+      if (d.axis === "x") {
+        swiped.current = true;
+        try {
+          e.currentTarget.setPointerCapture(e.pointerId);
+        } catch {
+          /* Some pointer ids cannot be captured; the drag still works from the
+             events alone, so this is not worth losing the gesture over. */
+        }
+      }
+    }
+    if (d.axis !== "x") return;
+    /* ONE CARD PER GESTURE, however far the finger travels. Unclamped, a drag
+       across the full stage covers 1.7 cards and rounds to TWO — and with
+       three testimonials, two forward is one backward, so a firm swipe left
+       appeared to go right. Clamping also means the front card is always the
+       one the reader is looking at when they let go. */
+    pos.set(clampStep(d.from - dx / perCard(), d.from));
+  };
+
+  const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    if (!d || d.id !== e.pointerId) return;
+    drag.current = null;
+    if (d.axis !== "x") return;
+
+    const dx = e.clientX - d.x;
+    let next = Math.round(clampStep(d.from - dx / perCard(), d.from));
+    // A flick too short to round anywhere still counts as one card.
+    if (next === d.from && Math.abs(dx) > FLICK_PX) {
+      next = d.from + (dx < 0 ? 1 : -1);
+    }
+    target.current = next;
+    animate(pos, next, { duration: SPIN_MS, ease: EASE });
+    setSpinNonce((n) => n + 1); // a swipe restarts the timer, like a click
+    /* Cleared after the click that follows this release has been and gone. */
+    window.setTimeout(() => {
+      swiped.current = false;
+    }, 0);
   };
 
   // Auto-advance every 5s while the carousel is in view — smooth spin to next.
@@ -381,9 +499,17 @@ export default function IndicornTestimonialsClient({
         <div
           ref={carouselRef}
           className="relative w-full"
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
           style={{
             perspective: "1800px",
             height: "clamp(240px, 27vw, 400px)",
+            /* The browser keeps vertical panning, we take horizontal. Without
+               this the page scrolls diagonally under a swipe and the gesture
+               is cancelled halfway through. */
+            touchAction: "pan-y",
           }}
         >
           {/* pointer-events-none is load-bearing: this wrapper is a preserve-3d

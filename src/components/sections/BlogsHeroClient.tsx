@@ -28,6 +28,33 @@ export interface BlogsHeroData {
 
 const FALLBACK_HEADING_FIRST = "Thinking From The";
 const FALLBACK_HEADING_SECOND = "Titan Ecosystem";
+
+/**
+ * THE HEADING WRAPS ITSELF ON MOBILE. No fixed line count, no second set of CMS
+ * fields, and no change to the type size — the words simply flow into as many
+ * lines as the gutters leave room for, the way the Our Story hero already does.
+ *
+ * WHY IT COULD NOT WRAP BEFORE: RevealLine puts `whitespace-nowrap` on whatever
+ * string it is handed — it must, or characters reflow half way through the
+ * per-character flip. Handing it a whole line therefore made that line
+ * unbreakable, so at 375px "Thinking From The" rendered 477px inside a 327px
+ * column and was clipped at BOTH edges. Nothing about the size was wrong; the
+ * text had simply been told it may not wrap.
+ *
+ * THE UNIT OF REVEAL BECOMES A WORD. Each word is its own RevealLine, so each
+ * word stays intact and unbreakable while the line breaks BETWEEN words — which
+ * is exactly what a browser does with ordinary text, and it needs no measuring,
+ * no breakpoints and no per-device line count.
+ *
+ * WORD_GAP stands in for the space characters. Splitting into one RevealLine
+ * per word throws the real spaces away: inside a RevealLine a space is rendered
+ * as a glyph, but between two of them there is nothing at all. Measured against
+ * this font a true space is 0.17em, so 0.2em sits just wider — right for a
+ * display heading. ROW_GAP is the line spacing: level 1's 86% line-height is
+ * tighter than the glyphs, so stacked lines would touch at 0px.
+ */
+const WORD_GAP = "0.2em";
+const ROW_GAP = "0.12em";
 const FALLBACK_SUBTITLE =
   "Operator-led insights. Investment theses. Founder stories. Market maps. The playbooks we wish existed when we were building.";
 
@@ -362,6 +389,15 @@ export default function BlogsHeroClient({
   const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
   const subtitle = data?.subtitle || FALLBACK_SUBTITLE;
 
+  /* The two CMS fields are the DESKTOP line break and nothing more. Mobile
+     ignores it and wraps the words itself, so the two are joined back into one
+     run here — which is also why a single-field heading in Sanity would work
+     just as well on a phone. */
+  const headingWords = `${headingFirst} ${headingSecond}`
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
   const sectionRef = useRef<HTMLElement>(null);
   const inView = useInView(sectionRef, { once: true, amount: 0.3 });
   const [show, setShow] = useState(false);
@@ -387,8 +423,39 @@ export default function BlogsHeroClient({
             className={`m-0 flex flex-col items-center justify-center text-white ${HERO_HEADING_DARK_CLASS}`}
             style={HERO_HEADING_DARK_STYLE}
           >
-            <RevealLine show={show} delay={0}>{headingFirst}</RevealLine>
-            <RevealLine show={show} delay={0.5}>{headingSecond}</RevealLine>
+            {/* ── DESKTOP: untouched ──
+                Literally the original markup — one RevealLine per CMS field,
+                each an unbreakable line, with their real space glyphs and no
+                gaps of any kind on the h1. `contents` dissolves this wrapper so
+                the two RevealLines remain direct flex items of the h1 and lay
+                out identically; `max-md:hidden` beats `contents` on a phone, so
+                only one of the two blocks is ever laid out.
+
+                It is a separate block rather than one clever shared render
+                because a shared one is NOT free: standing a word-gap in for the
+                real spaces moved the desktop heading measurably — 1448px of
+                line became 1422px, and the h1 grew from 235px to 252px tall.
+                Desktop keeps the original nodes so it cannot drift at all. */}
+            <span className="contents max-md:hidden">
+              <RevealLine show={show} delay={0}>{headingFirst}</RevealLine>
+              <RevealLine show={show} delay={0.5}>{headingSecond}</RevealLine>
+            </span>
+
+            {/* ── MOBILE: the heading wraps itself ──
+                Every word of the heading in one wrapping row, so the phone
+                decides how many lines it takes and the CMS line break stops
+                mattering here. Same type size as before — nothing about the
+                size was wrong, the text had simply been forbidden to wrap. */}
+            <span
+              className="hidden max-md:!flex max-md:flex-wrap max-md:items-baseline max-md:justify-center"
+              style={{ columnGap: WORD_GAP, rowGap: ROW_GAP }}
+            >
+              {headingWords.map((word, i) => (
+                <RevealLine key={i} show={show} delay={i * 0.09}>
+                  {word}
+                </RevealLine>
+              ))}
+            </span>
           </h1>
 
           <motion.div

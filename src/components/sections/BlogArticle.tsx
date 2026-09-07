@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import BackLink from "@/components/ui/BackLink";
 import { BlogCard, toBlog, type BlogPostCard } from "./BlogsClient";
 import StoryBlocks, { type StoryBlock } from "./FounderStoryBlocks";
 import {
@@ -75,13 +76,19 @@ function BlogHeader({ post }: { post: BlogPostData }) {
       <div className="mx-auto flex w-full flex-col" style={{ maxWidth: COLUMN }}>
         {/* ── Back / breadcrumb ── */}
         <div className="flex w-full flex-row items-center justify-between">
-          <Link
-            href="/blogs"
+          {/* history.back(), NOT a <Link href="/blogs">. A Link is a FORWARD
+              navigation: the browser has no scroll position for it, so it
+              landed the reader at the top of the listing every time — which,
+              once Load More has been pressed, also drops them back to the
+              first nine posts. The other three detail pages already use this
+              component; the article was the one still using a plain link. */}
+          <BackLink
+            fallbackHref="/blogs"
             className="font-['Poppins',_sans-serif] font-light text-black transition-opacity duration-200 hover:opacity-70"
             style={LABEL_STYLE}
           >
             Back
-          </Link>
+          </BackLink>
           <p className="m-0 font-['Poppins',_sans-serif] text-black" style={LABEL_STYLE}>
             <Link
               href="/blogs"
@@ -90,7 +97,15 @@ function BlogHeader({ post }: { post: BlogPostData }) {
               Blogs
             </Link>
             <span className="font-light"> / </span>
-            <span className="font-medium">{post.category || post.title}</span>
+            {/* THE SLUG, which is the URL segment this crumb stands for —
+                /blogs/lane reads "Blogs / lane". It was `category || title`,
+                so the one post in Sanity carrying a category (lane) showed
+                "Blogs / Investment News": a crumb naming a page that does not
+                exist, while every other post fell through to its full title.
+                The slug is the only field that is always set here — the route
+                matched on it to find this post — so the crumb can never be
+                empty and never disagrees with the address bar. */}
+            <span className="font-medium">{post.slug || post.title}</span>
           </p>
         </div>
 

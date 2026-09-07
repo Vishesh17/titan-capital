@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { SeeMoreButton } from "./ImpactAtGlanceClient";
+import { CAPTION_STYLE } from "@/styles/heroTypography";
 
 /* ─────────────────────────────────────────────────────────
    Blogs listing — featured note + category/search filter bar +
@@ -28,6 +29,9 @@ export interface Blog {
   href: string;
   /** Pills above the meta line. Optional — a post with none simply omits them. */
   tags?: string[];
+  /** Sanity's `publishedAt`, an ISO datetime. Most posts have none yet — the
+   *  card still prints its "Published On:" label, just with nothing after it. */
+  publishedAt?: string;
 }
 
 const CATEGORIES = [
@@ -84,7 +88,48 @@ export function toBlog(p: BlogPostCard, i: number): Blog {
     // "/blogs//bobabhai", which is not the route and 404s.
     href: p.slug?.replace(/^\/+|\/+$/g, "") ? `/blogs/${p.slug.replace(/^\/+|\/+$/g, "")}` : "#",
     tags: p.tags,
+    publishedAt: p.publishedAt,
   };
+}
+
+/* ── THE PUBLISHED LINE ──
+   Sits on the card's floor, on the left, with the arrow at the right — filling
+   the run of empty space the arrow row used to be on its own.
+
+   THE LABEL IS ALWAYS PRINTED, with or without a date behind it. That is the
+   point of it for now: most posts in Sanity carry no `publishedAt` yet, and a
+   line that appeared only on the few that do would leave the cards disagreeing
+   about where their floor sits. Filling the date in later needs no code change.
+
+   PARSED FROM THE ISO STRING, NOT THROUGH `Date`. `publishedAt` is a Sanity
+   `datetime`, so it arrives as UTC — and this component is server-rendered
+   before it hydrates. `toLocaleDateString` would run in the server's timezone
+   and then in the reader's, which disagree either side of midnight: the markup
+   would not match on hydration, and a post published late in the day would show
+   the wrong date to half the world. Reading the Y-M-D off the front of the
+   string is the same answer everywhere. */
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+export function formatPublished(iso?: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso ?? "");
+  if (!m) return "";
+  const month = MONTHS[Number(m[2]) - 1];
+  return month ? `${Number(m[3])} ${month} ${m[1]}` : "";
+}
+
+function PublishedOn({ date }: { date?: string }) {
+  const when = formatPublished(date);
+  return (
+    <p
+      className="m-0 min-w-0 truncate font-['Poppins',_sans-serif] font-normal text-[#6b6b6b]"
+      style={{ ...CAPTION_STYLE, lineHeight: "150%" }}
+    >
+      Published On:{when ? ` ${when}` : ""}
+    </p>
+  );
 }
 
 /** ONE cover shape for every picture on this page — featured note, the cards
@@ -226,12 +271,18 @@ function MetaLine({ blog, reserve }: { blog: Blog; reserve?: boolean }) {
   /* NO CATEGORY HERE ANY MORE — it reads as a pill alongside the tags, which
      is where a label belongs; as prose it produced the dangling
      "Category: Investment News" line that was the card's only meta. */
+  /* LEVEL 7, the same token the published line below the card carries — the
+     byline and the date are the same tier of micro-label and now say so. This
+     was an ad-hoc `clamp(11px, 0.9vw, 13px)`, which rendered 12.96px against
+     level 7's 14px at 1440 — near enough to look like a mistake rather than a
+     distinction, and the two lines have to agree. */
   const meta = [blog.author, blog.readTime].filter(Boolean).join(" · ");
-  if (!meta) return reserve ? <p className="m-0" style={{ fontSize: "clamp(11px, 0.9vw, 13px)", lineHeight: "150%" }}>&nbsp;</p> : null;
+  const style = { ...CAPTION_STYLE, lineHeight: "150%" };
+  if (!meta) return reserve ? <p className="m-0" style={style}>&nbsp;</p> : null;
   return (
     <p
       className="m-0 font-['Poppins',_sans-serif] font-normal text-[#6b6b6b]"
-      style={{ fontSize: "clamp(11px, 0.9vw, 13px)", lineHeight: "150%" }}
+      style={style}
     >
       {meta}
     </p>
@@ -378,7 +429,8 @@ function SideCard({ blog }: { blog: Blog }) {
         >
           {blog.excerpt}
         </p>
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-between gap-[10px]">
+          <PublishedOn date={blog.publishedAt} />
           <CardArrow size={20} />
         </div>
       </div>
@@ -466,9 +518,10 @@ export function BlogCard({
             on the card's floor rather than wherever the copy happened to end.
             This is what the equal-height rows above are for. */}
         <div
-          className="flex items-center justify-end"
+          className="flex items-center justify-between gap-[12px]"
           style={{ marginTop: "auto", paddingTop: "clamp(10px, 1.1vw, 18px)" }}
         >
+          <PublishedOn date={blog.publishedAt} />
           <CardArrow size={22} />
         </div>
       </div>
@@ -724,10 +777,14 @@ export default function BlogsClient({ posts }: { posts?: BlogPostCard[] | null }
               >
                 {FEATURED.excerpt}
               </p>
+              {/* `justify-between` rather than `justify-end`: the label takes
+                  the card's left edge — the same edge the pills, headline and
+                  excerpt above it start from — and the arrow keeps the right. */}
               <div
-                className="flex items-center justify-end"
+                className="flex items-center justify-between gap-[12px]"
                 style={{ marginTop: "clamp(6px, 0.8vw, 12px)" }}
               >
+                <PublishedOn date={FEATURED.publishedAt} />
                 <CardArrow size={26} />
               </div>
             </div>

@@ -487,8 +487,12 @@ function FlipCard({ item }: { item: TestimonialItem }) {
 
 /* Circular nav arrow. Deliberately the same geometry as the navy circle
    inside ImpactAtGlance's SeeMoreButton — min(3.36vw, 5.19vh) square, white
-   glyph at 45% — so the two controls read as one family. Desktop only: the
-   mobile marquee stays drag/swipe. */
+   glyph at 45% — so the two controls read as one family.
+
+   DESKTOP ONLY, deliberately: the phone drives this strip by swiping it
+   (the track carries framer's `drag="x"`), which is the native gesture there
+   and needs no on-screen control. Arrows are for the pointer, which has no
+   equivalent. */
 function MarqueeArrow({ dir, onClick }: { dir: "left" | "right"; onClick: () => void }) {
   return (
     <button

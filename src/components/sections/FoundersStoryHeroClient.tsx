@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
+import { AnimatePresence, motion, useInView, type Variants } from "framer-motion";
 import { HeroGlow, AnimatedGrid, RevealLine } from "./BackedEarlyClient";
 import {
   HERO_HEADING_DARK_CLASS,
@@ -55,11 +55,27 @@ const MARQUEE_MAX_FLING = 2600;
    join — a stutter once per cycle. */
 const MARQUEE_GAP = "clamp(8px, 1vw, 16px)";
 
+/* ── The mobile grid ──
+   The phone gets BackedEarly's treatment: a 2x2 block of photos that flips
+   itself over on a timer, card by card. Four at a time because that is what
+   the block holds — a fifth would open a third row with a hole beside it. */
+const MOBILE_PAGE_SIZE = 4;
+/* Long enough that the set has settled and can be looked at: one changeover
+   runs ~1.9s (a staggered flip out, then a staggered flip in), leaving ~2s of
+   stillness. Same 4s BackedEarly holds its grid for. */
+const MOBILE_FLIP_INTERVAL = 4000;
+/* The first set flips in rather than fading, so this is the hero's entrance
+   for it — held back to where the photos used to arrive, after the heading's
+   per-character reveal has finished. */
+const MOBILE_ENTRANCE_DELAY = 1.2;
+
 const MARQUEE_CSS = `
 .fs-marquee-viewport { cursor: grab; touch-action: pan-y; }
 .fs-marquee-viewport[data-dragging="true"] { cursor: grabbing; }
 .fs-marquee-viewport img { -webkit-user-drag: none; user-select: none; }
 `;
+
+const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a);
 
 export default function FoundersStoryHero({
   data,
@@ -81,6 +97,69 @@ export default function FoundersStoryHero({
   useEffect(() => {
     if (inView) setShow(true);
   }, [inView]);
+
+  /* ── WHICH FOUR PHOTOS THE MOBILE GRID IS SHOWING ──
+     A SLIDING WINDOW, NOT A SLICE. BackedEarly can cut its list into pages
+     because it trims the list to an exact multiple of the page size first;
+     here the count is whatever the editor added — five today — and a plain
+     slice would leave the last page holding one photo and three navy holes.
+
+     So the window wraps: page n starts at (n x 4) mod count and takes four,
+     running off the end and back round to the front. Every page is full at
+     any count, and because the start moves by four each time, all four tiles
+     change on every flip rather than shuffling in place.
+
+     `step` is monotonic rather than modulo so the first set can be told apart
+     from the same set coming round again — only the first one waits for the
+     heading. It advances once per interval; the arithmetic below is modulo,
+     so the number itself never needs bounding. */
+  const [step, setStep] = useState(0);
+  const total = founders.length;
+  /* How many steps before the window is back where it started: 5 photos gives
+     5 distinct sets, 8 gives 2, and exactly 4 gives 1 — at which point every
+     "page" is the same four photographs and flipping between them would just
+     be a tic. Below that the window would repeat a photo inside one page, so
+     those counts hold still too. */
+  const flipCycle =
+    total > MOBILE_PAGE_SIZE ? total / gcd(total, MOBILE_PAGE_SIZE) : 1;
+
+  useEffect(() => {
+    if (!show || flipCycle < 2) return;
+    const timer = setInterval(
+      () => setStep((s) => s + 1),
+      MOBILE_FLIP_INTERVAL
+    );
+    return () => clearInterval(timer);
+  }, [show, flipCycle]);
+
+  const mobileSet =
+    total <= MOBILE_PAGE_SIZE
+      ? founders.map((src, i) => ({ src, index: i }))
+      : Array.from({ length: MOBILE_PAGE_SIZE }, (_, k) => {
+          const index = (step * MOBILE_PAGE_SIZE + k) % total;
+          return { src: founders[index], index };
+        });
+
+  /* Recreated each render so it can close over the entrance delay — the flip
+     is the mobile grid's arrival, so the very first set holds until the
+     heading has finished and every set after it starts immediately. */
+  const flipVariants: Variants = {
+    initial: { rotateY: -90, opacity: 0 },
+    animate: (i: number) => ({
+      rotateY: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeInOut",
+        delay: (step === 0 ? MOBILE_ENTRANCE_DELAY : 0) + i * 0.25,
+      },
+    }),
+    exit: (i: number) => ({
+      rotateY: 90,
+      opacity: 0,
+      transition: { duration: 0.4, ease: "easeInOut", delay: i * 0.08 },
+    }),
+  };
 
   /* ── HOW MANY COPIES OF THE PHOTO SET THE TRACK NEEDS ──
      The strip only ever travels one set's width before wrapping, so at the
@@ -309,37 +388,62 @@ export default function FoundersStoryHero({
           </div>
         </motion.div>
 
-        {/* ── 2 x 2 GRID — MOBILE ──
-            BackedEarly's mobile treatment: the photos sit in the page gutter
-            as a static grid rather than a strip, so each one is about half the
-            screen instead of a quarter. Same 12px gap.
+        {/* ── 2 x 2 FLIPPING GRID — MOBILE ──
+            BackedEarly's mobile treatment, card-flip and all: the photos sit
+            in the page gutter as a grid rather than a strip, so each one is
+            about half the screen instead of a quarter, and the block turns
+            itself over on a timer to work through the whole set. Same 12px
+            gap, same rotateY choreography, same 3D framing — the outer
+            perspective for the block and a per-cell one so each card turns
+            about its own centre rather than the grid's.
 
-            EXACTLY FOUR, whatever the editor has added. The grid is a fixed
-            2x2 block, so a fifth photo would start a third row on its own and
-            leave a hole beside it. The rest still appear on desktop, where the
-            marquee shows every one of them. */}
-        <motion.div
-          className="grid w-full shrink-0 grid-cols-2 grid-rows-2 gap-[12px] px-[var(--section-px-wide)] md:hidden"
-          initial={{ opacity: 0, y: 30 }}
-          animate={show ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, ease: "easeOut", delay: 1.2 }}
+            Every photo the editor added is reachable here, which the old fixed
+            slice of four could not do. The desktop marquee above still carries
+            them all in one pass. */}
+        <div
+          className="w-full shrink-0 px-[var(--section-px-wide)] md:hidden"
+          style={{ perspective: "1200px" }}
         >
-          {founders.slice(0, 4).map((src, i) => (
-            <div
-              key={`m-${i}`}
-              className="relative w-full overflow-hidden bg-[#0e1120]"
-              style={{ aspectRatio: "1433 / 1167" }}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              className="grid w-full grid-cols-2 grid-rows-2 gap-[12px]"
+              style={{ transformStyle: "preserve-3d" }}
             >
-              <Image
-                src={src}
-                alt={`Founder ${i + 1}`}
-                fill
-                sizes="50vw"
-                className="object-cover object-center"
-              />
-            </div>
-          ))}
-        </motion.div>
+              {mobileSet.map(({ src, index }, i) => (
+                <div key={`m-${i}`} style={{ perspective: "1000px" }}>
+                  <motion.div
+                    variants={flipVariants}
+                    custom={i}
+                    initial="initial"
+                    /* Held at the initial rotation until the section is on
+                       screen, so a hero scrolled past on load does not spend
+                       its entrance flip out of sight. The cells still occupy
+                       their grid tracks the whole time — a rotation costs no
+                       layout — so nothing below them moves. */
+                    animate={show ? "animate" : "initial"}
+                    exit="exit"
+                    style={{ transformStyle: "preserve-3d" }}
+                    className="h-full w-full"
+                  >
+                    <div
+                      className="relative w-full overflow-hidden bg-[#0e1120]"
+                      style={{ aspectRatio: "1433 / 1167" }}
+                    >
+                      <Image
+                        src={src}
+                        alt={`Founder ${index + 1}`}
+                        fill
+                        sizes="50vw"
+                        className="object-cover object-center"
+                      />
+                    </div>
+                  </motion.div>
+                </div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
     </section>
   );

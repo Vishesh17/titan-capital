@@ -102,6 +102,47 @@ const FALLBACK_TIMELINE: WhyIndicornsTimelineEntry[] = [
 const VISIBLE = 3;
 
 /**
+ * Circular nav arrow — the same control the founders' testimonial marquee
+ * carries (see MarqueeArrow in FoundersTestimonialClient), and through it the
+ * navy circle inside ImpactAtGlance's SeeMoreButton: a `min(3.36vw, 5.19vh)`
+ * square, white chevron at 45%, hover lift on the house curve. Kept to that
+ * geometry deliberately, so every circular control on the site reads as one
+ * family — change one and the others should follow.
+ *
+ * DESKTOP ONLY, exactly as the testimonial's are. Below `md` this section
+ * renders a different control entirely: a snap-scrolling rail the reader
+ * swipes, with pagination dots. Arrows are for the pointer, which has no
+ * equivalent gesture.
+ */
+function TimelineArrow({
+  dir,
+  onClick,
+}: {
+  dir: "left" | "right";
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={dir === "left" ? "Previous milestone" : "Next milestone"}
+      className="hidden md:flex shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-[#001A4D] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-110"
+      style={{ width: "var(--tl-arrow)", height: "var(--tl-arrow)" }}
+    >
+      <svg className="h-[45%] w-[45%]" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d={dir === "left" ? "M15 5L8 12L15 19" : "M9 5L16 12L9 19"}
+          stroke="white"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </button>
+  );
+}
+
+/**
  * Card content order is: date · title · stat · description, with the
  * description last.
  *
@@ -275,12 +316,46 @@ export default function WhyIndicorns({
         </motion.h2>
 
         {/* ══════════ MOBILE (< md) ══════════
-            Order per design: heading → swipeable timeline cards + dots →
-            story text → image. Desktop story/timeline are hidden below md.
-            Same layout as before; what's new is that the bullet and the 3s
-            progress bar now animate here exactly as they do on desktop, both
-            driven by the shared `activeIndex`. */}
+            Order per design: heading → story (label, text, image) → swipeable
+            timeline cards + dots. The story leads here, the way it does on
+            desktop, so the section reads as context-then-timeline on both.
+            Desktop story/timeline are hidden below md.
+
+            THE ORDER IS THE DOM ORDER, not `order:`. This whole block is
+            mobile-only and the desktop story and timeline are separate
+            elements further down, so moving these around cannot reach the
+            desktop layout at all — and a real reorder keeps the reading order
+            and the tab order matching what is on screen, which `order:` would
+            silently break.
+
+            The bullet and the 3s progress bar animate here exactly as they do
+            on desktop, both driven by the shared `activeIndex`. */}
         <div className="md:hidden">
+          {/* Story — text then image. NO top margin of its own: the heading
+              above already carries `max-md:!mb-[clamp(32px,6dvh,48px)]`, and
+              stacking a second gap on top of it would push the story down
+              twice. The gap that used to sit here has moved onto the carousel
+              below, which is now the element that needs separating. */}
+          <div className="flex flex-col">
+            <h3 className={`font-medium m-0 mb-[clamp(16px,4vw,24px)] text-black ${SUBHEADING_CLASS}`}>
+              {storyLabel}
+            </h3>
+            {/* One field, many paragraphs — the spacing between them lives in
+                the CSS below rather than in a per-item margin. */}
+            <div className="[&>p+p]:mt-[1.4em]">
+              <RichText
+                value={storyParagraphsMobile}
+                className={`font-normal text-[#1a1a1a] ${HERO_BODY_CLASS}`}
+                style={HERO_BODY_STYLE}
+              />
+            </div>
+            <img
+              src={storyImage}
+              alt="Kunal Bahl introducing the term Indicorn at TechSparks"
+              className="mt-[clamp(24px,6vw,40px)] w-full rounded-[2px] object-cover"
+            />
+          </div>
+
           {/* Swipeable timeline cards */}
           <div
             ref={scrollRef}
@@ -288,7 +363,7 @@ export default function WhyIndicorns({
             /* `relative` so the two timeline rules below can be absolutely
                positioned against this box — and, because it is the scroll
                container, they scroll along with the cards. */
-            className="relative flex snap-x snap-mandatory gap-[16px] overflow-x-auto -mx-[var(--section-px-wide)] px-[var(--section-px-wide)] pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="relative mt-[clamp(40px,10vw,64px)] flex snap-x snap-mandatory gap-[16px] overflow-x-auto -mx-[var(--section-px-wide)] px-[var(--section-px-wide)] pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             style={
               {
                 /* Card width as an explicit length rather than `76%`. An
@@ -431,27 +506,6 @@ export default function WhyIndicorns({
               />
             ))}
           </div>
-
-          {/* Story — text then image */}
-          <div className="mt-[clamp(40px,10vw,64px)] flex flex-col">
-            <h3 className={`font-medium m-0 mb-[clamp(16px,4vw,24px)] text-black ${SUBHEADING_CLASS}`}>
-              {storyLabel}
-            </h3>
-            {/* One field, many paragraphs — the spacing between them lives in
-                the CSS below rather than in a per-item margin. */}
-            <div className="[&>p+p]:mt-[1.4em]">
-              <RichText
-                value={storyParagraphsMobile}
-                className={`font-normal text-[#1a1a1a] ${HERO_BODY_CLASS}`}
-                style={HERO_BODY_STYLE}
-              />
-            </div>
-            <img
-              src={storyImage}
-              alt="Kunal Bahl introducing the term Indicorn at TechSparks"
-              className="mt-[clamp(24px,6vw,40px)] w-full rounded-[2px] object-cover"
-            />
-          </div>
         </div>
 
         {/* Top Story Section (desktop / tablet only) */}
@@ -527,14 +581,33 @@ export default function WhyIndicorns({
               "--tl-gap": "16px",
               "--tl-card": "calc((100% - 2 * var(--tl-gap)) / 3)",
               "--tl-pitch": "calc(var(--tl-card) + var(--tl-gap))",
+              /* The testimonial marquee's arrow size, to the character. */
+              "--tl-arrow": "min(3.36vw, 5.19vh)",
             } as React.CSSProperties
           }
         >
+          {/* ── ARROWS FLANK THE CAROUSEL ──
+                arrow | gap | [card gap card gap card] | gap | arrow
+
+              NOTHING ABOUT THE CARD WIDTH NEEDED CHANGING, and that is worth
+              saying because the testimonial marquee DID need it: that one sizes
+              its cards off `100vw` explicitly, so the arrows had to be
+              subtracted by hand. Here `--tl-card` is `(100% - 2*gap)/3` and the
+              `100%` resolves against the TRACK — which is now a `flex-1` child
+              and has already had the arrows and outer gaps taken out of it. The
+              cards simply become narrower, the section gutters are untouched,
+              and `--tl-pitch` follows `--tl-card`, so the timeline rules and
+              the slide distance stay welded to the bullets exactly as before. */}
+          <div className="flex items-center" style={{ gap: "var(--tl-gap)" }}>
+          <TimelineArrow
+            dir="left"
+            onClick={() => setActiveIndex((i) => (i === 0 ? count - 1 : i - 1))}
+          />
           {/* ── CAROUSEL VIEWPORT ──
               Clips the track to exactly three cards. The track itself is
               100% of this width, so a card basis of (100% - 2*gap)/3 and a
               slide of one --tl-pitch both measure against the same box. */}
-          <div className="overflow-hidden">
+          <div className="min-w-0 flex-1 overflow-hidden">
           <div
             className="relative grid w-full transition-transform duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
             style={{
@@ -740,14 +813,22 @@ export default function WhyIndicorns({
           </div>
           </div>
           </div>
+          {/* Wraps at both ends, matching the autoplay — which already returns
+              to card 1 after the last one's timer finishes. Stepping
+              `activeIndex` is all either arrow does, so the bullet glow, the
+              travelling rule, the progress bar and the rail all follow from
+              the one value, exactly as a card click does. It also restarts the
+              3s timer for free: that effect is keyed on `activeIndex`. */}
+          <TimelineArrow
+            dir="right"
+            onClick={() => setActiveIndex((i) => (i === count - 1 ? 0 : i + 1))}
+          />
+          </div>
 
-          {/* No separate control bar: navigation is integrated into the cards
-              themselves. Clicking any visible card makes it active, and since
-              the window ends on the active card, clicking the LEFT-most one
-              walks the rail backwards a card at a time — that is the way back
-              to the first. Autoplay also wraps: when the last card's timer
-              finishes it returns to card 1 and the rail snaps back to the
-              start of the timeline. */}
+          {/* Clicking a card still selects it, as before — the arrows are an
+              addition, not a replacement. Since the window ends on the active
+              card, clicking the LEFT-most visible one walks the rail backwards
+              a card at a time. */}
         </div>
       </motion.div>
     </section>
