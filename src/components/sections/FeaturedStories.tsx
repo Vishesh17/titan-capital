@@ -161,11 +161,22 @@ export default function FeaturedStories({
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
         >
-          {/* Portrait. A fixed aspect below md so it cannot collapse when the
-              grid stacks; on desktop it stretches to the copy's height, which
-              is what keeps the card a clean rectangle whatever the quote runs
-              to. */}
-          <div className="group relative w-full overflow-hidden bg-[#EFEAE1] max-md:aspect-[4/3] md:h-full md:min-h-[clamp(300px,32vw,440px)]">
+          {/* Portrait — SQUARE, the same 1/1 the story cards in the grid below
+              carry, so the featured story reads as the same object at a larger
+              size rather than a differently-shaped one.
+
+              It was `4/3` on mobile and, on desktop, `h-full` with a
+              min-height: no ratio at all up there, just a column stretched to
+              whatever height the quote happened to need. That is why it drew a
+              different rectangle on every story.
+
+              `self-start` is what makes the ratio bind. A grid item stretches
+              by default, which hands it a definite height from the row — and a
+              definite height beats `aspect-ratio` outright, so the square would
+              simply be ignored. Starting it instead lets its height come from
+              its own width. The copy column still stretches and still centres
+              itself against the row, so the two stay balanced. */}
+          <div className="group relative w-full self-start overflow-hidden bg-[#EFEAE1] aspect-square">
             <Image
               src={story.image || FALLBACK_STORY.image!}
               alt={story.name || "Featured founder"}
