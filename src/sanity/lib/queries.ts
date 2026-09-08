@@ -746,10 +746,22 @@ export const titanEcosystemHeroQuery = groq`
 `;
 
 /** Blogs — hero. Its own singleton, separate from the listing below it. */
+/**
+ * The heading is ONE field now, with the editor's own line breaks in it.
+ *
+ * `coalesce` keeps a document written before that change rendering identically:
+ * the two old fields are joined back together with the newline that used to be
+ * implied by their being separate. It costs nothing once every document has
+ * been migrated, and it means the migration is not a deploy-blocker.
+ */
 export const blogsHeroQuery = groq`
   *[_type == "blogsHero"][0]{
-    headingFirst,
-    headingSecond,
+    "heading": coalesce(
+      heading,
+      headingFirst + "\n" + headingSecond,
+      headingFirst,
+      headingSecond
+    ),
     subtitle
   }
 `;

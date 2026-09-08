@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback, useState } from "react";
-import RichText, { type RichTextValue } from "@/components/ui/RichText";
+import RichText, { hasRichText, type RichTextValue } from "@/components/ui/RichText";
 import {
   motion,
   useMotionValue,
@@ -21,13 +21,12 @@ import {
    Types
    ───────────────────────────────────────────────────────── */
 export interface BlogsHeroData {
-  headingFirst?: string;
-  headingSecond?: string;
+  /** One field, and the newlines in it ARE the line breaks. */
+  heading?: string;
   subtitle?: RichTextValue;
 }
 
-const FALLBACK_HEADING_FIRST = "Thinking From The";
-const FALLBACK_HEADING_SECOND = "Titan Ecosystem";
+const FALLBACK_HEADING = "Thinking From The\nTitan Ecosystem";
 
 /**
  * THE HEADING WRAPS ITSELF ON MOBILE. No fixed line count, no second set of CMS
@@ -55,8 +54,6 @@ const FALLBACK_HEADING_SECOND = "Titan Ecosystem";
  */
 const WORD_GAP = "0.2em";
 const ROW_GAP = "0.12em";
-const FALLBACK_SUBTITLE =
-  "Operator-led insights. Investment theses. Founder stories. Market maps. The playbooks we wish existed when we were building.";
 
 /* ─────────────────────────────────────────────────────────
    Hero Glow Background
@@ -385,18 +382,25 @@ export default function BlogsHeroClient({
 }: {
   data?: BlogsHeroData | null;
 }) {
-  const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
-  const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
-  const subtitle = data?.subtitle || FALLBACK_SUBTITLE;
+  const heading = data?.heading?.trim() || FALLBACK_HEADING;
 
-  /* The two CMS fields are the DESKTOP line break and nothing more. Mobile
-     ignores it and wraps the words itself, so the two are joined back into one
-     run here — which is also why a single-field heading in Sanity would work
-     just as well on a phone. */
-  const headingWords = `${headingFirst} ${headingSecond}`
-    .trim()
-    .split(/\s+/)
+  /* THE EDITOR'S LINE BREAKS, verbatim. One line typed is one line rendered;
+     three are three. Blank lines are dropped rather than rendered as a gap —
+     a stray trailing Enter in the CMS should not open a hole in the hero. */
+  const headingLines = heading
+    .split(/\r?\n/)
+    .map((l) => l.trim())
     .filter(Boolean);
+
+  /* Mobile ignores those breaks and wraps the words itself, so the lines are
+     flattened back into one run here — the phone decides where it breaks,
+     because a break that suits a 1440px column rarely suits a 375px one. */
+  const headingWords = headingLines.join(" ").split(/\s+/).filter(Boolean);
+
+  /* NO FALLBACK COPY. The subtitle is genuinely optional now: an empty one
+     renders nothing at all rather than quietly substituting a sentence the
+     editor never wrote and cannot see in the CMS. */
+  const hasSubtitle = hasRichText(data?.subtitle);
 
   const sectionRef = useRef<HTMLElement>(null);
   const inView = useInView(sectionRef, { once: true, amount: 0.3 });
@@ -423,22 +427,29 @@ export default function BlogsHeroClient({
             className={`m-0 flex flex-col items-center justify-center text-white ${HERO_HEADING_DARK_CLASS}`}
             style={HERO_HEADING_DARK_STYLE}
           >
-            {/* ── DESKTOP: untouched ──
-                Literally the original markup — one RevealLine per CMS field,
-                each an unbreakable line, with their real space glyphs and no
-                gaps of any kind on the h1. `contents` dissolves this wrapper so
-                the two RevealLines remain direct flex items of the h1 and lay
-                out identically; `max-md:hidden` beats `contents` on a phone, so
-                only one of the two blocks is ever laid out.
+            {/* ── DESKTOP: one RevealLine per typed line ──
+                Each line is handed over whole, so it stays unbreakable and
+                keeps its real space glyphs — the original rendering, just
+                driven by however many lines the editor wrote instead of a
+                hard-coded two. `contents` dissolves this wrapper so the lines
+                remain direct flex items of the h1 and stack exactly as before;
+                `max-md:hidden` beats `contents` on a phone, so only one of the
+                two blocks is ever laid out.
 
-                It is a separate block rather than one clever shared render
-                because a shared one is NOT free: standing a word-gap in for the
-                real spaces moved the desktop heading measurably — 1448px of
-                line became 1422px, and the h1 grew from 235px to 252px tall.
-                Desktop keeps the original nodes so it cannot drift at all. */}
+                It is a separate block from the mobile one rather than a single
+                clever render, and that is NOT redundancy: standing a word-gap
+                in for the real spaces measurably moved the desktop heading —
+                1448px of line became 1422px, and the h1 grew from 235px to
+                252px tall. Desktop keeps whole-line nodes so it cannot drift.
+
+                The stagger stays at 0.5s per line, as it was between the two
+                fields, so a two-line heading is timed identically to before. */}
             <span className="contents max-md:hidden">
-              <RevealLine show={show} delay={0}>{headingFirst}</RevealLine>
-              <RevealLine show={show} delay={0.5}>{headingSecond}</RevealLine>
+              {headingLines.map((line, i) => (
+                <RevealLine key={i} show={show} delay={i * 0.5}>
+                  {line}
+                </RevealLine>
+              ))}
             </span>
 
             {/* ── MOBILE: the heading wraps itself ──
@@ -458,15 +469,24 @@ export default function BlogsHeroClient({
             </span>
           </h1>
 
-          <motion.div
-            className={`font-normal mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[800px] text-center text-white/90 ${HERO_BODY_CLASS}`}
-            style={HERO_BODY_STYLE}
-            initial={{ opacity: 0, y: 20 }}
-            animate={show ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 1.2 }}
-          >
-            <RichText value={subtitle} />
-          </motion.div>
+          {/* NOT RENDERED AT ALL when there is no subtitle — not rendered
+              empty. An empty block would still contribute its top margin, so
+              the heading would sit a little above centre for no visible
+              reason. Omitting it leaves the heading as the column's only
+              child, and the wrapper's `items-center justify-center` then
+              centres it in the hero on every screen with nothing further to
+              do. With a subtitle present this is byte-for-byte what it was. */}
+          {hasSubtitle && (
+            <motion.div
+              className={`font-normal mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[800px] text-center text-white/90 ${HERO_BODY_CLASS}`}
+              style={HERO_BODY_STYLE}
+              initial={{ opacity: 0, y: 20 }}
+              animate={show ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, ease: "easeOut", delay: 1.2 }}
+            >
+              <RichText value={data?.subtitle} />
+            </motion.div>
+          )}
         </div>
       </div>
     </section>
