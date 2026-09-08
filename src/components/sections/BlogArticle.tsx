@@ -38,8 +38,8 @@ export interface BlogPostData {
   author?: string;
   readTime?: string;
   category?: string;
-  /** ISO datetime from Sanity. Most posts have none yet — the header still
-   *  prints its "Published On:" label, just with nothing after it. */
+  /** ISO datetime from Sanity. Most posts have none yet, and those articles
+   *  simply carry no date line under the headline. */
   publishedAt?: string;
   /** Everything below the header, in the order the editor arranged it. */
   blocks?: StoryBlock[];
@@ -67,8 +67,7 @@ function BlogHeader({ post }: { post: BlogPostData }) {
     .filter(Boolean)
     .join("  ·  ");
 
-  const when = formatPublished(post.publishedAt);
-  const publishedLabel = `Published On:${when ? ` ${when}` : ""}`;
+  const published = formatPublished(post.publishedAt);
 
   return (
     <section
@@ -147,34 +146,36 @@ function BlogHeader({ post }: { post: BlogPostData }) {
             </motion.h1>
           )}
 
-          {/* ── PUBLISHED ON ──
+          {/* ── PUBLISHED DATE ──
               Directly under the headline and flush with the column's left
               edge, which is where the byline above it and the body below it
               both start — the header is a left-aligned stack, so it needs no
               alignment of its own.
 
-              THE LABEL PRINTS WITH OR WITHOUT A DATE, exactly as it does on
-              the listing cards: most posts carry no `publishedAt` yet, and a
-              line that appeared on only some of them would make the header
-              jump around between articles. Filling the date in later needs no
-              code change.
+              OMITTED ENTIRELY when the post has no date. This is a plain
+              column, not the cards' `justify-between` row, so nothing depends
+              on the element being present — and an empty paragraph here would
+              still spend its top margin, opening a gap under the headline for
+              no visible reason.
 
               Level 7 and the same grey as the byline, so the two micro-labels
               that bracket the headline read as one pair. `formatPublished` is
               shared with the cards rather than reimplemented — it parses the
               ISO string directly instead of going through `Date`, so the
               server and the browser cannot disagree about the day. */}
-          <motion.p
-            variants={RISE}
-            className="m-0 font-['Poppins',_sans-serif] font-normal text-[#6b6b6b]"
-            style={{
-              ...CAPTION_STYLE,
-              lineHeight: "150%",
-              marginTop: "clamp(8px, min(0.9vw, 1.3vh), 16px)",
-            }}
-          >
-            {publishedLabel}
-          </motion.p>
+          {published && (
+            <motion.p
+              variants={RISE}
+              className="m-0 font-['Poppins',_sans-serif] font-normal text-[#6b6b6b]"
+              style={{
+                ...CAPTION_STYLE,
+                lineHeight: "150%",
+                marginTop: "clamp(8px, min(0.9vw, 1.3vh), 16px)",
+              }}
+            >
+              {published}
+            </motion.p>
+          )}
 
           {post.excerpt && (
             <motion.p

@@ -29,8 +29,8 @@ export interface Blog {
   href: string;
   /** Pills above the meta line. Optional — a post with none simply omits them. */
   tags?: string[];
-  /** Sanity's `publishedAt`, an ISO datetime. Most posts have none yet — the
-   *  card still prints its "Published On:" label, just with nothing after it. */
+  /** Sanity's `publishedAt`, an ISO datetime. Most posts have none yet, and
+   *  those cards simply show nothing where the date would be. */
   publishedAt?: string;
 }
 
@@ -92,14 +92,15 @@ export function toBlog(p: BlogPostCard, i: number): Blog {
   };
 }
 
-/* ── THE PUBLISHED LINE ──
-   Sits on the card's floor, on the left, with the arrow at the right — filling
-   the run of empty space the arrow row used to be on its own.
+/* ── THE PUBLISHED DATE ──
+   Sits on the card's floor, on the left, with the arrow at the right. The date
+   alone — no "Published On:" label in front of it.
 
-   THE LABEL IS ALWAYS PRINTED, with or without a date behind it. That is the
-   point of it for now: most posts in Sanity carry no `publishedAt` yet, and a
-   line that appeared only on the few that do would leave the cards disagreeing
-   about where their floor sits. Filling the date in later needs no code change.
+   THE ELEMENT IS ALWAYS RENDERED, even with no date to put in it, and that is
+   load-bearing rather than sloppy: the row is `justify-between`, which places
+   a LONE child at the start. Drop the paragraph on a post that has no date and
+   the arrow stops being a right-hand corner mark and slides to the left of the
+   card. Empty, it costs nothing — the row's height comes from the arrow.
 
    PARSED FROM THE ISO STRING, NOT THROUGH `Date`. `publishedAt` is a Sanity
    `datetime`, so it arrives as UTC — and this component is server-rendered
@@ -121,13 +122,12 @@ export function formatPublished(iso?: string): string {
 }
 
 function PublishedOn({ date }: { date?: string }) {
-  const when = formatPublished(date);
   return (
     <p
       className="m-0 min-w-0 truncate font-['Poppins',_sans-serif] font-normal text-[#6b6b6b]"
       style={{ ...CAPTION_STYLE, lineHeight: "150%" }}
     >
-      Published On:{when ? ` ${when}` : ""}
+      {formatPublished(date)}
     </p>
   );
 }
