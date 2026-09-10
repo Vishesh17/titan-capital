@@ -63,7 +63,7 @@ let cachedResponse: APIResponse | null = null;
 
 const FILTER_CONFIG = [
   { key: "sector" as const, label: "Sector" },
-  { key: "investmentStage" as const, label: "Investment Stage" },
+  // { key: "investmentStage" as const, label: "Investment Stage" },
   { key: "status" as const, label: "Status" },
 ];
 
