@@ -24,10 +24,10 @@ import { motion } from "framer-motion"; // Keep for buttonContent spinner animat
 
 /* Links that are disabled (not yet live) — mirrors the navbar's DISABLED_URLS,
    and has to be edited alongside it or the two disagree about what is live.
-   Founders' Stories has been taken off: /foundersstory is a finished page and
-   the navbar now links to it. Our Story is the only entry left here. */
+   Founders' Stories is disabled again, so it is back here to match. */
 const DISABLED_FOOTER_LINKS = new Set([
   "Our Story",
+  "Founders' Stories",
 ]);
 
 /* Map specific footer link labels to custom routes */
