@@ -22,12 +22,12 @@ import { motion } from "framer-motion"; // Keep for buttonContent spinner animat
   Desktop (lg+): untouched — logo+address+socials left, nav right.
 */
 
-/* Links that are disabled (not yet live) — mirrors the navbar's DISABLED_URLS.
-   The whole Perspectives column is live now, so only the two About/Portfolio
-   entries that have no finished page remain. */
+/* Links that are disabled (not yet live) — mirrors the navbar's DISABLED_URLS,
+   and has to be edited alongside it or the two disagree about what is live.
+   Founders' Stories has been taken off: /foundersstory is a finished page and
+   the navbar now links to it. Our Story is the only entry left here. */
 const DISABLED_FOOTER_LINKS = new Set([
   "Our Story",
-  "Founders' Stories",
 ]);
 
 /* Map specific footer link labels to custom routes */

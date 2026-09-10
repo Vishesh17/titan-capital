@@ -49,10 +49,17 @@ function NavCursorFillButton({
   href,
   label,
   inverted,
+  fullWidth = false,
 }: {
   href: string;
   label: string;
   inverted: boolean;
+  /** Stretch to the container instead of the bar's fixed pill width — for the
+   *  copy of this button pinned to the floor of the slide-out menu, where a
+   *  `min(12.15vw, 18.8vh)` pill would sit marooned in a 480px panel. Only the
+   *  WIDTH changes: height, radius, label size, outline and the cursor-fill
+   *  are the bar's, so the two are recognisably one control. */
+  fullWidth?: boolean;
 }) {
   const [origin, setOrigin] = useState("50% 50%");
   const [hovered, setHovered] = useState(false);
@@ -83,9 +90,18 @@ function NavCursorFillButton({
       href={href}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`relative flex shrink-0 items-center justify-center whitespace-nowrap font-['Poppins',_sans-serif] font-normal transition-colors duration-300 ${CTA_BUTTON_MOBILE_CLASS}`}
+      className={`relative flex shrink-0 items-center justify-center whitespace-nowrap font-['Poppins',_sans-serif] font-normal transition-colors duration-300 ${
+        /* The mobile class carries `!w-[...]`, which would beat the inline
+           width below — so the full-width form takes only the height half. */
+        fullWidth
+          ? "max-md:!h-[clamp(46px,7dvh,54px)]"
+          : CTA_BUTTON_MOBILE_CLASS
+      }`}
       style={{
         ...CTA_BUTTON_STYLE,
+        ...(fullWidth
+          ? { width: "100%", height: "clamp(48px, min(3.6vw, 5.6vh), 58px)" }
+          : null),
         border: `1px solid ${borderColor}`,
         color: hovered ? hoverColor : baseColor,
       }}
@@ -173,49 +189,60 @@ export type NavbarData = {
   ctaUrl?: string;
 };
 
+/**
+ * MIRRORS THE `navbar` SINGLETON IN SANITY, section for section.
+ *
+ * This is only ever rendered when the Sanity fetch returns nothing — a cold
+ * cache, a network blip, a bad deploy — so the one job it has is to look like
+ * the real menu rather than an older one. It had drifted badly: six sections
+ * (FOR FOUNDERS, ABOUT US, COMMUNITY…) against Sanity's five, with pages the
+ * menu no longer offers and none of the ones it does. A visitor who hit the
+ * fallback got a different site map from everyone else.
+ *
+ * KEEP IT IN STEP whenever the menu is restructured in the Studio. Copied from
+ * the live document on 10 Sep 2026:
+ *
+ *   HOME            -> /
+ *   MEET THE TEAM   -> /ourteam
+ *   PORTFOLIO         Our Portfolio      -> /portfolio
+ *                     Founders' Stories  -> /foundersstory
+ *   PERSPECTIVES      Titan Ecosystem    -> /titanecosystem
+ *                     Indicorns          -> /indicorns
+ *                     Blogs & News       -> /blogs
+ *   GET INVESTMENT  -> /getinvestment
+ */
 const FALLBACK_SECTIONS: NavbarSection[] = [
   {
     id: "home",
     title: "HOME",
+    directUrl: "/",
   },
   {
-    id: "for-founders",
-    title: "FOR FOUNDERS",
-    subItems: [
-      { label: "Get Investment", url: "/getinvestment" },
-      { label: "Titan Seed Fund", url: "#disabled" },
-      { label: "Titan Winners Fund", url: "#disabled" },
-    ],
+    id: "our-team",
+    title: "MEET THE TEAM",
+    directUrl: "/ourteam",
   },
   {
     id: "portfolio",
     title: "PORTFOLIO",
-    directUrl: "/portfolio",
-    subItems: [],
-  },
-  {
-    id: "about",
-    title: "ABOUT US ",
     subItems: [
-      { label: "Our Story", url: "/ourstory" },
-      { label: "Meet The Team", url: "/ourteam" },
-    ],
-  },
-  {
-    id: "community",
-    title: "COMMUNITY ",
-    subItems: [
-      { label: "Founders Story", url: "#disabled" },
+      { label: "Our Portfolio", url: "/portfolio" },
+      { label: "Founders' Stories", url: "/foundersstory" },
     ],
   },
   {
     id: "perspective",
-    title: "PERSPECTIVES ",
+    title: "PERSPECTIVES",
     subItems: [
       { label: "Titan Ecosystem", url: "/titanecosystem" },
       { label: "Indicorns", url: "/indicorns" },
       { label: "Blogs & News", url: "/blogs" },
     ],
+  },
+  {
+    id: "get-investment",
+    title: "GET INVESTMENT",
+    directUrl: "/getinvestment",
   },
 ];
 
@@ -253,14 +280,20 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
      rather than its label, because Sanity labels it "Blogs & News" while the
      list said "Blogs". Titan Ecosystem and Indicorns were blocked by label.
 
-     What is left is genuinely not ready: the two fund pages, Our Story and
-     Founders' Stories. /beyondthecheque stays too — it is its own page, not
-     the Titan Ecosystem one. */
+     FOUNDERS' STORIES IS LIVE NOW, and it is a good example of the same trap:
+     Sanity labels it "Founders' Stories" while DISABLED_LABELS said "Founders
+     Story" — different apostrophe, different plural — so the label never
+     matched. It was the URL that caught it. Both entries are gone.
+
+     What is left is genuinely not ready: the two fund pages and Our Story.
+     /beyondthecheque stays too — it is its own page, not the Titan Ecosystem
+     one. None of these four is in the Sanity menu today, so this override is
+     now a guard against one being re-added before its page is finished rather
+     than something that fires on every render. */
   const DISABLED_URLS = [
     "/titanseedfund",
     "/winnersfund",
     "/ourstory",
-    "/foundersstory",
     "/beyondthecheque",
   ];
 
@@ -268,7 +301,6 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
     "Titan Seed Fund",
     "Titan Winners Fund",
     "Our Story",
-    "Founders Story",
   ];
 
   const overrideDisabledUrls = (sections: NavbarSection[]): NavbarSection[] => {
@@ -284,6 +316,20 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
   const sections = overrideDisabledUrls(data?.sections?.length ? data.sections : FALLBACK_SECTIONS);
   const ctaLabel = data?.ctaLabel || FALLBACK_CTA_LABEL;
   const ctaUrl = data?.ctaUrl || FALLBACK_CTA_URL;
+
+  /* THE CTA LEAVES THE LIST AND BECOMES A BUTTON.
+     Sanity fills "Get Investment" into BOTH `sections` and the `ctaLabel` /
+     `ctaUrl` pair, so it was appearing twice over — once as a plain row that
+     read like any other destination, and once as the pill in the top bar.
+     Dropping it from the list here means the menu is destinations only, and
+     the action is the button pinned below them.
+
+     Matched on where it POINTS rather than on an id or a last-index check, so
+     it survives an editor renaming the section, retitling the button, or
+     dragging the menu into a different order. */
+  const menuSections = sections.filter(
+    (s) => !(s.directUrl && s.directUrl === ctaUrl)
+  );
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const isScrolled = latest > 60;
@@ -423,7 +469,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
           <div className="relative z-10 flex flex-1 overflow-hidden">
             <div className="flex h-full w-full shrink-0 flex-col overflow-y-auto pb-[98px] pt-[20px] max-md:!pb-[clamp(60px,10dvh,98px)] max-md:!pt-[clamp(16px,3dvh,24px)]">
               <div className="flex w-full flex-col">
-                {sections.map((item, idx) => {
+                {menuSections.map((item, idx) => {
                   const hasSub = (item.subItems?.length ?? 0) > 0;
                   const isOpen = activeSubMenu === item.id;
 
@@ -531,7 +577,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
                         </AnimatePresence>
                       )}
 
-                      {idx < sections.length - 1 && (
+                      {idx < menuSections.length - 1 && (
                         <motion.div
                           className="mx-[21px] h-px origin-left bg-white/[0.10] max-md:!mx-[clamp(16px,4vw,24px)] lg:mx-[33px]"
                           initial={false}
@@ -548,6 +594,35 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
                 })}
               </div>
             </div>
+          </div>
+
+          {/* ── THE CALL TO ACTION, ON THE PANEL'S FLOOR ──
+              OUTSIDE the scrolling area, so it is a fixed part of the panel
+              rather than the last thing in a list: it stays put however far
+              the menu is scrolled, and it is the last thing the eye lands on.
+
+              THE SKIN IS THE SITE'S OWN CTA, not a new one — the same control
+              as the pill in the top bar, so it carries the outline, the
+              cursor-fill on hover and the navy-on-white flip already used
+              everywhere else. On this dark glass it reads as a button rather
+              than a tinted row, which the previous treatment did not.
+
+              `inverted={false}` is correct despite the name: that is the
+              light-on-dark skin (white label, white fill on hover), and this
+              panel is always dark whatever the page behind it is doing.
+
+              The wrapper closes the menu — the click bubbles up from the link,
+              so the CTA needs no click handler of its own. */}
+          <div
+            onClick={() => setIsMenuOpen(false)}
+            className="relative z-10 shrink-0 border-t border-white/[0.10] px-[21px] pb-[24px] pt-[20px] max-md:!px-[clamp(16px,4vw,24px)] max-md:!pb-[clamp(20px,4dvh,28px)] lg:px-[33px]"
+          >
+            <NavCursorFillButton
+              href={ctaUrl}
+              label={ctaLabel}
+              inverted={false}
+              fullWidth
+            />
           </div>
         </div>
       </div>
