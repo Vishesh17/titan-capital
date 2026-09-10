@@ -99,7 +99,7 @@ const CFG = {
  * The endpoints are ours, not the reference's 0.5-1.4: its smallest tiles are
  * half size, which is very sparse at our tile count.
  */
-const SCALE_BOTTOM = 1.65;
+const SCALE_BOTTOM = 2;
 const SCALE_TOP = 1;
 /** The depth ladder, in px of z. Cycled, so the field is layered evenly. */
 const Z_STEPS = [-200, -150, -100, -50, 0, 50, 100, 150, 200];
