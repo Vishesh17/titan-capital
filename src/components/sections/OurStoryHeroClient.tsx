@@ -101,6 +101,30 @@ const CFG = {
  */
 const SCALE_BOTTOM = 2;
 const SCALE_TOP = 1;
+
+/**
+ * SCALE IS MEASURED ACROSS THE SCREEN, NOT ACROSS THE FIELD — and that is why
+ * 1x → 2x did not read as 1x → 2x.
+ *
+ * The field container is deliberately taller than the hero and pulled upward
+ * (`top: -25%`, `height: 150%`) so tiles enter and leave out of sight. The
+ * scale used to be measured against that WHOLE container, so its endpoints
+ * landed 25% of a screen above the top edge and 25% below the bottom — both
+ * off screen. What a reader actually saw was the middle two thirds of the
+ * ramp: with 1 and 2 configured, tiles ran about 1.17x at the top of the window
+ * to 1.83x at the bottom. Just over half the intended difference, spent where
+ * nobody could see the ends of it.
+ *
+ * These two numbers convert container position into SCREEN position, so a tile
+ * is at SCALE_TOP exactly as it reaches the top of the window and SCALE_BOTTOM
+ * at the bottom — the configured range, used in full, in view. Derived from the
+ * container's own offset and height rather than typed, so changing either one
+ * keeps the mapping correct.
+ */
+const FIELD_OFFSET = 0.25; // container starts this far above the hero
+const FIELD_HEIGHT = 1.5; // ...and is this many hero-heights tall
+const VIS_START = FIELD_OFFSET / FIELD_HEIGHT; // 0.1667 — top of the window
+const VIS_SPAN = 1 / FIELD_HEIGHT; // 0.6667 — how much of the field is on screen
 /** The depth ladder, in px of z. Cycled, so the field is layered evenly. */
 const Z_STEPS = [-200, -150, -100, -50, 0, 50, 100, 150, 200];
 /** Parallax multipliers, cycled — tiles at the same depth still drift apart. */
@@ -124,6 +148,25 @@ const GRID_COLS = 4;
 const GRID_ROWS = 5;
 const COUNT = GRID_COLS * GRID_ROWS; // 20
 const PERSPECTIVE = 800;
+
+/**
+ * THE FIELD RUNS OFF BOTH EDGES, as the reference's does — photographs half cut
+ * by the left and right of the window rather than a band of tiles politely
+ * inset from them.
+ *
+ * The grid used to span `0 → 95%`, and 95 rather than 100 specifically so the
+ * rightmost tile could not overflow. With the jitter that put every tile
+ * between about 5% and 90%: a clear margin down both sides, which is exactly
+ * the look being corrected.
+ *
+ * `left` is the tile's LEFT edge, so bleeding off each side needs different
+ * numbers at each end: negative x hangs a tile off the left, while hanging one
+ * off the right needs x past `100% - tile width` (a tile is ~7% of a 1440px
+ * frame). Spanning -10% to +104% puts the jittered tiles between roughly -4%
+ * and 98% — straddling both edges.
+ */
+const X_START = -10;
+const X_SPAN = 114;
 
 /** Deterministic stand-in for the reference's Math.random. */
 function mulberry32(seed: number) {
@@ -154,10 +197,32 @@ function mulberry32(seed: number) {
 const BOOST = 1.25;
 const BOOST_SHARE = 0.35;
 
+/**
+ * A LITTLE MORE DENSITY, AND ONLY IN THE MIDDLE.
+ *
+ * Two extra tiles, 20 → 22, which is the 10% asked for. They are not scattered
+ * as two more loose photographs: each is placed right beside an existing tile,
+ * so it reads as a PAIR — the doubling-up the reference does, where two
+ * pictures sit almost touching and the eye takes them as one cluster.
+ *
+ * ONLY TILES WELL INSIDE THE FRAME ARE ELIGIBLE. A companion is offset to the
+ * right of its partner, so pairing an edge tile would push its twin off the
+ * screen and cost a photograph rather than adding one. The left and right
+ * margins keep their single photographs, which is what was asked for.
+ *
+ * A companion SHARES ITS PARTNER'S SPEED, so the two drift together and stay a
+ * pair for the life of the page. It takes a different depth, so the pair reads
+ * as one in front of the other rather than as a flat double.
+ */
+const PAIR_COUNT = 2;
+const PAIR_DX = 6; // % across — close enough to touch at tile size
+const PAIR_DY = 4; // % down — offset so they are not a ruled row
+const PAIR_INNER = [14, 70]; // only partner tiles sitting this far inside
+
 const PARTICLES = (() => {
   const rand = mulberry32(0x5eed);
   const boostRand = mulberry32(0xb005);
-  return Array.from({ length: COUNT }, (_, i) => {
+  const base = Array.from({ length: COUNT }, (_, i) => {
     const z = Z_STEPS[i % Z_STEPS.length];
     /* The reference's own falloff: past -100 it clamps, so the furthest tiles
        never fade below half. */
@@ -167,10 +232,10 @@ const PARTICLES = (() => {
        speeds — land in different columns rather than stacking down one. */
     const col = i % GRID_COLS;
     const row = Math.floor(i / GRID_COLS);
-    const cellW = 95 / GRID_COLS;
+    const cellW = X_SPAN / GRID_COLS;
     const cellH = 100 / GRID_ROWS;
     return {
-      x: Math.round((col + 0.2 + rand() * 0.6) * cellW),
+      x: Math.round(X_START + (col + 0.2 + rand() * 0.6) * cellW),
       y: Math.round((row + 0.2 + rand() * 0.6) * cellH),
       speed: SPEEDS[i % SPEEDS.length],
       z,
@@ -178,6 +243,29 @@ const PARTICLES = (() => {
       boost: boostRand() < BOOST_SHARE ? BOOST : 1,
     };
   });
+
+  /* Its own PRNG, seeded apart, so choosing partners cannot disturb the
+     sequence that placed the 20 above — the same reason BOOST has one. */
+  const pairRand = mulberry32(0xfa17);
+  const eligible = base.filter(
+    (p) => p.x >= PAIR_INNER[0] && p.x <= PAIR_INNER[1]
+  );
+  const companions = Array.from({ length: PAIR_COUNT }, (_, k) => {
+    const partner = eligible[Math.floor(pairRand() * eligible.length)];
+    /* One step deeper than its partner, so the pair layers instead of sitting
+       flat, and the veil follows from that depth like every other tile. */
+    const z = Z_STEPS[(Z_STEPS.indexOf(partner.z) + 3 + k) % Z_STEPS.length];
+    return {
+      ...partner,
+      x: partner.x + PAIR_DX,
+      y: partner.y + PAIR_DY,
+      z,
+      opacity: z < 0 ? Math.max(0.5, 1 + z / 250) : 1,
+      boost: 1,
+    };
+  });
+
+  return [...base, ...companions];
 })();
 
 /** Copy used until the Sanity singleton is filled in. */
@@ -430,8 +518,16 @@ function PhotoGalaxy({ photos }: { photos: OurStoryHeroPhoto[] }) {
         if (direction === "up" && bottom < -containerOffsetHeight) {
           t.extra = t.extra - containerHeight - containerOffsetHeight;
         }
+        /* THE SAME DISTANCE BACK. This used to shift by `containerHeight`
+           alone while the upward wrap above shifted by
+           `containerHeight + containerOffsetHeight` — so a tile that wrapped
+           one way and then the other did not return to where it started, and
+           the field's whole layout drifted with the reader's scroll history.
+           Since size is a function of position, that is felt as the sizes
+           differing between scrolling up and scrolling down. Equal shifts make
+           the loop reversible. */
         if (direction === "down" && bottom > containerHeight + containerOffsetHeight) {
-          t.extra = t.extra + containerHeight;
+          t.extra = t.extra + containerHeight + containerOffsetHeight;
         }
 
         /* SIZE FROM HEIGHT IN THE FRAME, and nothing else — no notion of a
@@ -445,7 +541,12 @@ function PhotoGalaxy({ photos }: { photos: OurStoryHeroPhoto[] }) {
            Linear, matching the reference — measured off it, its scale is a
            straight line against position. */
         const top = t.position + t.top;
-        const l = Math.max(0, Math.min(1, top / containerHeight));
+        /* Container position → SCREEN position, so the ramp's ends land on the
+           top and bottom of the window rather than off it. See VIS_START. */
+        const l = Math.max(
+          0,
+          Math.min(1, (top / containerHeight - VIS_START) / VIS_SPAN)
+        );
         const rise = 1 - l;
         const want = SCALE_BOTTOM + rise * (SCALE_TOP - SCALE_BOTTOM);
         t.currentScale = lerp(t.currentScale, want, CFG.scaleEase);

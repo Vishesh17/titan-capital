@@ -154,7 +154,21 @@ export default function FeaturedStories({
 
         {/* ── THE CARD ── */}
         <motion.div
-          className="grid w-full grid-cols-1 overflow-hidden bg-white md:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)]"
+          /* THE PICTURE IS 60% OF THE SIZE IT WAS, so the heading and the card
+             sit in one screen together.
+
+             Only the COLUMN WIDTH changes. The picture is `aspect-square`, so
+             its height follows its width on its own — shrink one and the other
+             shrinks with it, and the crop is untouched.
+
+             Where 27.57% comes from: the split was `0.85fr / 1fr`, which gave
+             the picture 0.85/1.85 = 45.95% of the card. Six tenths of that is
+             27.57%. Written as a percentage rather than a recalculated `fr`
+             because an `fr` has to be solved for (0.3806fr) and reads like a
+             magic number; a percentage says outright what share of the card
+             the picture takes. There is no column gap on this grid, so the two
+             tracks are exactly 27.57% and the remainder. */
+          className="grid w-full grid-cols-1 overflow-hidden bg-white md:grid-cols-[27.57%_minmax(0,1fr)]"
           style={{ marginTop: "clamp(24px, min(3vw, 4.4vh), 52px)" }}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
