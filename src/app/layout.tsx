@@ -1,12 +1,25 @@
 import type { Viewport } from "next";
+import Script from "next/script";
 import { Geist, Libre_Baskerville, Poppins, Inter, Plus_Jakarta_Sans, Montserrat, DM_Sans } from "next/font/google";
 import Navbar from "@/components/layout/Navbar";
 import LenisProvider from "@/components/layout/LenisProvider";
 import { buildMetadata } from "@/sanity/lib/seo";
 import "./globals.css";
 
+/** Google Analytics 4 measurement ID. */
+const GA_ID = "G-VYL28XGCNQ";
+
 export async function generateMetadata() {
-  return buildMetadata();
+  /* The Search Console tag goes through the Metadata API rather than being
+     pasted into the markup: Next renders it into <head> itself, and because
+     only the root layout sets it, it appears exactly once per page — which is
+     what Google asks for. */
+  return {
+    ...(await buildMetadata()),
+    verification: {
+      google: "-kZApt_vc1Z1tMbEgd4ebCtjMLJgFJ9PLxoAyQRpxkg",
+    },
+  };
 }
 
 const geistSans = Geist({
@@ -70,6 +83,24 @@ export default function RootLayout({
     >
       {/* REMOVED: 'min-h-full flex flex-col'. Forcing flex on the body causes height-calculation glitches with smooth scroll engines. */}
       <body className="m-0 p-0">
+        {/* Google Analytics. `next/script` rather than raw <script> tags:
+            Next hoists these into the document and guarantees they run once,
+            where a hand-written tag in a client-navigated app can re-execute
+            on every route change. `afterInteractive` loads it once the page is
+            usable, so analytics never delays first paint. */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="ga-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_ID}');
+          `}
+        </Script>
+
         <LenisProvider>
           <Navbar />
           <main className="w-full m-0 p-0">{children}</main>
