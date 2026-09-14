@@ -18,14 +18,25 @@ type PageSeo = {
   shareImage?: string;
 };
 
-/**
- * Builds a Next.js Metadata object from Sanity.
- *
- *   - With no pageKey: returns the sitewide defaults (use in layout.tsx).
- *   - With a pageKey: merges in the per-page override on top of defaults.
- *
- * Any missing field on the per-page doc falls back to the sitewide value.
- */
+
+// Used only if Sanity is unreachable — keep it pointing at the live domain.
+export const SITE_URL_FALLBACK = "https://titancapital.vc";
+
+// The site's own address from Sanity. Every absolute URL (metadata, sitemap, robots) is built off this.
+export async function getSiteUrl(): Promise<string> {
+  try {
+    const site = await sanityFetch<SiteSeo | null>({
+      query: siteSeoQuery,
+      tags: ["seo"],
+    });
+    // Strip the trailing slash so callers can just do `${base}/path`.
+    return (site?.siteUrl || SITE_URL_FALLBACK).replace(/\/+$/, "");
+  } catch (err) {
+    console.error("[seo] siteUrl fetch failed, using fallback:", err);
+    return SITE_URL_FALLBACK;
+  }
+}
+
 export async function buildMetadata(pageKey?: string): Promise<Metadata> {
   // Wrap both fetches in try/catch so a transient network/Sanity blip
   // never crashes generateMetadata for the whole page.
@@ -53,7 +64,7 @@ export async function buildMetadata(pageKey?: string): Promise<Metadata> {
   }
 
   const siteName = site?.siteName ?? "Titan Capital";
-  const siteUrl = site?.siteUrl ?? "https://titan-capital-puce.vercel.app";
+  const siteUrl = (site?.siteUrl || SITE_URL_FALLBACK).replace(/\/+$/, "");
   const title = page?.metaTitle ?? site?.defaultTitle ?? siteName;
   const description = page?.metaDescription ?? site?.defaultDescription ?? "";
   const shareImage = page?.shareImage ?? site?.defaultShareImage;
