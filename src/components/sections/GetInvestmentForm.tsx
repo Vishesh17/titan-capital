@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLenis } from "lenis/react";
 import {
   HERO_BODY_CLASS,
   HERO_BODY_STYLE,
@@ -861,8 +862,12 @@ function SectionHeading({
         <span className="relative z-10 flex items-center justify-center gap-2">
           {submitting ? (
             <>
+              {/* Same spinner as the footer's Subscribe button — 10px, white on
+                  the navy fill. It was 16px and navy-on-navy, so it was invisible
+                  and only showed up as 24px of empty space shoving the label
+                  off-centre. */}
               <motion.span
-                className="inline-block h-[16px] w-[16px] rounded-full border-2 border-[#001A4D]/30 border-t-[#001A4D]"
+                className="inline-block h-[10px] w-[10px] rounded-full border-2 border-white/30 border-t-white max-md:!h-[8px] max-md:!w-[8px]"
                 animate={{ rotate: 360 }}
                 transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
               />
@@ -931,6 +936,26 @@ export default function GetInvestmentForm({
 
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  // The success card is much shorter than the form, so the page collapses on
+  // submit and leaves you staring at the footer. We scroll to the card instead
+  // of padding it out — it keeps its own small height, you just get taken to it.
+  const successRef = useRef<HTMLDivElement>(null);
+  const lenis = useLenis();
+
+  // Once the card is on the page, centre it in the window. Lenis owns scrolling
+  // here, so we go through it — a plain scrollIntoView gets overridden.
+  useEffect(() => {
+    if (!submitted) return;
+    const el = successRef.current;
+    if (!el) return;
+    // A frame's grace so the card has laid out and we scroll to its real place.
+    const id = requestAnimationFrame(() => {
+      const offset = -Math.max(0, (window.innerHeight - el.offsetHeight) / 2);
+      if (lenis) lenis.scrollTo(el, { offset, duration: 0.9 });
+      else el.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [submitted, lenis]);
   const [submitError, setSubmitError] = useState("");
 
   const toggleIndustry = useCallback((val: string) => {
@@ -954,12 +979,12 @@ export default function GetInvestmentForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 1. Mandatory Fields Check: Stop immediately if ANY field is missing
+    // 1. Mandatory Fields Check — only the ones showing a * in the form.
+    // Phone, amount raising, pitch deck and "anything else" are optional.
     if (
       !firstName.trim() ||
       !lastName.trim() ||
       !email.trim() ||
-      !phone.trim() ||
       !linkedin.trim() ||
       !companyName.trim() ||
       !websiteUrl.trim() ||
@@ -967,9 +992,7 @@ export default function GetInvestmentForm({
       !problem.trim() ||
       industries.size === 0 ||
       !currentStage.trim() ||
-      !raisingAmount.trim() ||
       raisedBefore.size === 0 ||
-      !pitchDeck ||
       !hearAbout.trim()
     ) {
       setSubmitError("Please fill out all required fields.");
@@ -982,7 +1005,8 @@ export default function GetInvestmentForm({
       return;
     }
 
-    if (!isValidPhone(phone, phoneCountry)) {
+    // Phone is optional now, so only check the format if they actually typed one.
+    if (phone.trim() && !isValidPhone(phone, phoneCountry)) {
       setPhoneError(
         phoneCountry.min === phoneCountry.max
           ? `Enter a valid ${phoneCountry.name} number (${phoneCountry.min} digits)`
@@ -1029,14 +1053,26 @@ export default function GetInvestmentForm({
       if (pitchDeck) body.append("pitchDeck", pitchDeck);
 
       const res = await fetch("/api/apply", { method: "POST", body });
-      const json = await res.json();
 
-      if (json.success) {
+      // Parse defensively — a platform-level failure (too large, timed out)
+      // replies with an HTML error page, and res.json() throws on that. That
+      // threw into the catch below and told founders their connection was bad
+      // when the server had in fact answered.
+      const json = await res.json().catch(() => null);
+
+      if (res.ok && json?.success) {
         setSubmitted(true);
+      } else if (res.status === 413) {
+        setSubmitError("That pitch deck is too large to upload. Please send a file under 4 MB, or email it to us instead.");
       } else {
-        setSubmitError(json.message || "Something went wrong. Please try again.");
+        // Say the request failed, and show the status so a screenshot is enough to debug.
+        setSubmitError(
+          json?.message ||
+            `We couldn't submit your application (error ${res.status}). Please try again, or email us at info@titancapital.vc.`
+        );
       }
     } catch {
+      // Only a genuine network failure reaches here now.
       setSubmitError("Network error. Please check your connection and try again.");
     } finally {
       setSubmitting(false);
@@ -1084,7 +1120,8 @@ export default function GetInvestmentForm({
 
         {submitted ? (
           <motion.div
-            className="flex w-full flex-col items-center rounded-[clamp(12px,1.2vw,20px)] border border-[#E4E7EC] bg-white text-center"
+            ref={successRef}
+            className="flex w-full flex-col items-center justify-center rounded-[clamp(12px,1.2vw,20px)] border border-[#E4E7EC] bg-white text-center"
             style={{
               padding: "clamp(48px, min(6vw, 9vh), 96px) clamp(16px, min(2vw, 3vh), 32px)",
             }}
