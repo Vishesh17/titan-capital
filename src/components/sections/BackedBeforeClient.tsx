@@ -171,7 +171,7 @@ function LogoMarquee({
             >
               <Image
                 src={cdnImageSrc(src, 320)}
-                alt={company.name}
+                alt={`${company.name} – Titan Capital portfolio company`}
                 fill
                 style={{ objectFit: "contain" }} 
                 sizes="(max-width: 768px) 18vw, 160px"

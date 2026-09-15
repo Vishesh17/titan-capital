@@ -252,7 +252,7 @@ function CompanyCard({ company }: { company: Company }) {
           {company.logo ? (
             <Image
               src={company.logo}
-              alt={company.brandName}
+              alt={`${company.brandName} – Titan Capital portfolio company`}
               width={400}
               height={400}
               sizes="(max-width: 640px) 40vw, (max-width: 1024px) 25vw, 16vw"
@@ -294,7 +294,7 @@ function CompanyCard({ company }: { company: Company }) {
               >
                 <Image
                   src={flippedLogoSrc ?? company.logo}
-                  alt={`${company.brandName} logo`}
+                  alt={`${company.brandName} – Titan Capital portfolio company`}
                   width={120}
                   height={120}
                   sizes="(max-width: 640px) 12vw, (max-width: 1024px) 8vw, 5vw"

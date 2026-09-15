@@ -91,7 +91,7 @@ function CardLogo({ story, company }: { story: FounderStory; company: string }) 
     >
       <img
         src={cdnImageSrc(story.logo, 400)}
-        alt={company}
+        alt={`${company} – Titan Capital portfolio company`}
         style={{
           width: "100%",
           height: "auto",

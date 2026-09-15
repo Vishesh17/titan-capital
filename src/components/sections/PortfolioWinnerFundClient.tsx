@@ -97,7 +97,7 @@ function PortfolioCard({ company, index }: { company: PortfolioCompany; index: n
             <>
               <Image
                 src={company.logo}
-                alt={company.name}
+                alt={`${company.name} – Titan Capital portfolio company`}
                 fill
                 sizes="(max-width: 768px) 40vw, 20vw"
                 className={`object-contain transition-opacity duration-[550ms] ease-in-out ${
@@ -106,7 +106,7 @@ function PortfolioCard({ company, index }: { company: PortfolioCompany; index: n
               />
               <Image
                 src={flippedSrc}
-                alt={company.name}
+                alt={`${company.name} – Titan Capital portfolio company`}
                 fill
                 sizes="(max-width: 768px) 40vw, 20vw"
                 className={`absolute inset-0 object-contain transition-opacity duration-[550ms] ease-in-out ${
@@ -123,7 +123,7 @@ function PortfolioCard({ company, index }: { company: PortfolioCompany; index: n
             >
               <Image
                 src={company.logo}
-                alt={company.name}
+                alt={`${company.name} – Titan Capital portfolio company`}
                 fill
                 sizes="(max-width: 768px) 40vw, 20vw"
                 className="object-contain"

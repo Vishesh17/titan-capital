@@ -400,7 +400,7 @@ function CardLogo({ story, company, origin }: { story: FounderStory; company: st
   return (
     <img
       src={cdnImageSrc(story.logo, 400)}
-      alt={company}
+      alt={`${company} – Titan Capital portfolio company`}
       className="object-contain max-md:!h-[36px]"
       style={{
         height: "min(5.09vw, 7.88vh)",

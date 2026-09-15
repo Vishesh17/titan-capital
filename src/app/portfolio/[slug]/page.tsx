@@ -777,7 +777,7 @@ export default async function PortfolioCompanyPage({
           >
             <Image
               src={company.logo}
-              alt={`${company.brandName} logo`}
+              alt={`${company.brandName} – Titan Capital portfolio company`}
               width={740}
               height={150}
               sizes="(max-width: 640px) 200px, (max-width: 1024px) 26vw, 370px"

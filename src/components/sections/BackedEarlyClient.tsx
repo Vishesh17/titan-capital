@@ -452,7 +452,11 @@ function CompanyCard({ company, mode = "marquee" }: { company: BackedEarlyCompan
       {/* Background image */}
       <Image
         src={company.bgImage}
-        alt={company.name}
+        /* Empty on purpose. This is the card's background photograph, and the
+           company's LOGO sits in the same card with the company named in its
+           alt — so describing this too would make a screen reader announce
+           every company twice. Aman's "decorative image -> alt=''" row. */
+        alt=""
         fill
         sizes={isMarquee ? "(max-width: 768px) 45vw, 22vw" : "50vw"}
         className={`object-cover ${isMarquee ? "" : "transition-transform duration-500 ease-out group-hover/card:scale-105"}`}
@@ -486,7 +490,7 @@ function CompanyCard({ company, mode = "marquee" }: { company: BackedEarlyCompan
         >
           <Image
             src={company.logo}
-            alt={`${company.name} logo`}
+            alt={`${company.name} – Titan Capital portfolio company`}
             fill
             sizes="180px"
             className={`object-contain object-left object-bottom ${company.logoClass || ""} ${company.noInvert ? "" : "brightness-0 invert"}`}

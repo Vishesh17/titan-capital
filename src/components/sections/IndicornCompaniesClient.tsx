@@ -284,7 +284,7 @@ export default function IndicornCompaniesClient({
               >
                 <img
                   src={company.logoUrl}
-                  alt={`${company.name} logo`}
+                  alt={`${company.name} – Titan Capital portfolio company`}
                   className="max-h-full max-w-[clamp(150px,17vw,270px)] object-contain mix-blend-multiply"
                   style={{
                     transform: `scale(${company.scale ?? 1})`,
