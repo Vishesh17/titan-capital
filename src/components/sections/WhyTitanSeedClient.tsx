@@ -240,7 +240,7 @@ const FALLBACK_CARDS_DATA: WhyTitanSeedCard[] = [
               {/* Next.js Image Component */}
               <Image
                 src="/images/titanseedfund/whytitanseed.png"
-                alt="Why Titan Seed"
+                alt="Titan Seed Fund founders and team"
                 fill
                 className="object-cover z-10"
                 sizes="(max-width: 1024px) 100vw, 45vw"

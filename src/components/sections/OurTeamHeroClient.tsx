@@ -151,7 +151,7 @@ const Photo = ({
 }) => (
   <FramedPhoto
     src={src}
-    alt="Team Member"
+    alt="Titan Capital team and founders"
     offsetX={offsetX}
     offsetY={offsetY}
     scale={scale}

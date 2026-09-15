@@ -392,7 +392,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
         <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 shrink-0 max-md:!static max-md:!translate-x-0 max-md:!translate-y-0 max-md:!ml-auto">
           <Image
             src="/images/logos/titancapitallogo.svg"
-            alt="Titan Capital"
+            alt="Titan Capital logo"
             width={98}
             height={32}
             priority
@@ -451,7 +451,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:hidden">
                <Image
                   src="/images/logos/titancapitallogo.svg"
-                  alt="Titan Capital"
+                  alt="Titan Capital logo"
                   width={100}
                   height={32}
                   className="h-[32px] w-[100px] object-contain brightness-0 invert max-md:!h-[clamp(24px,4dvh,30px)] max-md:!w-[clamp(74px,12vw,92px)]"
@@ -463,7 +463,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
             <div className="hidden lg:block">
               <Image
                 src="/images/logos/titancapitallogo.svg"
-                alt="Titan Capital"
+                alt="Titan Capital logo"
                 width={127}
                 height={42}
                 className="h-[38px] w-[115px] object-contain brightness-0 invert"

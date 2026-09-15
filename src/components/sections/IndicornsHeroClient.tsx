@@ -663,7 +663,7 @@ export default function IndicornsHeroClient({
                 >
                   <Image
                     src={wordmark}
-                    alt="indicorns"
+                    alt="Indicorns by Titan Capital"
                     fill
                     sizes="(max-width: 768px) 80vw, 480px"
                     priority

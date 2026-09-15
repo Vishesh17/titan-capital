@@ -140,7 +140,7 @@ export default function FeaturedFounderStory() {
                 >
                   <Image
                     src={slide.logo}
-                    alt="Company logo"
+                    alt={`${slide.name.replace("\n", " ")} logo`}
                     width={148}
                     height={52}
                     style={{
@@ -159,7 +159,7 @@ export default function FeaturedFounderStory() {
           {/* ── LAYER 2: TV SVG — z-[10] ── */}
           <Image
             src="/images/misc/television.svg"
-            alt="Television frame"
+            alt=""
             width={800}
             height={500}
             className="pointer-events-none relative z-[10] block h-auto w-full"

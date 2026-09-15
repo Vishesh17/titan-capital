@@ -421,7 +421,7 @@ export default function Footer() {
             >
               <Image
                 src="/images/logos/titancapitallogo.svg"
-                alt="Titan Capital"
+                alt="Titan Capital logo"
                 fill
                 className="object-contain"
               />
@@ -531,7 +531,7 @@ export default function Footer() {
           >
             <Image
               src="/images/logos/titancapitallogo.svg"
-              alt="Titan Capital"
+              alt="Titan Capital logo"
               fill
               className="object-contain object-left"
             />

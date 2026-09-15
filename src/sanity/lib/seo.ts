@@ -78,6 +78,12 @@ export async function buildMetadata(pageKey?: string): Promise<Metadata> {
     authors: [{ name: siteName }],
     creator: siteName,
     metadataBase: new URL(siteUrl),
+    /* SELF-REFERENCING, not a fixed URL. "./" resolves against metadataBase plus
+       the page's own path, so /blogs gets <link rel="canonical" .../blogs> and
+       so on. Hard-coding the homepage URL here instead would tell Google that
+       every page on the site IS the homepage, and the blog posts, portfolio and
+       team pages would drop out of the index. */
+    alternates: { canonical: "./" },
     robots: {
       index: true,
       follow: true,
