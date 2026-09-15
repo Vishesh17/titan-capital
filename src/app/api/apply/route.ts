@@ -19,6 +19,9 @@ export async function POST(req: NextRequest) {
     /* ── Extract text fields ── */
     const fields: Record<string, string> = {};
     const textKeys = [
+      // Stable across retries of the same application — the Apps Script uses it
+      // to update the existing row rather than append a second one.
+      "submissionId",
       "firstName",
       "lastName",
       "email",

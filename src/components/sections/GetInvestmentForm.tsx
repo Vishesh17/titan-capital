@@ -942,6 +942,11 @@ export default function GetInvestmentForm({
   const successRef = useRef<HTMLDivElement>(null);
   const lenis = useLenis();
 
+  // One id per application, NOT per request — a retry deliberately reuses it so
+  // the Apps Script can recognise the second attempt as the same application
+  // and repair that row instead of appending a duplicate.
+  const submissionIdRef = useRef<string>("");
+
   // Once the card is on the page, centre it in the window. Lenis owns scrolling
   // here, so we go through it — a plain scrollIntoView gets overridden.
   useEffect(() => {
@@ -1032,7 +1037,15 @@ export default function GetInvestmentForm({
     setSubmitting(true);
 
     try {
+      if (!submissionIdRef.current) {
+        submissionIdRef.current =
+          typeof crypto !== "undefined" && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      }
+
       const body = new FormData();
+      body.append("submissionId", submissionIdRef.current);
       body.append("firstName", firstName);
       body.append("lastName", lastName);
       body.append("email", email);
