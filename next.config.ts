@@ -16,6 +16,19 @@ const nextConfig: NextConfig = {
       // Sanity CDN — every asset uploaded through /studio resolves here.
       { protocol: "https", hostname: "cdn.sanity.io" },
     ],
+    // Next 16 resolves every remote image's hostname and refuses it if any
+    // address comes back private — an SSRF guard. On an IPv6-only network
+    // (phone hotspot, Jio, some VPNs) DNS64 hands back a synthesised
+    // 64:ff9b::/96 address for cdn.sanity.io alongside the real one, and that
+    // prefix reads as private, so EVERY Sanity photo 400s with
+    // '"url" parameter is not allowed'. It is the same public server, just
+    // wearing a NAT64 prefix.
+    //
+    // Dev only. NODE_ENV is "production" for `next build`, so the guard is
+    // fully intact on Vercel and this never ships.
+    ...(process.env.NODE_ENV === "development"
+      ? { dangerouslyAllowLocalIP: true }
+      : {}),
   },
 };
 
