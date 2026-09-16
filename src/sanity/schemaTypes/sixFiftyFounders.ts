@@ -30,7 +30,7 @@ export const sixFiftyFounders = defineType({
       name: "faces",
       title: "Founder portraits",
       description:
-        "The wall of photographs. SQUARE crops read best — each tile is square and the image is centred and cropped to fill it. Add as many as you like: they are dealt across the three rows, and each row starts at a different point so the same face never lines up in a column. With only a handful the wall repeats visibly, so aim for a dozen or more.",
+        "The wall of photographs. SQUARE crops read best — each tile is square and the image is centred and cropped to fill it. They are dealt out in order, straight through the three rows, so every portrait is on screen before any of them comes round again; past that the list simply loops. The wall holds 48 tiles, so 48 portraits means no repeats at all. With only a handful it repeats visibly, so aim for a dozen or more. Empty slots are skipped.",
       type: "array",
       of: [{ type: "image", options: { hotspot: true } }],
       options: { layout: "grid" },

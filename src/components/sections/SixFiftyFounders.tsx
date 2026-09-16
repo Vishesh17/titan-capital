@@ -155,15 +155,27 @@ export default function SixFiftyFounders({
   data?: SixFiftyFoundersData | null;
 }) {
   const heading = data?.heading || FALLBACK_HEADING;
-  const faces = data?.faces?.length ? data.faces : FALLBACK_FACES;
+  /* An image added in the Studio but never given a file comes back as a null
+     url, which would render as a blank white tile. */
+  const picked = data?.faces?.filter((f): f is string => !!f) ?? [];
+  const faces = picked.length ? picked : FALLBACK_FACES;
 
-  /* Each row starts at a different point in the list, so the three do not
-     show the same face in the same column. Then tripled, which is what the
-     loop wraps against. */
+  /* THE WALL IS ONE CONTINUOUS DEAL. Tile 0 is the first portrait, tile 1 the
+     second, and so on straight through the three rows — so every portrait is
+     on screen before any of them comes round again. Once the list runs out it
+     loops: with 15 portraits the 16th tile is the first one again.
+
+     The stride is PER_ROW, NOT some smaller number. Stepping each row by less
+     than its own length makes the rows OVERLAPPING WINDOWS onto the same
+     stretch of the list rather than consecutive slices of it: at a stride of 5
+     adjacent rows shared 11 of their 16 faces, six portraits appeared in all
+     three rows at once, and everything past index 25 never rendered at all.
+
+     Then tripled, which is what the marquee loop wraps against. */
   const rows = Array.from({ length: ROWS }, (_, r) => {
     const one = Array.from(
       { length: PER_ROW },
-      (_, i) => faces[(i + r * 5) % faces.length]
+      (_, i) => faces[(r * PER_ROW + i) % faces.length]
     );
     return [...one, ...one, ...one];
   });
