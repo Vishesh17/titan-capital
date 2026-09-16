@@ -128,7 +128,7 @@ export default function FeaturedFounderStory() {
                 >
                   <Image
                     src={slide.image}
-                    alt={slide.name.replace("\n", " ")}
+                    alt={`Titan Capital - ${slide.name.replace("\n", " ")}`}
                     fill
                     sizes="(max-width: 1440px) 30vw, 400px"
                     style={{ objectFit: "cover", objectPosition: "bottom right" }}

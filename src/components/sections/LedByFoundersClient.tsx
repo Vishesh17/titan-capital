@@ -173,7 +173,7 @@ function SocialLink({
           {founder.image && (
             <Image
               src={cdnImageSrc(founder.image, 900)}
-              alt={founder.name}
+              alt={`Titan Capital - ${founder.name}`}
               fill
               sizes="(max-width: 1024px) 90vw, 32vw"
               className="object-cover object-center"

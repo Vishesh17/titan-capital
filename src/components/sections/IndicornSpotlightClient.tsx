@@ -391,7 +391,9 @@ export default function IndicornSpotlightClient({
                     >
                       <Image
                         src={cdnImageSrc(resolved, 240)}
-                        alt={logo.alt}
+                        /* The Sanity field is labelled "Brand name" — editors
+                           type "Razorpay", not a sentence. */
+                        alt={`${logo.alt} – Titan Capital portfolio company`}
                         fill
                         sizes="120px"
                         style={{

@@ -413,7 +413,7 @@ function FlipCard({ item }: { item: TestimonialItem }) {
         width: "min(19.5vw, 26.64vh)", height: "min(8.41vw, 13.48vh)", filter: "grayscale(1)",
       }}
     >
-      <Image src={cdnImageSrc(item.companyLogo, 240)} alt={companyName} fill sizes="120px" style={{ objectFit: "contain", objectPosition: "center" }} className="max-md:!scale-[1.8]" />
+      <Image src={cdnImageSrc(item.companyLogo, 240)} alt={`${companyName} – Titan Capital portfolio company`} fill sizes="120px" style={{ objectFit: "contain", objectPosition: "center" }} className="max-md:!scale-[1.8]" />
     </div>
   ) : null;
 
@@ -461,7 +461,7 @@ function FlipCard({ item }: { item: TestimonialItem }) {
                 }}
               >
                 {/* @ts-ignore */}
-                <img src={cdnImageSrc(item.image || "", 800)} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "scale-down", filter: "grayscale(1)" }} />
+                <img src={cdnImageSrc(item.image || "", 800)} alt={`Titan Capital - ${item.name}`} style={{ width: "100%", height: "100%", objectFit: "scale-down", filter: "grayscale(1)" }} />
               </div>
             </div>
           </div>

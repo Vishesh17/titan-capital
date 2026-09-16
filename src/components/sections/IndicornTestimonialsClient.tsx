@@ -193,7 +193,7 @@ function CylinderCard({
       >
         <img
           src={item.image}
-          alt={item.name || "Founder"}
+          alt={`Titan Capital - ${item.name || "Founder"}`}
           className="h-full w-full object-cover object-top"
         />
       </div>

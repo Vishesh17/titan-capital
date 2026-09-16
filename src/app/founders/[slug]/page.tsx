@@ -191,7 +191,7 @@ export default async function FounderPage({
                     >
                       <Image
                         src={cdnImageSrc(photo, 1000)}
-                        alt={founder.name}
+                        alt={`Titan Capital - ${founder.name}`}
                         fill
                         sizes="(max-width: 1024px) 60vw, 517px"
                         priority

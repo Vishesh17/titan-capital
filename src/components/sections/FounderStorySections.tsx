@@ -133,7 +133,7 @@ export function FounderStoryHeader({ data }: { data: FounderStoryPageData }) {
           >
             <Image
               src={heroImage}
-              alt={`${founders || company || "Founders"}`}
+              alt={`Titan Capital - ${founders || company || "Founders"}`}
               fill
               priority
               sizes="(max-width: 768px) 100vw, 1200px"

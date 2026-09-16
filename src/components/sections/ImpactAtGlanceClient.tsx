@@ -433,7 +433,7 @@ export function StoryCard({ story, sizerTags = [] }: { story: FounderStory; size
     >
       <Image
         src={cdnImageSrc(story.image, 900)}
-        alt={story.name}
+        alt={`Titan Capital - ${story.name}`}
         fill
         sizes="(max-width: 768px) 100vw, 33vw"
         /* scale-100 at rest, not 1.03 — the resting zoom cropped ~3% off each

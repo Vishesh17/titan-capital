@@ -277,7 +277,7 @@ function CompanyCard({ company }: { company: Company }) {
           >
             <Image
               src={founderImage}
-              alt={`${company.brandName} founder`}
+              alt={`Titan Capital - ${company.brandName} founder`}
               fill
               sizes="(max-width: 640px) 40vw, (max-width: 1024px) 25vw, 16vw"
               className="object-cover object-top"

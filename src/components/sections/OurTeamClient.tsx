@@ -232,7 +232,7 @@ function TeamCard({
                   >
                     <Image
                       src={cdnImageSrc(member.image, 600)}
-                      alt={member.name}
+                      alt={`Titan Capital - ${member.name}`}
                       fill
                       sizes="(max-width: 640px) 40vw, (max-width: 1024px) 25vw, 240px"
                       className="object-cover object-bottom transition-[filter] duration-500 ease-out [filter:grayscale(1)] group-hover:[filter:grayscale(0)]"

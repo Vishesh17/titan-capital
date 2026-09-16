@@ -376,7 +376,7 @@ export default function FoundersStoryHero({
                   >
                     <Image
                       src={src}
-                      alt={copy === 0 ? `Founder ${i + 1}` : ""}
+                      alt={copy === 0 ? "Titan Capital founder" : ""}
                       fill
                       sizes="25vw"
                       className="object-cover object-center"
@@ -432,7 +432,7 @@ export default function FoundersStoryHero({
                     >
                       <Image
                         src={src}
-                        alt={`Founder ${index + 1}`}
+                        alt="Titan Capital founder"
                         fill
                         sizes="50vw"
                         className="object-cover object-center"

@@ -122,7 +122,7 @@ export default function FounderQuoteCard({ story }: { story: FounderStory }) {
     >
       <Image
         src={cdnImageSrc(story.image, 900)}
-        alt={story.name}
+        alt={`Titan Capital - ${story.name}`}
         fill
         sizes="(max-width: 768px) 100vw, 33vw"
         className="scale-100 object-cover object-top transition-transform duration-700 group-hover:scale-[1.05]"

@@ -418,7 +418,7 @@ function FounderCard({ founder }: { founder: Founder }) {
         {founder.avatar ? (
           <Image
             src={founder.avatar}
-            alt={founder.name}
+            alt={`Titan Capital - ${founder.name}`}
             fill
             sizes="(max-width: 640px) 64px, (max-width: 1024px) 7vw, 95px"
             className="object-cover"

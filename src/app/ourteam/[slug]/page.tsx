@@ -202,7 +202,7 @@ export default async function TeamMemberPage({
                     >
                       <Image
                         src={cdnImageSrc(member.image, 1000)}
-                        alt={member.name}
+                        alt={`Titan Capital - ${member.name}`}
                         fill
                         sizes="(max-width: 1024px) 60vw, 517px"
                         priority

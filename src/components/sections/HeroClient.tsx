@@ -96,6 +96,15 @@ function heroImageSrc(url: string, width: number): string {
   return url;
 }
 
+/* Photos we don't have a name for get a "Founder 12" placeholder, which is
+   useless in an alt — those fall back to the plain brand line instead. */
+function founderAlt(name: string): string {
+  const n = name.trim();
+  if (!n || /^Founder \d+$/.test(n)) return "Titan Capital founder";
+  if (n === "Titan Capital") return "Titan Capital logo"; // the logo card in the marquee
+  return `Titan Capital - ${n}`;
+}
+
 /* ─────────────────────────────────────────────────────────
    Shared Styles & Dimensions
    ───────────────────────────────────────────────────────── */
@@ -527,7 +536,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                   >
                     <Image
                       src={heroImageSrc(sf.image, 600)}
-                      alt={sf.name}
+                      alt={founderAlt(sf.name)}
                       fill
                       sizes={SLIDESHOW_SIZES}
                       priority
@@ -744,7 +753,7 @@ function HeadingPhoto({
           >
             <Image
               src={heroImageSrc(f.image, 600)}
-              alt={f.name}
+              alt={founderAlt(f.name)}
               fill
               sizes={HEADING_SIZES}
               priority
@@ -909,7 +918,7 @@ function FounderCard({
       >
         <Image
           src={heroImageSrc(founder.image, 600)}
-          alt={founder.name}
+          alt={founderAlt(founder.name)}
           fill
           sizes="(max-width: 768px) 50vw, 25vw"
           // PERFORMANCE FIX: Moved filter down to the static Image component to stop GPU layer composite thrashing 

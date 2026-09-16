@@ -47,7 +47,7 @@ export default function FoundersCarousel() {
             <div className={`founders__card-img founders__card-img--${founder.size}`}>
               <Image
                 src={founder.image}
-                alt={founder.name}
+                alt={`Titan Capital - ${founder.name}`}
                 fill
                 style={{ objectFit: "cover" }}
                 sizes={founder.size === "large" ? "251px" : "211px"}

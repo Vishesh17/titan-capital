@@ -193,7 +193,7 @@ export default function FeaturedStories({
           <div className="group relative w-full self-start overflow-hidden bg-[#EFEAE1] aspect-square">
             <Image
               src={story.image || FALLBACK_STORY.image!}
-              alt={story.name || "Featured founder"}
+              alt={`Titan Capital - ${story.name || "Featured founder"}`}
               fill
               sizes="(max-width: 768px) 100vw, 45vw"
               className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
