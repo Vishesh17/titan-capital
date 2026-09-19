@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Hero from "@/components/sections/Hero";
 import BackedBefore from "@/components/sections/BackedBefore";
 import WhatFoundersGet from "@/components/sections/WhatFoundersGet";
@@ -7,6 +8,20 @@ import IndicornsSpotlight from "@/components/sections/IndicornSpotlight";
 import FounderTestimonial from "@/components/sections/FoundersTestimonial";
 import Footer from "@/components/sections/Footer";
 import HeroBackedBg from "@/components/sections/HeroBackedBg";
+
+/* THE HOMEPAGE CANONICAL, and only the homepage's.
+   The rest of the site self-references through `alternates: { canonical: "./" }`
+   in buildMetadata, which Next resolves against the route's own path — correct
+   everywhere except here. The app-router root page is "/index" internally, so
+   "./" resolved to https://titancapital.vc/index, a URL that does not exist and
+   that Google would treat as the preferred version of the home page.
+   Overriding just this one route keeps every other canonical self-referencing;
+   putting "/" in the shared helper instead would declare that EVERY page is the
+   homepage and drop the blogs, portfolio and team pages out of the index. */
+export async function generateMetadata(): Promise<Metadata> {
+  return { alternates: { canonical: "/" } };
+}
+
 export default function Home() {
   return (
     <>

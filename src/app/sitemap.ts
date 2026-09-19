@@ -12,13 +12,15 @@ import { getSiteUrl } from "@/sanity/lib/seo";
 export const revalidate = 60;
 
 /* ── The pages that are actually live ──
-   Not every folder in app/ — the five switched off in the navbar are left out on purpose,
-   since a sitemap is a request to index and those pages aren't finished. Add one back here
-   when it's ready. `priority` is just relative importance within our own site. */
+   Not every folder in app/ — a sitemap is a request to index, so a page only goes in once
+   it's finished. /winnersfund, /titanseedfund and /beyondthecheque are deliberately still
+   out. `priority` is just relative importance within our own site. */
 const STATIC_ROUTES: { path: string; priority: number }[] = [
   { path: "/", priority: 1.0 },
   { path: "/portfolio", priority: 0.9 },
   { path: "/blogs", priority: 0.9 },
+  { path: "/ourstory", priority: 0.8 },
+  { path: "/foundersstory", priority: 0.8 },
   { path: "/ourteam", priority: 0.8 },
   { path: "/indicorns", priority: 0.8 },
   { path: "/titanecosystem", priority: 0.7 },
@@ -92,7 +94,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...blogs.map((slug) => entry(`/blogs/${slug}`, 0.7)),
     ...companies.map((slug) => entry(`/portfolio/${slug}`, 0.6)),
     ...team.map((slug) => entry(`/ourteam/${slug}`, 0.5)),
-    // The /foundersstory listing is off, but the stories themselves are done and linked from the home page.
+    // The individual stories, under the /foundersstory listing above.
     ...stories.map((slug) => entry(`/foundersstory/${slug}`, 0.5)),
   ];
 }
