@@ -157,8 +157,17 @@ function LogoMarquee({
             href={`/portfolio/${companySlug(company.name)}`}
             aria-label={`${company.name} portfolio page`}
             draggable={false}
-            // FIXED: Mobile width strictly bound to 18vw to guarantee 5 boxes fit within 100vw
-            className="relative flex shrink-0 cursor-pointer items-center justify-center overflow-hidden max-md:w-[18vw] max-md:h-[10vw] md:h-[80px] md:w-[160px] select-none"
+            /* Mobile width stays bound to 18vw so five boxes fit within 100vw.
+               DESKTOP IS NO LONGER A FLAT 80x160. This section now shares the
+               first screen with the hero, so every pixel it takes is a pixel
+               the headline does not get — and a fixed height takes the same
+               280px out of a 1117px monitor and a 720px laptop alike, which is
+               39% of the short one. Measured at 1280x720 that left the
+               headline 5px behind the navbar. min(vw, vh) with a clamp is what
+               the rest of the site sizes with: it gives back ~19px a row on
+               short screens and is within 3px of the old size on tall ones.
+               The 2:1 ratio between the two is preserved exactly. */
+            className="relative flex shrink-0 cursor-pointer items-center justify-center overflow-hidden max-md:w-[18vw] max-md:h-[10vw] md:h-[clamp(56px,min(5.5vw,8.5vh),80px)] md:w-[clamp(112px,min(11vw,17vh),160px)] select-none"
             style={{ borderRadius: "2px", background: "#FCFCFC" }}
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 1.12 }}
@@ -210,7 +219,20 @@ export default function BackedBeforeClient({
 
   return (
     <section
-      className="flex flex-col items-center gap-[15px] md:gap-[22px] self-stretch overflow-hidden w-full max-md:!-mt-[60px]"
+      /* The `max-md:!-mt-[60px]` that used to be here is gone. It existed to
+         claw this section back up under the old layout, where it followed a
+         110vh hero track and started too far down the page. It is now a flex
+         child of the first screen, which places it exactly, and the negative
+         margin was pulling it 60px back OVER the hero — hero 722 + rows 150
+         against an 812 viewport, fitting only because of the overlap. It
+         looked fine only because the bottom of the hero happens to be empty
+         navy on a phone. Removed so the two boxes add up honestly. */
+      /* NO BACKGROUND OF ITS OWN. The white experiment is over: this section
+         now renders INSIDE the hero section, so the navy and the glow behind
+         it are the hero's and run straight through — which is the only way
+         the two genuinely match rather than being set to the same colour in
+         two places and drifting apart later. */
+      className="flex flex-col items-center gap-[15px] md:gap-[22px] self-stretch overflow-hidden w-full"
       style={{
         paddingTop: "clamp(10px, min(2.0vw, 3.09vh), 25px)",
         paddingBottom: "clamp(10px, min(2.00vw, 3.09vh), 25px)",
@@ -220,7 +242,7 @@ export default function BackedBeforeClient({
     >
 
       <div
-        className="flex w-full overflow-hidden relative py-2 md:py-3 mt-2"
+        className="flex w-full overflow-hidden relative py-2 md:py-[min(0.8vw,1.2vh)] mt-2"
         style={{
           maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
           WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)"
@@ -230,7 +252,7 @@ export default function BackedBeforeClient({
       </div>
 
       <div
-        className="flex w-full overflow-hidden relative py-2 md:py-3 mt-0 md:-mt-2"
+        className="flex w-full overflow-hidden relative py-2 md:py-[min(0.8vw,1.2vh)] mt-0 md:-mt-2"
         style={{
           maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
           WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)"

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Hero from "@/components/sections/Hero";
-import BackedBefore from "@/components/sections/BackedBefore";
 import WhatFoundersGet from "@/components/sections/WhatFoundersGet";
 import WhatWeBelieve from "@/components/sections/WhatWeBelieve";
 import ImpactAtGlance from "@/components/sections/ImpactAtGlance";
@@ -30,15 +29,11 @@ export default function Home() {
           scrolls UP off it to reveal it, then covers it again on
           scroll-up. The mirror image of the Indicorns sticky-reveal. */}
       <div className="relative z-[2] bg-white">
-        {/* Cappen-style pinned, staged background transition: the hero pins
-            and its content fades out, then the whole screen crossfades
-            navy → white (Backed Before) → beige (How We Show Up). All three
-            sections ride transparently on the one backdrop. */}
-        <HeroBackedBg
-          hero={<Hero />}
-          backed={<BackedBefore />}
-          howWeShow={<WhatFoundersGet />}
-        />
+        {/* The first screen pins while How We Show Up climbs over it.
+            BACKED BEFORE IS NOT LISTED HERE ANY MORE — it is rendered inside
+            the hero section itself (see Hero.tsx), which is what lets the two
+            share a single unbroken background. */}
+        <HeroBackedBg hero={<Hero />} howWeShow={<WhatFoundersGet />} />
         <WhatWeBelieve />
         <ImpactAtGlance />
         {/* Sticky-reveal pair: Indicorns pins (position: sticky) while

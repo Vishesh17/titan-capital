@@ -336,6 +336,23 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
     (s) => !(s.directUrl && s.directUrl === ctaUrl)
   );
 
+  /* THE CTA HIDES ON ITS OWN PAGE — a button offering to take you where you
+     already are is noise, and on Get Investment it sits directly above a form
+     that is the same invitation.
+
+     Matched on where the button POINTS, not on a hardcoded "/getinvestment",
+     for exactly the reason the menu filter above does it: an editor can
+     repoint the CTA in Sanity and this keeps working.
+
+     Both sides are normalised first. The href is typed by hand in the Studio,
+     so "/getinvestment/" with a trailing slash is entirely plausible to find
+     there, and a raw === would quietly stop matching. Query and hash go too,
+     so a "?utm=..." on the CTA cannot break it either. An external CTA simply
+     never matches, which is the right answer. */
+  const normalisePath = (url: string) =>
+    url.split(/[?#]/)[0].replace(/\/+$/, "") || "/";
+  const onCtaPage = normalisePath(pathname ?? "") === normalisePath(ctaUrl);
+
   useMotionValueEvent(scrollY, "change", (latest) => {
     const isScrolled = latest > 60;
     if (isScrolled !== scrolled) {
@@ -362,7 +379,17 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
 
   return (
     <>
-      <nav className="site-navbar fixed left-0 top-0 z-[40] flex h-[clamp(65px,min(5.5vw,7vh),80px)] w-full items-center justify-between px-4 transition-[color,transform,opacity] duration-500 ease-out max-md:!h-[clamp(56px,8dvh,64px)] max-md:!px-[clamp(16px,4vw,24px)] lg:px-[clamp(32px,4.3vw,62px)]">
+      {/* HEIGHT +10%, every term of both clamps scaled together so the
+          increase holds at every viewport rather than only where the clamp
+          happens not to be deciding:
+            desktop  65 -> 71.5   5.5vw -> 6.05vw   7vh -> 7.7vh   80 -> 88
+            mobile   56 -> 61.6   8dvh -> 8.8dvh    64 -> 70.4
+          `--nav-height` in globals.css moved by the same 10% — it is what
+          every other section pads itself by, so the two have to travel
+          together. (They are not equal and never were: this bar measures
+          65px at 1440x900 where the variable resolves to 70.6px. That gap is
+          pre-existing and left alone; only the scale changed.) */}
+      <nav className="site-navbar fixed left-0 top-0 z-[40] flex h-[clamp(71.5px,min(6.05vw,7.7vh),88px)] w-full items-center justify-between px-4 transition-[color,transform,opacity] duration-500 ease-out max-md:!h-[clamp(61.6px,8.8dvh,70.4px)] max-md:!px-[clamp(16px,4vw,24px)] lg:px-[clamp(32px,4.3vw,62px)]">
         {/* The glass lives on its own layer and fades in on scroll, rather
             than being swapped onto the <nav> itself.
             This matters: a layered gradient is NOT an animatable value, so
@@ -396,13 +423,19 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
             width={98}
             height={32}
             priority
-            className={`h-[32px] w-[98px] object-contain max-md:!h-[clamp(24px,4dvh,30px)] max-md:!w-[clamp(74px,12vw,92px)] ${inverted ? "" : "brightness-0 invert"}`}
+            className={`h-[36px] w-[110px] object-contain max-md:!h-[clamp(27px,4.5dvh,34px)] max-md:!w-[clamp(83px,13.5vw,104px)] ${inverted ? "" : "brightness-0 invert"}`}
           />
         </Link>
 
-        <div className="hidden md:block">
-          <NavCursorFillButton href={ctaUrl} label={ctaLabel} inverted={inverted} />
-        </div>
+        {/* Dropped entirely rather than hidden, and that costs nothing here:
+            the logo is absolutely centred on desktop (`left-1/2`), so it does
+            not drift when this leaves the flex row, and the hamburger is
+            already hard left. Below `md` this block is display:none anyway. */}
+        {!onCtaPage && (
+          <div className="hidden md:block">
+            <NavCursorFillButton href={ctaUrl} label={ctaLabel} inverted={inverted} />
+          </div>
+        )}
       </nav>
 
       <div
@@ -454,7 +487,7 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
                   alt="Titan Capital logo"
                   width={100}
                   height={32}
-                  className="h-[32px] w-[100px] object-contain brightness-0 invert max-md:!h-[clamp(24px,4dvh,30px)] max-md:!w-[clamp(74px,12vw,92px)]"
+                  className="h-[36px] w-[113px] object-contain brightness-0 invert max-md:!h-[clamp(27px,4.5dvh,34px)] max-md:!w-[clamp(83px,13.5vw,104px)]"
                 />
             </div>
 

@@ -785,14 +785,20 @@ export default function OurStoryHeroClient({
             each word stays intact while the line breaks between words, so a
             heading that will not fit in two lines simply sets in three.
 
-            ROW GAP is the line spacing: level 1's 86% line-height is tighter
-            than the glyphs, so stacked lines touch at 0px. `0.12em` opens them
-            and tracks the font size — the same fix BackedEarly's and
-            FoundersStory's headings carry. WORD_GAP is HeroClient's own
-            word spacing. */}
+            The heading's own rowGap is gone — see the note on the h1. The
+            rowGap still on the per-line span below is a different thing: that
+            one only opens up when a single line WRAPS, which the heading's
+            line-height does not cover. WORD_GAP is HeroClient's own word
+            spacing. */}
         <h1
           className={`m-0 flex w-full flex-col items-center text-center text-[#0E0E0E] ${HERO_HEADING_DARK_CLASS}`}
-          style={{ ...HERO_HEADING_DARK_STYLE, rowGap: "0.12em" }}
+          /* NO rowGap any more. The 0.12em that used to sit here existed for one
+               reason: level 1's 86% line-height was tighter than the glyphs, so
+               stacked lines touched at 0px. Level 2's leading is 124% and
+               already separates them — keeping the gap on top of it spaced the
+               lines about twice as far apart, relative to the type, as the
+               original design ever had them. */
+          style={HERO_HEADING_DARK_STYLE}
         >
           {[line1, line2].filter(Boolean).map((line, li) => {
             /* Words keep revealing in reading order across both lines, so the

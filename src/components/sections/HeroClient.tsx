@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import RichText, { type RichTextValue } from "@/components/ui/RichText";
 import Image from "next/image";
 import Link from "next/link";
@@ -273,7 +273,17 @@ function HeroGlow() {
 /* ─────────────────────────────────────────────────────────
    Main Hero Component
    ───────────────────────────────────────────────────────── */
-export default function HeroClient({ data }: { data?: HeroData | null }) {
+export default function HeroClient({
+  data,
+  backedBefore,
+}: {
+  data?: HeroData | null;
+  /** The Backed Before section, handed in from the server wrapper so this
+   *  client component can render it inside its own section — see the note
+   *  where it is placed. A ReactNode rather than an import because
+   *  BackedBefore is a server component that does its own Sanity fetch. */
+  backedBefore?: ReactNode;
+}) {
   const subtitle = data?.subtitle || FALLBACK_SUBTITLE;
   const founders: HeroFounder[] = (() => {
     if (data?.founders && data.founders.length > 0) {
@@ -356,10 +366,21 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
       
       setDims(computeDims(winW, winH));
 
+      /* READY IS NO LONGER GATED ON THE SLOT.
+         It used to be set at the very bottom, below the `if (!el)` return —
+         so it only ever fired because the heading photo existed to be
+         measured. With that rectangle commented out of both headings the refs
+         are always empty, the early return always taken, `ready` never true,
+         and the hero sits blank forever: no intro, no heading, no CTA.
+         Hoisted above the measurement, which is the only thing that actually
+         needed an element. */
+      setReady(true);
+
       const isMobile = winW < 768;
       const el = isMobile ? mobileSlotRef.current : slotRef.current;
       const sectionEl = sectionRef.current;
-      
+
+      // Dormant while the rectangle is out; restores itself with it.
       if (!el || !sectionEl) return;
 
       const sRect = el.getBoundingClientRect();
@@ -371,8 +392,6 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
         w: sRect.width,
         h: sRect.height,
       });
-
-      setReady(true);
     };
 
     measure();
@@ -420,6 +439,8 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
   const [headingReady, setHeadingReady] = useState(skipIntro);
   const [uiReady, setUiReady] = useState(skipIntro);
   const [subtitleReady, setSubtitleReady] = useState(skipIntro);
+  /* Held at 0 while the heading rectangle is commented out — the timer that
+     advanced it is disabled below, and only that photo ever read it. */
   const [headingTick, setHeadingTick] = useState(0);
 
   useEffect(() => {
@@ -451,22 +472,40 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
 
   const heroInView = useInView(sectionRef);
 
-  useEffect(() => {
-    if (!headingReady || !heroInView) return;
-    const delay = headingTick === 0 ? 3700 : 1500;
-    const timer = setTimeout(() => {
-      setHeadingTick((t) => t + 1);
-    }, delay);
-    return () => clearTimeout(timer);
-  }, [headingReady, heroInView, headingTick]);
+  /* THE HEADING-PHOTO TIMER — REMOVED with the rectangle it advanced.
+     Nothing reads `headingTick` any more, so left in it would re-render the
+     whole hero every 1.5s forever just to increment a number no one looks at.
+     Uncomment together with the two <span> blocks in the headings below. */
+  // useEffect(() => {
+  //   if (!headingReady || !heroInView) return;
+  //   const delay = headingTick === 0 ? 3700 : 1500;
+  //   const timer = setTimeout(() => {
+  //     setHeadingTick((t) => t + 1);
+  //   }, delay);
+  //   return () => clearTimeout(timer);
+  // }, [headingReady, heroInView, headingTick]);
 
   return (
-    <section ref={sectionRef} className="relative h-screen w-full overflow-hidden max-md:!h-[100dvh] max-md:overflow-x-hidden max-md:w-[100vw] max-md:ml-[calc(50%-50vw)] max-md:bg-[#00112E]">
+    /* BACKED BEFORE LIVES IN HERE NOW, as the last child of this section
+       rather than as a sibling laid out by HeroBackedBg. That is the whole
+       reason the two finally share one background: there is no seam between
+       them to paint differently, because there is no longer a boundary — the
+       navy and the glow below belong to this section and run behind both.
+
+       `h-full`, not `h-screen`: HeroBackedBg hands this section the whole
+       first screen and it fills it, then splits it between the hero body
+       (flex-1) and the marquees (shrink-0). */
+    <section ref={sectionRef} className="relative flex h-full w-full flex-col overflow-hidden max-md:overflow-x-hidden max-md:w-[100vw] max-md:ml-[calc(50%-50vw)] max-md:bg-[#00112E]">
+      {/* THE GLOW IS AT SECTION LEVEL, not inside the hero body. Left where it
+          was it would have stopped dead at the marquees' top edge, drawing
+          exactly the boundary this change exists to remove. Out here it washes
+          continuously behind the headline and the logos alike. */}
+      <HeroGlow />
+
       <div
-        className="relative flex h-screen w-full items-center justify-center overflow-hidden max-md:!h-[100dvh]"
+        className="relative flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden"
         style={{ background: "transparent" }}
       >
-        <HeroGlow />
 
         <div className="pointer-events-none absolute left-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 max-md:!left-1/2 max-md:!top-[6dvh] max-md:!-translate-x-1/2 max-md:!translate-y-0">
           <motion.span
@@ -485,7 +524,18 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
           </motion.span>
         </div>
 
-        <div className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 max-md:!hidden">
+        {/* THE DESKTOP SUBTITLE USED TO LIVE HERE, pinned to the hero's floor
+            at `bottom-[8vh]` and independent of everything above it. That
+            worked while the hero owned a whole viewport and there were ~300px
+            of empty navy between the buttons and the bottom of the screen.
+            Now that the hero is only the part of the screen Backed Before
+            does not need, the two ran into each other: measured at 1440x900
+            the buttons sat at 569-593 and this block at 525-589, a 20px
+            overlap. Moving it into the flow under the buttons — where the
+            mobile layout has always had it — makes the stack size itself, so
+            it cannot collide at any viewport rather than being tuned not to
+            at one. See the block below the headings. */}
+        {/* <div className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 max-md:!hidden">
           <motion.div
             style={{ maxWidth: "min(60vw, 1000px)", ...HERO_BODY_STYLE }}
             className={`font-normal m-0 text-center text-white/90 ${HERO_BODY_CLASS}`}
@@ -498,7 +548,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
           >
             <RichText value={subtitle} />
           </motion.div>
-        </div>
+        </div> */}
 
         <AnimatePresence>
           {ready && stage === "slideshow" && (
@@ -572,9 +622,24 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
         </div>
         <motion.div
           style={{ opacity: headingOpacity }}
-          className="absolute inset-0 z-20 flex items-center justify-center px-[var(--section-px-wide)] max-md:!px-[24px] max-md:!items-start max-md:!pt-[clamp(85px,12dvh,120px)]"
+          /* `md:pt-[var(--nav-height)]` — the navbar is fixed and paints over
+             the top of the hero, so centring against the full box centres
+             against a strip the reader cannot see. It did not matter while
+             the hero was a whole viewport and the stack had ~300px of slack;
+             in a 620px hero the headline came out at y=54 under a 65px navbar
+             and was clipped by it. Padding the top by the nav's own height
+             centres the stack in the part of the hero that is actually
+             visible, and it follows the navbar if that ever resizes.
+             Mobile already did this, via the pt below. */
+          className="absolute inset-0 z-20 flex items-center justify-center px-[var(--section-px-wide)] md:pt-[var(--nav-height,65px)] max-md:!px-[24px] max-md:!items-start max-md:!pt-[clamp(85px,12dvh,120px)]"
         >
-          <div className="relative flex flex-col items-center md:-translate-y-[8vh]">
+          {/* No upward nudge any more. `md:-translate-y-[8vh]` was here to
+              compensate for the buttons and subtitle hanging out of the
+              layout — the stack looked bottom-heavy because centring only
+              ever saw the headline. Now that all three are in the flow there
+              is nothing to compensate for, and a translate would just push a
+              correctly centred block off centre. */}
+          <div className="relative flex flex-col items-center">
             
             <h1
               className={`pointer-events-none m-0 hidden md:flex flex-col items-start text-left text-white ${HERO_HEADING_DARK_CLASS}`}
@@ -584,10 +649,24 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
               <RevealLine show={headingReady} delay={0.5}>Founders Building</RevealLine>
               <span
                 className="flex items-start justify-start self-end"
-                style={{ gap: "min(0.8vw, 1.4vh)", marginRight: "min(6vw, 9vh)" }}
+                /* 0.18em, not the old min(0.8vw, 1.4vh). That value was the
+                   breathing room either side of the heading rectangle; with
+                   the rectangle gone it is all that separates THE from
+                   FUTURE, and at 81px it measured 11px against a real Poppins
+                   space of 14px — visibly tight. An em tracks the font, so the
+                   word space holds at every viewport instead of drifting
+                   against a vw the type no longer follows. */
+                style={{ gap: "0.18em", marginRight: "min(6vw, 9vh)" }}
               >
                 <RevealLine show={headingReady} delay={1.25}>The</RevealLine>
-                <span
+                {/* THE THIRD-LINE RECTANGLE — REMOVED.
+                    The rotating founder photo that sat between "THE" and
+                    "FUTURE". It was also what made this line 205px tall
+                    against the other two at 118px, so taking it out is most
+                    of why the hero now fits alongside Backed Before.
+                    Uncomment, plus the mobile twin and the headingTick timer
+                    further up, to put it back. */}
+                {/* <span
                   ref={slotRef}
                   className="relative inline-block shrink-0 overflow-hidden"
                   style={{
@@ -597,7 +676,7 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                   }}
                 >
                   <HeadingPhoto founders={allFounders} activeIndex={headingTick} show={headingReady} enterDelay={2.1} />
-                </span>
+                </span> */}
                 <RevealLine show={headingReady} delay={FINAL_WORD_DELAY.desktop}>{FINAL_WORD}</RevealLine>
               </span>
             </h1>
@@ -613,16 +692,30 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 <RevealLine show={headingReady} delay={FINAL_WORD_DELAY.mobile}>{FINAL_WORD}</RevealLine>
               </span>
 
-              <span
+              {/* The mobile twin of the third-line rectangle — REMOVED with it.
+                  Kept in step with desktop on purpose: leaving the photo on
+                  phones only would make the two headings different objects,
+                  and it is ~134px of the height the hero has to give back for
+                  Backed Before to land on the same screen. */}
+              {/* <span
                 className="relative inline-block shrink-0 overflow-hidden mt-[clamp(12px,2.5dvh,20px)]"
                 style={{ width: "min(50vw, 210px)", height: "min(31.95vw, 134px)", borderRadius: "2px" }}
                 ref={mobileSlotRef}
               >
                 <HeadingPhoto founders={allFounders} activeIndex={headingTick} show={headingReady} enterDelay={1.5} mobile />
-              </span>
+              </span> */}
             </h1>
 
-           <div className="absolute left-1/2 top-full -translate-x-1/2 mt-[min(4.63vw,7.16vh)] max-md:!static max-md:!translate-x-0 max-md:!mt-[clamp(24px,4dvh,40px)] max-md:!w-full">
+           {/* IN THE FLOW ON DESKTOP TOO, not `absolute top-full`.
+               Mobile was already `static` here; desktop hung this block out
+               of the layout so the headline alone decided where the centred
+               stack sat, and a -8vh nudge on the parent bought back room for
+               it by eye. With a shorter hero that stops working — an absolute
+               child contributes no height, so nothing downstream knows the
+               buttons and subtitle are there, and they simply run past the
+               hero's floor into Backed Before. Flowed, the stack measures
+               itself and `items-center` on the parent centres all of it. */}
+           <div className="mt-[min(2.6vw,4vh)] w-full max-md:!mt-[clamp(24px,4dvh,40px)]">
             <motion.div
               className="flex flex-col items-center"
               initial={false}
@@ -645,8 +738,14 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
                 </Link>
                 <CursorFillButton href="/getinvestment" label="Get Investment" />
               </div>
+              {/* THE SUBTITLE, now on both breakpoints — this was the mobile
+                  one; the desktop copy that used to be pinned to the hero's
+                  floor is commented out above. The widths differ because the
+                  jobs differ: a phone wants nearly the full width, a desktop
+                  wants a measure short enough to read, which is the
+                  min(60vw, 1000px) the old block carried. */}
               <motion.div
-                className={`font-normal hidden max-md:!block mt-[clamp(24px,4dvh,40px)] w-[85vw] text-center text-white/90 ${HERO_BODY_CLASS}`}
+                className={`font-normal mt-[min(1.6vw,2.4vh)] max-w-[min(60vw,1000px)] text-center text-white/90 max-md:!mt-[clamp(24px,4dvh,40px)] max-md:!w-[85vw] max-md:!max-w-none ${HERO_BODY_CLASS}`}
                 style={HERO_BODY_STYLE}
                 initial={false}
                 animate={{ opacity: subtitleReady ? 1 : 0 }}
@@ -659,6 +758,33 @@ export default function HeroClient({ data }: { data?: HeroData | null }) {
           </div>
         </motion.div>
       </div>
+
+      {/* ── BACKED BEFORE ──
+          IT HAS NO HEIGHT UNTIL THE INTRO IS OVER, which is what gives the
+          opening animation the whole page to play in. During the slideshow
+          and the card sequence this collapses to 0 and `flex-1` above takes
+          the entire viewport, exactly as the hero did before the marquees
+          moved in; when the tail lands the height opens to `auto` and the
+          hero body gives up the space smoothly rather than the logos
+          appearing on top of a layout that never moved.
+
+          `uiReady` is the gate because it is the LAST thing the intro sets —
+          the buttons and subtitle land on the same timer — so this cannot
+          arrive while anything above is still animating.
+
+          `initial={false}` matters on a soft navigation back to the home
+          page: `skipIntro` starts every one of those flags true, and without
+          it framer would still play the 0 -> auto open on arrival. */}
+      {backedBefore && (
+        <motion.div
+          className="w-full shrink-0 overflow-hidden"
+          initial={false}
+          animate={{ height: uiReady ? "auto" : 0, opacity: uiReady ? 1 : 0 }}
+          transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {backedBefore}
+        </motion.div>
+      )}
     </section>
   );
 }

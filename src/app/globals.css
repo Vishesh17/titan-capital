@@ -39,13 +39,19 @@
 
   /*
     Shared fluid nav height — single source of truth, height- AND width-aware.
-    - 77px is the design (Figma) value
-    - 5.34vw = 77/1440 (width-relative)
-    - 7.84vh = 77/982  (height-relative)
+    - 84.7px is the design (Figma) 77px, plus the 10% the bar was raised by
+    - 5.874vw = 84.7/1442 (width-relative)
+    - 8.624vh = 84.7/982  (height-relative)
     - min() picks whichever axis is tighter, so on short Windows screens the
       nav shrinks too — giving the hero more vertical room.
+
+    RAISED 10%, in step with the bar's own height in NavbarClient. Every term
+    of the clamp moved together — floor, both fluid terms and ceiling — since
+    bumping only the fluid part would leave the increase behind on small and
+    large screens, where the clamp rather than the viewport decides.
+    Was: clamp(60px, min(5.34vw, 7.84vh), 77px)
   */
-  --nav-height: clamp(60px, min(5.34vw, 7.84vh), 77px);
+  --nav-height: clamp(66px, min(5.874vw, 8.624vh), 84.7px);
 
   /*
     Shared horizontal section padding — single source of truth so EVERY

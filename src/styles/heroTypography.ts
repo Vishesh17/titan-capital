@@ -6,9 +6,14 @@ import type { CSSProperties } from "react";
  * Three levels, largest first. Every heading on the site is one of these —
  * nothing hard-codes a size, so the scale can't drift again.
  *
- *   LEVEL 1  HERO_HEADING_DARK   blue/navy hero headings      170px / 47px
+ *   LEVEL 1  HERO_HEADING_DARK   blue/navy hero headings      100px / 35px
  *   LEVEL 2  HERO_HEADING_LIGHT  white/cream hero headings    100px / 35px
  *   LEVEL 3  SECTION_HEADING     every non-hero section        78px / 27px
+ *
+ * Levels 1 and 2 are the same SIZE on purpose — every banner was stepped
+ * down to level 2. They differ in weight (900 vs 700) and now in leading
+ * too: level 1 sets at 105%, level 2 keeps 124%. See the notes above
+ * HERO_HEADING_DARK_CLASS.
  *
  * (Rendered sizes are desktop at the 1728x1117 reference / mobile at 390px.)
  *
@@ -42,14 +47,45 @@ import type { CSSProperties } from "react";
    optical weight, not because of drift. Pick by background, never by page.
    ──────────────────────────────────────────────────────────────────────── */
 
-/* LEVEL 1 — the largest type on the site. */
+/* LEVEL 1 — the banner heading on every hero.
+ *
+ * IT NOW CARRIES LEVEL 2's SIZE. Every level-1 banner was stepped down one
+ * level; what did NOT change is the two things each section owns for itself —
+ * colour (white on the navy heroes, #0E0E0E on Our Story and Titan Ecosystem)
+ * and weight, which stays font-black. So level 1 and level 2 are now the same
+ * type at two weights: 900 here, 700 there.
+ *
+ * Changed in the token rather than at the seven call sites, so the step down
+ * lands on all of them at once and cannot drift apart later. Titan Ecosystem
+ * reads `HERO_HEADING_DARK_STYLE.fontSize` back out to do its own fit maths,
+ * and picks the new value up for free.
+ *
+ * The previous level-1 spec, if it is ever wanted back:
+ *     max-md:!text-[clamp(36px,12vw,50px)] max-md:!leading-[96%]
+ *     fontSize: "min(9.88vw, 15.2vh)", lineHeight: "86%"   // 170px desktop
+ */
+/* LEADING IS 105% / 112%, NOT level 2's 124% / 128%.
+ *
+ * The size came down one level but the leading came with it, and 124% is a
+ * PARAGRAPH's leading wearing a display heading's size — it is there to let
+ * ascenders and descenders clear each other over many lines of small type.
+ * These headings are three or four lines of uppercase Poppins Black at 81px,
+ * where there are no descenders at all, so the whole 24% was gap: measured on
+ * the home page, a 100.44px line box carrying 81px type, which set the three
+ * lines visibly further apart than the original level-1 design ever had them.
+ *
+ * 105% gives an 85px line box for the same 81px type. Mobile keeps a little
+ * more at 112%, because the type is much smaller there and wraps to more
+ * lines, where leading does real work.
+ *
+ * ONLY LEVEL 1 MOVED. HERO_HEADING_LIGHT below still carries 124% / 128%. */
 export const HERO_HEADING_DARK_CLASS =
   "font-['Poppins',_sans-serif] font-black uppercase " +
-  "max-md:!text-[clamp(36px,12vw,50px)] max-md:!leading-[96%]";
+  "max-md:!text-[clamp(30px,9vw,46px)] max-md:!leading-[112%]";
 
 export const HERO_HEADING_DARK_STYLE: CSSProperties = {
-  fontSize: "min(9.88vw, 15.2vh)",
-  lineHeight: "86%",
+  fontSize: "clamp(36px, min(6.6vw, 9vh), 112px)",
+  lineHeight: "105%",
 };
 
 /* LEVEL 2 — steps down from level 1 on both breakpoints. */
@@ -73,9 +109,13 @@ export const HERO_HEADING_LIGHT_STYLE: CSSProperties = {
    `max-md:` variant would leave 768-1023px with no size at all.
    ──────────────────────────────────────────────────────────────────────── */
 
+/* Mirrors the `max-md:` half of HERO_HEADING_DARK_CLASS, which is now level
+   2's — so this is deliberately identical to HERO_HEADING_LIGHT_MOBILE_STYLE
+   below. Kept as its own export because the two levels are still separate
+   names to every call site, and one may step back out on its own later. */
 export const HERO_HEADING_DARK_MOBILE_STYLE: CSSProperties = {
-  fontSize: "clamp(36px, 12vw, 50px)",
-  lineHeight: "96%",
+  fontSize: "clamp(30px, 9vw, 46px)",
+  lineHeight: "112%",
 };
 
 export const HERO_HEADING_LIGHT_MOBILE_STYLE: CSSProperties = {

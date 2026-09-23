@@ -836,13 +836,13 @@ export default function BackedEarlyClient({
           <div className="flex w-full flex-col items-center">
             <h2
               className={`m-0 flex w-full flex-col items-center justify-center text-center text-white ${HERO_HEADING_DARK_CLASS}`}
-              /* The two lines are flex items, so the level-1 line-height (86%)
-                 is the ONLY thing between them and it sits tighter than the
-                 glyphs — the boxes touch at 0px. rowGap opens them up; in `em`
-                 so it tracks a font that runs min(9.88vw, 15.2vh) on desktop
-                 and a clamp on mobile. Spread rather than mutating the shared
-                 token, which every other hero heading also uses. */
-              style={{ ...HERO_HEADING_DARK_STYLE, rowGap: "0.12em" }}
+              /* NO rowGap any more. The 0.12em that used to sit here existed for one
+               reason: level 1's 86% line-height was tighter than the glyphs, so
+               stacked lines touched at 0px. Level 2's leading is 124% and
+               already separates them — keeping the gap on top of it spaced the
+               lines about twice as far apart, relative to the type, as the
+               original design ever had them. */
+              style={HERO_HEADING_DARK_STYLE}
             >
               <RevealLine show={show} delay={0}>{headingFirst}</RevealLine>
               <RevealLine show={show} delay={0.5}>{headingSecond}</RevealLine>

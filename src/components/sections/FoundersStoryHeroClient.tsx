@@ -321,10 +321,13 @@ export default function FoundersStoryHero({
         <div className="flex w-full flex-1 flex-col items-center justify-center px-[var(--section-px-wide)] max-md:!flex-none max-md:!justify-start max-md:!mt-[clamp(44px,16vw,80px)] max-md:!mb-[clamp(16px,4vw,28px)]">
           <h1
             className={`m-0 flex w-full flex-col items-center justify-center text-center text-white ${HERO_HEADING_DARK_CLASS}`}
-            /* The two lines are flex items, so level 1's 86% line-height is the
-               only thing between them and the boxes touch at 0px — the same
-               reason BackedEarly's heading carries this. */
-            style={{ ...HERO_HEADING_DARK_STYLE, rowGap: "0.12em" }}
+            /* NO rowGap any more. The 0.12em that used to sit here existed for one
+               reason: level 1's 86% line-height was tighter than the glyphs, so
+               stacked lines touched at 0px. Level 2's leading is 124% and
+               already separates them — keeping the gap on top of it spaced the
+               lines about twice as far apart, relative to the type, as the
+               original design ever had them. */
+            style={HERO_HEADING_DARK_STYLE}
           >
             <RevealLine show={show} delay={0}>{lineOne}</RevealLine>
             {lineTwo && (

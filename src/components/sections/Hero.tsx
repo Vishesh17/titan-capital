@@ -15,6 +15,7 @@
 import { sanityFetch } from "@/sanity/lib/client";
 import { heroQuery } from "@/sanity/lib/queries";
 import HeroClient, { type HeroData } from "./HeroClient";
+import BackedBefore from "./BackedBefore";
 
 async function getHero(): Promise<HeroData | null> {
   try {
@@ -33,5 +34,10 @@ async function getHero(): Promise<HeroData | null> {
 
 export default async function Hero() {
   const data = await getHero();
-  return <HeroClient data={data} />;
+  /* BACKED BEFORE IS RENDERED INSIDE THE HERO, not beside it on the page, so
+     the two share one background with no seam between them. It is passed as a
+     prop rather than imported by HeroClient because it is a server component
+     with a Sanity fetch of its own, and a client component cannot import one
+     — handing it down as a ReactNode keeps its fetch on the server. */
+  return <HeroClient data={data} backedBefore={<BackedBefore />} />;
 }
