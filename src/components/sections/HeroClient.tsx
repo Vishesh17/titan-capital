@@ -118,8 +118,36 @@ const SLOT_W = "min(23.1vw, 35.8vh)";
 const SLIDESHOW_SIZES = "(max-width: 768px) 20vw, 8vw";
 const HEADING_SIZES = "(max-width: 768px) 50vw, 24vw";
 const MOBILE_QUERY = "(max-width: 767px)";
+/* RevealLine's own cascade, hoisted up here from beside the component because
+   the delays below are derived from them and a const cannot be read before it
+   is initialised. */
+const CHAR_STAGGER = 0.025;
+const REVEAL_DURATION = 0.7;
+
+const LEAD_WORD = "The";
 const FINAL_WORD = "Future";
-const FINAL_WORD_DELAY = { desktop: 2.2, mobile: 1.2 } as const;
+
+/** When THE starts revealing, on each breakpoint. */
+const LEAD_WORD_DELAY = { desktop: 1.25, mobile: 0.9 } as const;
+
+/* WHEN "FUTURE" STARTS — and it is derived now, not typed.
+   
+   THE and FUTURE are two RevealLines sharing ONE line of the heading, so their
+   cascades should join into a single wave crossing that line rather than two
+   words taking turns. Desktop used to start FUTURE at a flat 2.2 against THE's
+   1.25 — a 0.95s hole, which was right when a rotating photograph sat between
+   the two words and had its own 2.1s entrance to clear. With that rectangle
+   gone the hole is just a stall, and it is the gap that reads as wrong.
+
+   The figure is what a single RevealLine holding "The Future" would produce:
+   THE's own start, plus the characters the cascade has to cross to arrive at
+   FUTURE — the word itself and the space after it. So it stays correct if the
+   copy changes, if the stagger is retuned, or if THE's delay moves. */
+const AFTER_LEAD_WORD = (LEAD_WORD.length + 1) * CHAR_STAGGER;
+const FINAL_WORD_DELAY = {
+  desktop: LEAD_WORD_DELAY.desktop + AFTER_LEAD_WORD,
+  mobile: LEAD_WORD_DELAY.mobile + AFTER_LEAD_WORD,
+} as const;
 const TAIL_RISE_PX = 48;
 const TAIL_TRANSITION = {
   duration: 1.1,
@@ -658,7 +686,7 @@ export default function HeroClient({
                    against a vw the type no longer follows. */
                 style={{ gap: "0.18em", marginRight: "min(6vw, 9vh)" }}
               >
-                <RevealLine show={headingReady} delay={1.25}>The</RevealLine>
+                <RevealLine show={headingReady} delay={LEAD_WORD_DELAY.desktop}>{LEAD_WORD}</RevealLine>
                 {/* THE THIRD-LINE RECTANGLE — REMOVED.
                     The rotating founder photo that sat between "THE" and
                     "FUTURE". It was also what made this line 205px tall
@@ -688,7 +716,7 @@ export default function HeroClient({
               <RevealLine show={headingReady} delay={0.3}>Founders</RevealLine>
               <RevealLine show={headingReady} delay={0.6}>Building</RevealLine>
               <span className="inline-flex gap-[0.3em]">
-                <RevealLine show={headingReady} delay={0.9}>The</RevealLine>
+                <RevealLine show={headingReady} delay={LEAD_WORD_DELAY.mobile}>{LEAD_WORD}</RevealLine>
                 <RevealLine show={headingReady} delay={FINAL_WORD_DELAY.mobile}>{FINAL_WORD}</RevealLine>
               </span>
 
@@ -895,9 +923,6 @@ function HeadingPhoto({
     </motion.div>
   );
 }
-
-const CHAR_STAGGER = 0.025;
-const REVEAL_DURATION = 0.7;
 
 function heroTailDelayMs(isMobile: boolean): number {
   const start = isMobile ? FINAL_WORD_DELAY.mobile : FINAL_WORD_DELAY.desktop;

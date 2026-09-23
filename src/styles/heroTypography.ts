@@ -6,8 +6,8 @@ import type { CSSProperties } from "react";
  * Three levels, largest first. Every heading on the site is one of these —
  * nothing hard-codes a size, so the scale can't drift again.
  *
- *   LEVEL 1  HERO_HEADING_DARK   blue/navy hero headings      100px / 35px
- *   LEVEL 2  HERO_HEADING_LIGHT  white/cream hero headings    100px / 35px
+ *   LEVEL 1  HERO_HEADING_DARK   blue/navy hero headings      121px / 43px
+ *   LEVEL 2  HERO_HEADING_LIGHT  white/cream hero headings    121px / 43px
  *   LEVEL 3  SECTION_HEADING     every non-hero section        78px / 27px
  *
  * Levels 1 and 2 are the same SIZE on purpose — every banner was stepped
@@ -81,20 +81,43 @@ import type { CSSProperties } from "react";
  * ONLY LEVEL 1 MOVED. HERO_HEADING_LIGHT below still carries 124% / 128%. */
 export const HERO_HEADING_DARK_CLASS =
   "font-['Poppins',_sans-serif] font-black uppercase " +
-  "max-md:!text-[clamp(30px,9vw,46px)] max-md:!leading-[112%]";
+  "max-md:!text-[clamp(36.3px,10.89vw,55.66px)] max-md:!leading-[112%]";
 
+
+/* SIZE RAISED 10%, on both breakpoints and on both variants — this is the
+ * banner size every hero on the site now sets at, so the increase had to land
+ * on the pair of them or the two would no longer match.
+ *
+ * RAISED TWICE, 10% each time — 1.1 x 1.1, so 21% above where it started:
+ *   desktop   36 -> 43.56   6.6vw -> 7.986vw   9vh -> 10.89vh   112 -> 135.52
+ *   mobile    30 -> 36.3    9vw   -> 10.89vw                     46 -> 55.66
+ *
+ * EVERY TERM OF EVERY CLAMP MOVED, floor and ceiling included. Raising only
+ * the fluid middle would leave the increase behind on small and large screens,
+ * where the clamp rather than the viewport is the thing deciding the size.
+ *
+ * /titanseedfund, /winnersfund and /beyondthecheque are unaffected, as the
+ * scope note at the top of this file says — they never used these tokens.
+ */
 export const HERO_HEADING_DARK_STYLE: CSSProperties = {
-  fontSize: "clamp(36px, min(6.6vw, 9vh), 112px)",
+  fontSize: "clamp(43.56px, min(7.986vw, 10.89vh), 135.52px)",
   lineHeight: "105%",
 };
 
 /* LEVEL 2 — steps down from level 1 on both breakpoints. */
+/* WEIGHT IS 900, NOT 700 — the same font-black every other hero carries.
+ * The two levels were originally different weights on purpose, back when they
+ * were different sizes and sat on different grounds. They have been the same
+ * size for a while now, which left Meet The Team and Indicorns as the only two
+ * banners on the site set lighter than the rest — visible as soon as you move
+ * between pages. The size and the weight now match everywhere; colour is still
+ * each section's own. */
 export const HERO_HEADING_LIGHT_CLASS =
-  "font-['Poppins',_sans-serif] font-bold uppercase " +
-  "max-md:!text-[clamp(30px,9vw,46px)] max-md:!leading-[128%]";
+  "font-['Poppins',_sans-serif] font-black uppercase " +
+  "max-md:!text-[clamp(36.3px,10.89vw,55.66px)] max-md:!leading-[128%]";
 
 export const HERO_HEADING_LIGHT_STYLE: CSSProperties = {
-  fontSize: "clamp(36px, min(6.6vw, 9vh), 112px)",
+  fontSize: "clamp(43.56px, min(7.986vw, 10.89vh), 135.52px)",
   lineHeight: "124%",
 };
 
@@ -114,12 +137,12 @@ export const HERO_HEADING_LIGHT_STYLE: CSSProperties = {
    below. Kept as its own export because the two levels are still separate
    names to every call site, and one may step back out on its own later. */
 export const HERO_HEADING_DARK_MOBILE_STYLE: CSSProperties = {
-  fontSize: "clamp(30px, 9vw, 46px)",
+  fontSize: "clamp(36.3px, 10.89vw, 55.66px)",
   lineHeight: "112%",
 };
 
 export const HERO_HEADING_LIGHT_MOBILE_STYLE: CSSProperties = {
-  fontSize: "clamp(30px, 9vw, 46px)",
+  fontSize: "clamp(36.3px, 10.89vw, 55.66px)",
   lineHeight: "128%",
 };
 

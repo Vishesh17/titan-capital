@@ -28,6 +28,13 @@ const INVERTED_HERO_ROUTES = new Set([
   "/ourstory",
   "/founders",
   "/titanecosystem",
+  /* ADDED WITH THE HERO BEING SWITCHED OFF. This route belonged in the dark
+     column for as long as it opened on the navy Get Investment banner; with
+     that banner commented out of the page the form is the first thing on
+     screen, and the form is cream — which left a white logo and a white
+     hamburger sitting on it, all but invisible until you scrolled.
+     TAKE THIS LINE OUT IF THE HERO GOES BACK IN. */
+  "/getinvestment",
 ]);
 
 /* Listings whose OWN hero is dark but whose detail pages render on white.

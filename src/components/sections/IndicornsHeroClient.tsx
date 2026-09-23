@@ -629,34 +629,27 @@ export default function IndicornsHeroClient({
                   {headingPrefix}
                 </h1>
 
-                {/* "indicorns" wordmark — coloured Hindi-styled graphic.
-                    Slightly larger, and nudged up a touch relative to the
-                    "What is an" text via a small negative translateY.
+                {/* "indicorns" wordmark — coloured Hindi-styled graphic,
+                    nudged up a touch relative to the heading beside it.
 
-                    HEIGHT is the height of the BOX, and with WORDMARK_ASPECT
-                    the box is now the artwork — so every term is the old one
-                    scaled by 118/144, the fraction the artwork actually filled
-                    before. The rendered logo is therefore unchanged at every
-                    viewport; only the empty margin around it is gone.
+                    HEIGHT is the height of the BOX, and WORDMARK_ASPECT makes
+                    the box the artwork, so nothing letterboxes.
 
-                    WIDTH BUDGET — why the ceiling is 118px and not higher.
-                    This box is `shrink-0` with a fixed aspect, so it cannot
-                    give way: if heading + gap + wordmark exceeds the card's
-                    inner width, the row wraps and the card grows by a whole
-                    extra line. The worst case is the widest heading, which is
-                    its 112px clamp ceiling — "WHAT ARE" measures 588px there.
-                    Against the 1136px inner width (1200px cap − 2 × 32px):
+                    Net 1.089x on the original: raised 1.21 to catch up with
+                    the heading's two 10% bumps, then brought back down 10%
+                    because at 1.21 it pushed the heading + wordmark row over
+                    the card's inner width at 1440 and forced it onto two
+                    lines. It fits on one line again up to ~1600px wide.
 
-                        588 heading + 14 gap + 500 wordmark = 1102px   ✓ 34px spare
-
-                    Originally this was 150px / 3.5:1 — a 525px wordmark and a
-                    1137px row against the 1072px available then, so every
-                    viewport tall enough to reach the heading ceiling wrapped
-                    and cost the card an extra 172px of height. */}
+                    THE FLOOR STAYS AT 66px. The fluid terms resolve below it
+                    on a phone, so the floor is what governs there, and the
+                    card's 295px inner width caps this box at ~69px tall —
+                    at 79.86 the logo drew 338px wide and the card's
+                    `overflow: hidden` sliced 6px off each end. */}
                 <div
                   className="relative shrink-0"
                   style={{
-                    height: "clamp(66px, min(12.29vw, 14.75vh), 118px)",
+                    height: "clamp(66px, min(13.38vw, 16.07vh), 128.5px)",
                     aspectRatio: WORDMARK_ASPECT,
                     transform: `translateY(calc(-1 * ${WORDMARK_LIFT}))`,
                   }}
