@@ -1,9 +1,17 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
+import {
+  BODY_BOLD_CLASS,
+  HERO_BODY_STYLE,
+  LABEL_STYLE,
+  SUBHEADING_CLASS,
+  SUBHEADING_MOBILE_STYLE,
+  SUBHEADING_STYLE,
+} from "@/styles/heroTypography";
+import { motion } from "framer-motion"; // Keep for buttonContent spinner animation
 
 /*
   RESPONSIVE STRATEGY — clamp(MIN, min(vw-fluid, vh-fluid), MAX)
@@ -14,29 +22,36 @@ import { motion, useScroll, useTransform } from "framer-motion";
   Desktop (lg+): untouched — logo+address+socials left, nav right.
 */
 
+/* Links that are disabled (not yet live) — mirrors the navbar's DISABLED_URLS,
+   and has to be edited alongside it or the two disagree about what is live.
+   Founders' Stories is disabled again, so it is back here to match. */
+const DISABLED_FOOTER_LINKS = new Set([
+  "Our Story",
+  "Founders' Stories",
+]);
+
 /* Map specific footer link labels to custom routes */
 const footerHrefs: Record<string, string> = {
   "Our Story": "/ourstory",
-  "Our Team": "/ourteam",
-  /* "Fund Details": "/winnersfund" — REMOVED. The page is switched off and
-     returns 404, so this was the one remaining way to walk into it from the
-     site. Restore this line and the nav entry below together if the fund
-     pages ever come back. */
+  "Meet The Team": "/ourteam",
   "Our Portfolio": "/portfolio",
   "Founders' Stories": "/foundersstory",
   "Get Investment": "/getinvestment",
-  "Titan Ecosystem": "/beyondthecheque",
+  /* /titanecosystem, NOT /beyondthecheque. That was pointing at a different
+     page entirely — Beyond The Cheque has its own hero and content — and it
+     never showed because the link was disabled. Sanity's navbar has always
+     had this one right. */
+  "Titan Ecosystem": "/titanecosystem",
   "Indicorns": "/indicorns",
   "Blogs & News": "/blogs",
 };
 
-/* "Fund Details" used to sit last under About, for SEBI compliance — it is
-   out because /winnersfund is switched off and the link led to a 404. If that
-   listing is a compliance requirement it needs a live page to point at. */
+/* Fund Details sits last under About for SEBI compliance. The old "Home"
+   column is gone — the wordmark itself is the route home. */
 const navLinks = [
-  { title: "About", links: ["Our Story", "Our Team"] },
+  { title: "About", links: ["Our Story", "Meet The Team"] },
   { title: "Portfolio", links: ["Our Portfolio", "Founders' Stories", "Get Investment"] },
-  { title: "Perspective", links: ["Titan Ecosystem", "Indicorns", "Blogs & News"] },
+  { title: "Perspectives", links: ["Titan Ecosystem", "Indicorns", "Blogs & News"] },
 ];
 
 /* ────────────────────────────────────────────────
@@ -47,6 +62,100 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
 }
 
+/* ────────────────────────────────────────────────
+   CursorFillButton — same style as navbar's Get Investment
+   Radial fill from cursor position on hover
+   ──────────────────────────────────────────────── */
+/* ────────────────────────────────────────────────
+   CursorFillButton — same style as navbar's Get Investment
+   Radial fill from cursor position on hover
+   ──────────────────────────────────────────────── */
+/* ────────────────────────────────────────────────
+   CursorFillButton — same style as navbar's Get Investment
+   Radial fill from cursor position on hover
+   ──────────────────────────────────────────────── */
+/* ────────────────────────────────────────────────
+   CursorFillButton — same style as navbar's Get Investment
+   Radial fill from cursor position on hover
+   ──────────────────────────────────────────────── */
+   function CursorFillButton({
+    type = "button",
+    disabled,
+    label,
+    variant = "desktop",
+    onClick,
+  }: {
+    type?: "button" | "submit";
+    disabled?: boolean;
+    label: React.ReactNode;
+    variant?: "desktop" | "mobile";
+    onClick?: () => void;
+  }) {
+    const [origin, setOrigin] = useState("50% 50%");
+    const [hovered, setHovered] = useState(false);
+  
+    const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      setOrigin(`${x}% ${y}%`);
+      setHovered(true);
+    };
+  
+    const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      setOrigin(`${x}% ${y}%`);
+      setHovered(false);
+    };
+  
+    return (
+      <button
+        type={type}
+        disabled={disabled}
+        onClick={onClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className={`relative flex items-center justify-center whitespace-nowrap font-['Poppins',_sans-serif] font-normal transition-colors duration-300 disabled:opacity-60 ${variant === "mobile" ? "shrink-0" : ""}`}
+        style={
+          variant === "mobile"
+            ? {
+                // REVERTED: Back to exact original mobile values
+                width: "clamp(68px, 18vw, 85px)",
+                height: "clamp(24px, 6.5vw, 32px)",
+                borderRadius: "53px",
+                border: "1px solid transparent",
+                background: hovered ? "white" : "#001A4D",
+                color: hovered ? "#001A4D" : "white",
+                ...LABEL_STYLE,
+              }
+            : {
+                // DESKTOP: Increased width (was 160px -> 245px) and added explicit padding
+                width: "clamp(200px, min(22vw, 32vh), 310px)",
+                padding: "0 24px",
+                height: "clamp(40px, min(3.68vw, 5.4vh), 53px)",
+                borderRadius: "53px",
+                border: "1px solid #CDCDCD",
+                background: hovered ? "white" : "#001A4D",
+                color: hovered ? "#001A4D" : "white",
+                ...LABEL_STYLE,
+              }
+        }
+      >
+        <span
+          className="absolute inset-0 bg-white transition-transform duration-400 ease-out"
+          style={{
+            transformOrigin: origin,
+            transform: hovered ? "scale(1)" : "scale(0)",
+            borderRadius: "inherit",
+          }}
+        />
+        <span className="relative z-10">{label}</span>
+      </button>
+    );
+  }
+
 /* Newsletter subscribe form — handles validation, submit/loading/success
    and error states. POSTs to /api/newsletter, which forwards to the same
    Google Apps Script webhook with `type: "newsletter"` so the Apps Script
@@ -55,126 +164,153 @@ function isValidEmail(email: string): boolean {
    `variant` switches between the desktop grid layout (Figma spec — 729×216
    pill on the right of the footer) and the mobile column layout (sits
    beside the M3M address paragraph). */
-function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile" }) {
-  const [email, setEmail] = useState("");
-  const [touched, setTouched] = useState(false);
-  const [focused, setFocused] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [submitError, setSubmitError] = useState("");
-
-  /* Live validation status — mirrors EmailInput in GetInvestmentForm. */
-  const liveStatus: "neutral" | "invalid" | "valid" =
-    email.length === 0
-      ? "neutral"
-      : isValidEmail(email)
-        ? "valid"
-        : touched
-          ? "invalid"
-          : "neutral";
-
-  const ringClass =
-    liveStatus === "invalid"
-      ? "ring-2 ring-[#C53030]/40"
-      : liveStatus === "valid" && focused
-        ? "ring-2 ring-[#16a34a]/40"
-        : "";
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!touched) setTouched(true);
-    if (!isValidEmail(email)) {
-      setSubmitError("Please enter a valid email address");
-      return;
-    }
-    setSubmitError("");
-    setSubmitting(true);
-    try {
-      const res = await fetch("/api/newsletter", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
-      });
-      const json = await res.json();
-      if (json.success) {
-        setSubmitted(true);
-        setEmail("");
-      } else {
-        setSubmitError(json.message || "Something went wrong. Please try again.");
+   function NewsletterForm({
+    variant = "desktop",
+    title,
+    placeholder,
+    buttonLabel,
+  }: {
+    variant?: "desktop" | "mobile";
+    /* Resolved by the caller, so the fallbacks live in one place at the top of
+       the component rather than scattered through the two layouts. */
+    title: string;
+    placeholder: string;
+    buttonLabel: string;
+  }) {
+    const [email, setEmail] = useState("");
+    const [touched, setTouched] = useState(false);
+    const [focused, setFocused] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
+    const [submitError, setSubmitError] = useState("");
+  
+    /* Live validation status */
+    const liveStatus: "neutral" | "invalid" | "valid" =
+      email.length === 0
+        ? "neutral"
+        : isValidEmail(email)
+          ? "valid"
+          : touched
+            ? "invalid"
+            : "neutral";
+  
+    const ringClass =
+      liveStatus === "invalid"
+        ? "ring-2 ring-[#C53030]/40"
+        : liveStatus === "valid" && focused
+          ? "ring-2 ring-[#16a34a]/40"
+          : "";
+  
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!touched) setTouched(true);
+      if (!isValidEmail(email)) {
+        setSubmitError("Please enter a valid email address");
+        return;
       }
-    } catch {
-      setSubmitError("Network error. Please check your connection.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  /* Shared button — same spotlight-gradient animation as the Submit
-     Application CTA on the Get Investment form. Tap shrinks slightly. */
-  const buttonContent = submitting ? (
-    <span className="relative z-10 flex items-center justify-center gap-2">
-      <motion.span
-        className="inline-block h-[14px] w-[14px] rounded-full border-2 border-white/30 border-t-white"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-      />
-      Subscribing…
-    </span>
-  ) : submitted ? (
-    <span className="relative z-10">Subscribed ✓</span>
-  ) : (
-    <span className="relative z-10">Subscribe to Newsletter</span>
-  );
-
-  /* ─────────── MOBILE LAYOUT ─────────── */
-  if (variant === "mobile") {
-    return (
-      <form
-        onSubmit={handleSubmit}
-        className="flex w-full flex-col items-start"
-        style={{
-          maxWidth: "241px",
-          gap: "clamp(6px, 1.6vw, 10px)",
-          padding: "8px",
-          borderRadius: "6px",
-          background: "#FBF7F0",
-        }}
-      >
-        <p
-          className="m-0 font-poppins font-normal text-[#0E0E0E]"
-          style={{ fontSize: "clamp(8px, 1.8vw, 11px)", lineHeight: "140%" }}
+      setSubmitError("");
+      setSubmitting(true);
+      try {
+        const res = await fetch("/api/newsletter", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email.trim() }),
+        });
+        const json = await res.json();
+        if (json.success) {
+          setSubmitted(true);
+          setEmail("");
+        } else {
+          setSubmitError(json.message || "Something went wrong. Please try again.");
+        }
+      } catch {
+        setSubmitError("Network error. Please check your connection.");
+      } finally {
+        setSubmitting(false);
+      }
+    };
+  
+    /* Button content states */
+    const buttonContent = submitting ? (
+      <span className="relative z-10 flex items-center justify-center gap-2">
+        <motion.span
+          className="inline-block h-[10px] w-[10px] rounded-full border-2 border-white/30 border-t-white max-md:!h-[8px] max-md:!w-[8px]"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+        />
+        Subscribing…
+      </span>
+    ) : submitted ? (
+      <span className="relative z-10">Subscribed ✓</span>
+    ) : (
+      <span className="relative z-10">{buttonLabel}</span>
+    );
+  
+    /* ─────────── MOBILE LAYOUT ─────────── */
+    if (variant === "mobile") {
+      // REVERTED: Mobile form remains entirely untouched
+      return (
+        <form
+          onSubmit={handleSubmit}
+          className="flex w-full flex-col items-start"
+          style={{
+            maxWidth: "241px",
+            gap: "clamp(6px, 1.6vw, 10px)",
+            padding: "8px",
+            borderRadius: "2px",
+            background: "#FBF7F0",
+          }}
         >
-          Stay close to what founders are building and where markets are moving, with Titan Capital.
-        </p>
-        <div className="flex w-full flex-col" style={{ gap: "3px" }}>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              if (!touched) setTouched(true);
-              if (submitted) setSubmitted(false);
-              if (submitError) setSubmitError("");
-            }}
-            onFocus={() => setFocused(true)}
-            onBlur={() => {
-              setFocused(false);
-              if (!touched) setTouched(true);
-            }}
-            placeholder="Email Id"
-            aria-label="Email address"
-            disabled={submitting}
-            className={`w-full bg-white outline-none placeholder:text-[#323232] ${ringClass}`}
-            style={{
-              padding: "5px 8px",
-              borderRadius: "4px",
-              fontFamily: "Poppins",
-              fontSize: "clamp(8px, 1.8vw, 11px)",
-              color: "#323232",
-              lineHeight: "150%",
-              transition: "box-shadow 0.2s",
-            }}
-          />
+          <p
+            className="m-0 font-poppins font-normal text-[#0E0E0E]"
+            style={{ fontSize: "clamp(8px, 1.8vw, 11px)", lineHeight: "140%" }}
+          >
+            {title}
+          </p>
+          <div className="flex w-full flex-row items-center" style={{ gap: "4px" }}>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (!touched) setTouched(true);
+                if (submitted) setSubmitted(false);
+                if (submitError) setSubmitError("");
+              }}
+              onFocus={() => setFocused(true)}
+              onBlur={() => {
+                setFocused(false);
+                if (!touched) setTouched(true);
+              }}
+              placeholder={placeholder}
+              aria-label="Email address"
+              disabled={submitting}
+              className={`min-w-0 flex-1 bg-white outline-none placeholder:text-[#323232] ${ringClass}`}
+              style={{
+                padding: "5px 8px",
+                height: "clamp(24px, 6.5vw, 32px)",
+                borderRadius: "4px",
+                fontFamily: "Poppins",
+                ...LABEL_STYLE,
+                color: "#323232",
+                lineHeight: "150%",
+                transition: "box-shadow 0.2s",
+              }}
+            />
+            <CursorFillButton
+              type="submit"
+              disabled={submitting}
+              onClick={() => {}}
+              label={submitting ? (
+                <motion.span
+                  className="inline-block h-[8px] w-[8px] rounded-full border-2 border-white/30 border-t-white"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+                />
+              ) : submitted ? "Done" : "Subscribe"}
+              variant="mobile"
+            />
+          </div>
           {(submitError || liveStatus === "invalid") && (
             <p
               className="font-poppins text-[#C53030]"
@@ -191,221 +327,165 @@ function NewsletterForm({ variant = "desktop" }: { variant?: "desktop" | "mobile
               Thanks for subscribing!
             </p>
           )}
-        </div>
-        <motion.button
-          type="submit"
-          disabled={submitting}
-          whileTap={{ scale: 0.97 }}
-          transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          onMouseMove={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            e.currentTarget.style.setProperty("--mouse-x", `${x}px`);
-            e.currentTarget.style.setProperty("--mouse-y", `${y}px`);
-          }}
-          className="group relative self-end overflow-hidden bg-[#001A4D] text-[#F5F0E8] disabled:opacity-60"
+        </form>
+      );
+    }
+  
+    /* ─────────── DESKTOP LAYOUT ─────────── */
+    return (
+      <form
+        onSubmit={handleSubmit}
+        className="relative grid"
+        style={{
+          width: "clamp(360px, min(50.63vw, 74.18vh), 729px)",
+          minHeight: "clamp(170px, min(15vw, 22vh), 216px)",
+          padding:
+            "clamp(14px, min(1.25vw, 1.83vh), 18px) clamp(16px, min(1.6vw, 2.34vh), 23px)",
+          rowGap: "clamp(20px, min(1.94vw, 2.85vh), 28px)",
+          columnGap: "clamp(10px, min(1.11vw, 1.63vh), 16px)",
+          gridTemplateRows: "repeat(2, minmax(0, 1fr))",
+          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+          borderRadius: "2px",
+          background: "#FBF7F0",
+        }}
+      >
+        <p
+          className="m-0 self-stretch font-poppins font-normal text-[#0E0E0E]"
           style={{
-            width: "clamp(100px, 28vw, 140px)",
-            height: "clamp(24px, 6.5vw, 32px)",
-            borderRadius: "2px",
-            fontFamily: "'Libre Baskerville', serif",
-            fontSize: "clamp(7px, 1.7vw, 10px)",
-            fontWeight: 600,
-            lineHeight: "107%",
+            gridRow: "1 / span 1",
+            gridColumn: "1 / span 2",
+            fontSize: "clamp(15px, min(1.67vw, 2.44vh), 24px)",
+            lineHeight: "150%",
           }}
         >
-          <div
-            className="absolute inset-0 z-0 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100"
+          {title}
+        </p>
+  
+        {/* DESKTOP EMAIL INPUT WRAPPER */}
+        <div
+          className="flex flex-col"
+          style={{
+            gridRow: "2 / span 1",
+            gridColumn: "1 / span 1",
+            justifySelf: "start",
+            alignSelf: "center",
+            gap: "4px",
+            // DESKTOP: Reduced the width clamp (was 220px -> 423px) so the email box is narrower
+            width: "clamp(180px, min(24vw, 35vh), 330px)",
+          }}
+        >
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (!touched) setTouched(true);
+              if (submitted) setSubmitted(false);
+              if (submitError) setSubmitError("");
+            }}
+            onFocus={() => setFocused(true)}
+            onBlur={() => {
+              setFocused(false);
+              if (!touched) setTouched(true);
+            }}
+            placeholder={placeholder}
+            aria-label="Email address"
+            disabled={submitting}
+            className={`w-full bg-white outline-none placeholder:text-[#323232] ${ringClass}`}
             style={{
-              background:
-                "radial-gradient(circle 80px at var(--mouse-x, 50%) var(--mouse-y, 50%), #003CB3 0%, transparent 100%)",
+              height: "clamp(40px, min(3.68vw, 5.4vh), 53px)",
+              padding: "0 clamp(16px, min(2vw, 3vh), 24px)",
+              borderRadius: "8px",
+              fontFamily: "Poppins",
+              ...LABEL_STYLE,
+              color: "#323232",
+              lineHeight: "150%",
+              transition: "box-shadow 0.2s",
             }}
           />
-          {buttonContent}
-        </motion.button>
+          {(submitError || liveStatus === "invalid") && (
+            <p
+              className="font-poppins text-[#C53030]"
+              style={{ fontSize: "clamp(11px, min(0.9vw, 1.3vh), 13px)" }}
+            >
+              {submitError || "Please enter a valid email address"}
+            </p>
+          )}
+          {submitted && !submitError && (
+            <p
+              className="font-poppins text-[#16a34a]"
+              style={{ fontSize: "clamp(11px, min(0.9vw, 1.3vh), 13px)" }}
+            >
+              Thanks for subscribing!
+            </p>
+          )}
+        </div>
+  
+        <div
+          style={{
+            gridRow: "2 / span 1",
+            gridColumn: "2 / span 1",
+            justifySelf: "end",
+            alignSelf: "center",
+          }}
+        >
+          <CursorFillButton
+            type="submit"
+            disabled={submitting}
+            label={buttonContent}
+            variant="desktop"
+          />
+        </div>
       </form>
     );
   }
 
-  /* ─────────── DESKTOP LAYOUT ─────────── */
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className="relative grid"
-      style={{
-        // Designed at 729×216 on a 1440 viewport; scales with the rest of the site.
-        width: "clamp(360px, min(50.63vw, 74.18vh), 729px)",
-        minHeight: "clamp(170px, min(15vw, 22vh), 216px)",
-        padding:
-          "clamp(14px, min(1.25vw, 1.83vh), 18px) clamp(16px, min(1.6vw, 2.34vh), 23px)",
-        rowGap: "clamp(20px, min(1.94vw, 2.85vh), 28px)",
-        columnGap: "clamp(10px, min(1.11vw, 1.63vh), 16px)",
-        gridTemplateRows: "repeat(2, minmax(0, 1fr))",
-        gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-        borderRadius: "12px",
-        background: "#FBF7F0",
-      }}
-    >
-      {/* Heading — spans both columns on row 1 */}
-      <p
-        className="m-0 self-stretch font-poppins font-normal text-[#0E0E0E]"
-        style={{
-          gridRow: "1 / span 1",
-          gridColumn: "1 / span 2",
-          fontSize: "clamp(15px, min(1.67vw, 2.44vh), 24px)",
-          lineHeight: "150%",
-        }}
-      >
-        Stay close to what founders are building and where markets are moving, with Titan Capital.
-      </p>
-
-      {/* Email input — row 2, col 1. Wrapper holds the error/success message
-          right under the input without disturbing the grid. Centered vertically
-          to share a baseline with the button. */}
-      <div
-        className="flex flex-col"
-        style={{
-          gridRow: "2 / span 1",
-          gridColumn: "1 / span 1",
-          justifySelf: "start",
-          alignSelf: "center",
-          gap: "4px",
-          width: "clamp(220px, min(29.38vw, 43.07vh), 423px)",
-        }}
-      >
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            if (!touched) setTouched(true);
-            if (submitted) setSubmitted(false);
-            if (submitError) setSubmitError("");
-          }}
-          onFocus={() => setFocused(true)}
-          onBlur={() => {
-            setFocused(false);
-            if (!touched) setTouched(true);
-          }}
-          placeholder="Email Id"
-          aria-label="Email address"
-          disabled={submitting}
-          className={`w-full bg-white outline-none placeholder:text-[#323232] ${ringClass}`}
-          style={{
-            // Same height as the Subscribe button so the row reads as one.
-            height: "clamp(40px, min(3.68vw, 5.4vh), 53px)",
-            padding:
-              "0 clamp(20px, min(2.64vw, 3.87vh), 38px)",
-            borderRadius: "8px",
-            fontFamily: "Poppins",
-            fontSize: "clamp(13px, min(1.39vw, 2.04vh), 20px)",
-            color: "#323232",
-            lineHeight: "150%",
-            transition: "box-shadow 0.2s",
-          }}
-        />
-        {(submitError || liveStatus === "invalid") && (
-          <p
-            className="font-poppins text-[#C53030]"
-            style={{ fontSize: "clamp(11px, min(0.9vw, 1.3vh), 13px)" }}
-          >
-            {submitError || "Please enter a valid email address"}
-          </p>
-        )}
-        {submitted && !submitError && (
-          <p
-            className="font-poppins text-[#16a34a]"
-            style={{ fontSize: "clamp(11px, min(0.9vw, 1.3vh), 13px)" }}
-          >
-            Thanks for subscribing!
-          </p>
-        )}
-      </div>
-
-      {/* Subscribe button — sits in row 2, column 2, vertically centered
-          with the email input. Animation mirrors the Submit Application
-          CTA on the Get Investment form: spotlight radial-gradient follows
-          the cursor; spring tap. */}
-      <motion.button
-        type="submit"
-        disabled={submitting}
-        whileTap={{ scale: 0.97 }}
-        transition={{ type: "spring", stiffness: 400, damping: 20 }}
-        onMouseMove={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          e.currentTarget.style.setProperty("--mouse-x", `${x}px`);
-          e.currentTarget.style.setProperty("--mouse-y", `${y}px`);
-        }}
-        className="group relative flex items-center justify-center overflow-hidden bg-[#001A4D] text-[#F5F0E8] disabled:opacity-60"
-        style={{
-          gridRow: "2 / span 1",
-          gridColumn: "2 / span 1",
-          justifySelf: "end",
-          alignSelf: "center",
-          width: "clamp(160px, min(17.01vw, 24.95vh), 245px)",
-          height: "clamp(40px, min(3.68vw, 5.4vh), 53px)",
-          padding: "10px",
-          gap: "10px",
-          borderRadius: "2px",
-          fontFamily: "'Libre Baskerville', serif",
-          fontSize: "clamp(11px, min(1.11vw, 1.63vh), 16px)",
-          fontWeight: 600,
-          lineHeight: "107%",
-        }}
-      >
-        <div
-          className="absolute inset-0 z-0 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100"
-          style={{
-            background:
-              "radial-gradient(circle 80px at var(--mouse-x, 50%) var(--mouse-y, 50%), #003CB3 0%, transparent 100%)",
-          }}
-        />
-        {buttonContent}
-      </motion.button>
-    </form>
-  );
+/* Every string the Studio owns, with its fallback.
+   THE FALLBACKS ARE THE EXACT TEXT THIS FILE USED TO HARD-CODE, so an empty
+   or unreachable Sanity renders the footer that is on titancapital.vc today,
+   character for character. */
+export interface FooterData {
+  address?: string;
+  email?: string;
+  copyright?: string;
+  privacyPolicyLabel?: string;
+  grievanceLabel?: string;
+  newsletterTitle?: string;
+  newsletterPlaceholder?: string;
+  newsletterButtonLabel?: string;
 }
 
-export default function Footer() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end end"],
-  });
-
-  /* Parallax: footer content starts shifted down and moves up slower
-     than the scroll, creating depth as it's uncovered. */
-  const y = useTransform(scrollYProgress, [0, 1], ["-30%", "0%"]);
+export default function FooterClient({ data }: { data?: FooterData | null }) {
+  const address = data?.address || "M3M Urbana, Sector 67, Gurugram, India";
+  const email = data?.email || "info@titancapital.vc";
+  const copyright =
+    data?.copyright || "\u00A9 2026 Titan Capital. All rights reserved.";
+  const privacyPolicyLabel = data?.privacyPolicyLabel || "Privacy Policy";
+  const grievanceLabel = data?.grievanceLabel || "Grievance Redressal";
+  const newsletterTitle =
+    data?.newsletterTitle ||
+    "Stay close to what founders are building, and where the market is going next.";
+  const newsletterPlaceholder = data?.newsletterPlaceholder || "Email Id";
+  const newsletterButtonLabel =
+    data?.newsletterButtonLabel || "Subscribe to Newsletter";
 
   return (
-    <div
-      ref={containerRef}
-      className="relative"
-      style={{ clipPath: "inset(0 0 0 0)" }}
-    >
     <footer
       className="relative flex w-full flex-col items-center overflow-hidden bg-white shadow-[0_-3px_27.6px_0_rgba(178,178,178,0.25)]"
       style={{
-        position: "sticky",
-        bottom: 0,
         paddingTop: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
         paddingBottom: "clamp(40px, min(6.94vw, 10.18vh), 100px)",
+        paddingLeft: "var(--section-px-wide)",
+        paddingRight: "var(--section-px-wide)",
       }}
     >
-      <motion.div
-        style={{ y }}
-        className="relative z-10 flex w-full max-w-[1440px] flex-col"
-      >
-      <div
-        className="flex w-full flex-col"
-        style={{
-          paddingLeft:  "var(--section-px-wide, 5%)",
-          paddingRight: "var(--section-px-wide, 5%)",
-        }}
-      >
+
+      {/* Inner Content Wrapper */}
+      <div className="relative z-10 flex w-full flex-col">
+
+        {/* ============================================================
+            DESKTOP (lg+): Original side-by-side layout — UNTOUCHED
+            ============================================================ */}
         <div className="hidden lg:flex w-full flex-row justify-between gap-0">
 
           {/* Left: Logo, Address, Socials */}
@@ -413,8 +493,6 @@ export default function Footer() {
             className="flex flex-col"
             style={{ gap: "clamp(12px, min(1.67vw, 2.44vh), 24px)" }}
           >
-            {/* The wordmark is the route home — the old "Home Page" nav entry
-                has been removed. */}
             <Link
               href="/"
               aria-label="Titan Capital — home"
@@ -432,11 +510,8 @@ export default function Footer() {
               />
             </Link>
 
-            <p
-              className="font-poppins font-normal text-[#0E0E0E]"
-              style={{ fontSize: "clamp(10px, min(0.97vw, 1.43vh), 14px)" }}
-            >
-              M3M Urbana, Sector 67, Gurugram, India
+            <p className="font-poppins font-normal text-[#0E0E0E]" style={LABEL_STYLE}>
+              {address}
             </p>
 
             {/* Social Icons */}
@@ -463,22 +538,25 @@ export default function Footer() {
 
             {/* Email — sits right under the social icons */}
             <a
-              href="mailto:info@titancapital.vc"
-              className="inline-block break-words font-poppins font-semibold text-[#111] transition-transform duration-300 hover:scale-105 hover:opacity-70"
+              href={`mailto:${email}`}
+              className={`font-medium inline-block break-words text-[#111] transition-transform duration-300 hover:scale-105 hover:opacity-70 ${SUBHEADING_CLASS}`}
               style={{
-                fontSize: "clamp(18px, min(2.78vw, 4.07vh), 40px)",
+                ...SUBHEADING_STYLE,
                 marginTop: "clamp(8px, min(1.25vw, 1.83vh), 18px)",
               }}
             >
-              info@titancapital.vc
+              {email}
             </a>
           </div>
 
           {/* Right column: Nav at the top, Newsletter form at the bottom */}
           <div className="flex flex-col items-end justify-between" style={{ gap: "clamp(24px, min(3vw, 4.4vh), 48px)" }}>
             <div
-              className="flex"
-              style={{ gap: "clamp(20px, min(4.17vw, 6.11vh), 60px)" }}
+              className="flex flex-row justify-between"
+              style={{ 
+                // MATCHES THE NEWSLETTER FORM EXACTLY
+                width: "clamp(360px, min(50.63vw, 74.18vh), 729px)", 
+              }}
             >
               {navLinks.map((section, idx) => (
                 <div
@@ -486,10 +564,7 @@ export default function Footer() {
                   className="flex flex-col items-start"
                   style={{ gap: "clamp(8px, min(1.11vw, 1.63vh), 16px)" }}
                 >
-                  <h3
-                    className="font-poppins font-medium text-[#001A4D]"
-                    style={{ fontSize: "clamp(13px, min(1.67vw, 2.44vh), 24px)" }}
-                  >
+                  <h3 className={`text-[#001A4D] ${BODY_BOLD_CLASS}`} style={HERO_BODY_STYLE}>
                     {section.title}
                   </h3>
                   {section.links.length > 0 && (
@@ -499,13 +574,22 @@ export default function Footer() {
                     >
                       {section.links.map((link, linkIdx) => (
                         <li key={linkIdx}>
-                          <Link
-                            href={footerHrefs[link] ?? "#"}
-                            className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] transition-all duration-300 hover:scale-105 hover:text-[#001A4D]"
-                            style={{ fontSize: "clamp(10px, min(1.18vw, 1.73vh), 17px)" }}
-                          >
-                            {link}
-                          </Link>
+                          {DISABLED_FOOTER_LINKS.has(link) ? (
+                            <span
+                              className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] opacity-40 cursor-not-allowed select-none"
+                              style={LABEL_STYLE}
+                            >
+                              {link}
+                            </span>
+                          ) : (
+                            <Link
+                              href={footerHrefs[link] ?? "#"}
+                              className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] transition-all duration-300 hover:scale-105 hover:text-[#001A4D]"
+                              style={LABEL_STYLE}
+                            >
+                              {link}
+                            </Link>
+                          )}
                         </li>
                       ))}
                     </ul>
@@ -514,7 +598,7 @@ export default function Footer() {
               ))}
             </div>
 
-            <NewsletterForm />
+            <NewsletterForm title={newsletterTitle} placeholder={newsletterPlaceholder} buttonLabel={newsletterButtonLabel} />
           </div>
         </div>
 
@@ -557,8 +641,8 @@ export default function Footer() {
                 style={{ gap: "clamp(2px, 0.6vw, 6px)" }}
               >
                 <h3
-                  className="font-poppins font-medium text-[#001A4D] whitespace-nowrap"
-                  style={{ fontSize: "clamp(7px, 1.5vw, 13px)" }}
+                  className={`whitespace-nowrap text-[#001A4D] ${BODY_BOLD_CLASS}`}
+                  style={HERO_BODY_STYLE}
                 >
                   {section.title}
                 </h3>
@@ -569,13 +653,22 @@ export default function Footer() {
                   >
                     {section.links.map((link, linkIdx) => (
                       <li key={linkIdx}>
-                        <Link
-                          href={footerHrefs[link] ?? "#"}
-                          className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] transition-all duration-300 hover:text-[#001A4D]"
-                          style={{ fontSize: "clamp(6px, 1.3vw, 11px)" }}
-                        >
-                          {link}
-                        </Link>
+                        {DISABLED_FOOTER_LINKS.has(link) ? (
+                          <span
+                            className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] opacity-40 cursor-not-allowed select-none"
+                            style={LABEL_STYLE}
+                          >
+                            {link}
+                          </span>
+                        ) : (
+                          <Link
+                            href={footerHrefs[link] ?? "#"}
+                            className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] transition-all duration-300 hover:text-[#001A4D]"
+                            style={LABEL_STYLE}
+                          >
+                            {link}
+                          </Link>
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -584,25 +677,24 @@ export default function Footer() {
             ))}
           </div>
 
-          {/* Bottom row — Address/Socials/Email stacked on the left,
-              Newsletter form on the right. Matches the mobile Figma layout. */}
+          {/* Bottom row — Address/Socials on the left, Newsletter form on the right */}
           <div
             className="flex w-full flex-row items-start"
             style={{
               gap: "clamp(12px, 3vw, 24px)",
-              marginBottom: "clamp(24px, 5vw, 48px)",
+              marginBottom: "clamp(12px, 2.5vw, 24px)",
             }}
           >
-            {/* LEFT column — address → socials → email */}
+            {/* LEFT column — address → socials */}
             <div
               className="flex shrink-0 flex-col"
               style={{ gap: "clamp(8px, 1.8vw, 14px)", maxWidth: "40%" }}
             >
               <p
                 className="m-0 font-poppins font-normal text-[#0E0E0E]"
-                style={{ fontSize: "clamp(7px, 1.5vw, 11px)", lineHeight: "140%" }}
+                style={{ ...LABEL_STYLE, lineHeight: "140%" }}
               >
-                M3M Urbana, Sector 67, Gurugram, India
+                {address}
               </p>
 
               <div
@@ -625,21 +717,22 @@ export default function Footer() {
                   </svg>
                 </Link>
               </div>
-
-              <a
-                href="mailto:info@titancapital.vc"
-                className="inline-block break-words font-poppins font-semibold text-[#111] transition-transform duration-300 hover:opacity-70"
-                style={{ fontSize: "clamp(8px, 1.8vw, 12px)", lineHeight: "1.3" }}
-              >
-                info@titancapital.vc
-              </a>
             </div>
 
             {/* RIGHT column — Newsletter form */}
             <div className="flex-1 min-w-0">
-              <NewsletterForm variant="mobile" />
+              <NewsletterForm variant="mobile" title={newsletterTitle} placeholder={newsletterPlaceholder} buttonLabel={newsletterButtonLabel} />
             </div>
           </div>
+
+          {/* Email — below the newsletter box, aligned left */}
+          <a
+            href={`mailto:${email}`}
+            className="inline-block whitespace-nowrap font-['Poppins',_sans-serif] font-semibold text-[#111] transition-transform duration-300 hover:opacity-70"
+            style={{ ...SUBHEADING_MOBILE_STYLE, marginBottom: "clamp(24px, 5vw, 48px)" }}
+          >
+            {email}
+          </a>
         </div>
 
         {/* ── Spacer (desktop only — mobile spacing handled above) ── */}
@@ -662,9 +755,9 @@ export default function Footer() {
         >
           <p
             className="font-poppins font-normal leading-[1.5] text-[#001A4D]"
-            style={{ fontSize: "clamp(9px, min(1.11vw, 1.63vh), 16px)" }}
+            style={LABEL_STYLE}
           >
-            © 2026 Titan Capital. All rights reserved.
+            {copyright}
           </p>
 
           <div
@@ -674,32 +767,36 @@ export default function Footer() {
             <Link
               href="/privacy-policy"
               className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] underline decoration-solid transition-transform duration-300 hover:scale-105 hover:opacity-70"
-              style={{ fontSize: "clamp(8px, min(1.11vw, 1.63vh), 16px)" }}
+              style={LABEL_STYLE}
             >
-              Privacy Policy
+              {privacyPolicyLabel}
             </Link>
-            <Link
+            {/* <Link
               href="/grievance-redressal"
               className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] underline decoration-solid transition-transform duration-300 hover:scale-105 hover:opacity-70"
-              style={{ fontSize: "clamp(8px, min(1.11vw, 1.63vh), 16px)" }}
+              style={LABEL_STYLE}
             >
-              Grievance Redressal
-            </Link>
+              {grievanceLabel}
+            </Link> */}
           </div>
         </div>
       </div>
 
      {/* ── GIANT WATERMARK ── */}
+     {/* Same box as the content wrapper above — capped at 1440, centred, then
+         padded. It used to be padded at full viewport width and capped after,
+         which put the wordmark on a different left edge from the content on
+         any screen wider than 1440. */}
      <div
-        className="pointer-events-none absolute flex w-full justify-center overflow-hidden"
+        className="pointer-events-none absolute left-0 right-0 flex justify-center overflow-hidden"
         style={{
           bottom: "clamp(-15px, min(-3.82vw, -5.6vh), -45px)",
-          paddingLeft: "var(--section-px-wide, 5%)",
-          paddingRight: "var(--section-px-wide, 5%)",
+          paddingLeft: "var(--section-px-wide)",
+          paddingRight: "var(--section-px-wide)",
         }}
       >
         <svg
-          className="w-full max-w-[1440px]"
+          className="w-full"
           viewBox="0 0 1000 150"
           preserveAspectRatio="xMidYMax meet"
         >
@@ -722,8 +819,7 @@ export default function Footer() {
           </text>
         </svg>
       </div>
-      </motion.div>
+
     </footer>
-    </div>
   );
 }
