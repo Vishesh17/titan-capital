@@ -21,16 +21,33 @@ export const pageSeo = defineType({
         "Which page on the website this SEO applies to. Do not change after launch — the code looks pages up by this key.",
       type: "string",
       options: {
+        /* THESE VALUES ARE THE KEYS THE PAGES ACTUALLY ASK FOR — each one is
+           the exact string passed to buildMetadata() in that page's
+           page.tsx, so they are matched character for character, case
+           included. Four pages were missing from this list entirely (Blogs,
+           Indicorns, Titan Ecosystem, Founders' Stories) and so could never
+           be given SEO at all, and "ourStory" did not match the "ourstory"
+           the page asks for. Both faults showed the same way: the page fell
+           back to the sitewide default title.
+
+           The casing is inconsistent — "winnersFund" beside "ourstory" —
+           and it is left that way on purpose. These are lookup keys, not
+           labels, and the documents already published in the Studio carry
+           them; tidying the spelling would orphan those documents. */
         list: [
           { title: "Home", value: "home" },
           { title: "Portfolio", value: "portfolio" },
-          { title: "Winners Fund", value: "winnersFund" },
-          { title: "Titan Seed Fund", value: "titanSeedFund" },
-          { title: "Get Investment", value: "getInvestment" },
-          { title: "Our Story", value: "ourStory" },
-          { title: "Our Team", value: "ourteam" },
+          { title: "Our Story", value: "ourstory" },
+          { title: "Meet The Team", value: "ourteam" },
+          { title: "Founders' Stories", value: "foundersstory" },
+          { title: "Blogs & News", value: "blogs" },
+          { title: "Indicorns", value: "indicorns" },
+          { title: "Titan Ecosystem", value: "titanEcosystem" },
+          { title: "Get Investment", value: "getinvestment" },
           { title: "Privacy Policy", value: "privacy" },
           { title: "Grievance Redressal", value: "grievance" },
+          { title: "Winners Fund (page is off)", value: "winnersFund" },
+          { title: "Titan Seed Fund (page is off)", value: "titanSeedFund" },
         ],
         layout: "dropdown",
       },
@@ -50,6 +67,15 @@ export const pageSeo = defineType({
         "The snippet Google shows under your link. ~150 characters works best. Leave blank to use the sitewide default.",
       type: "text",
       rows: 3,
+    }),
+    defineField({
+      name: "keywords",
+      title: "Keywords",
+      description:
+        "Search terms for THIS page, e.g. \"seed funding India\", \"pre-seed investors\". Leave empty and the page uses the sitewide keyword list instead. Type a term and press Enter.",
+      type: "array",
+      of: [{ type: "string" }],
+      options: { layout: "tags" },
     }),
     defineField({
       name: "shareImage",

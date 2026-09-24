@@ -115,6 +115,21 @@ export const founderStoryEntry = defineType({
       initialValue: false,
       group: "card",
     }),
+    /* Appears the moment "Featured story" is ticked, and only then — the band
+       is a much larger object than a grid card, so the line that works at card
+       size is usually not the line that works across half a screen. Left blank
+       it falls back to the Card quote, which is what the band used before this
+       field existed, so nothing changes for a story that does not set it. */
+    defineField({
+      name: "featuredQuote",
+      title: "Featured band quote",
+      description:
+        "The pull quote for the big band at the top of /foundersstory. Leave blank to reuse the Card quote below.",
+      type: "text",
+      rows: 3,
+      group: "card",
+      hidden: ({ parent }) => !parent?.featured,
+    }),
     defineField({
       name: "cardImage",
       title: "Card photo",

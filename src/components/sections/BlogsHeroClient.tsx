@@ -370,6 +370,20 @@ function RevealLine({
           <span style={{width: ch === " " ? "0.3em" : "auto"}}>{ch === " " ? " " : ch}</span>
         </motion.span>
       ))}
+      {/* A WORD SPACE FOR CRAWLERS, and nothing else.
+          The characters above each sit in their own span, which concatenates
+          fine WITHIN one RevealLine — but two of them stacked as separate
+          lines of a heading have nothing between them at all, so a crawler
+          read the Founders' Stories headline as "A Central HubFor Founders"
+          and Google published exactly that as a sitelink. Our Story, split
+          one RevealLine per word, came out "Builtbypeoplewhereyou".
+
+          A space, not a copy of `children`: the visible spans already supply
+          the words, so repeating them here gave "BackingBacking Founders".
+          `sr-only` is absolutely positioned, so it is not a flex item and
+          costs no layout, and the wrapper's aria-label still wins for
+          assistive tech. */}
+      <span className="sr-only"> </span>
     </span>
   );
 }

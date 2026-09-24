@@ -18,7 +18,10 @@ import { motion, useScroll, useTransform } from "framer-motion";
 const footerHrefs: Record<string, string> = {
   "Our Story": "/ourstory",
   "Our Team": "/ourteam",
-  "Fund Details": "/winnersfund",
+  /* "Fund Details": "/winnersfund" — REMOVED. The page is switched off and
+     returns 404, so this was the one remaining way to walk into it from the
+     site. Restore this line and the nav entry below together if the fund
+     pages ever come back. */
   "Our Portfolio": "/portfolio",
   "Founders' Stories": "/foundersstory",
   "Get Investment": "/getinvestment",
@@ -27,9 +30,11 @@ const footerHrefs: Record<string, string> = {
   "Blogs & News": "/blogs",
 };
 
-/* Fund Details sits last under About for SEBI compliance. */
+/* "Fund Details" used to sit last under About, for SEBI compliance — it is
+   out because /winnersfund is switched off and the link led to a 404. If that
+   listing is a compliance requirement it needs a live page to point at. */
 const navLinks = [
-  { title: "About", links: ["Our Story", "Our Team", "Fund Details"] },
+  { title: "About", links: ["Our Story", "Our Team"] },
   { title: "Portfolio", links: ["Our Portfolio", "Founders' Stories", "Get Investment"] },
   { title: "Perspective", links: ["Titan Ecosystem", "Indicorns", "Blogs & News"] },
 ];

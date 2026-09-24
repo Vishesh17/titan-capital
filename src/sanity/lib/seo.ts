@@ -15,6 +15,8 @@ type PageSeo = {
   pageKey: string;
   metaTitle?: string;
   metaDescription?: string;
+  /** Page-specific search terms. Falls back to the sitewide list when empty. */
+  keywords?: string[];
   shareImage?: string;
 };
 
@@ -68,13 +70,18 @@ export async function buildMetadata(pageKey?: string): Promise<Metadata> {
   const title = page?.metaTitle ?? site?.defaultTitle ?? siteName;
   const description = page?.metaDescription ?? site?.defaultDescription ?? "";
   const shareImage = page?.shareImage ?? site?.defaultShareImage;
+  /* A page's own keywords win outright; the sitewide list fills in when the
+     page has none. `.length` and not just `?? ` — an editor who opens the
+     tag field and adds nothing leaves an empty array behind, which is not the
+     same as "no opinion" to `??` but is exactly that to a reader. */
+  const keywords = page?.keywords?.length ? page.keywords : site?.keywords;
 
   return {
     title: pageKey
       ? title
       : { default: title, template: `%s - ${siteName}` },
     description,
-    keywords: site?.keywords,
+    keywords,
     authors: [{ name: siteName }],
     creator: siteName,
     metadataBase: new URL(siteUrl),

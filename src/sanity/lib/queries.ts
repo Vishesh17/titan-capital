@@ -217,6 +217,7 @@ export const pageSeoByKeyQuery = groq`
     pageKey,
     metaTitle,
     metaDescription,
+    keywords,
     "shareImage": shareImage.asset->url
   }
 `;
@@ -810,6 +811,9 @@ export const blogPostBySlugQuery = groq`
   *[_type == "blogsPage"][0]{
     "post": posts[slug.current == $slug][0]{
       ${BLOG_CARD_FIELDS},
+      metaTitle,
+      metaDescription,
+      keywords,
       blocks[]{
         _type,
         _key,
@@ -823,7 +827,7 @@ export const blogPostBySlugQuery = groq`
           ctaUrl
         },
         _type == "storyFigures" => { stats[]{ num, label }, footnote },
-        _type == "storyExplore" => { heading, browseLabel, browseHref }
+        _type == "storyExplore" => { heading, browseLabel, browseHref, storySlugs }
       }
     }
   }.post
@@ -876,7 +880,7 @@ export const founderStoryPageBySlugQuery = groq`
           ctaUrl
         },
         _type == "storyFigures" => { stats[]{ num, label }, footnote },
-        _type == "storyExplore" => { heading, browseLabel, browseHref }
+        _type == "storyExplore" => { heading, browseLabel, browseHref, storySlugs }
       }
     }
   }.story
@@ -1009,6 +1013,7 @@ export const foundersStoryListingQuery = groq`
       "name": coalesce(founders, company),
       "role": coalesce(founderRole, headline),
       "text": coalesce(cardQuote, headline),
+      "featuredText": coalesce(featuredQuote, cardQuote, headline),
       tags,
       "image": coalesce(cardImage.asset->url, heroImage.asset->url),
       "logo": logo.asset->url,

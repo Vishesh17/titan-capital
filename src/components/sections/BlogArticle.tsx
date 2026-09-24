@@ -33,6 +33,12 @@ export interface BlogPostData {
   slug?: string;
   title?: string;
   excerpt?: string;
+  /* SEO overrides, all optional and none of them rendered here — they are
+     read only by generateMetadata in blogs/[slug]/page.tsx. A post that
+     leaves them blank falls back to its headline and excerpt. */
+  metaTitle?: string;
+  metaDescription?: string;
+  keywords?: string[];
   coverImage?: string;
   tags?: string[];
   author?: string;

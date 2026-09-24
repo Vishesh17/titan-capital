@@ -20,6 +20,7 @@ import {
   foundersStoryListingQuery,
 } from "@/sanity/lib/queries";
 import { buildMetadata } from "@/sanity/lib/seo";
+import { storySlug, type FounderStoryCard } from "@/lib/founderStory";
 
 /**
  * /foundersstory/[slug] — one page per company, entirely Sanity-driven.
@@ -47,13 +48,27 @@ async function getStory(slug: string): Promise<FounderStoryPageData | null> {
   }
 }
 
-/** The cards in the Explore band, reusing the shared founder-story list. */
-async function getExploreStories(exclude?: string): Promise<FounderStory[]> {
-  let slides: FounderStory[] = FALLBACK_SLIDES;
+/**
+ * The cards in the Explore band.
+ *
+ * `picks` are the slugs the editor chose on the band itself (see the "Which
+ * three stories to show" field on the Explore block). They are honoured IN THE
+ * ORDER GIVEN, so the band reads the way it was arranged rather than the way
+ * the listing happens to be sorted.
+ *
+ * With nothing picked it behaves exactly as it always did — the three most
+ * recent stories, minus the one being read — so existing stories keep working
+ * untouched.
+ */
+async function getExploreStories(
+  exclude?: string,
+  picks?: string[]
+): Promise<FounderStoryCard[]> {
+  let slides: FounderStoryCard[] = FALLBACK_SLIDES;
   try {
     /* The SAME entries the listing renders, not the home page's separate
        story list — so "Explore" shows real stories that actually have pages. */
-    const data = await sanityFetch<{ stories?: FounderStory[] } | null>({
+    const data = await sanityFetch<{ stories?: FounderStoryCard[] } | null>({
       query: foundersStoryListingQuery,
       revalidate: 60,
     });
@@ -61,7 +76,17 @@ async function getExploreStories(exclude?: string): Promise<FounderStory[]> {
   } catch (err) {
     console.error("[founderStory] explore fetch failed, using fallback:", err);
   }
-  // Never show the story you are already reading.
+  /* Hand-picked wins. Matched on the entry's own slug, and any pick that no
+     longer resolves is skipped rather than leaving a hole — a story can be
+     renamed or unpublished long after another one points at it. */
+  const chosen = (picks ?? [])
+    .map((p) => p.trim().replace(/^\/+|\/+$/g, ""))
+    .filter(Boolean)
+    .map((p) => slides.find((s) => storySlug(s) === p || s.slug === p))
+    .filter((s): s is FounderStoryCard => Boolean(s));
+  if (chosen.length) return chosen.slice(0, 3);
+
+  // Otherwise: the most recent three, never including the one being read.
   const key = (exclude || "").toLowerCase();
   const rest = key
     ? slides.filter((s) => !`${s.role} ${s.name}`.toLowerCase().includes(key))
@@ -137,7 +162,15 @@ export default async function FoundersStoryDetailPage({
     );
   }
 
-  const exploreStories = await getExploreStories(story.company);
+  /* The band carries its own selection, so read it off the block the editor
+     placed rather than adding a second field somewhere else in the document. */
+  const exploreBlock = (story.blocks ?? []).find(
+    (b: { _type?: string }) => b._type === "storyExplore"
+  ) as { storySlugs?: string[] } | undefined;
+  const exploreStories = await getExploreStories(
+    story.company,
+    exploreBlock?.storySlugs
+  );
 
   return (
     <main className="flex min-h-screen w-full flex-col bg-white">
@@ -146,9 +179,13 @@ export default async function FoundersStoryDetailPage({
           order they put it in. */}
       <StoryBlocks
         blocks={story.blocks}
-        cards={exploreStories
-          .slice(0, 3)
-          .map((s, i) => <FounderQuoteCard key={`${s.name}-${i}`} story={s} />)}
+        cards={exploreStories.slice(0, 3).map((s, i) => (
+          <FounderQuoteCard
+            key={`${s.name}-${i}`}
+            story={s}
+            href={`/foundersstory/${storySlug(s)}`}
+          />
+        ))}
       />
 
       <FoundersStoryCTA

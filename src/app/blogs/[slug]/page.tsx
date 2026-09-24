@@ -70,10 +70,15 @@ export async function generateMetadata({
   const base = await buildMetadata("blogs");
   const post = await getPost(slug);
   if (!post) return base;
+  /* The post's own SEO fields win, then the fields it has always reused —
+     the headline and the card excerpt — then the Blogs page defaults. A
+     post with no keywords of its own inherits the Blogs page's, which is
+     what `base.keywords` already holds. */
   return {
     ...base,
-    title: post.title || base.title,
-    description: post.excerpt || base.description,
+    title: post.metaTitle || post.title || base.title,
+    description: post.metaDescription || post.excerpt || base.description,
+    keywords: post.keywords?.length ? post.keywords : base.keywords,
   };
 }
 

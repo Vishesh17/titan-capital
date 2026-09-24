@@ -15,6 +15,11 @@ export interface FounderStoryCard extends FounderStory {
   storySlug?: string;
   /** Marks the story that fills the band at the top of /foundersstory. */
   featured?: boolean;
+  /** The band's own pull quote — the story's featuredQuote, falling back to
+   *  its card quote. Only the band reads this; the grid keeps using `text`. */
+  featuredText?: string;
+  /** The entry's slug, as the listing query projects it. */
+  slug?: string;
 }
 
 export interface FoundersStoryGridData {

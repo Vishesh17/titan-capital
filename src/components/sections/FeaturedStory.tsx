@@ -50,7 +50,9 @@ export default async function FeaturedStory() {
           tags: lead.tags,
           name: lead.name,
           role: lead.role,
-          quote: lead.text,
+          /* The band's own quote when the story sets one; its card quote
+             otherwise — see `featuredText` in the listing query. */
+          quote: lead.featuredText || lead.text,
           href: `/foundersstory/${storySlug(lead)}`,
         },
       }}

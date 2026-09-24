@@ -7,13 +7,13 @@ import type { CSSProperties } from "react";
  * nothing hard-codes a size, so the scale can't drift again.
  *
  *   LEVEL 1  HERO_HEADING_DARK   blue/navy hero headings      121px / 43px
- *   LEVEL 2  HERO_HEADING_LIGHT  white/cream hero headings    121px / 43px
+ *   LEVEL 2  HERO_HEADING_LIGHT  white/cream hero headings    100px / 35px
  *   LEVEL 3  SECTION_HEADING     every non-hero section        78px / 27px
  *
- * Levels 1 and 2 are the same SIZE on purpose — every banner was stepped
- * down to level 2. They differ in weight (900 vs 700) and now in leading
- * too: level 1 sets at 105%, level 2 keeps 124%. See the notes above
- * HERO_HEADING_DARK_CLASS.
+ * Level 1 was stepped down to level 2's size and then raised twice; level 2
+ * itself was left at its original spec, so the two are separate again in
+ * size, weight (900 vs 700) and leading (105% vs 124%). Level 2 is used only
+ * by Meet The Team and Indicorns.
  *
  * (Rendered sizes are desktop at the 1728x1117 reference / mobile at 390px.)
  *
@@ -105,19 +105,24 @@ export const HERO_HEADING_DARK_STYLE: CSSProperties = {
 };
 
 /* LEVEL 2 — steps down from level 1 on both breakpoints. */
-/* WEIGHT IS 900, NOT 700 — the same font-black every other hero carries.
- * The two levels were originally different weights on purpose, back when they
- * were different sizes and sat on different grounds. They have been the same
- * size for a while now, which left Meet The Team and Indicorns as the only two
- * banners on the site set lighter than the rest — visible as soon as you move
- * between pages. The size and the weight now match everywhere; colour is still
- * each section's own. */
+/* LEVEL 2 IS BACK WHERE IT STARTED, and deliberately out of step with level 1.
+ *
+ * It briefly followed level 1 — font-black, and the same two 10% size rises —
+ * on the reasoning that the two levels had become one size and so ought to
+ * match. Reverted: the only pages that use this token are Meet The Team and
+ * Indicorns, and both read better at the original weight and size. Indicorns
+ * in particular sets its heading beside a fixed-width wordmark, so growing the
+ * type there pushes the row onto two lines.
+ *
+ * So level 1 and level 2 now differ again in weight (900 vs 700), in leading
+ * (105% vs 124%) and in size. Values below are verbatim from before the
+ * change. */
 export const HERO_HEADING_LIGHT_CLASS =
-  "font-['Poppins',_sans-serif] font-black uppercase " +
-  "max-md:!text-[clamp(36.3px,10.89vw,55.66px)] max-md:!leading-[128%]";
+  "font-['Poppins',_sans-serif] font-bold uppercase " +
+  "max-md:!text-[clamp(30px,9vw,46px)] max-md:!leading-[128%]";
 
 export const HERO_HEADING_LIGHT_STYLE: CSSProperties = {
-  fontSize: "clamp(43.56px, min(7.986vw, 10.89vh), 135.52px)",
+  fontSize: "clamp(36px, min(6.6vw, 9vh), 112px)",
   lineHeight: "124%",
 };
 
@@ -142,7 +147,7 @@ export const HERO_HEADING_DARK_MOBILE_STYLE: CSSProperties = {
 };
 
 export const HERO_HEADING_LIGHT_MOBILE_STYLE: CSSProperties = {
-  fontSize: "clamp(36.3px, 10.89vw, 55.66px)",
+  fontSize: "clamp(30px, 9vw, 46px)",
   lineHeight: "128%",
 };
 

@@ -29,6 +29,7 @@ export const blogPost = defineType({
   groups: [
     { name: "card", title: "Card & header" },
     { name: "article", title: "Article" },
+    { name: "seo", title: "SEO" },
   ],
 
   fields: [
@@ -147,6 +148,41 @@ export const blogPost = defineType({
       type: "array",
       group: "article",
       of: STORY_BLOCK_TYPES,
+    }),
+
+    /* ─────────── SEO ───────────
+       All optional. Left blank, a post falls back to the fields it already
+       had — the headline for the title, the excerpt for the description —
+       which is what every post used before this group existed. These are
+       here for the cases where the two jobs pull apart: a headline written
+       to be read on the page is often not the phrasing someone types into
+       Google. */
+    defineField({
+      name: "metaTitle",
+      title: "Browser tab title",
+      description:
+        'Overrides the post headline in the browser tab and in Google results. Leave blank to use the headline. Aim for under 60 characters so Google does not cut it off.',
+      type: "string",
+      group: "seo",
+    }),
+    defineField({
+      name: "metaDescription",
+      title: "Search description",
+      description:
+        "The snippet under the link in Google. Leave blank to use the card excerpt. ~150 characters works best.",
+      type: "text",
+      rows: 3,
+      group: "seo",
+    }),
+    defineField({
+      name: "keywords",
+      title: "Keywords",
+      description:
+        'Search terms for this post, e.g. "D2C fundraising", "seed round India". Type a term and press Enter. Leave empty to use the Blogs page keywords.',
+      type: "array",
+      of: [{ type: "string" }],
+      options: { layout: "tags" },
+      group: "seo",
     }),
   ],
 

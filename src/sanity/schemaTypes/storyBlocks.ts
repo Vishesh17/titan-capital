@@ -346,6 +346,15 @@ export const storyExplore = defineType({
     }),
     defineField({ name: "browseLabel", title: "Browse link label", type: "string" }),
     defineField({ name: "browseHref", title: "Browse link URL", type: "string" }),
+    defineField({
+      name: "storySlugs",
+      title: "Which three stories to show",
+      description:
+        'The URL slug of each story you want in this band, in the order you want them — e.g. "mamaearth". You can see a story\'s slug in its own Slug field. Leave this empty and the band falls back to showing the three most recent stories, which is what it did before.',
+      type: "array",
+      of: [{ type: "string" }],
+      validation: (r) => r.max(3),
+    }),
   ],
   preview: {
     select: { title: "heading" },

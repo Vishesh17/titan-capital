@@ -124,30 +124,16 @@ const MOBILE_QUERY = "(max-width: 767px)";
 const CHAR_STAGGER = 0.025;
 const REVEAL_DURATION = 0.7;
 
-const LEAD_WORD = "The";
-const FINAL_WORD = "Future";
+/* THE HEADLINE. Hard-coded on purpose — see the note at the h1. */
+const HEADLINE_LINES = [
+  "Backing Founders",
+  "Building Enduring",
+  "Companies",
+] as const;
 
-/** When THE starts revealing, on each breakpoint. */
-const LEAD_WORD_DELAY = { desktop: 1.25, mobile: 0.9 } as const;
+/** Seconds between one line starting its cascade and the next. */
+const HEADLINE_STAGGER = 0.45;
 
-/* WHEN "FUTURE" STARTS — and it is derived now, not typed.
-   
-   THE and FUTURE are two RevealLines sharing ONE line of the heading, so their
-   cascades should join into a single wave crossing that line rather than two
-   words taking turns. Desktop used to start FUTURE at a flat 2.2 against THE's
-   1.25 — a 0.95s hole, which was right when a rotating photograph sat between
-   the two words and had its own 2.1s entrance to clear. With that rectangle
-   gone the hole is just a stall, and it is the gap that reads as wrong.
-
-   The figure is what a single RevealLine holding "The Future" would produce:
-   THE's own start, plus the characters the cascade has to cross to arrive at
-   FUTURE — the word itself and the space after it. So it stays correct if the
-   copy changes, if the stagger is retuned, or if THE's delay moves. */
-const AFTER_LEAD_WORD = (LEAD_WORD.length + 1) * CHAR_STAGGER;
-const FINAL_WORD_DELAY = {
-  desktop: LEAD_WORD_DELAY.desktop + AFTER_LEAD_WORD,
-  mobile: LEAD_WORD_DELAY.mobile + AFTER_LEAD_WORD,
-} as const;
 const TAIL_RISE_PX = 48;
 const TAIL_TRANSITION = {
   duration: 1.1,
@@ -669,69 +655,33 @@ export default function HeroClient({
               correctly centred block off centre. */}
           <div className="relative flex flex-col items-center">
             
+            {/* THE HEADLINE IS HARD-CODED, and centred.
+                Three lines, one RevealLine each, the same on both breakpoints
+                — so there is no longer a desktop arrangement and a mobile one
+                to keep in step, and no "The"/"Future" pair whose cascades had
+                to be joined by hand.
+
+                Sanity is deliberately NOT the source here: the home page hero
+                document still holds its own title fields and they are left
+                untouched, so nothing an editor has typed was overwritten and
+                putting this back on the CMS later is a matter of swapping
+                these three strings for the fields again.
+
+                CENTRED, where it used to be `items-start text-left` on desktop
+                with the third line pushed right by `self-end` and a
+                `marginRight`. That stagger existed to make room for the
+                rotating photo rectangle that sat inside the third line; with
+                the rectangle gone it was just three lines hanging off an
+                invisible grid. */}
             <h1
-              className={`pointer-events-none m-0 hidden md:flex flex-col items-start text-left text-white ${HERO_HEADING_DARK_CLASS}`}
+              className={`pointer-events-none m-0 flex flex-col items-center text-center text-white ${HERO_HEADING_DARK_CLASS}`}
               style={{ ...HERO_HEADING_DARK_STYLE, gap: "min(0.2vw, 0.4vh)" }}
             >
-              <RevealLine show={headingReady} delay={0}>Backing</RevealLine>
-              <RevealLine show={headingReady} delay={0.5}>Founders Building</RevealLine>
-              <span
-                className="flex items-start justify-start self-end"
-                /* 0.18em, not the old min(0.8vw, 1.4vh). That value was the
-                   breathing room either side of the heading rectangle; with
-                   the rectangle gone it is all that separates THE from
-                   FUTURE, and at 81px it measured 11px against a real Poppins
-                   space of 14px — visibly tight. An em tracks the font, so the
-                   word space holds at every viewport instead of drifting
-                   against a vw the type no longer follows. */
-                style={{ gap: "0.18em", marginRight: "min(6vw, 9vh)" }}
-              >
-                <RevealLine show={headingReady} delay={LEAD_WORD_DELAY.desktop}>{LEAD_WORD}</RevealLine>
-                {/* THE THIRD-LINE RECTANGLE — REMOVED.
-                    The rotating founder photo that sat between "THE" and
-                    "FUTURE". It was also what made this line 205px tall
-                    against the other two at 118px, so taking it out is most
-                    of why the hero now fits alongside Backed Before.
-                    Uncomment, plus the mobile twin and the headingTick timer
-                    further up, to put it back. */}
-                {/* <span
-                  ref={slotRef}
-                  className="relative inline-block shrink-0 overflow-hidden"
-                  style={{
-                    width: SLOT_W,
-                    height: "1.5em",
-                    borderRadius: "2px",
-                  }}
-                >
-                  <HeadingPhoto founders={allFounders} activeIndex={headingTick} show={headingReady} enterDelay={2.1} />
-                </span> */}
-                <RevealLine show={headingReady} delay={FINAL_WORD_DELAY.desktop}>{FINAL_WORD}</RevealLine>
-              </span>
-            </h1>
-
-            <h1
-              className={`pointer-events-none m-0 flex md:hidden flex-col items-center text-center text-white ${HERO_HEADING_DARK_CLASS}`}
-            >
-              <RevealLine show={headingReady} delay={0}>Backing</RevealLine>
-              <RevealLine show={headingReady} delay={0.3}>Founders</RevealLine>
-              <RevealLine show={headingReady} delay={0.6}>Building</RevealLine>
-              <span className="inline-flex gap-[0.3em]">
-                <RevealLine show={headingReady} delay={LEAD_WORD_DELAY.mobile}>{LEAD_WORD}</RevealLine>
-                <RevealLine show={headingReady} delay={FINAL_WORD_DELAY.mobile}>{FINAL_WORD}</RevealLine>
-              </span>
-
-              {/* The mobile twin of the third-line rectangle — REMOVED with it.
-                  Kept in step with desktop on purpose: leaving the photo on
-                  phones only would make the two headings different objects,
-                  and it is ~134px of the height the hero has to give back for
-                  Backed Before to land on the same screen. */}
-              {/* <span
-                className="relative inline-block shrink-0 overflow-hidden mt-[clamp(12px,2.5dvh,20px)]"
-                style={{ width: "min(50vw, 210px)", height: "min(31.95vw, 134px)", borderRadius: "2px" }}
-                ref={mobileSlotRef}
-              >
-                <HeadingPhoto founders={allFounders} activeIndex={headingTick} show={headingReady} enterDelay={1.5} mobile />
-              </span> */}
+              {HEADLINE_LINES.map((line, i) => (
+                <RevealLine key={line} show={headingReady} delay={i * HEADLINE_STAGGER}>
+                  {line}
+                </RevealLine>
+              ))}
             </h1>
 
            {/* IN THE FLOW ON DESKTOP TOO, not `absolute top-full`.
@@ -924,10 +874,14 @@ function HeadingPhoto({
   );
 }
 
-function heroTailDelayMs(isMobile: boolean): number {
-  const start = isMobile ? FINAL_WORD_DELAY.mobile : FINAL_WORD_DELAY.desktop;
-  const finish =
-    start + (FINAL_WORD.length - 1) * CHAR_STAGGER + REVEAL_DURATION;
+/* When the buttons and subtitle may appear: the moment the headline has
+   finished. Derived from the last line's own start and length, so it follows
+   the copy rather than needing to be retimed whenever the headline changes.
+   The same on both breakpoints now — the headline is too. */
+function heroTailDelayMs(_isMobile: boolean): number {
+  const last = HEADLINE_LINES[HEADLINE_LINES.length - 1];
+  const start = (HEADLINE_LINES.length - 1) * HEADLINE_STAGGER;
+  const finish = start + (last.length - 1) * CHAR_STAGGER + REVEAL_DURATION;
   return Math.round(finish * 1000);
 }
 
@@ -982,6 +936,20 @@ function RevealLine({
           <span>{ch === " " ? "\u00A0" : ch}</span>
         </motion.span>
       ))}
+      {/* A WORD SPACE FOR CRAWLERS, and nothing else.
+          The characters above each sit in their own span, which concatenates
+          fine WITHIN one RevealLine — but two of them stacked as separate
+          lines of a heading have nothing between them at all, so a crawler
+          read the Founders' Stories headline as "A Central HubFor Founders"
+          and Google published exactly that as a sitelink. Our Story, split
+          one RevealLine per word, came out "Builtbypeoplewhereyou".
+
+          A space, not a copy of `children`: the visible spans already supply
+          the words, so repeating them here gave "BackingBacking Founders".
+          `sr-only` is absolutely positioned, so it is not a flex item and
+          costs no layout, and the wrapper's aria-label still wins for
+          assistive tech. */}
+      <span className="sr-only"> </span>
     </span>
   );
 }

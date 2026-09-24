@@ -5,7 +5,11 @@ import GetInvestmentFAQ from "@/components/sections/GetInvestmentFAQ";
 import { buildMetadata } from "@/sanity/lib/seo";
 
 export async function generateMetadata() {
-  return buildMetadata("getInvestment");
+  /* "getinvestment", lowercase — the key the published Studio document
+     actually carries. The code asked for "getInvestment" and the lookup
+     missed silently, so this page had been falling back to the sitewide
+     default title all along. */
+  return buildMetadata("getinvestment");
 }
 
 export default function GetInvestmentPage() {

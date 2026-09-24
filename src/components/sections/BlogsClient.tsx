@@ -719,11 +719,14 @@ export default function BlogsClient({ posts }: { posts?: BlogPostCard[] | null }
             forcing the right pair onto shared row tracks would either stretch
             their images or leave the left one short. `items-start` keeps each
             column measuring itself. */}
+        {/* NOT scroll-gated. This block sits below the fold on most screens,
+            and `initial: opacity 0` + `whileInView` meant the featured notes
+            were simply absent until the reader scrolled far enough to trip the
+            observer — the page looked like it had failed to load. Content the
+            page is about should be on screen when the page is. The dividers
+            and rules below keep their entrance animations; those are
+            decoration, and nothing is missing while they wait. */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="grid w-full grid-cols-1 items-start lg:grid-cols-2"
           style={{ gap: "clamp(20px, 2vw, 34px)" }}
         >
@@ -1013,10 +1016,6 @@ export default function BlogsClient({ posts }: { posts?: BlogPostCard[] | null }
           <motion.div
             className="flex w-full justify-center"
             style={{ marginTop: "min(3.47vw, 5.37vh)" }}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.6 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
             <SeeMoreButton
               label="Load More"

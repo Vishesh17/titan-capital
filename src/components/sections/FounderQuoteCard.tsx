@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { HERO_BODY_STYLE, CAPTION_STYLE } from "@/styles/heroTypography";
 import type { FounderStory } from "./ImpactAtGlanceClient";
@@ -104,10 +105,22 @@ function CardLogo({ story, company }: { story: FounderStory; company: string }) 
   );
 }
 
-export default function FounderQuoteCard({ story }: { story: FounderStory }) {
+/* `motion.div` wrapped in next/link rather than `motion.create(Link)`: the
+   card already carries entrance variants that the parent grid staggers, and
+   swapping the element type would mean re-declaring them on the link. */
+export default function FounderQuoteCard({
+  story,
+  href,
+}: {
+  story: FounderStory;
+  /** Where the card opens. Omitted, the card renders exactly as before —
+   *  static. It used to have NO link at all, which is why clicking one in the
+   *  Explore band did nothing. */
+  href?: string;
+}) {
   const company = deriveCompany(story);
 
-  return (
+  const card = (
     <motion.div
       className="group relative w-full cursor-pointer overflow-hidden"
       style={{ borderRadius: "2px", aspectRatio: "1 / 1" }}
@@ -179,5 +192,12 @@ export default function FounderQuoteCard({ story }: { story: FounderStory }) {
         </p>
       </div>
     </motion.div>
+  );
+
+  if (!href) return card;
+  return (
+    <Link href={href} aria-label={`Read ${company}'s story`} className="block w-full">
+      {card}
+    </Link>
   );
 }

@@ -635,21 +635,27 @@ export default function IndicornsHeroClient({
                     HEIGHT is the height of the BOX, and WORDMARK_ASPECT makes
                     the box the artwork, so nothing letterboxes.
 
-                    Net 1.089x on the original: raised 1.21 to catch up with
-                    the heading's two 10% bumps, then brought back down 10%
-                    because at 1.21 it pushed the heading + wordmark row over
-                    the card's inner width at 1440 and forced it onto two
-                    lines. It fits on one line again up to ~1600px wide.
+                    5% UNDER its original size — every term of the clamp, so
+                    the trim holds at each viewport rather than only where the
+                    clamp happens to be deciding. It had briefly been scaled up
+                    to follow the heading; that was reverted, and this is a
+                    small step below where it started.
 
-                    THE FLOOR STAYS AT 66px. The fluid terms resolve below it
-                    on a phone, so the floor is what governs there, and the
-                    card's 295px inner width caps this box at ~69px tall —
-                    at 79.86 the logo drew 338px wide and the card's
-                    `overflow: hidden` sliced 6px off each end. */}
+                    It shares a line with the heading inside a card capped at
+                    1200px, and the row wraps the moment their combined width
+                    passes the card's inner width — so smaller here only ever
+                    buys more room, never less.
+
+                    Do not raise the FLOOR on its own if this is ever resized.
+                    The fluid terms resolve below it on a phone, so the floor
+                    is what governs there, and the card's 295px inner width
+                    caps this box at about 69px tall — at 79.86 the logo drew
+                    338px wide and the card's `overflow: hidden` silently
+                    sliced 6px off each end of it. */}
                 <div
                   className="relative shrink-0"
                   style={{
-                    height: "clamp(66px, min(13.38vw, 16.07vh), 128.5px)",
+                    height: "clamp(62.7px, min(11.68vw, 14.01vh), 112px)",
                     aspectRatio: WORDMARK_ASPECT,
                     transform: `translateY(calc(-1 * ${WORDMARK_LIFT}))`,
                   }}
