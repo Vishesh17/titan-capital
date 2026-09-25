@@ -647,13 +647,17 @@ export default function HeroClient({
              Mobile already did this, via the pt below. */
           className="absolute inset-0 z-20 flex items-center justify-center px-[var(--section-px-wide)] md:pt-[var(--nav-height,65px)] max-md:!px-[24px] max-md:!items-start max-md:!pt-[clamp(85px,12dvh,120px)]"
         >
-          {/* No upward nudge any more. `md:-translate-y-[8vh]` was here to
-              compensate for the buttons and subtitle hanging out of the
-              layout — the stack looked bottom-heavy because centring only
-              ever saw the headline. Now that all three are in the flow there
-              is nothing to compensate for, and a translate would just push a
-              correctly centred block off centre. */}
-          <div className="relative flex flex-col items-center">
+          {/* PUSHED DOWN, headline and buttons together — it is one flow
+              column, so the nudge belongs on the column and not on each part.
+              Dropping the description made the stack shorter, and a shorter
+              block centred in the same box sits higher on the page than the
+              taller one did; this puts it back below the middle deliberately
+              rather than leaving it to wherever centring lands.
+
+              `dvh` on mobile, not `vh`: phone browser chrome makes `vh`
+              taller than the visible area, and a `vh` nudge here would push
+              the headline further than it looks on a desktop. */}
+          <div className="relative flex translate-y-[6vh] flex-col items-center max-md:!translate-y-[5dvh]">
             
             {/* THE HEADLINE IS HARD-CODED, and centred.
                 Three lines, one RevealLine each, the same on both breakpoints
@@ -673,15 +677,50 @@ export default function HeroClient({
                 rotating photo rectangle that sat inside the third line; with
                 the rectangle gone it was just three lines hanging off an
                 invisible grid. */}
+            {/* ONE RevealLine PER WORD, in a row that wraps.
+                RevealLine sets `whitespace-nowrap` — it has to, or the
+                characters reflow mid-animation — so a whole line handed to it
+                is unbreakable and simply runs off the screen. Measured at
+                375px, where the heading sets at 40.8px in 327px of usable
+                width: "BACKING FOUNDERS" wanted 429px and "BUILDING ENDURING"
+                456px. Both were cut off at the edge.
+
+                Per word, each word stays intact while the LINE breaks between
+                words. It wraps only when it has to: on a desktop the three
+                lines read exactly as before, and on a phone they break to
+                one word a line on their own rather than being told to.
+
+                `w-full` on both the h1 and each row is what makes that work —
+                a flex column with `items-center` sizes its children to their
+                content, which for a nowrap row is its unwrapped width, so
+                there would be nothing to wrap against. */}
             <h1
-              className={`pointer-events-none m-0 flex flex-col items-center text-center text-white ${HERO_HEADING_DARK_CLASS}`}
+              className={`pointer-events-none m-0 flex w-full flex-col items-center text-center text-white ${HERO_HEADING_DARK_CLASS}`}
               style={{ ...HERO_HEADING_DARK_STYLE, gap: "min(0.2vw, 0.4vh)" }}
             >
-              {HEADLINE_LINES.map((line, i) => (
-                <RevealLine key={line} show={headingReady} delay={i * HEADLINE_STAGGER}>
-                  {line}
-                </RevealLine>
-              ))}
+              {HEADLINE_LINES.map((line, i) => {
+                const words = line.split(" ");
+                /* Characters crossed so far on this line, so the cascade runs
+                   continuously through it instead of restarting at each word. */
+                let crossed = 0;
+                return (
+                  <span
+                    key={line}
+                    className="flex w-full flex-wrap items-baseline justify-center"
+                    style={{ columnGap: "0.2em", rowGap: "min(0.2vw, 0.4vh)" }}
+                  >
+                    {words.map((word) => {
+                      const delay = i * HEADLINE_STAGGER + crossed * CHAR_STAGGER;
+                      crossed += word.length + 1;
+                      return (
+                        <RevealLine key={word} show={headingReady} delay={delay}>
+                          {word}
+                        </RevealLine>
+                      );
+                    })}
+                  </span>
+                );
+              })}
             </h1>
 
            {/* IN THE FLOW ON DESKTOP TOO, not `absolute top-full`.
@@ -716,13 +755,10 @@ export default function HeroClient({
                 </Link>
                 <CursorFillButton href="/getinvestment" label="Get Investment" />
               </div>
-              {/* THE SUBTITLE, now on both breakpoints — this was the mobile
-                  one; the desktop copy that used to be pinned to the hero's
-                  floor is commented out above. The widths differ because the
-                  jobs differ: a phone wants nearly the full width, a desktop
-                  wants a measure short enough to read, which is the
-                  min(60vw, 1000px) the old block carried. */}
-              <motion.div
+              {/* THE DESCRIPTION IS OFF. Uncomment to bring it back — it is
+                  still fetched and `subtitleReady` still fires on the same
+                  timer, so nothing else needs touching. */}
+              {/* <motion.div
                 className={`font-normal mt-[min(1.6vw,2.4vh)] max-w-[min(60vw,1000px)] text-center text-white/90 max-md:!mt-[clamp(24px,4dvh,40px)] max-md:!w-[85vw] max-md:!max-w-none ${HERO_BODY_CLASS}`}
                 style={HERO_BODY_STYLE}
                 initial={false}
@@ -730,7 +766,7 @@ export default function HeroClient({
                 transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               >
                 <RichText value={subtitle} />
-              </motion.div>
+              </motion.div> */}
             </motion.div>
             </div>
           </div>

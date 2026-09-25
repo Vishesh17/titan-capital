@@ -329,10 +329,34 @@ export default function FoundersStoryHero({
                original design ever had them. */
             style={HERO_HEADING_DARK_STYLE}
           >
-            <RevealLine show={show} delay={0}>{lineOne}</RevealLine>
-            {lineTwo && (
-              <RevealLine show={show} delay={0.5}>{lineTwo}</RevealLine>
-            )}
+            {/* PER WORD, in rows that wrap — RevealLine is `whitespace-nowrap`,
+                so a whole line handed to it cannot break and runs off a phone
+                instead. Measured at 375px, where this heading sets at 40.8px
+                in 327px of usable width, both lines wanted 348px and were cut
+                at the edge. Per word the LINE breaks between words while each
+                word stays intact, and it only wraps when it has to — desktop
+                is unchanged. Same fix as the home page hero. */}
+            {[lineOne, lineTwo].filter(Boolean).map((line, li) => {
+              const words = String(line).split(" ");
+              let crossed = 0;
+              return (
+                <span
+                  key={li}
+                  className="flex w-full flex-wrap items-baseline justify-center"
+                  style={{ columnGap: "0.2em" }}
+                >
+                  {words.map((word, wi) => {
+                    const delay = li * 0.5 + crossed * 0.035;
+                    crossed += word.length + 1;
+                    return (
+                      <RevealLine key={`${li}-${wi}`} show={show} delay={delay}>
+                        {word}
+                      </RevealLine>
+                    );
+                  })}
+                </span>
+              );
+            })}
           </h1>
         </div>
 
