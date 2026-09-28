@@ -22,37 +22,114 @@ import { motion } from "framer-motion"; // Keep for buttonContent spinner animat
   Desktop (lg+): untouched — logo+address+socials left, nav right.
 */
 
-/* Links that are disabled (not yet live) — mirrors the navbar's DISABLED_URLS,
-   and has to be edited alongside it or the two disagree about what is live.
-   Founders' Stories is disabled again, so it is back here to match. */
-const DISABLED_FOOTER_LINKS = new Set([
-  "Our Story",
-  "Founders' Stories",
-]);
+export interface FooterNavLink {
+  label?: string;
+  url?: string;
+  /** Renders greyed out and unclickable — for a page that is not live yet. */
+  disabled?: boolean;
+}
+export interface FooterNavColumn {
+  title?: string;
+  links?: FooterNavLink[];
+}
 
-/* Map specific footer link labels to custom routes */
-const footerHrefs: Record<string, string> = {
-  "Our Story": "/ourstory",
-  "Meet The Team": "/ourteam",
-  "Our Portfolio": "/portfolio",
-  "Founders' Stories": "/foundersstory",
-  "Get Investment": "/getinvestment",
-  /* /titanecosystem, NOT /beyondthecheque. That was pointing at a different
-     page entirely — Beyond The Cheque has its own hero and content — and it
-     never showed because the link was disabled. Sanity's navbar has always
-     had this one right. */
-  "Titan Ecosystem": "/titanecosystem",
-  "Indicorns": "/indicorns",
-  "Blogs & News": "/blogs",
-};
+/* THE MENU AS IT IS LIVE TODAY, and the fallback when Sanity has none.
+   It used to be three structures that had to line up by hand: the labels in
+   `navLinks`, their destinations in a `footerHrefs` lookup, and the greyed-out
+   ones in a `DISABLED_FOOTER_LINKS` set — all keyed on the label string, so
+   renaming a label in one place silently dropped its link or its state. One
+   object per link cannot come apart that way.
 
-/* Fund Details sits last under About for SEBI compliance. The old "Home"
-   column is gone — the wordmark itself is the route home. */
-const navLinks = [
-  { title: "About", links: ["Our Story", "Meet The Team"] },
-  { title: "Portfolio", links: ["Our Portfolio", "Founders' Stories", "Get Investment"] },
-  { title: "Perspectives", links: ["Titan Ecosystem", "Indicorns", "Blogs & News"] },
+   `Titan Ecosystem` points at /titanecosystem, NOT /beyondthecheque — that is
+   a different page with its own hero, and the mistake went unnoticed for a
+   while because the link was disabled at the time.
+
+   The old "Home" column is gone; the wordmark above is the route home. */
+const FALLBACK_NAV: FooterNavColumn[] = [
+  {
+    title: "About",
+    links: [
+      { label: "Our Story", url: "/ourstory", disabled: true },
+      { label: "Meet The Team", url: "/ourteam" },
+    ],
+  },
+  {
+    title: "Portfolio",
+    links: [
+      { label: "Our Portfolio", url: "/portfolio" },
+      { label: "Founders' Stories", url: "/foundersstory", disabled: true },
+      { label: "Get Investment", url: "/getinvestment" },
+    ],
+  },
+  {
+    title: "Perspectives",
+    links: [
+      { label: "Titan Ecosystem", url: "/titanecosystem" },
+      { label: "Indicorns", url: "/indicorns" },
+      { label: "Blogs & News", url: "/blogs" },
+    ],
+  },
 ];
+
+/* One column, rendered the same way in both layouts so the two can never
+   describe different menus. Only the spacing differs, which is why it takes
+   its gaps as props. */
+function FooterNavColumns({
+  columns,
+  columnGap,
+  linkGap,
+  nowrapHeading = false,
+  hoverScale = true,
+}: {
+  columns: FooterNavColumn[];
+  columnGap: string;
+  linkGap: string;
+  nowrapHeading?: boolean;
+  hoverScale?: boolean;
+}) {
+  return (
+    <>
+      {columns.map((section, idx) => (
+        <div
+          key={section.title ?? idx}
+          className="flex flex-col items-start"
+          style={{ gap: columnGap }}
+        >
+          <h3
+            className={`${nowrapHeading ? "whitespace-nowrap " : ""}text-[#001A4D] ${BODY_BOLD_CLASS}`}
+            style={HERO_BODY_STYLE}
+          >
+            {section.title}
+          </h3>
+          {!!section.links?.length && (
+            <ul className="flex flex-col" style={{ gap: linkGap }}>
+              {section.links.map((link, linkIdx) => (
+                <li key={link.label ?? linkIdx}>
+                  {link.disabled ? (
+                    <span
+                      className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] opacity-40 cursor-not-allowed select-none"
+                      style={LABEL_STYLE}
+                    >
+                      {link.label}
+                    </span>
+                  ) : (
+                    <Link
+                      href={link.url || "#"}
+                      className={`inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] transition-all duration-300 hover:text-[#001A4D]${hoverScale ? " hover:scale-105" : ""}`}
+                      style={LABEL_STYLE}
+                    >
+                      {link.label}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ))}
+    </>
+  );
+}
 
 /* ────────────────────────────────────────────────
    Email validation — same regex as the EmailInput in
@@ -453,6 +530,7 @@ export interface FooterData {
   newsletterTitle?: string;
   newsletterPlaceholder?: string;
   newsletterButtonLabel?: string;
+  navColumns?: FooterNavColumn[];
 }
 
 export default function FooterClient({ data }: { data?: FooterData | null }) {
@@ -468,6 +546,9 @@ export default function FooterClient({ data }: { data?: FooterData | null }) {
   const newsletterPlaceholder = data?.newsletterPlaceholder || "Email Id";
   const newsletterButtonLabel =
     data?.newsletterButtonLabel || "Subscribe to Newsletter";
+  /* `.length`, not `??` — an editor who opens the array and adds nothing
+     leaves an empty one behind, and an empty menu is never what they meant. */
+  const navColumns = data?.navColumns?.length ? data.navColumns : FALLBACK_NAV;
 
   return (
     <footer
@@ -558,44 +639,11 @@ export default function FooterClient({ data }: { data?: FooterData | null }) {
                 width: "clamp(360px, min(50.63vw, 74.18vh), 729px)", 
               }}
             >
-              {navLinks.map((section, idx) => (
-                <div
-                  key={idx}
-                  className="flex flex-col items-start"
-                  style={{ gap: "clamp(8px, min(1.11vw, 1.63vh), 16px)" }}
-                >
-                  <h3 className={`text-[#001A4D] ${BODY_BOLD_CLASS}`} style={HERO_BODY_STYLE}>
-                    {section.title}
-                  </h3>
-                  {section.links.length > 0 && (
-                    <ul
-                      className="flex flex-col"
-                      style={{ gap: "clamp(6px, min(0.83vw, 1.22vh), 12px)" }}
-                    >
-                      {section.links.map((link, linkIdx) => (
-                        <li key={linkIdx}>
-                          {DISABLED_FOOTER_LINKS.has(link) ? (
-                            <span
-                              className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] opacity-40 cursor-not-allowed select-none"
-                              style={LABEL_STYLE}
-                            >
-                              {link}
-                            </span>
-                          ) : (
-                            <Link
-                              href={footerHrefs[link] ?? "#"}
-                              className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] transition-all duration-300 hover:scale-105 hover:text-[#001A4D]"
-                              style={LABEL_STYLE}
-                            >
-                              {link}
-                            </Link>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
+              <FooterNavColumns
+                columns={navColumns}
+                columnGap="clamp(8px, min(1.11vw, 1.63vh), 16px)"
+                linkGap="clamp(6px, min(0.83vw, 1.22vh), 12px)"
+              />
             </div>
 
             <NewsletterForm title={newsletterTitle} placeholder={newsletterPlaceholder} buttonLabel={newsletterButtonLabel} />
@@ -634,47 +682,15 @@ export default function FooterClient({ data }: { data?: FooterData | null }) {
               marginBottom: "clamp(28px, 6vw, 56px)",
             }}
           >
-            {navLinks.map((section, idx) => (
-              <div
-                key={idx}
-                className="flex flex-col items-start"
-                style={{ gap: "clamp(2px, 0.6vw, 6px)" }}
-              >
-                <h3
-                  className={`whitespace-nowrap text-[#001A4D] ${BODY_BOLD_CLASS}`}
-                  style={HERO_BODY_STYLE}
-                >
-                  {section.title}
-                </h3>
-                {section.links.length > 0 && (
-                  <ul
-                    className="flex flex-col"
-                    style={{ gap: "clamp(1px, 0.4vw, 4px)" }}
-                  >
-                    {section.links.map((link, linkIdx) => (
-                      <li key={linkIdx}>
-                        {DISABLED_FOOTER_LINKS.has(link) ? (
-                          <span
-                            className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] opacity-40 cursor-not-allowed select-none"
-                            style={LABEL_STYLE}
-                          >
-                            {link}
-                          </span>
-                        ) : (
-                          <Link
-                            href={footerHrefs[link] ?? "#"}
-                            className="inline-block font-poppins font-normal leading-[1.5] text-[#0E0E0E] transition-all duration-300 hover:text-[#001A4D]"
-                            style={LABEL_STYLE}
-                          >
-                            {link}
-                          </Link>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))}
+            {/* Same component as desktop — only the spacing differs, and the
+                mobile links have no hover-scale because the row is tight. */}
+            <FooterNavColumns
+              columns={navColumns}
+              columnGap="clamp(2px, 0.6vw, 6px)"
+              linkGap="clamp(1px, 0.4vw, 4px)"
+              nowrapHeading
+              hoverScale={false}
+            />
           </div>
 
           {/* Bottom row — Address/Socials on the left, Newsletter form on the right */}

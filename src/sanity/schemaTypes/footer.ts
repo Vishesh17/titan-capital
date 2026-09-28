@@ -3,9 +3,15 @@ import { defineField, defineType } from "sanity";
 /**
  * Global Footer — singleton appearing on every page.
  *
- * Only editorial text strings are CMS-controlled. The footer's structure
- * (nav routes, social URLs, layout, watermark, newsletter form behaviour)
- * stays in code because changing those is engineering work, not editing.
+ * Editorial text and the three navigation columns are CMS-controlled. What
+ * stays in code is the things that are genuinely engineering: the layout, the
+ * social URLs, the watermark and how the newsletter form behaves.
+ *
+ * THE FOOTER NAV IS DELIBERATELY ITS OWN FIELD HERE, not shared with the
+ * `navbar` document. The two menus have never listed the same things — the
+ * footer has an "About" column the header does not, groups its entries
+ * differently, and disables a different set — so one shared list would mean
+ * every edit to either menu needing to be checked against the other.
  */
 export const footer = defineType({
   name: "footer",
@@ -63,6 +69,87 @@ export const footer = defineType({
       title: "Newsletter button label",
       description: 'e.g. "Subscribe to Newsletter"',
       type: "string",
+    }),
+
+    /* ─────────── NAVIGATION ───────────
+       One column per group, one entry per link. In code this used to be three
+       separate lists that had to line up by hand — the labels in one array,
+       their URLs in a lookup object, and the greyed-out ones in a third set —
+       so a renamed label silently lost its link. Here a link is one object
+       that carries its own label, destination and state, and they cannot
+       drift apart. Leave this empty and the footer falls back to exactly the
+       menu that is live today. */
+    defineField({
+      name: "navColumns",
+      title: "Footer navigation",
+      description:
+        "The link columns in the footer. Drag to reorder; the site shows them left to right in this order.",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          name: "footerNavColumn",
+          title: "Column",
+          fields: [
+            defineField({
+              name: "title",
+              title: "Column heading",
+              description: 'e.g. "About"',
+              type: "string",
+              validation: (r) => r.required(),
+            }),
+            defineField({
+              name: "links",
+              title: "Links",
+              type: "array",
+              of: [
+                {
+                  type: "object",
+                  name: "footerNavLink",
+                  title: "Link",
+                  fields: [
+                    defineField({
+                      name: "label",
+                      title: "Label",
+                      description: "The words the reader sees.",
+                      type: "string",
+                      validation: (r) => r.required(),
+                    }),
+                    defineField({
+                      name: "url",
+                      title: "Destination",
+                      description: 'A path on this site, e.g. "/portfolio".',
+                      type: "string",
+                    }),
+                    defineField({
+                      name: "disabled",
+                      title: "Not live yet",
+                      description:
+                        "Shows the label greyed out and unclickable, rather than removing it. Use while a page is being built.",
+                      type: "boolean",
+                      initialValue: false,
+                    }),
+                  ],
+                  preview: {
+                    select: { title: "label", subtitle: "url", disabled: "disabled" },
+                    prepare: ({ title, subtitle, disabled }) => ({
+                      title: disabled ? `${title} — not live` : title,
+                      subtitle,
+                    }),
+                  },
+                },
+              ],
+            }),
+          ],
+          preview: {
+            select: { title: "title", links: "links" },
+            prepare: ({ title, links }) => ({
+              title,
+              subtitle: `${Array.isArray(links) ? links.length : 0} link(s)`,
+            }),
+          },
+        },
+      ],
     }),
   ],
 

@@ -255,7 +255,11 @@ export const footerQuery = groq`
     grievanceLabel,
     newsletterTitle,
     newsletterPlaceholder,
-    newsletterButtonLabel
+    newsletterButtonLabel,
+    navColumns[]{
+      title,
+      links[]{ label, url, disabled }
+    }
   }
 `;
 
