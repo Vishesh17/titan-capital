@@ -49,6 +49,30 @@ import { motion, useScroll, useTransform } from "framer-motion";
 
 const NAVY = "#000c22";
 
+/* ── WHY `svh` AND NOT `dvh` ON MOBILE ──
+   `dvh` is the DYNAMIC viewport height: it tracks the visible area as the
+   phone's URL bar collapses on scroll down and returns on scroll up. Every
+   box below is sized from it, so the bar moving resized the whole pin
+   MID-SCROLL. Measured at 375px, dropping the viewport 812 -> 752 at a fixed
+   scroll position of 500:
+
+       pin track      1218 -> 1128   (-90)
+       sticky block    812 ->  752   (-60)
+       unstick point   406 ->  376   (-30)
+       How We Show Up jumped 90px UP the screen
+       document height shrank 283px
+
+   And because `useScroll` measures progress against that same outer box, the
+   block's scale and fade jumped at the same instant. That is the glitch.
+
+   `svh` is the SMALL viewport height — the viewport with the browser chrome
+   fully shown — and it is STATIC. The bar can come and go and none of these
+   numbers move. Because svh is never larger than the visible area, nothing is
+   ever cut off either; when the bar hides, the few spare pixels reveal the
+   pin's own navy, which is the hero's colour, so they cannot be seen.
+
+   Desktop is untouched: every one of these is a `max-md:` variant. */
+
 /** The curtain only starts a third of the way through the pin — at 50vh,
  *  which is when How We Show Up first appears at the bottom of the screen —
  *  so nothing moves before there is something to move for. Our Story's own
@@ -87,20 +111,20 @@ export default function HeroBackedBg({
     <div className="relative">
       <div
         ref={pinRef}
-        className="relative w-full h-[150vh] max-md:!h-[150dvh]"
+        className="relative w-full h-[150vh] max-md:!h-[150svh]"
         /* Navy sits on the PIN, not on the block, so the sliver the block
            uncovers at its edges as it recedes is the hero's own colour rather
            than the page's white. */
         style={{ background: NAVY }}
       >
-        <div className="absolute inset-x-0 top-0 h-[300vh] max-md:!h-[300dvh]">
+        <div className="absolute inset-x-0 top-0 h-[300vh] max-md:!h-[300svh]">
           {/* ── THE FIRST SCREEN ──
               Exactly one viewport, and the hero section fills it. The split
               between the headline and the marquees is the hero's own business
               now — see the flex column in HeroClient — which is precisely why
               there is no seam in the background between them. */}
           <motion.div
-            className="sticky top-0 h-screen w-full overflow-hidden max-md:!h-[100dvh]"
+            className="sticky top-0 h-screen w-full overflow-hidden max-md:!h-[100svh]"
             style={{ scale: blockScale, opacity: blockFade }}
           >
             {hero}
@@ -124,6 +148,7 @@ export default function HeroBackedBg({
    up by a derived overlap so the fade did not finish over an empty screen.
 
    const NAVY = "#000c22";
+
    const BEIGE = "#FBF7F0";
    const DWELL_VH = 70;
    const FADE_FROM = 0.25;

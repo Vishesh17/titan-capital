@@ -521,7 +521,7 @@ export default function HeroClient({
         style={{ background: "transparent" }}
       >
 
-        <div className="pointer-events-none absolute left-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 max-md:!left-1/2 max-md:!top-[6dvh] max-md:!-translate-x-1/2 max-md:!translate-y-0">
+        <div className="pointer-events-none absolute left-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 max-md:!left-1/2 max-md:!top-[6svh] max-md:!-translate-x-1/2 max-md:!translate-y-0">
           <motion.span
             style={{ opacity: labelOpacity, y: labelY }}
             className="block font-['Poppins',_sans-serif] text-[min(1.4vw,2.15vh)] font-medium tracking-[0.2em] text-white/70 max-md:!text-[18px]"
@@ -529,7 +529,7 @@ export default function HeroClient({
             FOUNDER-FIRST
           </motion.span>
         </div>
-        <div className="pointer-events-none absolute right-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 max-md:!right-auto max-md:!left-1/2 max-md:!top-auto max-md:!bottom-[7dvh] max-md:!-translate-x-1/2 max-md:!translate-y-0">
+        <div className="pointer-events-none absolute right-[var(--section-px-wide)] top-1/2 z-10 -translate-y-1/2 max-md:!right-auto max-md:!left-1/2 max-md:!top-auto max-md:!bottom-[7svh] max-md:!-translate-x-1/2 max-md:!translate-y-0">
           <motion.span
             style={{ opacity: labelOpacity, y: labelY }}
             className="block font-['Poppins',_sans-serif] text-[min(1.4vw,2.15vh)] font-medium tracking-[0.2em] text-white/70 max-md:!text-[18px]"
@@ -645,7 +645,7 @@ export default function HeroClient({
              centres the stack in the part of the hero that is actually
              visible, and it follows the navbar if that ever resizes.
              Mobile already did this, via the pt below. */
-          className="absolute inset-0 z-20 flex items-center justify-center px-[var(--section-px-wide)] md:pt-[var(--nav-height,65px)] max-md:!px-[24px] max-md:!items-start max-md:!pt-[clamp(85px,12dvh,120px)]"
+          className="absolute inset-0 z-20 flex items-center justify-center px-[var(--section-px-wide)] md:pt-[var(--nav-height,65px)] max-md:!px-[24px] max-md:!items-start max-md:!pt-[clamp(85px,12svh,120px)]"
         >
           {/* PUSHED DOWN, headline and buttons together — it is one flow
               column, so the nudge belongs on the column and not on each part.
@@ -654,10 +654,12 @@ export default function HeroClient({
               taller one did; this puts it back below the middle deliberately
               rather than leaving it to wherever centring lands.
 
-              `dvh` on mobile, not `vh`: phone browser chrome makes `vh`
-              taller than the visible area, and a `vh` nudge here would push
-              the headline further than it looks on a desktop. */}
-          <div className="relative flex translate-y-[6vh] flex-col items-center max-md:!translate-y-[5dvh]">
+              `svh` on mobile, not `vh`: `vh` is taller than the visible area
+              once phone chrome is counted, so a `vh` nudge pushes further than
+              it looks. Not `dvh` either — that one CHANGES as the URL bar
+              collapses, which slid this whole stack mid-scroll. `svh` is the
+              static small viewport. */}
+          <div className="relative flex translate-y-[6vh] flex-col items-center max-md:!translate-y-[5svh]">
             
             {/* THE HEADLINE IS HARD-CODED, and centred.
                 Three lines, one RevealLine each, the same on both breakpoints
@@ -732,7 +734,7 @@ export default function HeroClient({
                buttons and subtitle are there, and they simply run past the
                hero's floor into Backed Before. Flowed, the stack measures
                itself and `items-center` on the parent centres all of it. */}
-           <div className="mt-[min(2.6vw,4vh)] w-full max-md:!mt-[clamp(24px,4dvh,40px)]">
+           <div className="mt-[min(2.6vw,4vh)] w-full max-md:!mt-[clamp(24px,4svh,40px)]">
             <motion.div
               className="flex flex-col items-center"
               initial={false}
@@ -759,7 +761,7 @@ export default function HeroClient({
                   still fetched and `subtitleReady` still fires on the same
                   timer, so nothing else needs touching. */}
               {/* <motion.div
-                className={`font-normal mt-[min(1.6vw,2.4vh)] max-w-[min(60vw,1000px)] text-center text-white/90 max-md:!mt-[clamp(24px,4dvh,40px)] max-md:!w-[85vw] max-md:!max-w-none ${HERO_BODY_CLASS}`}
+                className={`font-normal mt-[min(1.6vw,2.4vh)] max-w-[min(60vw,1000px)] text-center text-white/90 max-md:!mt-[clamp(24px,4svh,40px)] max-md:!w-[85vw] max-md:!max-w-none ${HERO_BODY_CLASS}`}
                 style={HERO_BODY_STYLE}
                 initial={false}
                 animate={{ opacity: subtitleReady ? 1 : 0 }}
@@ -828,7 +830,7 @@ function CursorFillButton({ href, label }: { href: string; label: string }) {
       href={href}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="relative flex items-center justify-center whitespace-nowrap font-['Poppins',_sans-serif] font-normal transition-colors duration-300 max-md:!w-[clamp(130px,35vw,150px)] max-md:!h-[clamp(38px,6dvh,44px)]"
+      className="relative flex items-center justify-center whitespace-nowrap font-['Poppins',_sans-serif] font-normal transition-colors duration-300 max-md:!w-[clamp(130px,35vw,150px)] max-md:!h-[clamp(38px,6svh,44px)]"
       style={{
         ...LABEL_STYLE,
         width: "min(12.15vw, 18.8vh)",
