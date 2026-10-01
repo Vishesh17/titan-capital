@@ -71,6 +71,58 @@ export const footer = defineType({
       type: "string",
     }),
 
+    /* ─────────── SOCIAL ───────────
+       All four profile links. The icons are drawn in code — only where they
+       POINT is editable here, which is the part that actually changes.
+
+       THE THREE ORIGINALS KEEP A FALLBACK, Instagram does not, and the
+       difference is deliberate. LinkedIn, X and YouTube have been the same
+       accounts since launch, so if this document is empty or Sanity cannot be
+       reached the footer still shows them, exactly like the address and the
+       copyright line do. Instagram has no established account to fall back
+       to, so an empty field there means no icon at all — better than a dead
+       link to a profile that may not exist.
+
+       Consequence worth knowing: clearing LinkedIn, X or YouTube here does
+       NOT remove the icon, it just reverts it to the built-in URL. Removing
+       one of those three is a code change. */
+    defineField({
+      name: "linkedinUrl",
+      title: "LinkedIn",
+      description:
+        'Full profile URL. Leave empty to use the built-in "https://www.linkedin.com/company/titan-capital-vc/".',
+      type: "url",
+      validation: (r) =>
+        r.uri({ scheme: ["http", "https"] }).error("Use a full URL starting with https://"),
+    }),
+    defineField({
+      name: "twitterUrl",
+      title: "X (Twitter)",
+      description:
+        'Full profile URL. Leave empty to use the built-in "https://twitter.com/TitanCapitalVC".',
+      type: "url",
+      validation: (r) =>
+        r.uri({ scheme: ["http", "https"] }).error("Use a full URL starting with https://"),
+    }),
+    defineField({
+      name: "youtubeUrl",
+      title: "YouTube",
+      description:
+        'Full channel URL. Leave empty to use the built-in "https://www.youtube.com/@TitanCapitalVC".',
+      type: "url",
+      validation: (r) =>
+        r.uri({ scheme: ["http", "https"] }).error("Use a full URL starting with https://"),
+    }),
+    defineField({
+      name: "instagramUrl",
+      title: "Instagram",
+      description:
+        'Full profile URL, e.g. "https://www.instagram.com/titancapitalvc/". Leave empty and NO Instagram icon is shown — this one has no built-in fallback.',
+      type: "url",
+      validation: (r) =>
+        r.uri({ scheme: ["http", "https"] }).error("Use a full URL starting with https://"),
+    }),
+
     /* ─────────── NAVIGATION ───────────
        One column per group, one entry per link. In code this used to be three
        separate lists that had to line up by hand — the labels in one array,

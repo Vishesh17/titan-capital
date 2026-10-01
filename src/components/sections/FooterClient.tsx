@@ -517,6 +517,102 @@ function isValidEmail(email: string): boolean {
     );
   }
 
+/* ── SOCIAL ICONS ──
+   One component, used by both layouts. It was the same markup twice, and the
+   two had already drifted: only YouTube carries a slightly larger size — its
+   glyph sits smaller inside the same box, so it needs the extra pixel or two
+   to read as the same weight. That correction existed in both copies and had
+   to be kept in step by hand.
+
+   ALL FOUR DESTINATIONS COME FROM SANITY, but they fail differently. The
+   three originals fall back to the URL this file has always carried, so an
+   empty or unreachable Studio still shows them — the same rule every other
+   string in this footer follows. Instagram has no built-in URL to fall back
+   to, so it renders nothing at all when empty, rather than a dead link. */
+const SOCIAL_LINK_CLASS =
+  "inline-block transition-transform duration-300 hover:scale-110 hover:opacity-70";
+
+function SocialLinks({
+  gap,
+  size,
+  youtubeSize,
+  linkedinUrl,
+  twitterUrl,
+  youtubeUrl,
+  instagramUrl,
+}: {
+  gap: string;
+  /** LinkedIn, X and Instagram — the three glyphs that fill their box. */
+  size: string;
+  /** YouTube only. See the note above. */
+  youtubeSize: string;
+  /* All already resolved by the caller: the three originals carry their
+     built-in URL when the Studio has none, Instagram carries nothing. */
+  linkedinUrl: string;
+  twitterUrl: string;
+  youtubeUrl: string;
+  instagramUrl?: string;
+}) {
+  const box = { width: size, height: size };
+  return (
+    <div className="flex items-center" style={{ gap }}>
+      <Link
+        href={linkedinUrl}
+        aria-label="Titan Capital on LinkedIn"
+        className={SOCIAL_LINK_CLASS}
+      >
+        <svg style={box} viewBox="0 0 24 24" fill="#0E0E0E" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20.447 20.452H16.89V14.881C16.89 13.554 16.865 11.848 15.088 11.848C13.285 11.848 13.009 13.255 13.009 14.786V20.452H9.453V8.997H12.87V10.56H12.918C13.395 9.654 14.563 8.685 16.291 8.685C19.897 8.685 20.447 11.056 20.447 14.169V20.452ZM5.337 7.433C4.196 7.433 3.272 6.505 3.272 5.369C3.272 4.233 4.196 3.305 5.337 3.305C6.476 3.305 7.4 4.233 7.4 5.369C7.4 6.505 6.476 7.433 5.337 7.433ZM7.118 20.452H3.555V8.997H7.118V20.452ZM22.225 0H1.771C0.792 0 0 0.774 0 1.729V22.271C0 23.227 0.792 24 1.771 24H22.222C23.2 24 23.996 23.227 23.996 22.271V1.729C23.996 0.774 23.2 0 22.225 0Z" />
+        </svg>
+      </Link>
+
+      <Link
+        href={twitterUrl}
+        aria-label="Titan Capital on X"
+        className={SOCIAL_LINK_CLASS}
+      >
+        <svg style={box} viewBox="0 0 24 24" fill="#0E0E0E" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18.901 1.153H22.581L14.541 10.339L24 22.846H16.596L10.794 15.263L4.148 22.846H0.466L9.043 13.037L0 1.153H7.593L12.836 8.082L18.901 1.153ZM17.611 20.644H19.65L6.486 3.24H4.309L17.611 20.644Z" />
+        </svg>
+      </Link>
+
+      <Link
+        href={youtubeUrl}
+        aria-label="Titan Capital on YouTube"
+        className={SOCIAL_LINK_CLASS}
+      >
+        <svg
+          style={{ width: youtubeSize, height: youtubeSize }}
+          viewBox="0 0 24 24"
+          fill="#0E0E0E"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+        </svg>
+      </Link>
+
+      {/* Only when the Studio has a URL for it — see the note above. */}
+      {instagramUrl?.trim() && (
+        <Link
+          href={instagramUrl.trim()}
+          aria-label="Titan Capital on Instagram"
+          className={SOCIAL_LINK_CLASS}
+        >
+          {/* The official glyph: a rounded-square camera body, the lens ring,
+              and the small flash dot. Drawn with the same single `fill` as its
+              neighbours so it inherits the footer's ink rather than needing a
+              colour of its own. */}
+          <svg style={box} viewBox="0 0 24 24" fill="#0E0E0E" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.17.053 1.805.249 2.227.415.56.217.96.477 1.38.896.42.42.68.82.896 1.38.166.422.362 1.057.415 2.227.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.053 1.17-.249 1.805-.415 2.227-.217.56-.477.96-.896 1.38-.42.42-.82.68-1.38.896-.422.166-1.057.362-2.227.415-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.17-.053-1.805-.249-2.227-.415-.56-.217-.96-.477-1.38-.896-.42-.42-.68-.82-.896-1.38-.166-.422-.362-1.057-.415-2.227-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.053-1.17.249-1.805.415-2.227.217-.56.477-.96.896-1.38.42-.42.82-.68 1.38-.896.422-.166 1.057-.362 2.227-.415 1.266-.058 1.646-.07 4.85-.07zM12 0C8.741 0 8.332.014 7.052.072 5.775.13 4.902.333 4.14.63a5.88 5.88 0 0 0-2.126 1.384A5.88 5.88 0 0 0 .63 4.14C.333 4.902.131 5.775.072 7.052.014 8.332 0 8.741 0 12s.014 3.668.072 4.948c.059 1.277.261 2.15.558 2.912a5.88 5.88 0 0 0 1.384 2.126A5.88 5.88 0 0 0 4.14 23.37c.762.297 1.635.499 2.912.558C8.332 23.986 8.741 24 12 24s3.668-.014 4.948-.072c1.277-.059 2.15-.261 2.912-.558a5.88 5.88 0 0 0 2.126-1.384 5.88 5.88 0 0 0 1.384-2.126c.297-.762.499-1.635.558-2.912C23.986 15.668 24 15.259 24 12s-.014-3.668-.072-4.948c-.059-1.277-.261-2.15-.558-2.912a5.88 5.88 0 0 0-1.384-2.126A5.88 5.88 0 0 0 19.86.63c-.762-.297-1.635-.5-2.912-.558C15.668.014 15.259 0 12 0z" />
+            <path d="M12 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8z" />
+            <circle cx="18.406" cy="5.594" r="1.44" />
+          </svg>
+        </Link>
+      )}
+    </div>
+  );
+}
+
 /* Every string the Studio owns, with its fallback.
    THE FALLBACKS ARE THE EXACT TEXT THIS FILE USED TO HARD-CODE, so an empty
    or unreachable Sanity renders the footer that is on titancapital.vc today,
@@ -531,6 +627,10 @@ export interface FooterData {
   newsletterPlaceholder?: string;
   newsletterButtonLabel?: string;
   navColumns?: FooterNavColumn[];
+  linkedinUrl?: string;
+  twitterUrl?: string;
+  youtubeUrl?: string;
+  instagramUrl?: string;
 }
 
 export default function FooterClient({ data }: { data?: FooterData | null }) {
@@ -549,6 +649,12 @@ export default function FooterClient({ data }: { data?: FooterData | null }) {
   /* `.length`, not `??` — an editor who opens the array and adds nothing
      leaves an empty one behind, and an empty menu is never what they meant. */
   const navColumns = data?.navColumns?.length ? data.navColumns : FALLBACK_NAV;
+  const linkedinUrl =
+    data?.linkedinUrl || "https://www.linkedin.com/company/titan-capital-vc/";
+  const twitterUrl = data?.twitterUrl || "https://twitter.com/TitanCapitalVC";
+  const youtubeUrl = data?.youtubeUrl || "https://www.youtube.com/@TitanCapitalVC";
+  /* No fallback on purpose: an absent Instagram means no icon, not a guess. */
+  const instagramUrl = data?.instagramUrl;
 
   return (
     <footer
@@ -596,26 +702,15 @@ export default function FooterClient({ data }: { data?: FooterData | null }) {
             </p>
 
             {/* Social Icons */}
-            <div
-              className="flex items-center"
-              style={{ gap: "clamp(8px, min(1.11vw, 1.63vh), 16px)" }}
-            >
-              <Link href="https://www.linkedin.com/company/titan-capital-vc/" className="inline-block transition-transform duration-300 hover:scale-110 hover:opacity-70">
-                <svg style={{ width: "clamp(16px, min(1.67vw, 2.44vh), 24px)", height: "clamp(16px, min(1.67vw, 2.44vh), 24px)" }} viewBox="0 0 24 24" fill="#0E0E0E" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M20.447 20.452H16.89V14.881C16.89 13.554 16.865 11.848 15.088 11.848C13.285 11.848 13.009 13.255 13.009 14.786V20.452H9.453V8.997H12.87V10.56H12.918C13.395 9.654 14.563 8.685 16.291 8.685C19.897 8.685 20.447 11.056 20.447 14.169V20.452ZM5.337 7.433C4.196 7.433 3.272 6.505 3.272 5.369C3.272 4.233 4.196 3.305 5.337 3.305C6.476 3.305 7.4 4.233 7.4 5.369C7.4 6.505 6.476 7.433 5.337 7.433ZM7.118 20.452H3.555V8.997H7.118V20.452ZM22.225 0H1.771C0.792 0 0 0.774 0 1.729V22.271C0 23.227 0.792 24 1.771 24H22.222C23.2 24 23.996 23.227 23.996 22.271V1.729C23.996 0.774 23.2 0 22.225 0Z" />
-                </svg>
-              </Link>
-              <Link href="https://twitter.com/TitanCapitalVC" className="inline-block transition-transform duration-300 hover:scale-110 hover:opacity-70">
-                <svg style={{ width: "clamp(16px, min(1.67vw, 2.44vh), 24px)", height: "clamp(16px, min(1.67vw, 2.44vh), 24px)" }} viewBox="0 0 24 24" fill="#0E0E0E" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M18.901 1.153H22.581L14.541 10.339L24 22.846H16.596L10.794 15.263L4.148 22.846H0.466L9.043 13.037L0 1.153H7.593L12.836 8.082L18.901 1.153ZM17.611 20.644H19.65L6.486 3.24H4.309L17.611 20.644Z" />
-                </svg>
-              </Link>
-              <Link href="https://www.youtube.com/@TitanCapitalVC" className="inline-block transition-transform duration-300 hover:scale-110 hover:opacity-70">
-                <svg style={{ width: "clamp(17px, min(1.81vw, 2.65vh), 26px)", height: "clamp(17px, min(1.81vw, 2.65vh), 26px)" }} viewBox="0 0 24 24" fill="#0E0E0E" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                </svg>
-              </Link>
-            </div>
+            <SocialLinks
+              gap="clamp(8px, min(1.11vw, 1.63vh), 16px)"
+              size="clamp(16px, min(1.67vw, 2.44vh), 24px)"
+              youtubeSize="clamp(17px, min(1.81vw, 2.65vh), 26px)"
+              linkedinUrl={linkedinUrl}
+              twitterUrl={twitterUrl}
+              youtubeUrl={youtubeUrl}
+              instagramUrl={instagramUrl}
+            />
 
             {/* Email — sits right under the social icons */}
             <a
@@ -713,26 +808,15 @@ export default function FooterClient({ data }: { data?: FooterData | null }) {
                 {address}
               </p>
 
-              <div
-                className="flex items-center"
-                style={{ gap: "clamp(6px, 1.4vw, 10px)" }}
-              >
-                <Link href="https://www.linkedin.com/company/titan-capital-vc/" className="inline-block transition-transform duration-300 hover:scale-110 hover:opacity-70">
-                  <svg style={{ width: "clamp(12px, 2vw, 17px)", height: "clamp(12px, 2vw, 17px)" }} viewBox="0 0 24 24" fill="#0E0E0E" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20.447 20.452H16.89V14.881C16.89 13.554 16.865 11.848 15.088 11.848C13.285 11.848 13.009 13.255 13.009 14.786V20.452H9.453V8.997H12.87V10.56H12.918C13.395 9.654 14.563 8.685 16.291 8.685C19.897 8.685 20.447 11.056 20.447 14.169V20.452ZM5.337 7.433C4.196 7.433 3.272 6.505 3.272 5.369C3.272 4.233 4.196 3.305 5.337 3.305C6.476 3.305 7.4 4.233 7.4 5.369C7.4 6.505 6.476 7.433 5.337 7.433ZM7.118 20.452H3.555V8.997H7.118V20.452ZM22.225 0H1.771C0.792 0 0 0.774 0 1.729V22.271C0 23.227 0.792 24 1.771 24H22.222C23.2 24 23.996 23.227 23.996 22.271V1.729C23.996 0.774 23.2 0 22.225 0Z" />
-                  </svg>
-                </Link>
-                <Link href="https://twitter.com/TitanCapitalVC" className="inline-block transition-transform duration-300 hover:scale-110 hover:opacity-70">
-                  <svg style={{ width: "clamp(12px, 2vw, 17px)", height: "clamp(12px, 2vw, 17px)" }} viewBox="0 0 24 24" fill="#0E0E0E" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M18.901 1.153H22.581L14.541 10.339L24 22.846H16.596L10.794 15.263L4.148 22.846H0.466L9.043 13.037L0 1.153H7.593L12.836 8.082L18.901 1.153ZM17.611 20.644H19.65L6.486 3.24H4.309L17.611 20.644Z" />
-                  </svg>
-                </Link>
-                <Link href="https://www.youtube.com/@TitanCapitalVC" className="inline-block transition-transform duration-300 hover:scale-110 hover:opacity-70">
-                  <svg style={{ width: "clamp(13px, 2.2vw, 19px)", height: "clamp(13px, 2.2vw, 19px)" }} viewBox="0 0 24 24" fill="#0E0E0E" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                  </svg>
-                </Link>
-              </div>
+              <SocialLinks
+                gap="clamp(6px, 1.4vw, 10px)"
+                size="clamp(12px, 2vw, 17px)"
+                youtubeSize="clamp(13px, 2.2vw, 19px)"
+                linkedinUrl={linkedinUrl}
+                twitterUrl={twitterUrl}
+                youtubeUrl={youtubeUrl}
+                instagramUrl={instagramUrl}
+              />
             </div>
 
             {/* RIGHT column — Newsletter form */}

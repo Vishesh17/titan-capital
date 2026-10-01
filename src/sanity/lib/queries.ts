@@ -256,6 +256,10 @@ export const footerQuery = groq`
     newsletterTitle,
     newsletterPlaceholder,
     newsletterButtonLabel,
+    linkedinUrl,
+    twitterUrl,
+    youtubeUrl,
+    instagramUrl,
     navColumns[]{
       title,
       links[]{ label, url, disabled }
