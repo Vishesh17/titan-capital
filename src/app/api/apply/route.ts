@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
       "phoneDial",
       "phone",
       "linkedin",
+      "founderBackground",
       "companyName",
       "websiteUrl",
       "oneLiner",
@@ -42,8 +43,8 @@ export async function POST(req: NextRequest) {
       "currentStage",
       "raisingAmount",
       "raisedBefore",
+      "competitors",
       "hearAbout",
-      "anythingElse",
     ];
 
     for (const key of textKeys) {

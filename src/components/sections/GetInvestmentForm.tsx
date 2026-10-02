@@ -108,7 +108,11 @@ const RAISED_BEFORE_OPTIONS = [
 
 const ONE_LINE_MAX = 100;
 const PROBLEM_MAX = 500;
-const ANYTHING_ELSE_MAX = 500;
+/* ANYTHING_ELSE_MAX is gone with the question it capped. The two new long
+   answers take the same 500 it used — long enough for a real answer, short
+   enough to stay readable in a spreadsheet cell. */
+const FOUNDER_BACKGROUND_MAX = 500;
+const COMPETITORS_MAX = 500;
 
 /* ═══════════════════════════════════════════════════════
    Animation variants
@@ -920,6 +924,7 @@ export default function GetInvestmentForm({
   const [phone, setPhone] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [linkedin, setLinkedin] = useState("");
+  const [founderBackground, setFounderBackground] = useState("");
 
   const [companyName, setCompanyName] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
@@ -932,7 +937,9 @@ export default function GetInvestmentForm({
   const [raisedBefore, setRaisedBefore] = useState<Set<string>>(new Set());
   const [pitchDeck, setPitchDeck] = useState<File | null>(null);
   const [hearAbout, setHearAbout] = useState("");
-  const [anythingElse, setAnythingElse] = useState("");
+  const [competitors, setCompetitors] = useState("");
+  /* `anythingElse` removed — the question is gone from the form and from the
+     sheet. Nothing else referenced it. */
 
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -1062,7 +1069,8 @@ export default function GetInvestmentForm({
       body.append("raisingAmount", raisingAmount);
       body.append("raisedBefore", Array.from(raisedBefore).join(", "));
       body.append("hearAbout", hearAbout);
-      body.append("anythingElse", anythingElse);
+      body.append("founderBackground", founderBackground);
+      body.append("competitors", competitors);
       if (pitchDeck) body.append("pitchDeck", pitchDeck);
 
       const res = await fetch("/api/apply", { method: "POST", body });
@@ -1251,6 +1259,20 @@ export default function GetInvestmentForm({
             />
           </motion.div>
 
+          {/* Optional, like the pitch deck — no star. Say the word and it
+              becomes required in both this component and /api/apply. */}
+          <motion.div style={{ marginBottom: "clamp(20px, min(2vw, 3vh), 32px)" }} variants={fieldSlideUp}>
+            <FieldLabel htmlFor="founderBackground">Founder background</FieldLabel>
+            <TextArea
+              id="founderBackground"
+              placeholder="What you were doing before this, and why it makes you the right person to build it."
+              value={founderBackground}
+              onChange={setFounderBackground}
+              maxChars={FOUNDER_BACKGROUND_MAX}
+              rows={4}
+            />
+          </motion.div>
+
           <motion.hr className="mb-[clamp(32px,min(3.5vw,5vh),56px)] border-[#E4E7EC]" variants={fieldSlideUp} />
 
           {/* ────────────────────────────────────────
@@ -1361,6 +1383,18 @@ export default function GetInvestmentForm({
           </motion.div>
 
           <motion.div style={{ marginBottom: "clamp(20px, min(2vw, 3vh), 32px)" }} variants={fieldSlideUp}>
+            <FieldLabel htmlFor="competitors">Top 3 competitors and how you differ</FieldLabel>
+            <TextArea
+              id="competitors"
+              placeholder="Who else is solving this, and what you do that they do not."
+              value={competitors}
+              onChange={setCompetitors}
+              maxChars={COMPETITORS_MAX}
+              rows={4}
+            />
+          </motion.div>
+
+          <motion.div style={{ marginBottom: "clamp(20px, min(2vw, 3vh), 32px)" }} variants={fieldSlideUp}>
             <FieldLabel>Pitch Deck <span className="font-normal text-[#98A2B3]">(PDF, PPT, DOC, or image)</span></FieldLabel>
             <FileUpload file={pitchDeck} onFile={setPitchDeck} />
           </motion.div>
@@ -1372,18 +1406,6 @@ export default function GetInvestmentForm({
               placeholder="Founder Referral, Linkedin, Website, News, Other"
               value={hearAbout}
               onChange={setHearAbout}
-            />
-          </motion.div>
-
-          <motion.div style={{ marginBottom: "clamp(32px, min(3.5vw, 5vh), 48px)" }} variants={fieldSlideUp}>
-            <FieldLabel htmlFor="anythingElse">Anything else you want us to know?</FieldLabel>
-            <TextArea
-              id="anythingElse"
-              placeholder="A contrarian belief about your market, a risk you're thinking hard about, what keeps you up at night — or just something about you as a person."
-              value={anythingElse}
-              onChange={setAnythingElse}
-              maxChars={ANYTHING_ELSE_MAX}
-              rows={5}
             />
           </motion.div>
 
