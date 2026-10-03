@@ -260,6 +260,9 @@ export const footerQuery = groq`
     twitterUrl,
     youtubeUrl,
     instagramUrl,
+    substackUrl,
+    facebookUrl,
+    redditUrl,
     navColumns[]{
       title,
       links[]{ label, url, disabled }

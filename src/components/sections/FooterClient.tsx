@@ -524,11 +524,18 @@ function isValidEmail(email: string): boolean {
    to read as the same weight. That correction existed in both copies and had
    to be kept in step by hand.
 
-   ALL FOUR DESTINATIONS COME FROM SANITY, but they fail differently. The
-   three originals fall back to the URL this file has always carried, so an
-   empty or unreachable Studio still shows them — the same rule every other
-   string in this footer follows. Instagram has no built-in URL to fall back
-   to, so it renders nothing at all when empty, rather than a dead link. */
+   ALL SEVEN DESTINATIONS COME FROM SANITY, but they fail differently, and
+   that splits them into two groups.
+
+   THE THREE ORIGINALS — LinkedIn, X, YouTube — fall back to the URL this file
+   has always carried, so an empty or unreachable Studio still shows them, the
+   same rule every other string in this footer follows.
+
+   THE FOUR OPT-IN ONES — Instagram, Substack, Facebook, Reddit — have no
+   built-in URL. Each renders nothing at all until the Studio has a link for
+   it, so an account Titan does not have is simply absent rather than a dead
+   link. Adding one is a Studio edit, not a deploy; the icons already exist
+   here, waiting. */
 const SOCIAL_LINK_CLASS =
   "inline-block transition-transform duration-300 hover:scale-110 hover:opacity-70";
 
@@ -540,18 +547,24 @@ function SocialLinks({
   twitterUrl,
   youtubeUrl,
   instagramUrl,
+  substackUrl,
+  facebookUrl,
+  redditUrl,
 }: {
   gap: string;
-  /** LinkedIn, X and Instagram — the three glyphs that fill their box. */
+  /** Every glyph but YouTube's — they all fill their box. */
   size: string;
   /** YouTube only. See the note above. */
   youtubeSize: string;
   /* All already resolved by the caller: the three originals carry their
-     built-in URL when the Studio has none, Instagram carries nothing. */
+     built-in URL when the Studio has none, the opt-in four carry nothing. */
   linkedinUrl: string;
   twitterUrl: string;
   youtubeUrl: string;
   instagramUrl?: string;
+  substackUrl?: string;
+  facebookUrl?: string;
+  redditUrl?: string;
 }) {
   const box = { width: size, height: size };
   return (
@@ -609,6 +622,54 @@ function SocialLinks({
           </svg>
         </Link>
       )}
+
+      {/* ── THE REMAINING OPT-IN THREE ──
+          Same contract as Instagram above: no fallback, so each one is absent
+          until the Studio names it. All three glyphs are the official marks,
+          already on a 24-unit grid and already single-path, so they take the
+          footer's own ink from `fill` exactly like their neighbours — no brand
+          colour, no second shape to keep in step. */}
+      {substackUrl?.trim() && (
+        <Link
+          href={substackUrl.trim()}
+          aria-label="Titan Capital on Substack"
+          className={SOCIAL_LINK_CLASS}
+        >
+          {/* Three stacked bars, the lowest folded into the Substack chevron. */}
+          <svg style={box} viewBox="0 0 24 24" fill="#0E0E0E" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z" />
+          </svg>
+        </Link>
+      )}
+
+      {facebookUrl?.trim() && (
+        <Link
+          href={facebookUrl.trim()}
+          aria-label="Titan Capital on Facebook"
+          className={SOCIAL_LINK_CLASS}
+        >
+          {/* The f cut out of a filled disc — one path, so the counter is a
+              hole in the fill rather than a white shape laid on top. That is
+              what lets it sit on any background the footer ever takes. */}
+          <svg style={box} viewBox="0 0 24 24" fill="#0E0E0E" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z" />
+          </svg>
+        </Link>
+      )}
+
+      {redditUrl?.trim() && (
+        <Link
+          href={redditUrl.trim()}
+          aria-label="Titan Capital on Reddit"
+          className={SOCIAL_LINK_CLASS}
+        >
+          {/* Snoo in the speech bubble. Eyes and mouth are counters in the one
+              path, same reasoning as Facebook's. */}
+          <svg style={box} viewBox="0 0 24 24" fill="#0E0E0E" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 0C5.373 0 0 5.373 0 12c0 3.314 1.343 6.314 3.515 8.485l-2.286 2.286C.775 23.225 1.097 24 1.738 24H12c6.627 0 12-5.373 12-12S18.627 0 12 0Zm4.388 3.199c1.104 0 1.999.895 1.999 1.999 0 1.105-.895 2-1.999 2-.946 0-1.739-.657-1.947-1.539v.002c-1.147.162-2.032 1.15-2.032 2.341v.007c1.776.067 3.4.567 4.686 1.363.473-.363 1.064-.58 1.707-.58 1.547 0 2.802 1.254 2.802 2.802 0 1.117-.655 2.081-1.601 2.531-.088 3.256-3.637 5.876-7.997 5.876-4.361 0-7.905-2.617-7.998-5.87-.954-.447-1.614-1.415-1.614-2.538 0-1.548 1.255-2.802 2.803-2.802.645 0 1.239.218 1.712.585 1.275-.79 2.881-1.291 4.64-1.365v-.01c0-1.663 1.263-3.034 2.88-3.207.188-.911.993-1.595 1.959-1.595Zm-8.085 8.376c-.784 0-1.459.78-1.506 1.797-.047 1.016.64 1.429 1.426 1.429.786 0 1.371-.369 1.418-1.385.047-1.017-.553-1.841-1.338-1.841Zm7.406 0c-.786 0-1.385.824-1.338 1.841.047 1.017.634 1.385 1.418 1.385.785 0 1.473-.413 1.426-1.429-.046-1.017-.721-1.797-1.506-1.797Zm-3.703 4.013c-.974 0-1.907.048-2.77.135-.147.015-.241.168-.183.305.483 1.154 1.622 1.964 2.953 1.964 1.33 0 2.47-.81 2.953-1.964.057-.137-.037-.29-.184-.305-.863-.087-1.795-.135-2.769-.135Z" />
+          </svg>
+        </Link>
+      )}
     </div>
   );
 }
@@ -631,6 +692,9 @@ export interface FooterData {
   twitterUrl?: string;
   youtubeUrl?: string;
   instagramUrl?: string;
+  substackUrl?: string;
+  facebookUrl?: string;
+  redditUrl?: string;
 }
 
 export default function FooterClient({ data }: { data?: FooterData | null }) {
@@ -653,8 +717,13 @@ export default function FooterClient({ data }: { data?: FooterData | null }) {
     data?.linkedinUrl || "https://www.linkedin.com/company/titan-capital-vc/";
   const twitterUrl = data?.twitterUrl || "https://twitter.com/TitanCapitalVC";
   const youtubeUrl = data?.youtubeUrl || "https://www.youtube.com/@TitanCapitalVC";
-  /* No fallback on purpose: an absent Instagram means no icon, not a guess. */
+  /* No fallback on purpose, for all four: an absent link means no icon, not a
+     guess. Passing `undefined` straight through is what makes that work —
+     SocialLinks tests each one and skips the whole <Link> when it is empty. */
   const instagramUrl = data?.instagramUrl;
+  const substackUrl = data?.substackUrl;
+  const facebookUrl = data?.facebookUrl;
+  const redditUrl = data?.redditUrl;
 
   return (
     <footer
@@ -710,6 +779,9 @@ export default function FooterClient({ data }: { data?: FooterData | null }) {
               twitterUrl={twitterUrl}
               youtubeUrl={youtubeUrl}
               instagramUrl={instagramUrl}
+              substackUrl={substackUrl}
+              facebookUrl={facebookUrl}
+              redditUrl={redditUrl}
             />
 
             {/* Email — sits right under the social icons */}
@@ -816,6 +888,9 @@ export default function FooterClient({ data }: { data?: FooterData | null }) {
                 twitterUrl={twitterUrl}
                 youtubeUrl={youtubeUrl}
                 instagramUrl={instagramUrl}
+                substackUrl={substackUrl}
+                facebookUrl={facebookUrl}
+                redditUrl={redditUrl}
               />
             </div>
 

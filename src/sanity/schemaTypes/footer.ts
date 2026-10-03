@@ -3,9 +3,10 @@ import { defineField, defineType } from "sanity";
 /**
  * Global Footer — singleton appearing on every page.
  *
- * Editorial text and the three navigation columns are CMS-controlled. What
- * stays in code is the things that are genuinely engineering: the layout, the
- * social URLs, the watermark and how the newsletter form behaves.
+ * Editorial text, the navigation columns and every social URL are
+ * CMS-controlled. What stays in code is the things that are genuinely
+ * engineering: the layout, the icon artwork, the watermark and how the
+ * newsletter form behaves.
  *
  * THE FOOTER NAV IS DELIBERATELY ITS OWN FIELD HERE, not shared with the
  * `navbar` document. The two menus have never listed the same things — the
@@ -72,16 +73,19 @@ export const footer = defineType({
     }),
 
     /* ─────────── SOCIAL ───────────
-       All four profile links. The icons are drawn in code — only where they
+       All seven profile links. The icons are drawn in code — only where they
        POINT is editable here, which is the part that actually changes.
 
-       THE THREE ORIGINALS KEEP A FALLBACK, Instagram does not, and the
+       THE THREE ORIGINALS KEEP A FALLBACK, THE OTHER FOUR DO NOT, and the
        difference is deliberate. LinkedIn, X and YouTube have been the same
        accounts since launch, so if this document is empty or Sanity cannot be
        reached the footer still shows them, exactly like the address and the
-       copyright line do. Instagram has no established account to fall back
-       to, so an empty field there means no icon at all — better than a dead
-       link to a profile that may not exist.
+       copyright line do.
+
+       Instagram, Substack, Facebook and Reddit have no established account to
+       fall back to, so an empty field there means no icon at all — better than
+       a dead link to a profile that may not exist. Filling one in is all it
+       takes to make its icon appear; the glyph is already in the code.
 
        Consequence worth knowing: clearing LinkedIn, X or YouTube here does
        NOT remove the icon, it just reverts it to the built-in URL. Removing
@@ -118,6 +122,33 @@ export const footer = defineType({
       title: "Instagram",
       description:
         'Full profile URL, e.g. "https://www.instagram.com/titancapitalvc/". Leave empty and NO Instagram icon is shown — this one has no built-in fallback.',
+      type: "url",
+      validation: (r) =>
+        r.uri({ scheme: ["http", "https"] }).error("Use a full URL starting with https://"),
+    }),
+    defineField({
+      name: "substackUrl",
+      title: "Substack",
+      description:
+        'Full publication URL, e.g. "https://titancapital.substack.com". Leave empty and NO Substack icon is shown.',
+      type: "url",
+      validation: (r) =>
+        r.uri({ scheme: ["http", "https"] }).error("Use a full URL starting with https://"),
+    }),
+    defineField({
+      name: "facebookUrl",
+      title: "Facebook",
+      description:
+        'Full page URL, e.g. "https://www.facebook.com/titancapitalvc". Leave empty and NO Facebook icon is shown.',
+      type: "url",
+      validation: (r) =>
+        r.uri({ scheme: ["http", "https"] }).error("Use a full URL starting with https://"),
+    }),
+    defineField({
+      name: "redditUrl",
+      title: "Reddit",
+      description:
+        'Full profile or subreddit URL, e.g. "https://www.reddit.com/user/titancapital". Leave empty and NO Reddit icon is shown.',
       type: "url",
       validation: (r) =>
         r.uri({ scheme: ["http", "https"] }).error("Use a full URL starting with https://"),
