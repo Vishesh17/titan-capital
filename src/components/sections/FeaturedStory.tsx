@@ -7,8 +7,15 @@
  * button went nowhere. This supplies both.
  *
  * WHICH STORY LEADS is the one ticked "Featured story" in the Founders Story —
- * Featured & Grid document. If none is ticked the first entry is used, so the
- * band is never empty; if several are, the first wins.
+ * Featured & Grid document. If several are ticked the first wins.
+ *
+ * NOTHING TICKED MEANS NO BAND. Untick every story and this section disappears
+ * from the page entirely — the heading, the browse link and the card all go.
+ * It used to fall back to the first entry instead, which made the tick look
+ * decorative: the band was there either way and the toggle only chose which
+ * story sat in it, so there was no way to turn the band off from the Studio.
+ * Now the toggle is the on/off switch, and an empty `stories[]` reads the same
+ * way for the same reason — no featured story, no band.
  *
  * The link is built by the SAME `storySlug` the grid cards use, so the band and
  * the card for one story can never point at different pages.
@@ -33,11 +40,16 @@ async function getData(): Promise<FoundersStoryGridData | null> {
 export default async function FeaturedStory() {
   const data = await getData();
   const stories = data?.stories ?? [];
-  const lead = stories.find((s) => s.featured) ?? stories[0];
+  const lead = stories.find((s) => s.featured);
 
-  /* No stories yet — hand the component nothing and it keeps its own
-     placeholder, exactly as before. */
-  if (!lead) return <FeaturedStories />;
+  /* No story ticked — render nothing. `/foundersstory` is a plain flex column,
+     so the hero simply meets the grid with no gap left behind.
+
+     NOTE this also covers a failed Sanity fetch, which is the one case where
+     the old placeholder could still appear. That is the right trade: the
+     placeholder was a hard-coded Mamaearth card, and showing a story the
+     Studio does not list is worse than showing no band. */
+  if (!lead) return null;
 
   return (
     <FeaturedStories

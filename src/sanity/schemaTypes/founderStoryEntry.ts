@@ -102,7 +102,8 @@ export const founderStoryEntry = defineType({
     }),
     /* ─────────── 3. THE LISTING CARD ───────────
        How this story appears on /foundersstory — in the grid, and in the
-       Featured band when it is the one ticked below. ONE ENTRY NOW OWNS BOTH:
+       Featured band when it is the one ticked below — and the band is shown at
+       all only while some story is ticked. ONE ENTRY NOW OWNS BOTH:
        the card and the article used to live in two different documents joined
        only by a slug that was guessed from the company name, so a card could
        quietly point at a story that did not exist. */
@@ -110,7 +111,7 @@ export const founderStoryEntry = defineType({
       name: "featured",
       title: "Featured story",
       description:
-        "Puts this story in the band at the top of /foundersstory. If several are ticked the first wins; if none is, the first story is used.",
+        "Puts this story in the band at the top of /foundersstory. If several are ticked the first wins. Untick every story and the whole Featured band disappears from the page.",
       type: "boolean",
       initialValue: false,
       group: "card",
