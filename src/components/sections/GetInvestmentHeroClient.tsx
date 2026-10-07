@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import RichText, { type RichTextValue } from "@/components/ui/RichText";
+import RichText, { hasRichText, type RichTextValue } from "@/components/ui/RichText";
 import {
   motion,
   useMotionValue,
@@ -29,8 +29,9 @@ export interface GetInvestmentHeroData {
 
 const FALLBACK_HEADING_FIRST = "We Invest Early";
 
-const FALLBACK_SUBTITLE =
-  "If you're building a company you'd give the next decade of your life to, we want to hear about it.";
+/* NO FALLBACK SUBTITLE — see the note in BlogsHeroClient. Empty in the Studio
+   renders nothing, rather than substituting a sentence the editor never wrote
+   and cannot see in the CMS. */
 
 /* ─────────────────────────────────────────────────────────
    Hero Glow Background
@@ -244,7 +245,7 @@ export default function GetInvestmentHeroClient({
   data?: GetInvestmentHeroData | null;
 }) {
   const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
-  const subtitle = data?.subtitle || FALLBACK_SUBTITLE;
+  const hasSubtitle = hasRichText(data?.subtitle);
 
   const sectionRef = useRef<HTMLElement>(null);
   const inView = useInView(sectionRef, { once: true, amount: 0.3 });
@@ -284,15 +285,20 @@ export default function GetInvestmentHeroClient({
             </span>
           </h1>
 
-          <motion.div
-            className={`font-normal mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[800px] text-center text-white/90 ${HERO_BODY_CLASS}`}
-            style={HERO_BODY_STYLE}
-            initial={{ opacity: 0, y: 20 }}
-            animate={show ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 0.8 }}
-          >
-            <RichText value={subtitle} />
-          </motion.div>
+          {/* Omitted entirely when empty, not rendered empty — an empty block
+              still contributes its top margin and would push the heading off
+              centre for no visible reason. */}
+          {hasSubtitle && (
+            <motion.div
+              className={`font-normal mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[800px] text-center text-white/90 ${HERO_BODY_CLASS}`}
+              style={HERO_BODY_STYLE}
+              initial={{ opacity: 0, y: 20 }}
+              animate={show ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, ease: "easeOut", delay: 0.8 }}
+            >
+              <RichText value={data?.subtitle} />
+            </motion.div>
+          )}
         </div>
       </div>
     </section>

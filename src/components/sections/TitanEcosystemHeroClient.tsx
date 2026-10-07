@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import RichText, { type RichTextValue } from "@/components/ui/RichText";
+import RichText, { hasRichText, type RichTextValue } from "@/components/ui/RichText";
 import { motion } from "framer-motion";
 import {
   HERO_HEADING_DARK_CLASS,
@@ -50,8 +50,9 @@ export interface TitanEcosystemHeroData {
 const FALLBACK_HEADING_LINE_ONE = "More Than Capital,";
 const FALLBACK_HEADING_LINE_TWO = "A Community";
 const FALLBACK_FOUNDER_COUNT = "500+ founders";
-const FALLBACK_DESCRIPTION =
-  "Over 15 years, Titan Capital has built something that can't be replicated: a living, breathing community of 500+ founders who help each other win. This is the Titan Ecosystem.";
+/* NO FALLBACK DESCRIPTION — see the note in BlogsHeroClient. Empty in the
+   Studio renders nothing, rather than substituting a sentence the editor never
+   wrote and cannot see in the CMS. */
 
 /**
  * How many circles to draw when the CMS has no photos yet. They render as the
@@ -91,7 +92,7 @@ export default function TitanEcosystemHeroClient({
   const headingLineOne = data?.headingLineOne || FALLBACK_HEADING_LINE_ONE;
   const headingLineTwo = data?.headingLineTwo || FALLBACK_HEADING_LINE_TWO;
   const founderCountLabel = data?.founderCountLabel || FALLBACK_FOUNDER_COUNT;
-  const description = data?.description || FALLBACK_DESCRIPTION;
+  const hasDescription = hasRichText(data?.description);
 
   /* `null` means "draw the grey placeholder circle". Filtering out empty
      entries first stops a half-filled CMS array rendering a broken image. */
@@ -265,19 +266,24 @@ export default function TitanEcosystemHeroClient({
         </motion.div>
 
         {/* ── DESCRIPTION ── */}
-        <motion.div
-          variants={rise}
-          className={`m-0 font-normal text-[#0E0E0E] ${HERO_BODY_CLASS}`}
-          style={{
-            ...HERO_BODY_STYLE,
-            marginTop: "clamp(18px, min(2.2vw, 3.4vh), 38px)",
-            /* Caps the measure so the copy stays readable on wide monitors
-               instead of running the full 1440px container. */
-            maxWidth: "min(1040px, 100%)",
-          }}
-        >
-          <RichText value={description} />
-        </motion.div>
+        {/* Omitted entirely when empty, not rendered empty — the marginTop
+            below belongs to this block, so an empty one would leave a gap
+            under the heading with nothing in it. */}
+        {hasDescription && (
+          <motion.div
+            variants={rise}
+            className={`m-0 font-normal text-[#0E0E0E] ${HERO_BODY_CLASS}`}
+            style={{
+              ...HERO_BODY_STYLE,
+              marginTop: "clamp(18px, min(2.2vw, 3.4vh), 38px)",
+              /* Caps the measure so the copy stays readable on wide monitors
+                 instead of running the full 1440px container. */
+              maxWidth: "min(1040px, 100%)",
+            }}
+          >
+            <RichText value={data?.description} />
+          </motion.div>
+        )}
       </motion.div>
     </section>
   );

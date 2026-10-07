@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import RichText, { type RichTextValue } from "@/components/ui/RichText";
+import RichText, { hasRichText, type RichTextValue } from "@/components/ui/RichText";
 import FramedPhoto from "@/components/ui/FramedPhoto";
 import { motion } from "framer-motion";
 import {
@@ -53,8 +53,10 @@ export interface OurTeamHeroData {
 const FALLBACK_TITLE_1 = "Builders";
 const FALLBACK_TITLE_2 = "Backing";
 const FALLBACK_TITLE_3 = "Builders";
-const FALLBACK_DESC =
-  "We've built companies ourselves. We know the weight of the journey. Now we back the founders building out their dreams.";
+/* NO FALLBACK DESCRIPTION — see the note in BlogsHeroClient. Empty in the
+   Studio renders nothing, rather than substituting a sentence the editor never
+   wrote and cannot see in the CMS. Both the mobile and the desktop block below
+   test the same flag, so the two layouts cannot disagree about it. */
 
 // 15 slots. Desktop (lg+) is a 7-column grid, left-aligned:
 //
@@ -239,7 +241,7 @@ export default function OurTeamHeroClient({
   const titleLine1 = data?.titleLine1 || FALLBACK_TITLE_1;
   const titleLine2 = data?.titleLine2 || FALLBACK_TITLE_2;
   const titleLine3 = data?.titleLine3 || FALLBACK_TITLE_3;
-  const description = data?.description || FALLBACK_DESC;
+  const hasDescription = hasRichText(data?.description);
 
   const teamItems = GRID_STRUCTURE.map((struct, index) => {
     const members = data?.members ?? [];
@@ -368,13 +370,17 @@ export default function OurTeamHeroClient({
                 {line}
               </motion.h1>
             ))}
-            <motion.div
-              className={`font-normal m-0 text-[#000] ${HERO_BODY_CLASS}`}
-              style={{ ...HERO_BODY_STYLE, marginTop: "clamp(10px, 2.5vw, 16px)" }}
-              variants={fadeUp(0.45)}
-            >
-              <RichText value={description} />
-            </motion.div>
+            {/* Omitted when empty — the marginTop is this block's own, so an
+                empty one leaves a gap under the heading. */}
+            {hasDescription && (
+              <motion.div
+                className={`font-normal m-0 text-[#000] ${HERO_BODY_CLASS}`}
+                style={{ ...HERO_BODY_STYLE, marginTop: "clamp(10px, 2.5vw, 16px)" }}
+                variants={fadeUp(0.45)}
+              >
+                <RichText value={data?.description} />
+              </motion.div>
+            )}
           </motion.div>
 
           {/* Right cards — rows 2-4, cols 3-4 (cards 4-9) */}
@@ -458,17 +464,20 @@ export default function OurTeamHeroClient({
                 {line}
               </motion.h1>
             ))}
-            <motion.div
-              className={`font-normal pointer-events-auto m-0 text-[#000] ${HERO_BODY_CLASS}`}
-              style={{
-                ...HERO_BODY_STYLE,
-                marginTop: "clamp(12px, min(1.4vw, 2vh), 24px)",
-                maxWidth: "100%",
-              }}
-              variants={fadeUp(0.45)}
-            >
-              <RichText value={description} />
-            </motion.div>
+            {/* Omitted when empty — same reasoning as the mobile block. */}
+            {hasDescription && (
+              <motion.div
+                className={`font-normal pointer-events-auto m-0 text-[#000] ${HERO_BODY_CLASS}`}
+                style={{
+                  ...HERO_BODY_STYLE,
+                  marginTop: "clamp(12px, min(1.4vw, 2vh), 24px)",
+                  maxWidth: "100%",
+                }}
+                variants={fadeUp(0.45)}
+              >
+                <RichText value={data?.description} />
+              </motion.div>
+            )}
           </motion.div>
 
           {/* Rows 2-3 cards (items 7-14) — 4 + 4 in cols 4-7 */}

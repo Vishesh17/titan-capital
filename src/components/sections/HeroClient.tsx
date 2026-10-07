@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import RichText, { type RichTextValue } from "@/components/ui/RichText";
+import RichText, { hasRichText, type RichTextValue } from "@/components/ui/RichText";
 import Image from "next/image";
 import Link from "next/link";
 import { hasAppMounted } from "@/lib/appNavState";
@@ -46,7 +46,10 @@ export interface HeroData {
   titleLine1?: string;
   titleLine2Before?: string;
   titleLine2Emphasis?: string;
-  subtitle?: string;
+  /* RichTextValue, not string: the Studio field was converted to rich text and
+     the query returns portable-text blocks, so the old `string` was simply
+     wrong about what arrives here. RichText renders either shape. */
+  subtitle?: RichTextValue;
   primaryCtaLabel?: string;
   secondaryCtaLabel?: string;
   founders?: HeroFounder[];
@@ -67,8 +70,10 @@ const FALLBACK_FOUNDERS: HeroFounder[] = [
   { name: "Ruchi Kalra",         role: "Co-Founder, Ofbusiness",        image: "/images/hero_founders_images/4.png", scaleFactor: 1.5, positionX: 0, positionY: -10, squareScaleFactor: 1, squarePositionX: 0, squarePositionY: 0 },
 ];
 
-const FALLBACK_SUBTITLE =
-  "We partner with entrepreneurs from day one. We bring conviction, not just capital, and stay by their side through every stage of their journey.";
+/* NO FALLBACK SUBTITLE — the same rule as every other hero on the site. Empty
+   in the Studio renders nothing at all, rather than substituting a sentence the
+   editor never wrote and cannot see in the CMS. Filled, it appears under the
+   buttons. See the block below the CTAs. */
 
 const HERO_FOUNDER_IMAGE_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16];
 const FALLBACK_BY_IMAGE = new Map(FALLBACK_FOUNDERS.map((f) => [f.image, f]));
@@ -298,7 +303,7 @@ export default function HeroClient({
    *  BackedBefore is a server component that does its own Sanity fetch. */
   backedBefore?: ReactNode;
 }) {
-  const subtitle = data?.subtitle || FALLBACK_SUBTITLE;
+  const hasSubtitle = hasRichText(data?.subtitle);
   const founders: HeroFounder[] = (() => {
     if (data?.founders && data.founders.length > 0) {
       return data.founders.slice(0, 9);
@@ -548,21 +553,28 @@ export default function HeroClient({
             overlap. Moving it into the flow under the buttons — where the
             mobile layout has always had it — makes the stack size itself, so
             it cannot collide at any viewport rather than being tuned not to
-            at one. See the block below the headings. */}
-        {/* <div className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 max-md:!hidden">
-          <motion.div
-            style={{ maxWidth: "min(60vw, 1000px)", ...HERO_BODY_STYLE }}
-            className={`font-normal m-0 text-center text-white/90 ${HERO_BODY_CLASS}`}
-            initial={false}
-            animate={{
-              opacity: subtitleReady ? 1 : 0,
-              y: subtitleReady ? 0 : TAIL_RISE_PX,
-            }}
-            transition={TAIL_TRANSITION}
-          >
-            <RichText value={subtitle} />
-          </motion.div>
-        </div> */}
+            at one. See the block below the headings.
+
+            Kept restorable: the `subtitle` local it used to read is gone, so
+            this now reads the field directly and carries the same `hasSubtitle`
+            gate as the live block — uncomment it and it still compiles and
+            still obeys the Studio. */}
+        {/* {hasSubtitle && (
+          <div className="pointer-events-none absolute bottom-[8vh] left-1/2 z-10 -translate-x-1/2 max-md:!hidden">
+            <motion.div
+              style={{ maxWidth: "min(60vw, 1000px)", ...HERO_BODY_STYLE }}
+              className={`font-normal m-0 text-center text-white/90 ${HERO_BODY_CLASS}`}
+              initial={false}
+              animate={{
+                opacity: subtitleReady ? 1 : 0,
+                y: subtitleReady ? 0 : TAIL_RISE_PX,
+              }}
+              transition={TAIL_TRANSITION}
+            >
+              <RichText value={data?.subtitle} />
+            </motion.div>
+          </div>
+        )} */}
 
         <AnimatePresence>
           {ready && stage === "slideshow" && (
@@ -757,18 +769,30 @@ export default function HeroClient({
                 </Link>
                 <CursorFillButton href="/getinvestment" label="Get Investment" />
               </div>
-              {/* THE DESCRIPTION IS OFF. Uncomment to bring it back — it is
-                  still fetched and `subtitleReady` still fires on the same
-                  timer, so nothing else needs touching. */}
-              {/* <motion.div
-                className={`font-normal mt-[min(1.6vw,2.4vh)] max-w-[min(60vw,1000px)] text-center text-white/90 max-md:!mt-[clamp(24px,4svh,40px)] max-md:!w-[85vw] max-md:!max-w-none ${HERO_BODY_CLASS}`}
-                style={HERO_BODY_STYLE}
-                initial={false}
-                animate={{ opacity: subtitleReady ? 1 : 0 }}
-                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <RichText value={subtitle} />
-              </motion.div> */}
+              {/* THE DESCRIPTION IS NOW THE STUDIO'S CALL, not a code comment.
+                  It used to be commented out here, which meant the only way to
+                  turn it on or off was an edit and a deploy — and the hero
+                  document's `subtitle` field went on existing in the Studio
+                  with no effect whatsoever, which is the worst of both.
+
+                  Now it follows the field: text in it and this appears, empty
+                  and it does not render at all. Omitted rather than rendered
+                  empty, because the `mt-` below is this block's own margin and
+                  an empty one would push the stack down for nothing.
+
+                  `subtitleReady` still fires on the same timer as the buttons,
+                  so when it is on it lands exactly as it always did. */}
+              {hasSubtitle && (
+                <motion.div
+                  className={`font-normal mt-[min(1.6vw,2.4vh)] max-w-[min(60vw,1000px)] text-center text-white/90 max-md:!mt-[clamp(24px,4svh,40px)] max-md:!w-[85vw] max-md:!max-w-none ${HERO_BODY_CLASS}`}
+                  style={HERO_BODY_STYLE}
+                  initial={false}
+                  animate={{ opacity: subtitleReady ? 1 : 0 }}
+                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <RichText value={data?.subtitle} />
+                </motion.div>
+              )}
             </motion.div>
             </div>
           </div>

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useLenis } from "lenis/react";
 import { RevealLine } from "./BackedEarlyClient";
-import RichText, { type RichTextValue } from "@/components/ui/RichText";
+import RichText, { hasRichText, type RichTextValue } from "@/components/ui/RichText";
 import {
   HERO_HEADING_DARK_CLASS,
   HERO_HEADING_DARK_STYLE,
@@ -271,8 +271,9 @@ const PARTICLES = (() => {
 /** Copy used until the Sanity singleton is filled in. */
 const FALLBACK_LINE_ONE = "Being Founder";
 const FALLBACK_LINE_TWO = "Takes Guts";
-const FALLBACK_DESCRIPTION =
-  "Built by founders, for founders — the story behind every conviction, every cheque, and every late-night call.";
+/* NO FALLBACK DESCRIPTION — see the note in BlogsHeroClient. Empty in the
+   Studio renders nothing, rather than substituting a sentence the editor never
+   wrote and cannot see in the CMS. */
 
 /** The built-in field, used until Sanity has photos of its own. These are
  *  square crops, hence aspect 1 — anything uploaded is shown at its own. */
@@ -676,7 +677,7 @@ export default function OurStoryHeroClient({
      moment it is. */
   const line1 = data?.headingLineOne || FALLBACK_LINE_ONE;
   const line2 = data?.headingLineTwo ?? FALLBACK_LINE_TWO;
-  const description = data?.description || FALLBACK_DESCRIPTION;
+  const hasDescription = hasRichText(data?.description);
 
   /* The per-character reveal runs once the component is on the client. This
      hero sits at the very top of the page, so mount is the right trigger —
@@ -831,20 +832,25 @@ export default function OurStoryHeroClient({
             the paragraph itself, so the same class and style land on it
             whether the field is still a plain string or has been converted to
             rich text. */}
-        <div
-          className="max-w-[760px]"
-          style={{
-            marginTop: "clamp(16px, min(2.5vw, 4vh), 36px)",
-            opacity: 0,
-            animation: "ourstory-rise 0.8s cubic-bezier(0.22,1,0.36,1) 0.46s forwards",
-          }}
-        >
-          <RichText
-            value={description}
-            className={`font-normal text-[#1a1a1a] ${HERO_BODY_CLASS}`}
-            style={HERO_BODY_STYLE}
-          />
-        </div>
+        {/* Omitted entirely when empty, not rendered empty — the marginTop
+            belongs to this wrapper, so an empty one would leave a gap under
+            the heading with nothing in it. */}
+        {hasDescription && (
+          <div
+            className="max-w-[760px]"
+            style={{
+              marginTop: "clamp(16px, min(2.5vw, 4vh), 36px)",
+              opacity: 0,
+              animation: "ourstory-rise 0.8s cubic-bezier(0.22,1,0.36,1) 0.46s forwards",
+            }}
+          >
+            <RichText
+              value={data?.description}
+              className={`font-normal text-[#1a1a1a] ${HERO_BODY_CLASS}`}
+              style={HERO_BODY_STYLE}
+            />
+          </div>
+        )}
       </div>
     </motion.section>
       </div>

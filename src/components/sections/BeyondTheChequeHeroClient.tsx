@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import RichText, { type RichTextValue } from "@/components/ui/RichText";
+import RichText, { hasRichText, type RichTextValue } from "@/components/ui/RichText";
 import { motion, Variants } from "framer-motion";
 import {
   HERO_BODY_CLASS,
@@ -19,8 +19,11 @@ export interface BeyondTheChequeHeroData {
 
 const FALLBACK_HEADING_FIRST = "Capital Is The Stakes";
 const FALLBACK_HEADING_SECOND = "Here’s Everything Else.";
-const FALLBACK_SUBTITLE =
-  "We’ve been asked by founders what makes Titan different. Here’s our  honest answer.";
+/* NO FALLBACK SUBTITLE. The subtitle is genuinely optional: empty in the
+   Studio renders nothing at all, rather than quietly substituting a sentence
+   the editor never wrote and cannot see in the CMS. The headings keep their
+   fallbacks — a hero with no heading is broken, a hero with no subtitle is a
+   choice. Same rule as BlogsHeroClient. */
 
 /* ═══════════════════════════════════════════════════════
    Heading entrance animation variants
@@ -197,7 +200,7 @@ export default function BeyondTheChequeHeroClient({
 }) {
   const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
   const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
-  const subtitle = data?.subtitle || FALLBACK_SUBTITLE;
+  const hasSubtitle = hasRichText(data?.subtitle);
 
   return (
     <section
@@ -262,17 +265,25 @@ export default function BeyondTheChequeHeroClient({
           </motion.h2>
         </motion.div>
 
-        {/* ── SUBTITLE ── */}
-        <motion.div
-          className={`font-normal mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[600px] text-center text-[#323232] ${HERO_BODY_CLASS}`}
-          style={HERO_BODY_STYLE}
-          variants={{
-            hidden: { opacity: 0, y: 30 },
-            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut", delay: 0.6 } }
-          }}
-        >
-          <RichText value={subtitle} />
-        </motion.div>
+        {/* ── SUBTITLE ──
+            NOT RENDERED AT ALL when empty, rather than rendered empty. An
+            empty block still contributes its own top margin, so the heading
+            would sit a little above centre for no visible reason. Omitted, the
+            heading is the column's only child and the wrapper's
+            `items-center justify-center` centres it with nothing further to
+            do. With a subtitle present this is byte-for-byte what it was. */}
+        {hasSubtitle && (
+          <motion.div
+            className={`font-normal mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[600px] text-center text-[#323232] ${HERO_BODY_CLASS}`}
+            style={HERO_BODY_STYLE}
+            variants={{
+              hidden: { opacity: 0, y: 30 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut", delay: 0.6 } }
+            }}
+          >
+            <RichText value={data?.subtitle} />
+          </motion.div>
+        )}
 
       </motion.div>
     </section>

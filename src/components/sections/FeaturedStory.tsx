@@ -32,7 +32,11 @@ async function getData(): Promise<FoundersStoryGridData | null> {
       revalidate: 60,
     });
   } catch (err) {
-    console.error("[FeaturedStory] Sanity fetch failed, using fallback:", err);
+    /* No fallback left to use — returning null here means the band is simply
+       absent, same as when no story is ticked. Worth saying plainly in the log,
+       because "the band vanished" and "Sanity was unreachable" now look
+       identical on the page. */
+    console.error("[FeaturedStory] Sanity fetch failed, band omitted:", err);
     return null;
   }
 }

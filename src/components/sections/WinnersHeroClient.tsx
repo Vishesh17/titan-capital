@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import RichText, { type RichTextValue } from "@/components/ui/RichText";
+import RichText, { hasRichText, type RichTextValue } from "@/components/ui/RichText";
 import {
   motion,
   useMotionValue,
@@ -20,8 +20,9 @@ export interface WinnersHeroData {
 
 const FALLBACK_HEADING_FIRST = "Doubling Down On";
 const FALLBACK_HEADING_SECOND = "Breakout Companies";
-const FALLBACK_SUBTITLE =
-  "The Titan Capital Winners Fund backs the companies in our portfolio that have already proven themselves, and are ready to own their category.";
+/* NO FALLBACK SUBTITLE — see the note in BlogsHeroClient. Empty in the Studio
+   renders nothing, rather than substituting a sentence the editor never wrote
+   and cannot see in the CMS. */
 
 /* ─────────────────────────────────────────────────────────
    Hero Glow Background
@@ -295,7 +296,7 @@ export default function WinnersHeroClient({
 }) {
   const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
   const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
-  const subtitle = data?.subtitle || FALLBACK_SUBTITLE;
+  const hasSubtitle = hasRichText(data?.subtitle);
 
   return (
     <section className="relative h-screen w-full overflow-hidden max-md:overflow-x-hidden max-md:w-[100vw] max-md:ml-[calc(50%-50vw)] bg-[#00112E]">
@@ -335,20 +336,25 @@ export default function WinnersHeroClient({
             <span>{headingSecond}</span>
           </motion.h1>
 
-          <motion.div
-            className="mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[800px] font-['Poppins',_sans-serif] font-normal leading-[1.6] text-white/90 text-center"
-            style={{ fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)" }}
-            variants={{
-              hidden: { opacity: 0, y: 20 },
-              visible: {
-                opacity: 1,
-                y: 0,
-                transition: { duration: 0.8, ease: "easeOut", delay: 0.2 },
-              },
-            }}
-          >
-            <RichText value={subtitle} />
-          </motion.div>
+          {/* Omitted entirely when empty, not rendered empty — an empty block
+              still contributes its top margin and would push the heading off
+              centre for no visible reason. */}
+          {hasSubtitle && (
+            <motion.div
+              className="mt-[clamp(16px,min(2.5vw,4vh),36px)] max-w-[800px] font-['Poppins',_sans-serif] font-normal leading-[1.6] text-white/90 text-center"
+              style={{ fontSize: "clamp(14px, min(1.6vw, 2.35vh), 20px)" }}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.8, ease: "easeOut", delay: 0.2 },
+                },
+              }}
+            >
+              <RichText value={data?.subtitle} />
+            </motion.div>
+          )}
         </motion.div>
       </div>
     </section>
