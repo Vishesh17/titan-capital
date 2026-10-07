@@ -520,10 +520,20 @@ export function StoryCard({ story, sizerTags = [] }: { story: FounderStory; size
 export function SeeMoreButton({
   label,
   onClick,
+  href,
   icon = "arrow",
 }: {
   label: string;
   onClick?: () => void;
+  /** WHERE IT GOES, when it goes anywhere. Given an href this renders a real
+   *  <Link> instead of a <button>, which is the correct element for something
+   *  that navigates: middle-click and "open in new tab" work, a screen reader
+   *  announces it as a link, and Next prefetches the route.
+   *
+   *  Opt-in precisely so the two Load More call sites are untouched — those
+   *  genuinely are buttons, because they add rows to a grid rather than going
+   *  anywhere, and they keep the <button> branch unchanged. */
+  href?: string;
   /** Which mark sits in the navy circle. "arrow" is this button everywhere it
    *  already appears and stays the default, so no existing call site changes;
    *  "plus" is the blogs grid's Load More, which adds rows rather than going
@@ -534,24 +544,30 @@ export function SeeMoreButton({
 }) {
   const [hovered, setHovered] = useState(false);
 
-  return (
-    <motion.button
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className={`relative cursor-pointer overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] max-md:!h-[40px] ${
-        hovered ? "bg-white border-[#575757] max-md:!w-[160px]" : "bg-transparent border-transparent max-md:!w-[40px]"
-      }`}
-      style={{
-        width: hovered ? "min(12.15vw, 18.8vh)" : "min(3.36vw, 5.19vh)",
-        height: "min(3.36vw, 5.19vh)",
-        borderRadius: 999,
-        borderWidth: 1,
-        borderStyle: "solid",
-        boxSizing: "border-box",
-      }}
-      aria-label={label}
-    >
+  /* Everything that decides how the pill LOOKS lives here, so the link and the
+     button are the same object with two different tags. The width/colour
+     change on hover is a plain CSS transition (see `transition-all` below),
+     not a framer animation, which is why swapping the element changes nothing
+     about the motion. */
+  const shellClass = `relative cursor-pointer overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] max-md:!h-[40px] ${
+    hovered ? "bg-white border-[#575757] max-md:!w-[160px]" : "bg-transparent border-transparent max-md:!w-[40px]"
+  }`;
+  const shellStyle: React.CSSProperties = {
+    width: hovered ? "min(12.15vw, 18.8vh)" : "min(3.36vw, 5.19vh)",
+    height: "min(3.36vw, 5.19vh)",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderStyle: "solid",
+    boxSizing: "border-box",
+  };
+  const shellHandlers = {
+    onMouseEnter: () => setHovered(true),
+    onMouseLeave: () => setHovered(false),
+    "aria-label": label,
+  };
+
+  const inner = (
+    <>
       <motion.span
         className="pointer-events-none absolute -translate-y-1/2 whitespace-nowrap font-['Poppins',_sans-serif] font-normal text-black"
         style={{ left: "min(1.5vw, 2.5vh)", top: "50%", ...LABEL_STYLE, lineHeight: "100%" }}
@@ -581,6 +597,23 @@ export function SeeMoreButton({
           )}
         </motion.svg>
       </div>
+    </>
+  );
+
+  /* `inline-block` only on the link: a <button> is already inline-block by
+     default but an <a> is inline, so without it the pill would not take the
+     width and height set above. */
+  if (href) {
+    return (
+      <Link href={href} className={`inline-block ${shellClass}`} style={shellStyle} {...shellHandlers}>
+        {inner}
+      </Link>
+    );
+  }
+
+  return (
+    <motion.button onClick={onClick} className={shellClass} style={shellStyle} {...shellHandlers}>
+      {inner}
     </motion.button>
   );
 }
@@ -734,7 +767,13 @@ function StoriesSection({
           }}
           style={{ marginTop: "min(3.47vw, 5.37vh)" }}
         >
-          <SeeMoreButton label={ctaLabel} />
+          {/* IT GOES TO /foundersstory. It previously had neither an onClick
+              nor an href, so it rendered a button that did nothing at all —
+              it looked live, hovered open and led nowhere.
+
+              The destination is the same page the six cards above link into,
+              so "See More" means the full list of what is sampled here. */}
+          <SeeMoreButton label={ctaLabel} href="/foundersstory" />
         </motion.div>
       </motion.div>
     </section>
