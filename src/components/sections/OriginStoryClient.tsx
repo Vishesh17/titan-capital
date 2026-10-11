@@ -203,6 +203,10 @@ function ImageDeck({ images, alt }: { images: string[]; alt: string }) {
   const slots = count < 2 ? count : Math.max(count, DECK_SLOTS);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const shadeRefs = useRef<(HTMLDivElement | null)[]>([]);
+  /* Click-to-advance. The loop below owns the timing in closure variables, so
+     this is how the click reaches it: the effect assigns the real function,
+     and the handler on the container calls whatever is current. */
+  const advance = useRef<() => void>(() => {});
 
   useEffect(() => {
     if (count < 2) return;
@@ -247,6 +251,15 @@ function ImageDeck({ images, alt }: { images: string[]; alt: string }) {
         from += 1;
         start = now + HOLD_MS;
       }
+    };
+
+    /* A CLICK JUST ENDS THE HOLD EARLY. `start` is when the next swipe begins,
+       so moving it to now starts that swipe immediately — same arc, same
+       duration, and the hold after it resumes as usual. Ignored mid-swipe
+       (now >= start), so a fast tapper cannot stack transitions. */
+    advance.current = () => {
+      const now = performance.now();
+      if (now < start) start = now;
     };
 
     paint(0);
@@ -304,7 +317,15 @@ function ImageDeck({ images, alt }: { images: string[]; alt: string }) {
   return (
     /* `perspective` is what makes the tZ above depth rather than decoration —
        Swiper sets it on the container for exactly this reason. */
-    <div className="relative" style={{ ...cardStyle, perspective: "1200px" }}>
+    <div
+      className="relative cursor-pointer"
+      style={{ ...cardStyle, perspective: "1200px" }}
+      /* Tap or click anywhere on the stack to bring the next photo forward.
+         One handler on the container, not per card: the cards move under the
+         pointer as they animate, so a handler on the front card would miss
+         mid-swipe. Works for touch as-is — a tap fires click. */
+      onClick={() => advance.current()}
+    >
       {Array.from({ length: slots }, (_, i) => i).map((i) => (
         <div
           key={i}

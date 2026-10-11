@@ -25,7 +25,8 @@ export interface FoundersStoryHeroData {
 }
 
 const FALLBACK_LINE_ONE = "A Central Hub";
-const FALLBACK_LINE_TWO = "For Founders";
+/* No FALLBACK_LINE_TWO: the second line is optional — see the note where the
+   lines are resolved. */
 const FALLBACK_FOUNDERS = [
   "/images/FoundersStory/founder1.webp",
   "/images/FoundersStory/founder2.webp",
@@ -82,8 +83,14 @@ export default function FoundersStoryHero({
 }: {
   data?: FoundersStoryHeroData | null;
 }) {
+  /* LINE ONE KEEPS ITS FALLBACK, LINE TWO DOES NOT. A hero with no heading at
+     all is broken, so line one still has something to show if Sanity is empty
+     or unreachable; a second line is a choice the editor makes, so leaving it
+     blank in the Studio means a one-line heading. The `.filter(Boolean)` at
+     the render site already drops the empty — it was the `?? FALLBACK` here
+     that made the second line unavoidable. */
   const lineOne = data?.headingLineOne || FALLBACK_LINE_ONE;
-  const lineTwo = data?.headingLineTwo ?? FALLBACK_LINE_TWO;
+  const lineTwo = data?.headingLineTwo;
   /* The row is a four-up grid, so an empty array would leave a bare strip of
      navy where the photos belong — fall back rather than render nothing. */
   const founders = data?.founderImages?.length

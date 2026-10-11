@@ -1034,6 +1034,19 @@ export const foundersStoryListingQuery = groq`
   }
 `;
 
+/**
+ * /portfolio — the four-metric stats bar under the hero. Singleton.
+ *
+ * Entries with no figure are dropped here rather than in the component, so a
+ * half-filled row an editor left behind never reaches the render as a blank
+ * column.
+ */
+export const portfolioStatsQuery = groq`
+  *[_type == "portfolioStats"][0]{
+    "stats": stats[defined(value)]{ value, label }
+  }
+`;
+
 /** /foundersstory — the closing "650+ Founders" band. Singleton. */
 export const sixFiftyFoundersQuery = groq`
   *[_type == "sixFiftyFounders"][0]{

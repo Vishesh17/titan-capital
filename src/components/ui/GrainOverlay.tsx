@@ -26,6 +26,23 @@ import type { CSSProperties } from "react";
  *     section's content wrapper is `relative z-10`, so the grain textures the
  *     background but stays BEHIND the text.
  *
+ * NEVER PUT THIS INSIDE A SCROLLING BOX. It is `absolute inset-0`, which sizes
+ * to its containing block's PADDING BOX — one viewport of the scroller, not the
+ * full scroll height — and then scrolls away with the content. Scroll to the
+ * end of such a box and the last stretch has no grain on it, which against a
+ * grained surface reads as a patch of a different colour even though the
+ * background value is identical.
+ *
+ * It cost a real bug once: the WhatFoundersGet full-page card was the mobile
+ * scroller AND carried the grain, so a long card ended in a 109px band of bare
+ * #FBF7F0 (measured at 390x660). The fix was to move the scrolling onto an
+ * inner element so this layer sits on a box that never scrolls — see the note
+ * at its call site in WhatFoundersGetClient.
+ *
+ * So: put it on the STATIC box and let a child scroll, never the reverse. Every
+ * other caller is a page section, which grows with its content and has no
+ * scroller of its own, so `inset-0` covers it in full.
+ *
  * TUNING:
  *   - `opacity`       → strength. 0.15 subtle, 0.22 clearly visible, 0.3 heavy.
  *   - `baseFrequency` → grain size. Higher = finer (0.7–0.9), lower = chunkier.

@@ -18,7 +18,8 @@ export interface BeyondTheChequeHeroData {
 }
 
 const FALLBACK_HEADING_FIRST = "Capital Is The Stakes";
-const FALLBACK_HEADING_SECOND = "Here’s Everything Else.";
+/* No FALLBACK_HEADING_SECOND: the second line is optional — see where the
+   lines are resolved below. */
 /* NO FALLBACK SUBTITLE. The subtitle is genuinely optional: empty in the
    Studio renders nothing at all, rather than quietly substituting a sentence
    the editor never wrote and cannot see in the CMS. The headings keep their
@@ -198,8 +199,10 @@ export default function BeyondTheChequeHeroClient({
 }: {
   data?: BeyondTheChequeHeroData | null;
 }) {
+  /* LINE ONE KEEPS ITS FALLBACK, LINE TWO DOES NOT — a hero with no heading
+     is broken, a hero with one line is a choice. */
   const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
-  const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
+  const headingSecond = data?.headingSecond;
   const hasSubtitle = hasRichText(data?.subtitle);
 
   return (
@@ -250,6 +253,10 @@ export default function BeyondTheChequeHeroClient({
               {headingFirst}
             </span>
           </motion.div>
+          {/* Omitted when the Studio has no second line — the wrapper carries
+              its own bottom margin, so an empty one would leave a gap under
+              the first line with nothing in it. */}
+          {headingSecond && (
           <motion.div
           className="mb-[clamp(14px,min(2vw,3vh),28px)] flex flex-col items-center"
           style={{ paddingLeft: "var(--section-px-wide)", paddingRight: "var(--section-px-wide)" }}
@@ -264,6 +271,7 @@ export default function BeyondTheChequeHeroClient({
             {headingSecond}
           </motion.h2>
         </motion.div>
+          )}
 
         {/* ── SUBTITLE ──
             NOT RENDERED AT ALL when empty, rather than rendered empty. An

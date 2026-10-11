@@ -54,6 +54,7 @@ import { getInvestmentFAQ } from "./getInvestmentFAQ";
 import { getInvestmentForm } from "./getInvestmentForm";
 import { getInvestmentHero } from "./getInvestmentHero";
 import { portfolioGrid } from "./portfolioGrid";
+import { portfolioStats } from "./portfolioStats";
 import { winnersHero } from "./winnersHero";
 
 /**
@@ -128,6 +129,7 @@ export const schemaTypes: SchemaTypeDefinition[] = [
   /* Portfolio */
   company,
   portfolioGrid,
+  portfolioStats,
   /* Legal pages — both render through the same tabbed component */
   privacyPolicy,
   grievanceRedressal,

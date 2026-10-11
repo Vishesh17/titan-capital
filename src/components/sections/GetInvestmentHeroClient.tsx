@@ -244,7 +244,10 @@ export default function GetInvestmentHeroClient({
 }: {
   data?: GetInvestmentHeroData | null;
 }) {
+  /* LINE ONE KEEPS ITS FALLBACK, LINE TWO DOES NOT — a hero with no heading
+     is broken, a hero with one line is a choice. */
   const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
+  const headingSecond = data?.headingSecond;
   const hasSubtitle = hasRichText(data?.subtitle);
 
   const sectionRef = useRef<HTMLElement>(null);
@@ -272,17 +275,18 @@ export default function GetInvestmentHeroClient({
             className={`m-0 flex flex-col items-center justify-center text-white ${HERO_HEADING_DARK_CLASS}`}
             style={HERO_HEADING_DARK_STYLE}
           >
-            <span className="flex flex-col max-md:hidden">
-              <RevealLine show={show} delay={0}>{headingFirst}</RevealLine>
-            </span>
-            <span className="hidden flex-col items-center max-md:flex">
-              <span className="flex justify-center">
-                <RevealLine show={show} delay={0}>{"We Invest"}</RevealLine>
-              </span>
-              <span className="flex justify-center">
-                <RevealLine show={show} delay={0.3}>{"Early"}</RevealLine>
-              </span>
-            </span>
+            {/* BOTH BREAKPOINTS NOW READ THE STUDIO. The mobile block used to
+                hard-code "We Invest" / "Early", so editing the heading in
+                Sanity changed the desktop line and silently left the phone
+                showing the old words — and `headingSecond` was declared in
+                the type and never rendered anywhere at all.
+
+                One line each, with the second omitted when empty, so this
+                follows the same rule as every other hero. */}
+            <RevealLine show={show} delay={0}>{headingFirst}</RevealLine>
+            {headingSecond && (
+              <RevealLine show={show} delay={0.3}>{headingSecond}</RevealLine>
+            )}
           </h1>
 
           {/* Omitted entirely when empty, not rendered empty — an empty block

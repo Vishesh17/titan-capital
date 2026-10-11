@@ -51,8 +51,7 @@ export interface OurTeamHeroData {
    Fallbacks & Structural Grid Mapping
    ───────────────────────────────────────────────────────── */
 const FALLBACK_TITLE_1 = "Builders";
-const FALLBACK_TITLE_2 = "Backing";
-const FALLBACK_TITLE_3 = "Builders";
+/* No FALLBACK_TITLE_2 / _3: lines two and three are optional. */
 /* NO FALLBACK DESCRIPTION — see the note in BlogsHeroClient. Empty in the
    Studio renders nothing, rather than substituting a sentence the editor never
    wrote and cannot see in the CMS. Both the mobile and the desktop block below
@@ -238,9 +237,11 @@ export default function OurTeamHeroClient({
 }) {
   const [isFlipped, setIsFlipped] = useState(false);
 
+  /* LINE ONE KEEPS ITS FALLBACK, LINES TWO AND THREE DO NOT — a hero with no
+     heading is broken, a hero with fewer lines is a choice. */
   const titleLine1 = data?.titleLine1 || FALLBACK_TITLE_1;
-  const titleLine2 = data?.titleLine2 || FALLBACK_TITLE_2;
-  const titleLine3 = data?.titleLine3 || FALLBACK_TITLE_3;
+  const titleLine2 = data?.titleLine2;
+  const titleLine3 = data?.titleLine3;
   const hasDescription = hasRichText(data?.description);
 
   const teamItems = GRID_STRUCTURE.map((struct, index) => {
@@ -284,7 +285,11 @@ export default function OurTeamHeroClient({
     return () => clearInterval(interval);
   }, []);
 
-  const headingLines = [titleLine1, titleLine2, titleLine3];
+  /* `.filter(Boolean)` is what makes lines 2 and 3 optional. Both blocks
+     below `.map()` this array into an <h1> per line, so an empty string would
+     render an empty heading that still takes a full line box — a blank row in
+     the middle of the stack. Dropping it here fixes both layouts at once. */
+  const headingLines = [titleLine1, titleLine2, titleLine3].filter(Boolean);
 
   return (
     <section

@@ -21,7 +21,8 @@ export interface TitanSeedHeroData {
 }
 
 const FALLBACK_HEADING_FIRST = "We Are Your";
-const FALLBACK_HEADING_SECOND = "First Believer";
+/* No FALLBACK_HEADING_SECOND: the second line is optional — see where the
+   lines are resolved below. */
 /* NO FALLBACK SUBTITLE — see the note in BlogsHeroClient. Empty in the Studio
    renders nothing, rather than substituting a sentence the editor never wrote
    and cannot see in the CMS. */
@@ -367,8 +368,10 @@ export default function TitanSeedHeroClient({
 }: {
   data?: TitanSeedHeroData | null;
 }) {
+  /* LINE ONE KEEPS ITS FALLBACK, LINE TWO DOES NOT — a hero with no heading
+     is broken, a hero with one line is a choice. */
   const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
-  const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
+  const headingSecond = data?.headingSecond;
   const hasSubtitle = hasRichText(data?.subtitle);
 
   const sectionRef = useRef<HTMLElement>(null);
@@ -400,7 +403,12 @@ export default function TitanSeedHeroClient({
             }}
           >
             <RevealLine show={show} delay={0}>{headingFirst}</RevealLine>
-            <RevealLine show={show} delay={0.5}>{headingSecond}</RevealLine>
+            {/* Omitted when the Studio has no second line. RevealLine splits
+                its text per character, so an empty one would still render a
+                line box and leave a blank row under the heading. */}
+            {headingSecond && (
+              <RevealLine show={show} delay={0.5}>{headingSecond}</RevealLine>
+            )}
           </h1>
 
           {/* Omitted entirely when empty, not rendered empty — an empty block

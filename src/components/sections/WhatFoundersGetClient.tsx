@@ -568,6 +568,11 @@ function FullPageCard({
 }) {
   const [mounted, setMounted] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
+  /* The element that actually scrolls — see the note where it is rendered.
+     The reset below has to target THIS, not the overlay: the overlay no
+     longer scrolls, so setting its scrollTop would silently do nothing and
+     the card would open wherever the browser left it. */
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -580,8 +585,11 @@ function FullPageCard({
      scrolled" describes. Setting it explicitly costs nothing. */
   useEffect(() => {
     if (!mounted) return;
-    const el = overlayRef.current;
-    if (el) el.scrollTop = 0;
+    /* Both, deliberately. The scroller is the inner div now, but resetting the
+       overlay too costs nothing and keeps this correct if the scroll ever
+       moves back. */
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+    if (overlayRef.current) overlayRef.current.scrollTop = 0;
   }, [mounted, row]);
 
   useEffect(() => {
@@ -609,7 +617,11 @@ function FullPageCard({
         transition: { duration: 0.3, ease: EASE },
       }}
       ref={overlayRef}
-      className="fixed bottom-0 left-0 right-0 flex items-center justify-center [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden max-md:!block max-md:w-screen max-md:overflow-y-auto max-md:overscroll-none max-md:!pt-[32px] max-md:!px-[24px] max-md:!pb-[40px] max-md:!bg-[#FBF7F0] max-md:!backdrop-filter-none"
+      /* `overflow-hidden` on mobile, NOT `overflow-y-auto` — this box must
+         never scroll, because it is the one carrying the background and the
+         grain. See the note on the grain below. The card still scrolls; the
+         inner div does it. */
+      className="fixed bottom-0 left-0 right-0 flex items-center justify-center [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden max-md:!block max-md:w-screen max-md:overflow-hidden max-md:!pt-[32px] max-md:!px-[24px] max-md:!pb-[40px] max-md:!bg-[#FBF7F0] max-md:!backdrop-filter-none"
       style={{
         top: "var(--nav-height, 64px)",
         /* Must sit ABOVE page sections but BELOW the navbar chrome, which is
@@ -632,6 +644,27 @@ function FullPageCard({
       role="dialog"
       aria-modal="true"
     >
+      {/* ── THE GRAIN MUST SIT ON A BOX THAT NEVER SCROLLS ──
+          THIS IS THE "different background at the bottom" BUG. GrainOverlay is
+          `absolute inset-0`, which sizes to its containing block's PADDING BOX
+          — one card-height — and then scrolls with that box's content. While
+          the overlay itself was the mobile scroller, scrolling to the end of a
+          long card dragged the grain up off the top and left bare #FBF7F0
+          showing underneath.
+
+          Measured at 390x660 on the Fundraising card: 703px of content in a
+          594px box, grain 594px tall. At the bottom of the scroll the grain's
+          foot sat at 551 while the card's sat at 660 — a 109px band of
+          un-grained background, exactly the lighter strip in the report.
+
+          THE COLOUR WAS NEVER WRONG. Both are #FBF7F0; one simply had the
+          texture and the other did not, and against a grained surface that
+          reads as a different shade. Repainting it would not have helped.
+
+          The fix is structural rather than cosmetic: the overlay no longer
+          scrolls on mobile, so this layer is pinned to the visible card for
+          good, and the inner div below is the single scroller — on both
+          breakpoints now, which is what desktop has always done. */}
       <GrainOverlay opacity={0.22} zIndex={1} />
       {/* TWO NESTED SCROLLERS WAS THE BUG. This div scrolls (`max-h-full
           overflow-y-auto`) AND on mobile its parent scrolls too
@@ -651,7 +684,18 @@ function FullPageCard({
           and no plugin provides it. The arbitrary variants below are what the
           rest of the codebase uses, which is why every other scroller has no
           bar and this one drew a white line down the text. */}
-      <div className="relative z-10 mx-auto max-h-full w-full max-w-7xl overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden max-md:!max-h-none max-md:!overflow-visible">
+      <div
+        ref={scrollRef}
+        /* THE SINGLE SCROLLER, on both breakpoints. It used to hand scrolling
+           to the overlay below md (`max-md:!overflow-visible` here plus
+           `overflow-y-auto` there) to avoid two nested scrollers — but that
+           put the scroll on the same box as the background and the grain,
+           which is what made the grain slide away. One scroller is still the
+           rule; it is just this one now, which is the box with no paint on it.
+           `overscroll-contain` keeps a flick at either end from chaining
+           through to the locked page behind. */
+        className="relative z-10 mx-auto max-h-full w-full max-w-7xl overflow-y-auto overscroll-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      >
         <OpenedRow row={row} onBack={onBack} />
       </div>
     </motion.div>

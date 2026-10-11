@@ -270,7 +270,8 @@ const PARTICLES = (() => {
 
 /** Copy used until the Sanity singleton is filled in. */
 const FALLBACK_LINE_ONE = "Being Founder";
-const FALLBACK_LINE_TWO = "Takes Guts";
+/* No FALLBACK_LINE_TWO: the second line is optional — see where the lines are
+   resolved below. */
 /* NO FALLBACK DESCRIPTION — see the note in BlogsHeroClient. Empty in the
    Studio renders nothing, rather than substituting a sentence the editor never
    wrote and cannot see in the CMS. */
@@ -460,11 +461,33 @@ function PhotoGalaxy({ photos }: { photos: OurStoryHeroPhoto[] }) {
     let prev = performance.now();
 
     /* Measured with every transform cleared, so `top` is the tile's resting
-       place in the container rather than wherever the drift had left it. */
+       place in the container rather than wherever the drift had left it.
+       This is the reference's `onResize`, step for step — it sets each tile's
+       left, clears the transform, re-reads the box, and zeroes the drift. */
     const measure = () => {
       const rect = container.getBoundingClientRect();
+      /* ── THE MOBILE FIELD IS LAID OUT DIFFERENTLY ──
+         The reference's own branch: `const s = window.innerWidth < 700`, and
+         then `s ? (n % 4) * 25 + (e.x % 20) : e.x`.
+
+         The desktop x spans -10% to 104% so the field bleeds off both edges of
+         a wide frame. On a 375px phone that same spread is most of the screen
+         per step, so the columns collapse into a crowd down the middle with
+         gaps at the sides. Mobile instead drops every tile into one of FOUR
+         fixed columns at 0/25/50/75%, with up to 20% of jitter so the result
+         still scatters rather than ruling up.
+
+         `((x % 20) + 20) % 20` rather than the reference's bare `e.x % 20`:
+         its own x values are non-negative, ours start at -10, and JS `%` keeps
+         the sign — so a bare modulo would pull the leftmost tiles a further
+         few percent off the left edge instead of jittering them inward. */
+      const mobile = window.innerWidth < 700;
       tileRefs.current.forEach((el, n) => {
         if (!el) return;
+        const p = PARTICLES[n];
+        el.style.left = mobile
+          ? `${(n % 4) * 25 + (((p.x % 20) + 20) % 20)}%`
+          : `${p.x}%`;
         el.style.transform = "translate3d(0, 0px, 0)";
         const r = el.getBoundingClientRect();
         tiles[n].extra = 0;
@@ -675,8 +698,12 @@ export default function OurStoryHeroClient({
   /* Sanity first, the constants below only as a fallback — so the hero still
      reads properly before the singleton is created, and follows the CMS the
      moment it is. */
+  /* LINE ONE KEEPS ITS FALLBACK, LINE TWO DOES NOT — a hero with no heading
+     is broken, a hero with one line is a choice. The `.filter(Boolean)` at
+     the render site already drops an empty line; it was the `?? FALLBACK`
+     here that made the second one unavoidable. */
   const line1 = data?.headingLineOne || FALLBACK_LINE_ONE;
-  const line2 = data?.headingLineTwo ?? FALLBACK_LINE_TWO;
+  const line2 = data?.headingLineTwo;
   const hasDescription = hasRichText(data?.description);
 
   /* The per-character reveal runs once the component is on the client. This
@@ -739,13 +766,44 @@ export default function OurStoryHeroClient({
 
        Nothing paints it over: the next section simply comes later in the DOM
        and is positioned, so at equal stacking it wins. No z-index needed. */
-    <div ref={pinRef} className="relative w-full shrink-0 h-[150vh] max-md:!h-[150dvh]">
-      <div className="absolute inset-x-0 top-0 h-[300vh] max-md:!h-[300dvh]">
+    /* ══════════ WHY `svh` AND NOT `dvh` ON MOBILE ══════════
+       THIS IS WHAT MADE THE PHOTOS GLITCH ON A PHONE, and the reference uses
+       `svh` for exactly these three boxes:
+
+         .c-brands_hero        { height: 150svh }
+         .c-brands_hero-inner  { height: 300svh }
+         .c-brands_hero-sticky { height: 100svh }
+
+       `dvh` is the DYNAMIC viewport height: it tracks the visible area as the
+       URL bar collapses on scroll down and returns on scroll up. Every box
+       here was sized from it, so the bar moving RESIZED THE FIELD MID-SCROLL —
+       and the ResizeObserver below answers a resize by calling `measure()`,
+       which deliberately clears every transform to re-read each tile's resting
+       place. That reset is correct for a real layout change and catastrophic
+       several times a second: it zeroes `position`, `extra` and `currentScale`
+       and the drift accumulator with them.
+
+       Measured at 375px, dropping the viewport 812 -> 752 at a fixed scroll:
+
+           container      1218 -> 1128  (-90)
+           tile 1         283.34px scale(1.21) -> -25.52px scale(1)
+           every tile     snapped back to scale 1 and re-laid out
+
+       So the entire field teleported each time the bar moved. `svh` is the
+       SMALL viewport height — the viewport with the browser chrome shown — and
+       it is STATIC, so the bar can come and go and none of these numbers move.
+       Nothing is cut off either: svh is never larger than the visible area, and
+       when the bar hides the spare pixels show the hero's own white.
+
+       Desktop is untouched — all three are `max-md:` overrides, and above that
+       breakpoint `vh` and `svh` are the same number anyway. */
+    <div ref={pinRef} className="relative w-full shrink-0 h-[150vh] max-md:!h-[150svh]">
+      <div className="absolute inset-x-0 top-0 h-[300vh] max-md:!h-[300svh]">
     <motion.section
-      /* FULL SCREEN, the same way HeroClient is: `h-screen` with a `100dvh`
-         override under `md`, because mobile browser chrome makes `vh` taller
-         than the visible area and the hero would be cut off by the URL bar. */
-      className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden bg-white max-md:!h-[100dvh]"
+      /* FULL SCREEN, with a `100svh` override under `md` — the reference's
+         `.c-brands_hero-sticky { height: 100svh }`. It was `100dvh`; see the
+         note on the pin above for why that moved the field mid-scroll. */
+      className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden bg-white max-md:!h-[100svh]"
       style={{
         // White section starts at the very top so its background fills
         // behind the transparent navbar (nav strip matches the hero until

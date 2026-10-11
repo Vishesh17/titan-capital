@@ -48,7 +48,7 @@ export interface TitanEcosystemHeroData {
 }
 
 const FALLBACK_HEADING_LINE_ONE = "More Than Capital,";
-const FALLBACK_HEADING_LINE_TWO = "A Community";
+/* No FALLBACK_HEADING_LINE_TWO: the second line is optional. */
 const FALLBACK_FOUNDER_COUNT = "500+ founders";
 /* NO FALLBACK DESCRIPTION — see the note in BlogsHeroClient. Empty in the
    Studio renders nothing, rather than substituting a sentence the editor never
@@ -89,8 +89,10 @@ export default function TitanEcosystemHeroClient({
 }: {
   data?: TitanEcosystemHeroData | null;
 }) {
+  /* LINE ONE KEEPS ITS FALLBACK, LINE TWO DOES NOT — a hero with no heading
+     is broken, a hero with one line is a choice. */
   const headingLineOne = data?.headingLineOne || FALLBACK_HEADING_LINE_ONE;
-  const headingLineTwo = data?.headingLineTwo || FALLBACK_HEADING_LINE_TWO;
+  const headingLineTwo = data?.headingLineTwo;
   const founderCountLabel = data?.founderCountLabel || FALLBACK_FOUNDER_COUNT;
   const hasDescription = hasRichText(data?.description);
 
@@ -143,6 +145,11 @@ export default function TitanEcosystemHeroClient({
     el.parentElement?.appendChild(probe);
     let widest = 0;
     for (const line of [headingLineOne, headingLineTwo]) {
+      /* Skip an absent second line. Without this, `textContent = undefined`
+         measures the literal string "undefined" — nine characters wide — and
+         the fit below would shrink the heading to clear text that is not on
+         the page. */
+      if (!line) continue;
       probe.textContent = line;
       widest = Math.max(widest, probe.getBoundingClientRect().width);
     }
@@ -218,11 +225,19 @@ export default function TitanEcosystemHeroClient({
               the same either way, but without it the heading's text value is
               "What A TitanCheque Comes With" — which is what gets announced
               and what gets copied. Whitespace between blocks is dropped in
-              layout, so this costs nothing visually. */}
-          {" "}
-          <span data-hero-line className="block md:whitespace-nowrap">
-            {headingLineTwo}
-          </span>
+              layout, so this costs nothing visually.
+
+              Both the space and the line are omitted together when there is
+              no second line, so a one-line heading carries no stray trailing
+              space in its text value. */}
+          {headingLineTwo && (
+            <>
+              {" "}
+              <span data-hero-line className="block md:whitespace-nowrap">
+                {headingLineTwo}
+              </span>
+            </>
+          )}
         </motion.h1>
 
         {/* ── FOUNDER COUNT ──
