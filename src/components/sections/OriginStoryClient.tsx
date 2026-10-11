@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import RichText, { type RichTextValue } from "@/components/ui/RichText";
 import Image from "next/image";
 import { motion, useScroll, useSpring } from "framer-motion";
@@ -198,9 +198,76 @@ function cardState(p: number, count: number) {
  */
 const DECK_SLOTS = 7;
 
+/**
+ * WHICH PHOTO EACH SLOT HOLDS.
+ *
+ * With fewer photographs than slots some must appear twice — that part is
+ * unavoidable, and it is the price of the seven-slot stack above. What IS
+ * avoidable is the two copies landing NEXT TO EACH OTHER in the cycle, which
+ * is exactly what `images[i % count]` did.
+ *
+ * Measured on the live page, the second bullet (6 photos, 7 slots) came out
+ * `0 1 2 3 4 5 0` — the repeat at slots 0 and 6. Cards come to the front in
+ * slot order and the cycle wraps, so slot 6 is immediately followed by slot 0
+ * and that photograph arrived twice in a row. The first and fourth bullets
+ * (5 photos) were doing it twice over, at a gap of two.
+ *
+ * So: lay the distinct photos round the cycle evenly first, then give each
+ * leftover slot whichever photo is FURTHEST, cyclically, from a copy of
+ * itself. For 6-over-7 that moves the repeat from a gap of 1 to a gap of 3,
+ * which is the most 7 slots allow; for 5-over-7 both repeats go to 3.
+ *
+ * Deterministic, so the deck is laid out identically on server and client and
+ * there is no hydration mismatch — the same reason the drift field uses a
+ * seeded PRNG rather than Math.random.
+ */
+function slotPhotos(count: number, slots: number): number[] {
+  if (count <= 0) return [];
+  if (count >= slots) return Array.from({ length: slots }, (_, i) => i % count);
+
+  /** Shortest way round the ring between two slots. */
+  const gap = (a: number, b: number) => {
+    const d = Math.abs(a - b);
+    return Math.min(d, slots - d);
+  };
+
+  const at = new Array<number>(slots).fill(-1);
+  const placed: number[][] = Array.from({ length: count }, () => []);
+
+  // 1. Every photo once, spaced as evenly round the ring as it divides.
+  for (let j = 0; j < count; j++) {
+    let p = Math.round((j * slots) / count) % slots;
+    while (at[p] !== -1) p = (p + 1) % slots; // rounding collision — take the next free slot
+    at[p] = j;
+    placed[j].push(p);
+  }
+
+  // 2. The leftovers go to whichever photo is furthest from a copy of itself.
+  for (let p = 0; p < slots; p++) {
+    if (at[p] !== -1) continue;
+    let best = 0;
+    let bestGap = -1;
+    for (let j = 0; j < count; j++) {
+      let g = slots;
+      for (const q of placed[j]) g = Math.min(g, gap(p, q));
+      if (g > bestGap) {
+        bestGap = g;
+        best = j;
+      }
+    }
+    at[p] = best;
+    placed[best].push(p);
+  }
+
+  return at;
+}
+
 function ImageDeck({ images, alt }: { images: string[]; alt: string }) {
   const count = images.length;
   const slots = count < 2 ? count : Math.max(count, DECK_SLOTS);
+  /* Slot -> photo index. Depends only on the two counts, so this is computed
+     once per deck rather than on every render. See slotPhotos. */
+  const order = useMemo(() => slotPhotos(count, slots), [count, slots]);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const shadeRefs = useRef<(HTMLDivElement | null)[]>([]);
   /* Click-to-advance. The loop below owns the timing in closure variables, so
@@ -345,8 +412,10 @@ function ImageDeck({ images, alt }: { images: string[]; alt: string }) {
             })(),
           }}
         >
-          {/* The pictures repeat around the padded stack — see DECK_SLOTS. */}
-          {photo(images[i % count])}
+          {/* The pictures repeat around the padded stack — see DECK_SLOTS —
+              but `order` decides WHICH slot gets which, so a repeat never
+              lands beside its twin. It was `images[i % count]`. */}
+          {photo(images[order[i]])}
           {/* Swiper's own slide shadow — a flat 15% black that fades in over
               the second half of a card's exit and keeps the buried cards from
               reading as bright as the front one. */}

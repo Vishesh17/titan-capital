@@ -19,7 +19,7 @@ export interface WhatWeLookForData {
 }
 
 const FALLBACK_HEADING_FIRST = "What We";
-const FALLBACK_HEADING_SECOND = "Look For";
+/* No FALLBACK_HEADING_SECOND: the second line is optional — see where it is resolved. */
 
 const FALLBACK_LOOK_FOR_DATA: WhatWeLookForItem[] = [
   {
@@ -46,7 +46,10 @@ export default function WhatWeLookForClient({
   data?: WhatWeLookForData | null;
 }) {
   const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
-  const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
+  /* LINE ONE KEEPS ITS FALLBACK, LINE TWO DOES NOT — a heading with nothing
+     in it is broken, a one-line heading is a choice. Clearing the second line
+     in the Studio now removes it instead of reverting to a built-in. */
+  const headingSecond = data?.headingSecond;
   const lookForData =
     data?.items && data.items.length > 0 ? data.items : FALLBACK_LOOK_FOR_DATA;
 
@@ -159,7 +162,7 @@ export default function WhatWeLookForClient({
    style={{ ...SECTION_HEADING_STYLE, }}
    variants={fadeUp}
    >
-            {headingFirst} {headingSecond}
+            {[headingFirst, headingSecond].filter(Boolean).join(" ")}
           </motion.h2>
         </motion.div>
 

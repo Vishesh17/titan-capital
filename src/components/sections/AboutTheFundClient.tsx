@@ -112,7 +112,7 @@ export interface AboutTheFundData {
 }
 
 const FALLBACK_HEADING_FIRST = "About The";
-const FALLBACK_HEADING_SECOND = "Fund";
+/* No FALLBACK_HEADING_SECOND: the second line is optional — see where it is resolved. */
 const FALLBACK_PARAGRAPHS = [
   "We invest in Titan portfolio companies that have demonstrated strong momentum and growth. Having partnered with founders since day one, we continue to support them with capital, strategic guidance, experience, and access to our network. This long-term relationship helps us better understand their needs and provide the right support to accelerate their journey toward lasting success.",
 ];
@@ -126,7 +126,10 @@ export default function AboutTheFundClient({
   data?: AboutTheFundData | null;
 }) {
   const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
-  const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
+  /* LINE ONE KEEPS ITS FALLBACK, LINE TWO DOES NOT — a heading with nothing
+     in it is broken, a one-line heading is a choice. Clearing the second line
+     in the Studio now removes it instead of reverting to a built-in. */
+  const headingSecond = data?.headingSecond;
   const paragraphs = data?.paragraphs?.length ? data.paragraphs : FALLBACK_PARAGRAPHS;
 
   const imageContainerRef = useRef<HTMLDivElement>(null);
@@ -164,7 +167,7 @@ export default function AboutTheFundClient({
             custom={0}
             variants={fadeUp}
           >
-            {headingFirst} {headingSecond}
+            {[headingFirst, headingSecond].filter(Boolean).join(" ")}
           </motion.h2>
         </motion.div>
 

@@ -133,7 +133,7 @@ export const FALLBACK_SLIDES: FounderStory[] = [
 ];
 
 const FALLBACK_IMPACT_HEADING_FIRST = "Impact";
-const FALLBACK_IMPACT_HEADING_SECOND = "At A Glance";
+/* No FALLBACK_IMPACT_HEADING_SECOND: the second line is optional — see where it is resolved. */
 /* The \n is the point: it is what the editor would type as a second line, and
    it renders as one only because the heading is `whitespace-pre-line`. */
 const FALLBACK_STORIES_HEADING = "Their Stories,\nOur Credentials";
@@ -782,7 +782,10 @@ function StoriesSection({
 
 export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceData | null }) {
   const impactHeadingFirst = data?.impactHeadingFirst || FALLBACK_IMPACT_HEADING_FIRST;
-  const impactHeadingSecond = data?.impactHeadingSecond || FALLBACK_IMPACT_HEADING_SECOND;
+  /* LINE ONE KEEPS ITS FALLBACK, LINE TWO DOES NOT — a heading with nothing
+     in it is broken, a one-line heading is a choice. Clearing the second line
+     in the Studio now removes it instead of reverting to a built-in. */
+  const impactHeadingSecond = data?.impactHeadingSecond;
   const storiesHeading = data?.storiesHeading || FALLBACK_STORIES_HEADING;
   const ctaLabel = data?.ctaLabel || FALLBACK_CTA_LABEL;
   const impactData = data?.impactStats && data.impactStats.length > 0 ? data.impactStats : FALLBACK_IMPACT_DATA;
@@ -845,7 +848,7 @@ export default function ImpactAtGlanceClient({ data }: { data?: ImpactAtGlanceDa
     marginBottom: "min(3.47vw, 5.37vh)",
    }}
    >
-            {`${impactHeadingFirst} ${impactHeadingSecond}`}
+            {[impactHeadingFirst, impactHeadingSecond].filter(Boolean).join(" ")}
           </motion.h2>
 
           <div

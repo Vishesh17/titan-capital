@@ -35,7 +35,7 @@ export interface GetInvestmentFAQData {
 }
 
 const FALLBACK_HEADING_FIRST = "Questions Founders Ask";
-const FALLBACK_HEADING_SECOND = "";
+/* No FALLBACK_HEADING_SECOND: the second line is optional — see where it is resolved. */
 
 const FALLBACK_FAQ: GetInvestmentFAQItem[] = [
   {
@@ -181,7 +181,10 @@ export default function GetInvestmentFAQClient({
   data?: GetInvestmentFAQData | null;
 }) {
   const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
-  const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
+  /* LINE ONE KEEPS ITS FALLBACK, LINE TWO DOES NOT — a heading with nothing
+     in it is broken, a one-line heading is a choice. Clearing the second line
+     in the Studio now removes it instead of reverting to a built-in. */
+  const headingSecond = data?.headingSecond;
   const faqs =
     data?.items && data.items.length > 0 ? data.items : FALLBACK_FAQ;
   const [openId, setOpenId] = useState<string | null>(null);

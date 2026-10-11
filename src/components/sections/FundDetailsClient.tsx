@@ -27,7 +27,7 @@ export interface FundDetailsData {
 
 /* ── Fallbacks ── */
 const FALLBACK_HEADING_FIRST = "Fund";
-const FALLBACK_HEADING_SECOND = "Details";
+/* No FALLBACK_HEADING_SECOND: the second line is optional — see where it is resolved. */
 const FALLBACK_FUNDS: FundInfo[] = [
   {
     title: "Fund I Details",
@@ -261,7 +261,10 @@ export default function FundDetailsClient({
   data?: FundDetailsData | null;
 }) {
   const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
-  const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
+  /* LINE ONE KEEPS ITS FALLBACK, LINE TWO DOES NOT — a heading with nothing
+     in it is broken, a one-line heading is a choice. Clearing the second line
+     in the Studio now removes it instead of reverting to a built-in. */
+  const headingSecond = data?.headingSecond;
   const funds = data?.funds?.length ? data.funds : FALLBACK_FUNDS;
 
   const [isExpanded, setIsExpanded] = useState(false);
@@ -304,7 +307,7 @@ export default function FundDetailsClient({
               // Reduced line-height from 150% to 110% to eliminate fake whitespace
               style={{ fontSize: "min(4.51vw, 6.98vh)", lineHeight: "110%" }}
             >
-              {headingFirst} {headingSecond}
+              {[headingFirst, headingSecond].filter(Boolean).join(" ")}
             </h2>
           </motion.div>
 

@@ -154,7 +154,7 @@ const FALLBACK_TESTIMONIALS: TestimonialItem[] = [
 const FALLBACK_TOP_FIRST = "What Our Founders Say";
 const FALLBACK_TOP_SECOND = "";
 const FALLBACK_BOTTOM_FIRST = "You Build The Vision.";
-const FALLBACK_BOTTOM_SECOND = "We Help You Scale It.";
+/* No FALLBACK_BOTTOM_SECOND: the second line is optional — see where it is resolved. */
 const FALLBACK_CTA = "Get Investment";
 
 function cdnImageSrc(url: string, width: number): string {
@@ -661,7 +661,10 @@ export default function FoundersTestimonialClient({
   data?: FoundersTestimonialData | null;
 }) {
   const topHeading = (data?.topHeadingFirst || FALLBACK_TOP_FIRST) + (data?.topHeadingSecond ? ` ${data.topHeadingSecond}` : "");
-  const bottomHeadingSecond = data?.bottomHeadingSecond || FALLBACK_BOTTOM_SECOND;
+  /* LINE ONE KEEPS ITS FALLBACK, LINE TWO DOES NOT — a heading with nothing
+     in it is broken, a one-line heading is a choice. Clearing the second line
+     in the Studio now removes it instead of reverting to a built-in. */
+  const bottomHeadingSecond = data?.bottomHeadingSecond;
   const ctaLabel = data?.ctaLabel || FALLBACK_CTA;
   const testimonials = data?.testimonials && data.testimonials.length > 0 ? data.testimonials : FALLBACK_TESTIMONIALS;
 
@@ -772,13 +775,18 @@ export default function FoundersTestimonialClient({
               <TypingText start={visionLineInView && highlightLanded} />
             </span>
           </motion.h2>
-          <motion.h2
-            className={`m-0 mt-[min(0.58vw,0.90vh)] text-center text-black max-md:!max-w-[340px] max-md:!mt-[8px] ${SECTION_HEADING_CLASS}`}
-            style={{ ...SECTION_HEADING_STYLE, }}
-            variants={{ hidden: { opacity: 0, x: 50 }, visible: { opacity: 1, x: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.2 } } }}
-          >
-            {bottomHeadingSecond}
-          </motion.h2>
+          {/* Omitted when the Studio has no second line — this <h2> carries
+              its own top margin, so an empty one would leave a gap under the
+              first line with nothing in it. */}
+          {bottomHeadingSecond && (
+            <motion.h2
+              className={`m-0 mt-[min(0.58vw,0.90vh)] text-center text-black max-md:!max-w-[340px] max-md:!mt-[8px] ${SECTION_HEADING_CLASS}`}
+              style={{ ...SECTION_HEADING_STYLE, }}
+              variants={{ hidden: { opacity: 0, x: 50 }, visible: { opacity: 1, x: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.2 } } }}
+            >
+              {bottomHeadingSecond}
+            </motion.h2>
+          )}
         </motion.div>
 
         <CursorFillButtonTestimonial href="/getinvestment" label={ctaLabel} />

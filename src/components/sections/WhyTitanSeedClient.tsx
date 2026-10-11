@@ -131,7 +131,7 @@ export interface WhyTitanSeedData {
 }
 
 const FALLBACK_HEADING_FIRST = "Why";
-const FALLBACK_HEADING_SECOND = "Titan Seed";
+/* No FALLBACK_HEADING_SECOND: the second line is optional — see where it is resolved. */
 
 const FALLBACK_CARDS_DATA: WhyTitanSeedCard[] = [
   {
@@ -160,7 +160,10 @@ const FALLBACK_CARDS_DATA: WhyTitanSeedCard[] = [
     data?: WhyTitanSeedData | null;
   }) {
     const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
-    const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
+  /* LINE ONE KEEPS ITS FALLBACK, LINE TWO DOES NOT — a heading with nothing
+     in it is broken, a one-line heading is a choice. Clearing the second line
+     in the Studio now removes it instead of reverting to a built-in. */
+    const headingSecond = data?.headingSecond;
     const cardsData =
       data?.cards && data.cards.length > 0 ? data.cards : FALLBACK_CARDS_DATA;
   
@@ -199,7 +202,7 @@ const FALLBACK_CARDS_DATA: WhyTitanSeedCard[] = [
             custom={0}
             variants={fadeUp}
           >
-            {headingFirst} {headingSecond}
+            {[headingFirst, headingSecond].filter(Boolean).join(" ")}
           </motion.h2>
   
           <motion.p

@@ -21,7 +21,7 @@ export interface PortfolioWinnerFundData {
 
 /* ── Fallbacks ── */
 const FALLBACK_HEADING_FIRST = "Portfolio Company";
-const FALLBACK_HEADING_SECOND = "Winner Fund";
+/* No FALLBACK_HEADING_SECOND: the second line is optional — see where it is resolved. */
 const FALLBACK_COMPANIES: PortfolioCompany[] = [
   { name: "Anveshan", logo: "/images/logos_backup/anveshan.webp", category: "A traceable, traditional and completely natural food products", logoW: "65%", logoH: "18%" },
   { name: "BECO", logo: "/images/logos_backup/BECO.webp", category: "Eco-friendly D2C brand offering sustainable alternatives to everyday essentials at an affordable price", logoW: "48%", logoH: "80%" },
@@ -187,7 +187,10 @@ export default function PortfolioWinnerFundClient({
   data?: PortfolioWinnerFundData | null;
 }) {
   const headingFirst = data?.headingFirst || FALLBACK_HEADING_FIRST;
-  const headingSecond = data?.headingSecond || FALLBACK_HEADING_SECOND;
+  /* LINE ONE KEEPS ITS FALLBACK, LINE TWO DOES NOT — a heading with nothing
+     in it is broken, a one-line heading is a choice. Clearing the second line
+     in the Studio now removes it instead of reverting to a built-in. */
+  const headingSecond = data?.headingSecond;
   const companies = data?.companies?.length ? data.companies : FALLBACK_COMPANIES;
 
   const rowsCount = Math.ceil(companies.length / 4);
@@ -218,7 +221,8 @@ export default function PortfolioWinnerFundClient({
               visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
             }}
           >
-            {headingFirst} <br /> {headingSecond}
+            {headingFirst}
+            {headingSecond && (<><br /> {headingSecond}</>)}
           </motion.h2>
         </motion.div>
 
