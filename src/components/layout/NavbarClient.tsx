@@ -287,32 +287,30 @@ export default function NavbarClient({ data }: { data?: NavbarData }) {
      rather than its label, because Sanity labels it "Blogs & News" while the
      list said "Blogs". Titan Ecosystem and Indicorns were blocked by label.
 
-     FOUNDERS' STORIES IS BACK ON BOTH LISTS. The label is spelled the way
-     Sanity actually spells it — "Founders' Stories", curly-free apostrophe,
-     plural. The old entry read "Founders Story" and so never matched anything;
-     only the URL was doing the blocking, which is a single point of failure if
-     the route is ever edited in the Studio. Both now catch it.
+     OUR STORY AND FOUNDERS' STORIES ARE NOW LIVE, off both lists. Sanity has
+     always pointed them at /ourstory and /foundersstory and both pages build
+     and render; these entries were the only thing rewriting them to
+     "#disabled" on the way through. The footer lists them separately, through
+     its own `disabled` flag in the Studio, so enabling a page means clearing
+     it in BOTH places — see the footer document's nav columns.
 
-     Sanity still links it at /foundersstory and the page itself still builds
-     and works — this override is what keeps it out of the menu, so re-enabling
-     it later means deleting these two entries again and nothing else.
+     Note the two lists catch different things, which is why enabling one item
+     sometimes meant editing both: Blogs & News was blocked by its URL (/blogs)
+     rather than its label, because Sanity labels it "Blogs & News" while the
+     list said "Blogs". Titan Ecosystem and Indicorns were blocked by label.
 
-     The rest are genuinely not ready: the two fund pages and Our Story.
-     /beyondthecheque stays too — it is its own page, not the Titan Ecosystem
-     one. */
+     What remains is genuinely not ready: the two fund pages, which are
+     commented out of their own routes, and /beyondthecheque — its own page,
+     not the Titan Ecosystem one. */
   const DISABLED_URLS = [
     "/titanseedfund",
     "/winnersfund",
-    "/ourstory",
-    "/foundersstory",
     "/beyondthecheque",
   ];
 
   const DISABLED_LABELS = [
     "Titan Seed Fund",
     "Titan Winners Fund",
-    "Our Story",
-    "Founders' Stories",
   ];
 
   const overrideDisabledUrls = (sections: NavbarSection[]): NavbarSection[] => {

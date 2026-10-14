@@ -49,7 +49,7 @@ const FALLBACK_NAV: FooterNavColumn[] = [
   {
     title: "About",
     links: [
-      { label: "Our Story", url: "/ourstory", disabled: true },
+      { label: "Our Story", url: "/ourstory" },
       { label: "Meet The Team", url: "/ourteam" },
     ],
   },
@@ -57,7 +57,7 @@ const FALLBACK_NAV: FooterNavColumn[] = [
     title: "Portfolio",
     links: [
       { label: "Our Portfolio", url: "/portfolio" },
-      { label: "Founders' Stories", url: "/foundersstory", disabled: true },
+      { label: "Founders' Stories", url: "/foundersstory" },
       { label: "Get Investment", url: "/getinvestment" },
     ],
   },
